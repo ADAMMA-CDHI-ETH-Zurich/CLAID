@@ -9,12 +9,12 @@ namespace portaible
 {
 	namespace Loader
 	{
-		class AuthorityLoader : public LoaderBase
+		class ModuleLoader : public LoaderBase
 		{
-			DECLARE_LOADER(AuthorityLoader)
+			DECLARE_LOADER(ModuleLoader)
 
 			public:
-				AuthorityLoader() : LoaderBase("Authority")
+				ModuleLoader() : LoaderBase("Module")
 				{
 
 				}
@@ -28,21 +28,21 @@ namespace portaible
 						{
 							if (!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForClass(className))
 							{
-								PORTAIBLE_THROW(portaible::Exception, "AuthorityLoader failed to load Authorities from XML. Class \"" << className << "\" was not registered and is unknown.");
+								PORTAIBLE_THROW(portaible::Exception, "ModuleLoader failed to load Modules from XML. Class \"" << className << "\" was not registered and is unknown.");
 							}
 
-							Authority* authority = static_cast<Authority*>(ClassFactory::ClassFactory::getInstance()->getFactoryForClassByName(className)->getInstanceUntyped());
+							Module* module = static_cast<Module*>(ClassFactory::ClassFactory::getInstance()->getFactoryForClassByName(className)->getInstanceUntyped());
 							XMLDeserializer deserializer(node);
-							deserializer.deserializeFromNode("Authority", authority);
+							deserializer.deserializeFromNode("Module", module);
 
 							std::string id;
 							if (node->getAttribute("id", id))
 							{
-								authority->setID(id);
+								module->setID(id);
 							}
 
 
-							PORTAIBLE_RUNTIME->addAuthority(authority);
+							PORTAIBLE_RUNTIME->addModule(module);
 						}
 					}
 				}

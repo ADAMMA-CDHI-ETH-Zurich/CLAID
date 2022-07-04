@@ -2,7 +2,7 @@
 
 
 #ifndef _PORTAIBLE_RUNTIME_H_
-#  error "Authority.h must be included via the RunTime.h. You must not include it directly. Use #include <fw/RunTime.h> instead"
+#  error "Module.h must be included via the RunTime.h. You must not include it directly. Use #include <fw/RunTime.h> instead"
 #endif
 
 #include "RunnableDispatcherThread/RunnableDispatcherThread.hpp"
@@ -17,7 +17,7 @@
 #include "Reflection/PropertyReflector.hpp"
 namespace portaible
 {
-    class Authority
+    class Module
     {
         protected:
             std::string id;
@@ -102,7 +102,7 @@ namespace portaible
 
                 this->runnableDispatcherThread.start();
 
-                std::function<void ()> initFunc = std::bind(&Authority::initializeInternal, this);
+                std::function<void ()> initFunc = std::bind(&Module::initializeInternal, this);
                 FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(initFunc);
 
                 functionRunnable->deleteAfterRun = false;
@@ -116,7 +116,7 @@ namespace portaible
 
 }
 
-#define PORTAIBLE_AUTHORITY(className)\
+#define PORTAIBLE_MODULE(className)\
  DECLARE_CLASS_FACTORY(className)\
  DECLARE_POLYMORPHIC_REFLECTOR(className, portaible::XMLDeserializer)\
 

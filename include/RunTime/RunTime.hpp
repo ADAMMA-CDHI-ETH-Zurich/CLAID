@@ -7,7 +7,7 @@
 #include "Utilities/Singleton.hpp"
 #include "Channel/ChannelManager.hpp"
 
-#include "Authority/Authority.hpp"
+#include "Module/Module.hpp"
 #include "Loader/LoaderManager.hpp"
 
 #define PORTAIBLE_RUNTIME portaible::RunTime::getInstance()
@@ -18,7 +18,7 @@ namespace portaible
     class RunTime : public Singleton<RunTime> 
     {
         private:
-            std::vector<Authority*> authorities;
+            std::vector<Module*> modules;
 
 
         public:
@@ -33,16 +33,16 @@ namespace portaible
 
         void start()
         {
-            this->startAuthorities();
+            this->startModules();
         }
 
 
         public:
-            void startAuthorities();
+            void startModules();
 
-            void addAuthority(Authority* authority);
+            void addModule(Module* module);
 
-            size_t getNumAuthorities();
+            size_t getNumModules();
             size_t getNumChannels();
             const std::string& getChannelNameByIndex(size_t id);
     };
@@ -50,5 +50,5 @@ namespace portaible
 
 #include "XML/XMLDeserializer.hpp"
 
-#include "Authority/Authority_impl.hpp"
+#include "Module/Module_impl.hpp"
 #include "Loader/Loader_impl.hpp"

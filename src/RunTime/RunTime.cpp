@@ -2,27 +2,27 @@
 
 namespace portaible
 {
-    void RunTime::startAuthorities()
+    void RunTime::startModules()
     {
-        for(Authority*& authority : this->authorities)
+        for(Module*& module : this->modules)
         {
-            authority->start();
+            module->start();
 
-            while(!authority->isInitialized())
+            while(!module->isInitialized())
             {
                 
             }
         }
     }
 
-    void RunTime::addAuthority(Authority* authority)
+    void RunTime::addModule(Module* module)
     {
-        return this->authorities.push_back(authority);
+        return this->modules.push_back(module);
     }
 
-    size_t RunTime::getNumAuthorities()
+    size_t RunTime::getNumModules()
     {
-        return this->authorities.size();
+        return this->modules.size();
     }
 
     size_t RunTime::getNumChannels()
