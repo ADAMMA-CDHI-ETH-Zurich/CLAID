@@ -16,14 +16,14 @@ namespace portaible
     class Channel
     {
         private:
-            GlobalChannel<T>* globalChannel;
+            TypedChannel<T>* typedChannel;
             ChannelAccessRights channelAccessRights;
 
             void verifyReadAccess()
             {
                 if(this->channelAccessRights != ChannelAccessRights::READ && this->channelAccessRights != ChannelAccessRights::READ_WRITE)
                 {
-                    PORTAIBLE_THROW(Exception, "Cannot read from channel with ID " << globalChannel->getChannelID() << " as it was only published, not subscribed to.");
+                    PORTAIBLE_THROW(Exception, "Cannot read from channel with ID " << typedChannel->getChannelID() << " as it was only published, not subscribed to.");
                 }
             }
 
@@ -31,7 +31,7 @@ namespace portaible
             {
                 if(this->channelAccessRights != ChannelAccessRights::WRITE && this->channelAccessRights != ChannelAccessRights::READ_WRITE)
                 {
-                    PORTAIBLE_THROW(Exception, "Cannot post to channel with ID " << globalChannel->getChannelID().c_str() << " as it was only subscribed but not published.");
+                    PORTAIBLE_THROW(Exception, "Cannot post to channel with ID " << typedChannel->getChannelID().c_str() << " as it was only subscribed but not published.");
                 }
             }
         public:
@@ -40,7 +40,7 @@ namespace portaible
             {
             }
 
-            Channel(GlobalChannel<T>* globalChannel, ChannelAccessRights channelAccessRights) : globalChannel(globalChannel), channelAccessRights(channelAccessRights)
+            Channel(TypedChannel<T>* typedChannel, ChannelAccessRights channelAccessRights) : typedChannel(typedChannel), channelAccessRights(channelAccessRights)
             {
 
             }
@@ -48,7 +48,7 @@ namespace portaible
             ChannelRead<T> read()
             {
                 verifyReadAccess();
-                return globalChannel->read();
+                return typedChannel->read();
             }
 
   
@@ -56,20 +56,20 @@ namespace portaible
                                 const Duration& tolerance = Duration::infinity())
             {
                 verifyReadAccess();
-                return globalChannel->read(timestamp, tolerance);
+                return typedChannel->read(timestamp, tolerance);
             }
 
              ChannelRead<T> read(const uint32_t sequenceID,
                                 const Duration& searchIntervall = Duration::seconds(1))
             {
                 verifyReadAccess();
-                return globalChannel->read(sequenceID, searchIntervall);
+                return typedChannel->read(sequenceID, searchIntervall);
             }
 
             void post(TaggedData<T> data)
             {
                 verifyWriteAccess();
-                this->globalChannel->post(data);
+                this->typedChannel->post(data);
             }
 
             void post(T& data)
@@ -84,19 +84,19 @@ namespace portaible
 
             void getChannelReadIntervall(const Time& min, const Time& max, std::vector<ChannelRead<T>>& channelReadIntervall)
             {
-                return this->globalChannel->getChannelReadIntervall(min, max, channelReadIntervall);
+                return this->typedChannel->getChannelReadIntervall(min, max, channelReadIntervall);
             }
 
             const std::string& getChannelID() const
             {
-                return this->globalChannel->getChannelID();
+                return this->typedChannel->getChannelID();
             }
 
     };
     
 
     template<typename T>
-    class GlobalChannel : public GlobalChannelBase
+    class TypedChannel : public ChannelBase
     {
 
         private:
@@ -115,7 +115,7 @@ namespace portaible
         public:
       
             
-            GlobalChannel(const std::string & channelID) : channelID(channelID)
+            TypedChannel(const std::string& channelID) : channelID(channelID)
             {
 
             }
@@ -211,8 +211,6 @@ namespace portaible
             {
                 return Channel<T>(this, ChannelAccessRights::READ);
             }
-
-   
 
             Channel<T> subscribe(ChannelSubscriber<T> channelSubscriber)
             {

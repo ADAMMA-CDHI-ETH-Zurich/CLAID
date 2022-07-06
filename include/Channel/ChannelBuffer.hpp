@@ -93,7 +93,7 @@ namespace portaible
             {
 
                
-                    this->lockMutex();
+                this->lockMutex();
                
 
                 if(numElements == 0)
@@ -122,7 +122,7 @@ namespace portaible
                     return true;
                 }
             }
-            // TODO Hier hab ich bestimmt verkackt.
+            // TODO Very likely this contains a bug
             bool getClosest(const Time& timestamp, TaggedData<T>& closest)
             {
                 this->lockMutex();

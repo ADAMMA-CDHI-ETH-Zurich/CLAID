@@ -49,6 +49,34 @@ namespace portaible
                 this->registerPeriodicFunction(function, periodInMs);
             }
 
+            template<typename T>
+            Channel<T> subscribe(const std::string& channelID);
+
+            template<typename T, typename Class>
+            Channel<T> subscribe(const std::string& channelID,
+                        void (Class::*f)(ChannelRead<T>), Class* obj);
+
+            template<typename T>
+            Channel<T> subscribe(const std::string& channelID, std::function<void (ChannelRead<T>)> function);
+
+           /* template<typename T, typename Class>
+            Channel<T> subscribe(TypedChannel<T>& channel,
+                        void (Class::*f)(ChannelRead<T>), Class* obj);
+
+            template<typename T>
+            Channel<T> subscribe(TypedChannel<T>& channel, std::function<void (ChannelRead<T>)> function);*/
+
+            
+
+
+            template<typename T>
+            Channel<T> publish(const std::string& channelID);
+
+            template<typename T>
+            void unsubscribe()
+            {
+
+            }
 
 
             PropertyReflector propertyReflector;
@@ -75,23 +103,7 @@ namespace portaible
                 return this->initialized;
             }
             
-            template<typename T>
-            Channel<T> subscribe(const std::string& channelID);
-            template<typename T, typename Class>
-            Channel<T> subscribe(const std::string& channelID,
-	                     void (Class::*f)(ChannelRead<T>), Class* obj);
 
-            template<typename T>
-            Channel<T> subscribe(const std::string& channelID, std::function<void (ChannelRead<T>)> function);
-
-            template<typename T>
-            Channel<T> publish(const std::string& channelID);
-
-            template<typename T>
-            void unsubscribe()
-            {
-
-            }
 
             void start()
             {
@@ -105,10 +117,12 @@ namespace portaible
                 std::function<void ()> initFunc = std::bind(&Module::initializeInternal, this);
                 FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(initFunc);
 
-                functionRunnable->deleteAfterRun = false;
+                functionRunnable->deleteAfterRun = true;
 
                 this->runnableDispatcherThread.addRunnable(functionRunnable);
             }
+
+                
     };
 
 

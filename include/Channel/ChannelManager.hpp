@@ -6,18 +6,18 @@ namespace portaible
     class ChannelManager
     {
         private:
-            std::map<std::string, GlobalChannelBase*> globalChannels;
+            std::map<std::string, ChannelBase*> typedChannels;
 
             template<typename T>
-            bool canCastChannel(GlobalChannelBase* channel)
+            bool canCastChannel(ChannelBase* channel)
             {              
                 return channel->getChannelDataTypeUniqueIdentifier() == getDataTypeUniqueIdentifier<T>();
             }
 
             template<typename T>
-            GlobalChannel<T>* castChannel(GlobalChannelBase* channel)
+            TypedChannel<T>* castChannel(ChannelBase* channel)
             {
-                return static_cast<GlobalChannel<T>*>(channel);
+                return static_cast<TypedChannel<T>*>(channel);
             }
 
 
@@ -29,15 +29,15 @@ namespace portaible
             template<typename T>
             Channel<T> subscribe(const std::string& channelID)
             {
-                auto it = globalChannels.find(channelID);
+                auto it = typedChannels.find(channelID);
 
-                if(it != globalChannels.end())
+                if(it != typedChannels.end())
                 {
-                    GlobalChannelBase* channel = it->second;
+                    ChannelBase* channel = it->second;
                     if(canCastChannel<T>(channel))
                     {
-                        // Safely cast GlobalChannelBase to GlobalChannel.
-                        GlobalChannel<T>* typedChannel = castChannel<T>(channel);
+                        // Safely cast ChannelBase to TypedChannel.
+                        TypedChannel<T>* typedChannel = castChannel<T>(channel);
                         return typedChannel->subscribe();
                     }
                     else
@@ -49,8 +49,8 @@ namespace portaible
                 else
                 {
                     // Channel not found, create new.
-                    GlobalChannel<T>* newChannel = new GlobalChannel<T>(channelID);
-                    this->globalChannels.insert(std::make_pair(channelID, static_cast<GlobalChannelBase*>(newChannel)));
+                    TypedChannel<T>* newChannel = new TypedChannel<T>(channelID);
+                    this->typedChannels.insert(std::make_pair(channelID, static_cast<ChannelBase*>(newChannel)));
                     return newChannel->subscribe();
                 }
             }
@@ -60,17 +60,15 @@ namespace portaible
             template<typename T>
             Channel<T> subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber)
             {
-                auto it = globalChannels.find(channelID);
-                        printf("ChannelManager subscribe %d\n", channelSubscriber.runnableDispatcherThread->id);
+                auto it = typedChannels.find(channelID);
 
-                if(it != globalChannels.end())
+                if(it != typedChannels.end())
                 {
-                    printf("ChannelManager 1\n");
-                    GlobalChannelBase* channel = it->second;
+                    ChannelBase* channel = it->second;
                     if(canCastChannel<T>(channel))
                     {
-                        // Safely cast GlobalChannelBase to GlobalChannel.
-                        GlobalChannel<T>* typedChannel = castChannel<T>(channel);
+                        // Safely cast ChannelBase to TypedChannel.
+                        TypedChannel<T>* typedChannel = castChannel<T>(channel);
 
                         return typedChannel->subscribe(channelSubscriber);
                     }
@@ -82,11 +80,10 @@ namespace portaible
                 }
                 else
                 {
-                        printf("ChannelManager subscribe2 %d\n", channelSubscriber.runnableDispatcherThread->id);
 
                     // Channel not found, create new.
-                    GlobalChannel<T>* newChannel = new GlobalChannel<T>(channelID);
-                    this->globalChannels.insert(std::make_pair(channelID, static_cast<GlobalChannelBase*>(newChannel)));
+                    TypedChannel<T>* newChannel = new TypedChannel<T>(channelID);
+                    this->typedChannels.insert(std::make_pair(channelID, static_cast<ChannelBase*>(newChannel)));
                     return newChannel->subscribe(channelSubscriber);
                 }
             }
@@ -94,15 +91,15 @@ namespace portaible
             template<typename T>
             Channel<T> publish(const std::string& channelID)
             {
-                auto it = globalChannels.find(channelID);
+                auto it = typedChannels.find(channelID);
 
-                if(it != globalChannels.end())
+                if(it != typedChannels.end())
                 {
-                    GlobalChannelBase* channel = it->second;
+                    ChannelBase* channel = it->second;
                     if(canCastChannel<T>(channel))
                     {
-                        // Safely cast GlobalChannelBase to GlobalChannel.
-                        GlobalChannel<T>* typedChannel = castChannel<T>(channel);
+                        // Safely cast ChannelBase to TypedChannel.
+                        TypedChannel<T>* typedChannel = castChannel<T>(channel);
                         return typedChannel->publish();
                     }
                     else
@@ -114,20 +111,20 @@ namespace portaible
                 else
                 {
                     // Channel not found, create new.
-                    GlobalChannel<T>* newChannel = new GlobalChannel<T>(channelID);
-                    this->globalChannels.insert(std::make_pair(channelID, static_cast<GlobalChannelBase*>(newChannel)));
+                    TypedChannel<T>* newChannel = new TypedChannel<T>(channelID);
+                    this->typedChannels.insert(std::make_pair(channelID, static_cast<ChannelBase*>(newChannel)));
                     return newChannel->publish();
                 }
             }
 
             size_t getNumChannels()
             {
-                return this->globalChannels.size();
+                return this->typedChannels.size();
             }
 
             const std::string& getChannelNameByIndex(size_t id)
             {
-                auto it = this->globalChannels.begin();
+                auto it = this->typedChannels.begin();
                 std::advance(it, id);
                 return it->first;
             }

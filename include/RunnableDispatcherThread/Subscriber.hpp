@@ -2,7 +2,7 @@
 
 namespace portaible
 {
-    class ChannelSubscriberBase
+    class Subscriber
     {   public:
             RunnableDispatcherThread* runnableDispatcherThread;
 
@@ -14,12 +14,12 @@ namespace portaible
 
             virtual Runnable* asRunnable() = 0;
 
-            ChannelSubscriberBase()
+            Subscriber()
             {
 
             }
 
-            ChannelSubscriberBase(RunnableDispatcherThread* runnableDispatcherThread) : runnableDispatcherThread(runnableDispatcherThread)
+            Subscriber(RunnableDispatcherThread* runnableDispatcherThread) : runnableDispatcherThread(runnableDispatcherThread)
             {
                 
             }

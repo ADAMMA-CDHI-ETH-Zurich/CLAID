@@ -45,6 +45,7 @@ namespace portaible
 							PORTAIBLE_RUNTIME->addModule(module);
 						}
 					}
+					return true;
 				}
 
 

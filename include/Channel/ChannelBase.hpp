@@ -3,7 +3,7 @@
 
 namespace portaible
 {
-    class GlobalChannelBase
+    class ChannelBase
     {
         public:
             virtual intptr_t getChannelDataTypeUniqueIdentifier()
@@ -16,12 +16,12 @@ namespace portaible
                 return "";
             }
 
-            GlobalChannelBase()
+            ChannelBase()
             {
                 
             }
 
-            virtual ~GlobalChannelBase()
+            virtual ~ChannelBase()
             {
 
             }
