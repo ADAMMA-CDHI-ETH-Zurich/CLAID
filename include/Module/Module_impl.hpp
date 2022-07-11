@@ -2,6 +2,42 @@
 
 namespace portaible
 {
+    template<typename T>
+    Channel<T> LocalModule::subscribe(TypedChannel<T>& channel)
+    {
+        return channel.subscribe();   
+    }
+
+    template<typename T, typename Class>
+    Channel<T> LocalModule::subscribe(TypedChannel<T>& channel,
+                void (Class::*f)(ChannelRead<T>), Class* obj)
+    {
+        std::function<void (ChannelRead<T>)> function = std::bind(f, obj, std::placeholders::_1);
+        return subscribe(channel, function);
+    }
+
+    template<typename T>
+    Channel<T> LocalModule::subscribe(TypedChannel<T>& channel, std::function<void (ChannelRead<T>)> function)
+    {
+        ChannelSubscriber<T> channelSubscriber(&this->runnableDispatcherThread, function);
+        return channel.subscribe(channelSubscriber);
+    }
+    
+
+
+    template<typename T>
+    Channel<T> publish(const std::string& channelID);
+
+    template<typename T>
+    void unsubscribe()
+    {
+
+    }
+}
+
+
+namespace portaible
+{
 template<typename T>
 inline Channel<T> Module::subscribe(const std::string& channelID)
 {

@@ -11,7 +11,6 @@ namespace portaible
     {
         private:
             std::shared_ptr<T> data;
-
        
          
 
@@ -49,6 +48,11 @@ namespace portaible
             const T& value() const
             {
                 return *this->data.get();
+            }
+
+            void toBinary()
+            {
+
             }
     };
 }

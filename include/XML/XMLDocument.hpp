@@ -9,16 +9,16 @@ namespace portaible
 	class XMLDocument
 	{
 		private:
-			XMLNode* xmlNode;
+			std::shared_ptr<XMLNode> xmlNode;
 
 		public:
 			bool loadFromFile(const File& file);
 
 			bool loadFromFile(const std::string& file);
 			bool saveToFile(const std::string& file);
-			void setXMLNode(XMLNode* xmlNode);
+			void setXMLNode(std::shared_ptr<XMLNode> xmlNode);
 
-			XMLNode* getXMLNode();
+			std::shared_ptr<XMLNode> getXMLNode();
 
 	};
 }

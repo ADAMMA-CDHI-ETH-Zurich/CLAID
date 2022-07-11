@@ -5,7 +5,7 @@
 #include <mutex>
 #include <thread>
 #include <iostream>
-#define MAX_CHANNEL_BUFFER_SIZE 100
+#define MAX_CHANNEL_BUFFER_SIZE 20
 
 namespace portaible
 {
@@ -74,6 +74,7 @@ namespace portaible
 
 
                 this->channelData[this->currentIndex] = data;
+
                 this->currentIndex++;
 
                 if(this->currentIndex == MAX_CHANNEL_BUFFER_SIZE)

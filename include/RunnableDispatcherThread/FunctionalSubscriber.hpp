@@ -1,43 +1,47 @@
-#include "RunnableDispatcherThread/RunnableDispatcherThread.hpp"
-#include <functional>
+// REQUIRES C++17, thus deactivated for now.
 
-#include "SubscriberBase.hpp"
-#include "ChannelRead.hpp"
-#include "mutex"
-#include <iostream>
+// #include "RunnableDispatcherThread/RunnableDispatcherThread.hpp"
+// #include <functional>
 
-namespace portaible
-{
-    // forward declaration
-    template<typename T>
-    class TypedChannel;
+// #include "SubscriberBase.hpp"
+// #include "ChannelRead.hpp"
+// #include "mutex"
+// #include <iostream>
 
-    template<typename Return, typename... Ts>
-    class FunctionalSubscriber : public FunctionRunnableWithParams<Return, Ts...>
-    {   
+
+
+// namespace portaible
+// {
+//     // forward declaration
+//     template<typename T>
+//     class TypedChannel;
+
+//     template<typename Return, typename... Ts>
+//     class FunctionalSubscriber : public FunctionRunnableWithParams<Return, Ts...>
+//     {   
      
       
 
 
-        public:
+//         public:
 
-            FunctionalSubscriber(Sub* runnableDispatcherThread,
-	                  std::function<Return (Ts...)> function) : SubscriberBase(runnableDispatcherThread), FunctionRunnableWithParams(function)
-            {
-                this->lastTimeStamp = Time::now();
-            }
+//             FunctionalSubscriber(Sub* runnableDispatcherThread,
+// 	                  std::function<Return (Ts...)> function) : SubscriberBase(runnableDispatcherThread), FunctionRunnableWithParams(function)
+//             {
+//                 this->lastTimeStamp = Time::now();
+//             }
 
      
             
 
-            Runnable* asRunnable()
-            {
-                return static_cast<Runnable*>(this);
-            }
+//             Runnable* asRunnable()
+//             {
+//                 return static_cast<Runnable*>(this);
+//             }
 
-        private:
-            SubscriberBase
+//         private:
+//             SubscriberBase
 
              
-    };  
-}
+//     };  
+// }

@@ -8,14 +8,15 @@
 #include "ClassFactory/ClassFactory.hpp"
 #include "PolymorphicReflector/PolymorphicReflector.hpp"
 #include <algorithm>
+#include <memory.h>
 
 namespace portaible
 {
     class XMLDeserializer : public Deserializer<XMLDeserializer>
     {
         private:
-            XMLNode* xmlRootNode;
-            XMLNode* currentXMLNode;
+            std::shared_ptr<XMLNode> xmlRootNode;
+            std::shared_ptr<XMLNode> currentXMLNode;
 
             bool getCurrentNodeClassName(std::string& className)
             {
@@ -32,7 +33,7 @@ namespace portaible
 
             }
 
-            XMLDeserializer(XMLNode* xmlRootNode) : xmlRootNode(xmlRootNode), currentXMLNode(xmlRootNode)
+            XMLDeserializer(std::shared_ptr<XMLNode> xmlRootNode) : xmlRootNode(xmlRootNode), currentXMLNode(xmlRootNode)
             {
 
             }
@@ -40,8 +41,8 @@ namespace portaible
             template<typename T>
             void callFloatOrDouble(const char* property, T& member)
             {
-                XMLNode* node = this->getChildNode(property);
-                if (node == nullptr)
+                std::shared_ptr<XMLNode> node = this->getChildNode(property);
+                if (node.get() == nullptr)
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
@@ -52,9 +53,9 @@ namespace portaible
                 }
                 else
                 {
-                    XMLVal* value = dynamic_cast<XMLVal*>(node);
+                    std::shared_ptr<XMLVal> value = std::static_pointer_cast<XMLVal>(node);
 
-                    if (value == nullptr)
+                    if (value.get() == nullptr)
                     {
                         PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
@@ -66,8 +67,8 @@ namespace portaible
             template<typename T>
             void callInt(const char* property, T& member)
             {
-                XMLNode* node = this->getChildNode(property);
-                if(node == nullptr)
+                std::shared_ptr<XMLNode> node = this->getChildNode(property);
+                if(node.get() == nullptr)
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
@@ -78,9 +79,9 @@ namespace portaible
                 }
                 else
                 {
-                    XMLVal* value = dynamic_cast<XMLVal*>(node);
+                    std::shared_ptr<XMLVal> value = std::static_pointer_cast<XMLVal>(node);
 
-                    if (value == nullptr)
+                    if (value.get() == nullptr)
                     {
                         PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
@@ -90,8 +91,8 @@ namespace portaible
 
             void callBool(const char* property, bool& member)
             {
-                XMLNode* node = this->getChildNode(property);
-                if(node == nullptr)
+                std::shared_ptr<XMLNode> node = this->getChildNode(property);
+                if(node.get() == nullptr)
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
@@ -102,9 +103,9 @@ namespace portaible
                 }
                 else
                 {
-                    XMLVal* value = dynamic_cast<XMLVal*>(node);
+                    std::shared_ptr<XMLVal> value = std::static_pointer_cast<XMLVal>(node);
 
-                    if (value == nullptr)
+                    if (value.get() == nullptr)
                     {
                         PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
@@ -133,8 +134,8 @@ namespace portaible
             template<typename T>
             void callBeginClass(const char* property, T& member)
             {
-                XMLNode* node = this->currentXMLNode->findChild(property);
-                if(node == nullptr)
+                std::shared_ptr<XMLNode> node = this->currentXMLNode->findChild(property);
+                if(node.get() == nullptr)
                 {
                     PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node " << property << " is missing!");
                 }
@@ -156,23 +157,19 @@ namespace portaible
                 {
                     PORTAIBLE_THROW(portaible::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type. However, attribute \"class\" was not specified for the XML node. We don't know which class you want!");
                 }
-                printf("1 %s %s\n", className.c_str(), getDataTypeRTTIString<T>().c_str());
 
                 if (!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForClass(className))
                 {
                     PORTAIBLE_THROW(portaible::Exception, "XMLDeserializer failed to deserialize object from XML. Class \"" << className << "\" was not registered and is unknown.");
                 }
-                printf("3 \n");
 
                 member = ClassFactory::ClassFactory::getInstance()->getNewInstanceAndCast<T>(className);
-                printf("4 \n");
 
                 PolymorphicReflector::WrappedReflectorBase<XMLDeserializer>* polymorphicReflector;
                 if (!PolymorphicReflector::PolymorphicReflector<XMLDeserializer>::getInstance()->getReflector(className, polymorphicReflector))
                 {
                     PORTAIBLE_THROW(portaible::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type. However, attribute \"class\" was does not have a PolymorphicReflector registered. Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
-                printf("5 \n");
 
                 polymorphicReflector->invoke(*this, static_cast<void*>(member));
             }
@@ -189,8 +186,8 @@ namespace portaible
             template<typename T>
             void callString(const char* property, T& member)
             {
-                XMLNode* node = this->getChildNode(property);
-                if(node == nullptr)
+                std::shared_ptr<XMLNode> node = this->getChildNode(property);
+                if(node.get() == nullptr)
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
@@ -201,9 +198,9 @@ namespace portaible
                 }
                 else
                 {
-                    XMLVal* value = dynamic_cast<XMLVal*>(node);
+                    std::shared_ptr<XMLVal> value = std::static_pointer_cast<XMLVal>(node);
 
-                    if (value == nullptr)
+                    if (value.get() == nullptr)
                     {
                         PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XMLNode was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
@@ -211,7 +208,7 @@ namespace portaible
                 }
             }
 
-            XMLNode* getChildNode(const char* property)
+            std::shared_ptr<XMLNode> getChildNode(const char* property)
             {
                 if(!this->isSequence)
                 {
@@ -220,7 +217,7 @@ namespace portaible
                 else
                 {
                     size_t ctr = 0;
-                    for(XMLNode* child : this->currentXMLNode->children)
+                    for(std::shared_ptr<XMLNode> child : this->currentXMLNode->children)
                     {
                         if(child->name == std::string(property))
                         {
@@ -240,7 +237,7 @@ namespace portaible
             void count(const std::string& name, size_t& count)
             {
                 count = 0;
-                for(XMLNode* node : this->currentXMLNode->children)
+                for(std::shared_ptr<XMLNode> node : this->currentXMLNode->children)
                 {
                     if(node->name == name)
                     {

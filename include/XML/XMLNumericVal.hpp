@@ -9,7 +9,7 @@ namespace portaible
     {
 
 
-        XMLNumericVal(XMLNode* parent, std::string name, std::string value) : XMLVal(parent, name, value)
+        XMLNumericVal(std::shared_ptr<XMLNode> parent, std::string name, std::string value) : XMLVal(parent, name, value)
         {
 
         }

@@ -11,43 +11,55 @@ namespace portaible
     class XMLSerializer : public Serializer<XMLSerializer>
     {
         public:
-            XMLNode* root = nullptr;
-            XMLNode* currentNode = nullptr;
+            std::shared_ptr<XMLNode> root = nullptr;
+            std::shared_ptr<XMLNode> currentNode = nullptr;
 
             XMLSerializer()
             {
-                this->root = new XMLNode(nullptr, "root");
+                this->root = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
                 this->currentNode = root;
             }
 
             template<typename T>
             void callFloatOrDouble(const char* property, T& member)
             {
-                this->currentNode->addChild(new XMLNumericVal(this->currentNode, property, XMLNumericVal::toString<T>(member)));
+                this->currentNode->addChild(
+                    std::static_pointer_cast<XMLNode>(
+                        std::shared_ptr<XMLNumericVal>(
+                            new XMLNumericVal(this->currentNode, property, XMLNumericVal::toString<T>(member)))));
             }   
 
             // Also includes any variants of signed, unsigned, short, long, long long, ...
             template<typename T>
             void callInt(const char* property, T& member)
             {
-                this->currentNode->addChild(new XMLNumericVal(this->currentNode, property, XMLNumericVal::toString<T>(member)));
+                this->currentNode->addChild(
+                    std::static_pointer_cast<XMLNode>(
+                        std::shared_ptr<XMLNumericVal>(
+                            new XMLNumericVal(this->currentNode, property, XMLNumericVal::toString<T>(member)))));
             }
 
             void callBool(const char* property, bool& member)
             {
-                this->currentNode->addChild(new XMLVal(this->currentNode, property, member ? "true" : "false"));
+                this->currentNode->addChild(
+                    std::static_pointer_cast<XMLNode>(
+                        std::shared_ptr<XMLVal>(
+                            new  XMLVal(this->currentNode, property, member ? "true" : "false"))));
             }
 
             template<typename T>
             void callString(const char* property, T& member)
             {
-                this->currentNode->addChild(new XMLVal(this->currentNode, property, member));
+                this->currentNode->addChild(
+                    std::static_pointer_cast<XMLNode>(
+                        std::shared_ptr<XMLVal>(
+                            new XMLVal(this->currentNode, property, member))));
             }
 
             template<typename T>
             void callBeginClass(const char* property, T& member)
             {
-                XMLNode* node = new XMLNode(currentNode, property);
+                std::shared_ptr<XMLNode> node = std::shared_ptr<XMLNode>(new XMLNode(currentNode, property));
                 this->currentNode->addChild(node);
                 this->currentNode = node;
             }
@@ -113,7 +125,7 @@ namespace portaible
             void serialize(T& obj)
             {
                 std::string name = portaible::getDataTypeRTTIString<T>();
-                XMLNode* node = new XMLNode(currentNode, name);
+                std::shared_ptr<XMLNode> node = std::shared_ptr<XMLNode>(new XMLNode(currentNode, name));
                 this->currentNode->addChild(node);
                 this->currentNode = node;
 

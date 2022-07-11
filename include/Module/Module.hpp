@@ -17,7 +17,8 @@
 #include "Reflection/PropertyReflector.hpp"
 namespace portaible
 {
-    class Module
+    // Base class for any type of module.
+    class BaseModule
     {
         protected:
             std::string id;
@@ -49,6 +50,86 @@ namespace portaible
                 this->registerPeriodicFunction(function, periodInMs);
             }
 
+            
+            virtual void initialize()
+            {
+
+            }
+
+            PropertyReflector propertyReflector;
+
+        public:
+            template<typename T>
+            void reflect(T& r)
+            {
+              
+            }
+
+            void setID(const std::string& id)
+            {
+                this->id = id;
+            }
+
+           
+            
+            bool isInitialized()
+            {
+                return this->initialized;
+            }
+            
+
+
+            void start()
+            {
+                // PropertyReflector will initialize all members and properties to their default values,
+                // if any have been specified.
+                this->propertyReflector.reflect(this->id, *this);
+
+
+                this->runnableDispatcherThread.start();
+
+                std::function<void ()> initFunc = std::bind(&BaseModule::initializeInternal, this);
+                FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(initFunc);
+
+                functionRunnable->deleteAfterRun = true;
+
+                this->runnableDispatcherThread.addRunnable(functionRunnable);
+            }
+    };
+
+    // A LocalModule can only communicate via local channels and 
+    // has no access to global ones (i.e., it cannot use ChannelIDs to subscribe to channels)
+    class LocalModule : public BaseModule
+    {
+         template<typename T>
+        Channel<T> subscribe(TypedChannel<T>& channel);
+
+        template<typename T, typename Class>
+        Channel<T> subscribe(TypedChannel<T>& channel,
+                    void (Class::*f)(ChannelRead<T>), Class* obj);
+
+        template<typename T>
+        Channel<T> subscribe(TypedChannel<T>& channel, std::function<void (ChannelRead<T>)> function);
+        
+
+
+        template<typename T>
+        Channel<T> publish(const std::string& channelID);
+
+        template<typename T>
+        void unsubscribe()
+        {
+
+        }
+
+                
+    };
+
+    // A Module can acess all channels globally (within the current process or
+    // remote) via ChannelIDs, in contrast to a LocalModule.
+    class Module : public BaseModule
+    {
+        protected:
             template<typename T>
             Channel<T> subscribe(const std::string& channelID);
 
@@ -59,7 +140,7 @@ namespace portaible
             template<typename T>
             Channel<T> subscribe(const std::string& channelID, std::function<void (ChannelRead<T>)> function);
 
-           /* template<typename T, typename Class>
+            /* template<typename T, typename Class>
             Channel<T> subscribe(TypedChannel<T>& channel,
                         void (Class::*f)(ChannelRead<T>), Class* obj);
 
@@ -78,51 +159,6 @@ namespace portaible
 
             }
 
-
-            PropertyReflector propertyReflector;
-
-        public:
-            template<typename T>
-            void reflect(T& r)
-            {
-              
-            }
-
-            void setID(const std::string& id)
-            {
-                this->id = id;
-            }
-
-            virtual void initialize()
-            {
-
-            }
-            
-            bool isInitialized()
-            {
-                return this->initialized;
-            }
-            
-
-
-            void start()
-            {
-                // PropertyReflector will initialize all members and properties to their default values,
-                // if any have been specified.
-                this->propertyReflector.reflect(this->id, *this);
-
-
-                this->runnableDispatcherThread.start();
-
-                std::function<void ()> initFunc = std::bind(&Module::initializeInternal, this);
-                FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(initFunc);
-
-                functionRunnable->deleteAfterRun = true;
-
-                this->runnableDispatcherThread.addRunnable(functionRunnable);
-            }
-
-                
     };
 
 

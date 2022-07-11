@@ -120,6 +120,11 @@ namespace portaible
 
             }
 
+            virtual ~TypedChannel()
+            {
+
+            }
+
             void post(const T& data)
             {
                 this->post(TaggedData<T>(data));
@@ -134,9 +139,7 @@ namespace portaible
             {
                 this->channelBuffer.insert(data);
                 this->signalNewDataToSubscribers();
-            }
-
-            
+            }           
 
             intptr_t getChannelDataTypeUniqueIdentifier()
             {
@@ -164,7 +167,6 @@ namespace portaible
             ChannelRead<T> read(const Time& timestamp,
                                 const Duration& tolerance = Duration::infinity())
             {
-                
                 TaggedData<T> closest;
                 if(!this->channelBuffer.getClosest(timestamp, closest))
                 {
@@ -247,6 +249,16 @@ namespace portaible
             //                     {
 
             //                     }
+    };
+
+    template<typename T>
+    class LocalTypedChannel : public TypedChannel<T>
+    {
+        public:
+            LocalTypedChannel() : TypedChannel<T>("LocalChannel")
+            {
+
+            }
     };
 
 

@@ -8,7 +8,7 @@
 #include "Channel/ChannelManager.hpp"
 
 #include "Module/Module.hpp"
-#include "Loader/LoaderManager.hpp"
+#include "XMLLoader/XMLLoaderManager.hpp"
 
 #define PORTAIBLE_RUNTIME portaible::RunTime::getInstance()
 
@@ -23,7 +23,7 @@ namespace portaible
 
         public:
             ChannelManager channelManager;
-            Loader::LoaderManager loader;
+            XMLLoader::XMLLoaderManager loader;
 
    
         void test()
@@ -51,4 +51,4 @@ namespace portaible
 #include "XML/XMLDeserializer.hpp"
 
 #include "Module/Module_impl.hpp"
-#include "Loader/Loader_impl.hpp"
+#include "XMLLoader/XMLLoader_impl.hpp"

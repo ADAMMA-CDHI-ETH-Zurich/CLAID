@@ -20,3 +20,6 @@ struct has_mem_##mem                                                            
   static bool constexpr value = std::is_same<decltype(test< ambiguate<T> >(0)),yes>::value ;         \
   typedef std::integral_constant<bool,value>    type;                                                \
 };
+
+
+

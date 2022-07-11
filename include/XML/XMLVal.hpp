@@ -1,6 +1,7 @@
 #pragma once
 #include "XMLNode.hpp"
 #include <string>
+#include <memory.h>
 
 namespace portaible
 {
@@ -13,9 +14,8 @@ namespace portaible
 
 
 
-            XMLVal(XMLNode* parent, const std::string& name, const std::string& value) : XMLNode(parent, name), value(value)
+            XMLVal(std::shared_ptr<XMLNode> parent, const std::string& name, const std::string& value) : XMLNode(parent, name), value(value)
             {
-                printf("constr %s\n", name.c_str());
             }
 
             virtual void toString(std::string& string)

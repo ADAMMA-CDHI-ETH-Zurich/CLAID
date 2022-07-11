@@ -58,13 +58,15 @@ namespace portaible
 
 	}
 
-	void XMLDocument::setXMLNode(XMLNode* xmlNode)
+	void XMLDocument::setXMLNode(std::shared_ptr<XMLNode> xmlNode)
 	{
 		this->xmlNode = xmlNode;
 	}
 
-	XMLNode* XMLDocument::getXMLNode()
+	std::shared_ptr<XMLNode> XMLDocument::getXMLNode()
 	{
 		return this->xmlNode;
 	}
 }
+
+

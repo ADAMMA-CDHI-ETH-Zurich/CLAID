@@ -16,6 +16,12 @@ namespace portaible
 
             bool valid;
 
+
+            // The channel buffer that holds the TaggedData that we are using.
+            // More specifically: Data contains a shared_ptr<T> with the underlying data.
+            // 
+            ChannelBuffer<T>* holderBuffer;
+
         public:
 
             static ChannelRead InvalidChannelRead()

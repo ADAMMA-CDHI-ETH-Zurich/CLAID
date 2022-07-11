@@ -13,7 +13,7 @@ namespace portaible
     class XMLParser
     {
         private:
-            XMLNode* root = nullptr;
+            std::shared_ptr<XMLNode> root = nullptr;
 
             enum XMLElementType
             {
@@ -32,7 +32,7 @@ namespace portaible
 
 
         public:
-            bool parseFromString(const std::string& string, XMLNode*& rootNode)
+            bool parseFromString(const std::string& string, std::shared_ptr<XMLNode>& rootNode)
             {
                 std::string filtered = string;
 
@@ -41,12 +41,10 @@ namespace portaible
                 replaceInString(filtered, "< ", "");
                 replaceInString(filtered, "\t", "");
 
-                printf("%s\n", filtered.c_str());
 
                 removeWhiteSpacesBetweenTabs(filtered);
 
 
-                printf("%s\n", filtered.c_str());
 
                 if(!this->parseNode(filtered, rootNode))
                 {
@@ -57,7 +55,7 @@ namespace portaible
                 return true;   
             }
 
-            bool parseNode(const std::string& nodeBegin, XMLNode*& rootNode)
+            bool parseNode(const std::string& nodeBegin, std::shared_ptr<XMLNode>& rootNode)
             {
                 // Should be end of data.
                 if(nodeBegin == "")
@@ -66,7 +64,7 @@ namespace portaible
                 }
 
                 std::vector<XMLElement> stack;
-                std::vector<XMLNode*> parentStack;
+                std::vector<std::shared_ptr<XMLNode>> parentStack;
                 parseToStack(nodeBegin, stack);
 
                 if(stack[0].element != "root")
@@ -74,9 +72,9 @@ namespace portaible
                     PORTAIBLE_THROW(portaible::Exception, "Expected first element in XML to be <root>. Root node missing!");
                 }
 
-                rootNode = new XMLNode(nullptr, "root");
+                rootNode = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
                 
-                XMLNode* currentNode = rootNode;
+                std::shared_ptr<XMLNode> currentNode = rootNode;
                 
 
                 
@@ -98,7 +96,7 @@ namespace portaible
 
                             parentStack.push_back(currentNode);
 
-                            XMLNode* newNode = new XMLNode(currentNode, element.element);
+                            std::shared_ptr<XMLNode> newNode = std::shared_ptr<XMLNode>(new XMLNode(currentNode, element.element));
                             newNode->attributes = element.attributes;
                             currentNode->addChild(newNode);
                             currentNode = newNode;
@@ -108,7 +106,7 @@ namespace portaible
                             parentStack.push_back(currentNode);
 
                             // We are a value.
-                            XMLNode* newNode = new XMLVal(currentNode, element.element, nextXmlElement.element);
+                            std::shared_ptr<XMLNode> newNode = std::static_pointer_cast<XMLNode>(std::shared_ptr<XMLVal>(new XMLVal(currentNode, element.element, nextXmlElement.element)));
                             currentNode->addChild(newNode);
                             i++;
                         }
@@ -117,7 +115,7 @@ namespace portaible
                             // This means we are an empty node.
                             parentStack.push_back(currentNode);
 
-                            XMLNode* newNode = new XMLNode(currentNode, element.element);
+                            std::shared_ptr<XMLNode> newNode = std::shared_ptr<XMLNode>(new XMLNode(currentNode, element.element));
                             newNode->attributes = element.attributes;
                             currentNode->addChild(newNode);
                             currentNode = newNode;
@@ -151,7 +149,6 @@ namespace portaible
         
 
                     XMLElement xmlElement;
-                    printf("char %c\n", xml.at(index));
                     if(xml.at(index) == '<')
                     {   
                         if(!(index + 1 < xml.size()))
@@ -163,14 +160,11 @@ namespace portaible
                     
                         if(xml.at(index + 1) == '/')
                         {
-                            printf("1\n");
                             xmlElement.elementType = XMLElementType::CLOSING;
                             xmlElement.element = xml.substr(index + 2, indexTmp - index - 2);
                         }
                         else
                         {
-                                                        printf("2\n");
-
                             xmlElement.elementType = XMLElementType::OPENING;     
                             xmlElement.element = xml.substr(index + 1, indexTmp - index - 1);
 
@@ -184,8 +178,6 @@ namespace portaible
                     }
                     else
                     {   
-                                                    printf("3\n");
-
                         xmlElement.elementType = XMLElementType::VALUE;
                         size_t indexTmp = xml.find("</", index);
                         xmlElement.element = xml.substr(index, indexTmp - index);

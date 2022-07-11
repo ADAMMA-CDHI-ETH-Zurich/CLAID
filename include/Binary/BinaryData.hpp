@@ -12,9 +12,9 @@ namespace portaible
             void store(T& value)
             {
                 size_t size;
-                const char* binaryData = toBinary<T>(value);
+                const char* binaryData = toBinary<T>(value, size);
 
-                this->insert(binaryData, size);
+                this->store(binaryData, size);
             }
 
             void store(const char* data, size_t size)
@@ -29,15 +29,34 @@ namespace portaible
             {
                 // Store length of string
                 size_t size = value.size();
-                this->binaryData.store(size);
+                this->store(size);
 
                 // Store characters
                 for(size_t i = 0; i < size; i++)
                 {
-                    this->binaryData.store(value[i]);
+                    this->store(value[i]);
                 }
             }
 
+            void resize(size_t size)
+            {
+                this->data.resize(size);
+            }
+
+            char* getRawData()
+            {
+                return this->data.data();
+            }
+
+            std::vector<char>& getData()
+            {
+                return this->data;
+            }
+
+            const size_t& getNumBytes()
+            {
+                return this->data.size();
+            }
 
         private:
 
@@ -49,5 +68,5 @@ namespace portaible
             return reinterpret_cast<const char*>(&value);
         }
             
-    }
+    };
 }

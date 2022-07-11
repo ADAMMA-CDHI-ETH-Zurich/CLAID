@@ -1,33 +1,35 @@
-#pragma once
+// REQUIRES C++ 17 (std::apky), thus turned off for now.
 
-#include "FunctionRunnableBase.hpp"
-#include <functional>
+// #pragma once
 
-namespace portaible
-{
-    template<typename Return, typename... Ts>
-    class FunctionRunnableWithParams : public FunctionRunnableBase
-    {
-        private:
-            std::function<Return (Ts...)> function;
-            std::tuple<Ts...> stack;
+// #include "FunctionRunnableBase.hpp"
+// #include <functional>
 
-            void run()
-            {
-                std::apply(this->function, this->stack);
-            }
+// namespace portaible
+// {
+//     template<typename Return, typename... Ts>
+//     class FunctionRunnableWithParams : public FunctionRunnableBase
+//     {
+//         private:
+//             std::function<Return (Ts...)> function;
+//             std::tuple<Ts...> stack;
 
-        public:
-            FunctionRunnableWithParams(std::function<Return (Ts...)> function) : function(function)
-            {
+//             void run()
+//             {
+//                 std::apply(this->function, this->stack);
+//             }
 
-            }
+//         public:
+//             FunctionRunnableWithParams(std::function<Return (Ts...)> function) : function(function)
+//             {
 
-            void setParams(Ts... params)
-            {
-                this->stack = {params...};
-            }
+//             }
+
+//             void setParams(Ts... params)
+//             {
+//                 this->stack = {params...};
+//             }
 
         
-    };
-}
+//     };
+// }

@@ -7,6 +7,8 @@ namespace portaible
         private:
             bool valid = true;
         public:
+            virtual ~Runnable() {}
+
             virtual void run() = 0;
             bool deleteAfterRun = false;
             bool isValid()

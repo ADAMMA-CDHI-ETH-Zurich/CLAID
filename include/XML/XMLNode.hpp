@@ -20,15 +20,15 @@ namespace portaible
 
         public:
             std::string name;
-            XMLNode* parent;
+            std::shared_ptr<XMLNode> parent;
             
             intptr_t hierarchy = 0;
 
-            std::vector<XMLNode*> children;
+            std::vector<std::shared_ptr<XMLNode>> children;
             
             std::map<std::string, std::string> attributes;
 
-            XMLNode(XMLNode* parent, const std::string& name) : name(name), parent(parent)
+            XMLNode(std::shared_ptr<XMLNode> parent, const std::string& name) : name(name), parent(parent)
             {
                 if(parent != nullptr)
                 {
@@ -36,9 +36,9 @@ namespace portaible
                 }
             }
 
-            XMLNode* findChild(const std::string& name)
+            std::shared_ptr<XMLNode> findChild(const std::string& name)
             {
-                for(XMLNode* child : children)
+                for(std::shared_ptr<XMLNode> child : children)
                 {
                     if(child->name == name)
                     {
@@ -60,7 +60,7 @@ namespace portaible
 
 
                 string += this->getTabs() + openingTag + "\n";
-                for(XMLNode* child : children)
+                for(std::shared_ptr<XMLNode> child : children)
                 {
                     std::string tmp;
                     child->toString(tmp);
@@ -77,7 +77,7 @@ namespace portaible
                 return false;
             }
 
-            void addChild(XMLNode* child)
+            void addChild(std::shared_ptr<XMLNode> child)
             {
                 this->children.push_back(child);
             }
