@@ -7,7 +7,7 @@
 
 #include "RunnableDispatcherThread/RunnableDispatcherThread.hpp"
 #include "Channel/Channel.hpp"
-#include "Channel/ChannelRead.hpp"
+#include "Channel/ChannelData.hpp"
 #include "RunnableDispatcherThread/DispatcherThreadTimer.hpp"
 
 
@@ -106,10 +106,10 @@ namespace portaible
 
         template<typename T, typename Class>
         Channel<T> subscribe(TypedChannel<T>& channel,
-                    void (Class::*f)(ChannelRead<T>), Class* obj);
+                    void (Class::*f)(ChannelData<T>), Class* obj);
 
         template<typename T>
-        Channel<T> subscribe(TypedChannel<T>& channel, std::function<void (ChannelRead<T>)> function);
+        Channel<T> subscribe(TypedChannel<T>& channel, std::function<void (ChannelData<T>)> function);
         
 
 
@@ -135,17 +135,17 @@ namespace portaible
 
             template<typename T, typename Class>
             Channel<T> subscribe(const std::string& channelID,
-                        void (Class::*f)(ChannelRead<T>), Class* obj);
+                        void (Class::*f)(ChannelData<T>), Class* obj);
 
             template<typename T>
-            Channel<T> subscribe(const std::string& channelID, std::function<void (ChannelRead<T>)> function);
+            Channel<T> subscribe(const std::string& channelID, std::function<void (ChannelData<T>)> function);
 
             /* template<typename T, typename Class>
             Channel<T> subscribe(TypedChannel<T>& channel,
-                        void (Class::*f)(ChannelRead<T>), Class* obj);
+                        void (Class::*f)(ChannelData<T>), Class* obj);
 
             template<typename T>
-            Channel<T> subscribe(TypedChannel<T>& channel, std::function<void (ChannelRead<T>)> function);*/
+            Channel<T> subscribe(TypedChannel<T>& channel, std::function<void (ChannelData<T>)> function);*/
 
             
 

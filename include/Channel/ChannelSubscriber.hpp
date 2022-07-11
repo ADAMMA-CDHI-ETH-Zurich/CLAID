@@ -2,7 +2,7 @@
 #include <functional>
 
 #include "RunnableDispatcherThread/Subscriber.hpp"
-#include "ChannelRead.hpp"
+#include "ChannelData.hpp"
 #include "mutex"
 #include <iostream>
 
@@ -41,12 +41,12 @@ namespace portaible
             But what if we want to make sure really each and every data point is processed ? 
             Then we would need to change it a bit:
             When notifyNewDataIsAvailable is called by the calling thread (i.e., the one that posted),
-            this thread should also already perform the read and hand it the ChannelRead to the subscriber.
+            this thread should also already perform the read and hand it the ChannelData to the subscriber.
             In that case, we need to make a copy of the ChannelSubscriber everytime (copy the RunnableDispatcherThread)
             and assign the corresponding data to each copy.
 
             That, btw., is the reason why ChannelSubscriber does not just inherit from FunctionalRunnableWithParams.
-            If you think about it, ChannelSubscriber<T> is a Subscriber, and a FunctionalRunnableWithParams<void, ChannelRead<T>>.
+            If you think about it, ChannelSubscriber<T> is a Subscriber, and a FunctionalRunnableWithParams<void, ChannelData<T>>.
             But, FunctionalRunnableWithParams stores the data to call the function() asynchronously internally.
             Here, with ChannelSubscriber, we specifically did it different, to only read the newest data.
 
@@ -63,28 +63,28 @@ namespace portaible
     class ChannelSubscriber : public Subscriber, public Runnable
     {   
         public: 
-            std::function<void(ChannelRead<T>)> function;
+            std::function<void(ChannelData<T>)> function;
             TypedChannel<T>* channel;
             Time lastTimeStamp;
 
             void run()
             {
-                ChannelRead<T> channelRead = this->channel->read();
+                ChannelData<T> channelData = this->channel->read();
 
-                Time n = channelRead.getTimestamp();
+                Time n = channelData.getTimestamp();
 
                 bool equal = n == this->lastTimeStamp;
 
                 if (!equal)
                 {
                     this->lastTimeStamp = n;
-                    this->function(channelRead);
+                    this->function(channelData);
                 }
              }
 
         public:
             ChannelSubscriber(RunnableDispatcherThread* runnableDispatcherThread,
-	                  std::function<void (ChannelRead<T>)> function) : Subscriber(runnableDispatcherThread), function(function)
+	                  std::function<void (ChannelData<T>)> function) : Subscriber(runnableDispatcherThread), function(function)
             {
                 this->lastTimeStamp = Time::now();
             }

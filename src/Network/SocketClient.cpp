@@ -8,8 +8,13 @@ bool Network::SocketClient::write(BinaryData& data)
     
     *reinterpret_cast<size_t*>(tmp.data()) = size;
 
-    writeBytes(tmp);
-    writeBytes(data.getData());
+    if(!writeBytes(tmp))
+        return false;
+
+    if(!writeBytes(data.getData()))
+        return false;
+
+    return true;
 }
 
 bool Network::SocketClient::read(BinaryData& data)

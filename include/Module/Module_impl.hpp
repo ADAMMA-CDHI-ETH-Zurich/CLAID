@@ -10,14 +10,14 @@ namespace portaible
 
     template<typename T, typename Class>
     Channel<T> LocalModule::subscribe(TypedChannel<T>& channel,
-                void (Class::*f)(ChannelRead<T>), Class* obj)
+                void (Class::*f)(ChannelData<T>), Class* obj)
     {
-        std::function<void (ChannelRead<T>)> function = std::bind(f, obj, std::placeholders::_1);
+        std::function<void (ChannelData<T>)> function = std::bind(f, obj, std::placeholders::_1);
         return subscribe(channel, function);
     }
 
     template<typename T>
-    Channel<T> LocalModule::subscribe(TypedChannel<T>& channel, std::function<void (ChannelRead<T>)> function)
+    Channel<T> LocalModule::subscribe(TypedChannel<T>& channel, std::function<void (ChannelData<T>)> function)
     {
         ChannelSubscriber<T> channelSubscriber(&this->runnableDispatcherThread, function);
         return channel.subscribe(channelSubscriber);
@@ -46,14 +46,14 @@ inline Channel<T> Module::subscribe(const std::string& channelID)
 
 template<typename T, typename Class>
 Channel<T> Module::subscribe(const std::string& channelID,
-                void (Class::*f)(ChannelRead<T>), Class* obj)
+                void (Class::*f)(ChannelData<T>), Class* obj)
 {
-    std::function<void (ChannelRead<T>)> function = std::bind(f, obj, std::placeholders::_1);
+    std::function<void (ChannelData<T>)> function = std::bind(f, obj, std::placeholders::_1);
     return subscribe(channelID, function); 
 }
 
 template<typename T>
-Channel<T> Module::subscribe(const std::string& channelID, std::function<void (ChannelRead<T>)> function)
+Channel<T> Module::subscribe(const std::string& channelID, std::function<void (ChannelData<T>)> function)
 {
     // runtime::getChannel(channelID).subscribe()
     ChannelSubscriber<T> channelSubscriber(&this->runnableDispatcherThread, function);
@@ -62,14 +62,14 @@ Channel<T> Module::subscribe(const std::string& channelID, std::function<void (C
 /*
 template<typename T, typename Class>
         Channel<T> Module::subscribe(TypedChannel<T>& channel,
-                    void (Class::*f)(ChannelRead<T>), Class* obj)
+                    void (Class::*f)(ChannelData<T>), Class* obj)
 {
-    std::function<void (ChannelRead<T>)> function = std::bind(f, obj, std::placeholders::_1);
+    std::function<void (ChannelData<T>)> function = std::bind(f, obj, std::placeholders::_1);
     return subscribe(channel, function);
 }
 
 template<typename T>
-Channel<T> Module::subscribe(TypedChannel<T>& channel, std::function<void (ChannelRead<T>)> function)
+Channel<T> Module::subscribe(TypedChannel<T>& channel, std::function<void (ChannelData<T>)> function)
 {
     ChannelSubscriber<T> channelSubscriber(&this->runnableDispatcherThread, function);
     return channel.subscribe(channelSubscriber);

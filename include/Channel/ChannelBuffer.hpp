@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TaggedData.hpp"
+#include "ChannelData.hpp"
 #include <vector>
 #include <mutex>
 #include <thread>
@@ -12,7 +13,7 @@ namespace portaible
     template<typename T>
     class ChannelBuffer
     {
-        TaggedData<T> channelData[MAX_CHANNEL_BUFFER_SIZE];
+        ChannelData<T> channelData[MAX_CHANNEL_BUFFER_SIZE];
         
         size_t currentIndex = 0;
         size_t numElements = 0;
@@ -73,7 +74,7 @@ namespace portaible
 
 
 
-                this->channelData[this->currentIndex] = data;
+                this->channelData[this->currentIndex] = ChannelData<T>(data);
 
                 this->currentIndex++;
 
@@ -90,7 +91,7 @@ namespace portaible
 
             }
 
-            bool getLatest(TaggedData<T>& latest)
+            bool getLatest(ChannelData<T>& latest)
             {
 
                
@@ -124,7 +125,7 @@ namespace portaible
                 }
             }
             // TODO Very likely this contains a bug
-            bool getClosest(const Time& timestamp, TaggedData<T>& closest)
+            bool getClosest(const Time& timestamp, ChannelData<T>& closest)
             {
                 this->lockMutex();
 
@@ -138,7 +139,7 @@ namespace portaible
                 int index = -1;
                 for(int i = 0; i < this->numElements; i++)
                 {
-                    TaggedData<T>& TaggedData = this->channelData[i];
+                    ChannelData<T>& TaggedData = this->channelData[i];
                                         // std::cout << "Time stamps " << TaggedData.timestamp.toString() << " " << timestamp.toString() << "\n";
 
                  
@@ -192,14 +193,14 @@ namespace portaible
 
 
 
-            void getDataIntervall(const Time& min, const Time& max, std::vector<TaggedData<T> >& TaggedDataIntervall)
+            void getDataInterval(const Time& min, const Time& max, std::vector<ChannelData<T> >& channelDataInterval)
             {
-                TaggedDataIntervall.clear();
+                channelDataInterval.clear();
                 this->lockMutex(); 
                 // Iterate from oldest to newest.
                 for(int i = 0; i < this->numElements; i++)
                 {
-                    TaggedData<T>& TaggedData = this->channelData[relativeIndex(i)];
+                    ChannelData<T>& channelData = this->channelData[relativeIndex(i)];
                     // if(TaggedData.timestamp < min)
                     // {
                     //     continue;
@@ -212,7 +213,7 @@ namespace portaible
                     //     break;
                     // }
                   
-                    TaggedDataIntervall.push_back(TaggedData);
+                    channelDataInterval.push_back(channelData);
                    
                 }
 

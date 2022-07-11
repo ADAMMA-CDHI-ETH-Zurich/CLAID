@@ -45,21 +45,21 @@ namespace portaible
 
             }
 
-            ChannelRead<T> read()
+            ChannelData<T> read()
             {
                 verifyReadAccess();
                 return typedChannel->read();
             }
 
   
-            ChannelRead<T> read(const Time& timestamp,
+            ChannelData<T> read(const Time& timestamp,
                                 const Duration& tolerance = Duration::infinity())
             {
                 verifyReadAccess();
                 return typedChannel->read(timestamp, tolerance);
             }
 
-             ChannelRead<T> read(const uint32_t sequenceID,
+             ChannelData<T> read(const uint32_t sequenceID,
                                 const Duration& searchIntervall = Duration::seconds(1))
             {
                 verifyReadAccess();
@@ -82,9 +82,9 @@ namespace portaible
                 this->post(TaggedData<T>(data));
             }
 
-            void getChannelReadIntervall(const Time& min, const Time& max, std::vector<ChannelRead<T>>& channelReadIntervall)
+            void getChannelDataIntervall(const Time& min, const Time& max, std::vector<ChannelData<T>>& channelDataIntervall)
             {
-                return this->typedChannel->getChannelReadIntervall(min, max, channelReadIntervall);
+                return this->typedChannel->getChannelDataIntervall(min, max, channelDataIntervall);
             }
 
             const std::string& getChannelID() const
@@ -151,26 +151,26 @@ namespace portaible
                 return getDataTypeRTTIString<T>();
             }
             
-            ChannelRead<T> read()
+            ChannelData<T> read()
             {
-                TaggedData<T> latest;
+                ChannelData<T> latest;
                 if(this->channelBuffer.getLatest(latest))
                 {
-                    return ChannelRead<T>(latest);
+                    return latest;
                 }
                 else
                 {
-                    return ChannelRead<T>::InvalidChannelRead();
+                    return ChannelData<T>::InvalidChannelData();
                 }
             }
 
-            ChannelRead<T> read(const Time& timestamp,
+            ChannelData<T> read(const Time& timestamp,
                                 const Duration& tolerance = Duration::infinity())
             {
-                TaggedData<T> closest;
+                ChannelData<T> closest;
                 if(!this->channelBuffer.getClosest(timestamp, closest))
                 {
-                    return ChannelRead<T>::InvalidChannelRead();
+                    return ChannelData<T>::InvalidChannelData();
                 }
                 else
                 {
@@ -179,34 +179,34 @@ namespace portaible
                     // TODO are data types correct ? Is time/duration implementation correct ? 
                     if(abs(difference) <= tolerance.getNanoSeconds())
                     {
-                        return ChannelRead<T>(closest);
+                        return closest;
                     }
                     else
                     {
-                        return ChannelRead<T>::InvalidChannelRead();
+                        return ChannelData<T>::InvalidChannelData();
                     }
                 }
             }
 
-            ChannelRead<T> read(const uint32_t sequenceID,
+            ChannelData<T> read(const uint32_t sequenceID,
                                 const Duration& searchIntervall)
             {
                 Time newestTimeStamp = this->read()->timestamp;
 
-                std::vector<ChannelRead<T>> channelReadIntervall;
+                std::vector<ChannelData<T>> channelDataIntervall;
 
-                this->getChannelReadIntervall(newestTimeStamp - searchIntervall, newestTimeStamp, channelReadIntervall);
+                this->getChannelDataIntervall(newestTimeStamp - searchIntervall, newestTimeStamp, channelDataIntervall);
 
-                for(ChannelRead<T>& channelRead : channelReadIntervall)
+                for(ChannelData<T>& channelData : channelDataIntervall)
                 {
-                    if(channelRead->sequenceID == sequenceID)
+                    if(channelData->sequenceID == sequenceID)
                     {
-                        return channelRead;
+                        return channelData;
                     }
                 }
 
                 // No data with given sequence ID found.
-                return ChannelRead<T>::InvalidChannelRead();
+                return ChannelData<T>::InvalidChannelData();
             }
            
             Channel<T> subscribe()
@@ -227,16 +227,12 @@ namespace portaible
                 return Channel<T>(this, ChannelAccessRights::WRITE);
             }
 
-            void getChannelReadIntervall(const Time& min, const Time& max, std::vector<ChannelRead<T> >& channelReadIntervall)
+            void getChannelDataInterval(const Time& min, const Time& max, std::vector<ChannelData<T> >& channelDataInterval)
             {
-                channelReadIntervall.clear();
-                std::vector<TaggedData<T> > TaggedDataIntervall;
-                this->channelBuffer.getDataIntervall(min, max, TaggedDataIntervall);
+                channelDataInterval.clear();
+                this->channelBuffer.getDataInterval(min, max, channelDataInterval);
 
-                for(TaggedData<T>& TaggedData : TaggedDataIntervall)
-                {
-                    channelReadIntervall.push_back(ChannelRead<T>(TaggedData));
-                }
+           
             }
 
             const std::string& getChannelID() const
@@ -244,7 +240,7 @@ namespace portaible
                 return this->channelID;
             }
 
-            // ChannelRead<T> read(const Time& timestamp, SlotQueryMode mode = NEAREST_SLOT,
+            // ChannelData<T> read(const Time& timestamp, SlotQueryMode mode = NEAREST_SLOT,
             //                     const Duration& tolerance = Duration::infinity())
             //                     {
 

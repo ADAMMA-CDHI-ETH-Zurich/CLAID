@@ -5,7 +5,7 @@
 namespace portaible
 {
     template<typename T>
-    class ChannelRead
+    class ChannelData
     {
         private:
             TaggedData<T> data;
@@ -20,24 +20,24 @@ namespace portaible
             // The channel buffer that holds the TaggedData that we are using.
             // More specifically: Data contains a shared_ptr<T> with the underlying data.
             // 
-            ChannelBuffer<T>* holderBuffer;
+            //ChannelBuffer<T>* holderBuffer;
 
         public:
 
-            static ChannelRead InvalidChannelRead()
+            static ChannelData InvalidChannelData()
             {
-                ChannelRead channelRead;
-                channelRead.valid = false;
-                return channelRead;
+                ChannelData channelData;
+                channelData.valid = false;
+                return channelData;
             }
 
-            ChannelRead() : valid(false)
+            ChannelData() : valid(false)
             {
 
             }
 
 
-            ChannelRead(TaggedData<T>& data) : data(data), valid(true)
+            ChannelData(TaggedData<T>& data) : data(data), valid(true)
             {
 
             }

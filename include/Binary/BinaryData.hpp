@@ -53,7 +53,7 @@ namespace portaible
                 return this->data;
             }
 
-            const size_t& getNumBytes()
+            size_t getNumBytes()
             {
                 return this->data.size();
             }

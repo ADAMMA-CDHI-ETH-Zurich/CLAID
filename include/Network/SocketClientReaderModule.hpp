@@ -17,7 +17,7 @@ namespace portaible
     {
         public: 
             SocketClientReaderModule();
-            Channel<Request> subscribeToLocalRequestChannel(ChannelSubscriber<Request> subscriber, std::function<void (ChannelRead<Request>)> function);
+            Channel<Request> subscribeToLocalRequestChannel(ChannelSubscriber<Request> subscriber, std::function<void (ChannelData<Request>)> function);
 
 
         private:
