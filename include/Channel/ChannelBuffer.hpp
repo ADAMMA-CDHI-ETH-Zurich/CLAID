@@ -214,10 +214,17 @@ namespace portaible
                     // }
                   
                     channelDataInterval.push_back(channelData);
+
+
                    
                 }
 
                 this->unlockMutex(); 
+            }
+
+            void serialize()
+            {
+
             }
         
     };

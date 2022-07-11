@@ -20,7 +20,6 @@ namespace portaible
 
             TaggedData(const T& data) : TaggedDataBase(Time::now(), 0)
             {
-
                 this->data = std::shared_ptr<T>(new T(data));
             }
     

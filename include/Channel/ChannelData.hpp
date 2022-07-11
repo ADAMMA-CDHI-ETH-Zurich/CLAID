@@ -1,9 +1,12 @@
 #pragma once
 
 #include "TaggedData.hpp"
-
+#include "ChannelBuffer.hpp"
 namespace portaible
 {
+    template<typename T>
+    class ChannelBuffer;
+
     template<typename T>
     class ChannelData
     {
@@ -17,10 +20,10 @@ namespace portaible
             bool valid;
 
 
-            // The channel buffer that holds the TaggedData that we are using.
-            // More specifically: Data contains a shared_ptr<T> with the underlying data.
-            // 
-            //ChannelBuffer<T>* holderBuffer;
+            // The channel buffer that created us.
+            // More specifically: We are an entry in the ChannelData[MAX_CHANNEL_BUFFER_SIZE] channelBuffer
+            // array of the associated ChannelBuffer.
+            ChannelBuffer<T>* holderBuffer;
 
         public:
 
@@ -37,9 +40,9 @@ namespace portaible
             }
 
 
-            ChannelData(TaggedData<T>& data) : data(data), valid(true)
+            ChannelData(ChannelBuffer<T>* holderBuffer, TaggedData<T>& data) : holderBuffer(holderBuffer), data(data), valid(true)
             {
-
+                holderBuffer->serialize();
             }
 
 

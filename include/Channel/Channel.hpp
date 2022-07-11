@@ -189,15 +189,15 @@ namespace portaible
             }
 
             ChannelData<T> read(const uint32_t sequenceID,
-                                const Duration& searchIntervall)
+                                const Duration& searchInterval)
             {
                 Time newestTimeStamp = this->read()->timestamp;
 
-                std::vector<ChannelData<T>> channelDataIntervall;
+                std::vector<ChannelData<T>> channelDataInterval;
 
-                this->getChannelDataIntervall(newestTimeStamp - searchIntervall, newestTimeStamp, channelDataIntervall);
+                this->getChannelDataInterval(newestTimeStamp - searchInterval, newestTimeStamp, channelDataInterval);
 
-                for(ChannelData<T>& channelData : channelDataIntervall)
+                for(ChannelData<T>& channelData : channelDataInterval)
                 {
                     if(channelData->sequenceID == sequenceID)
                     {
