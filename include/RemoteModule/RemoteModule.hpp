@@ -14,7 +14,16 @@ namespace portaible
 
         void onData()
         {
+            onPublish();
+            onSubscribe();
+        }
 
+        void onPublish(const std::string& channelID)
+        {
+            // Publish means that the Module running in the remote RunTime, that we mirror,
+            // published a channel. Thus, we need to publish it aswell..
+            // How do we do that?
+            Channel<Untyped> = this->publish<Untyped>(channelID);
         }
     };
 }

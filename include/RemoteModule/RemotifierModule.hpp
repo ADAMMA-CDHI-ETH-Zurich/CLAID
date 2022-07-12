@@ -18,6 +18,20 @@ namespace portaible
             // the RemoteModule will forward this to the remote connected runtime accordingly.
             Module* localModule;
 
+            void onPublish(const std::string& channelID)
+            {
+                // Publish in remote RunTime
+            }
+
+            void onSubscribe(const std::string& channelID)
+            {
+                // Do I need to do anything here ? 
+                // Tell Remote module to subscribe to channel ? 
+            }
+
+            // onData
+
+
         public:
 
             void initialize()

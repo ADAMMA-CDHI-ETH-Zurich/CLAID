@@ -1,6 +1,8 @@
 #include "Channel.hpp"
+#include "Untyped.hpp"
 #include <map>
 
+// TODO: Add Mutex when adding channels ? 
 namespace portaible
 {
     class ChannelManager

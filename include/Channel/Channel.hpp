@@ -66,20 +66,32 @@ namespace portaible
                 return typedChannel->read(sequenceID, searchIntervall);
             }
 
+   
+            // Use new template parameter U to allow to remove this
+            // function for Untyped channels.
+            // It would not be possible to use T, because we need to write
+            // template<typename> in order to use std::enable_if
+            
+            template <typename U = T,
+            typename std::enable_if<!std::is_same<U, Untyped>::value>::type>
             void post(TaggedData<T> data)
             {
                 verifyWriteAccess();
                 this->typedChannel->post(data);
             }
 
-            void post(T& data)
+            template <typename U = T,
+            typename std::enable_if<!std::is_same<U, Untyped>::value>::type>
+            void post(U& data)
             {
-                this->post(TaggedData<T>(data));
+                this->post(TaggedData<U>(data));
             }
 
-            void post(std::shared_ptr<T> data)
+            template <typename U = T,
+            typename std::enable_if<!std::is_same<U, Untyped>::value>::type>
+            void post(std::shared_ptr<U> data)
             {
-                this->post(TaggedData<T>(data));
+                this->post(TaggedData<U>(data));
             }
 
             void getChannelDataIntervall(const Time& min, const Time& max, std::vector<ChannelData<T>>& channelDataIntervall)
@@ -94,28 +106,26 @@ namespace portaible
 
     };
     
-
+    // TODO: Add mutex when subscribing / unsubscribing
     template<typename T>
     class TypedChannel : public ChannelBase
     {
 
         private:
-            ChannelBuffer<T> channelBuffer;
-            std::vector<ChannelSubscriber<T> > channelSubscribers;
-            std::string channelID;
+       
 
             void signalNewDataToSubscribers()
             {
-                for(ChannelSubscriber<T>& channelSubscriber : channelSubscribers)
+                for(ChannelSubscriberBase*& channelSubscriber : channelSubscribers)
                 {
-                    channelSubscriber.signalNewDataIsAvailable();
+                    channelSubscriber->signalNewDataIsAvailable();
                 } 
             }
 
         public:
       
             
-            TypedChannel(const std::string& channelID) : channelID(channelID)
+            TypedChannel(const std::string& channelID) : ChannelBase(channelID)
             {
 
             }
@@ -125,16 +135,32 @@ namespace portaible
 
             }
 
-            void post(const T& data)
+
+            template <class U = T,
+            typename std::enable_if<!std::is_same<U, Untyped>::value>::type>
+            void post(const U& data) 
             {
-                this->post(TaggedData<T>(data));
+                this->post(TaggedData<U>(data));
+
             }
 
+            // Use new template parameter U to allow to remove this
+            // function for Untyped channels.
+            // It would not be possible to use T, because we need to write
+            // template<typename> in order to use std::enable_if
+            template <typename U = T,
+            typename std::enable_if<!std::is_same<U, Untyped>::value>::type>
             void post(std::shared_ptr<T> data)
             {
                 this->post(TaggedData<T>(data));
             }
 
+            // Use new template parameter U to allow to remove this
+            // function for Untyped channels.
+            // It would not be possible to use T, because we need to write
+            // template<typename> in order to use std::enable_if
+            template <typename U = T,
+            typename std::enable_if<!std::is_base_of<U, Untyped>::value>::type>
             void post(TaggedData<T> data)
             {
                 this->channelBuffer.insert(data);
@@ -150,11 +176,49 @@ namespace portaible
             {
                 return getDataTypeRTTIString<T>();
             }
+
+        
+            ChannelBuffer<T>* castBuffer()
+            {
+                if(this->channelBuffer->isTyped())
+                {
+                    // What if T is Untyped although the buffer is already typed.. ? 
+                    // We should be able to cast ChannelBufferBase* to ChannelBuffer<Untyped>
+                    // anyways, EVEN if ChannelBufferBase* is not a ChannelBuffer<Untyped>, i.e.
+                    // it was not created with channelBuffer = new ChannelBuffer<Untyped> but for example
+                    // channelBuffer = new ChannelBuffer<int>.
+
+                    // Why does it work? Because ChannelBuffer<T> and ChannelBuffer<Untyped> do not contain ANY
+                    // additional variables compared to ChannelBufferBase.
+                    // Thus, ChannelBuffer<T> and ChannelBuffer<Untyped> function as a "view" on the underlying data
+                    // of ChannelDataBase.
+                    return static_cast<ChannelBuffer<T>*>(this->channelBuffer);
+
+                }
+                else
+                {
+                    // if T is NOT untyped, this should be an exception. How can we do a typed access
+                    // while the buffer is untyped ? ChannelManager must have messed up in casting the channel.
+
+                    if(!std::is_same<T, Untyped>::value)
+                    {
+                        PORTAIBLE_THROW(Exception, "Error, ChannelBuffer is untyped, however we got a typed Channel object"
+                        "that tried to acess data. This should not happen, as normally when we get the typed Channel, the ChannelBuffer should have been converted"
+                        "to a typed one. MakeTyped Channel was not executed on Channel?");
+                    }
+
+                    return static_cast<ChannelBuffer<T>*>(this->channelBuffer);
+
+                    //return static_cast<ChannelBuffer<Untyped>*>(this->channelBuffer);
+                }
+                // If T is Untyped -> then ? 
+                // 
+            }
             
             ChannelData<T> read()
             {
                 ChannelData<T> latest;
-                if(this->channelBuffer.getLatest(latest))
+                if(castBuffer()->getLatest(latest))
                 {
                     return latest;
                 }
@@ -168,7 +232,7 @@ namespace portaible
                                 const Duration& tolerance = Duration::infinity())
             {
                 ChannelData<T> closest;
-                if(!this->channelBuffer.getClosest(timestamp, closest))
+                if(!castBuffer()->getClosest(timestamp, closest))
                 {
                     return ChannelData<T>::InvalidChannelData();
                 }
@@ -216,8 +280,10 @@ namespace portaible
 
             Channel<T> subscribe(ChannelSubscriber<T> channelSubscriber)
             {
-                channelSubscriber.setChannel(this);
-                this->channelSubscribers.push_back(channelSubscriber);
+                ChannelSubscriber<T>* typedSubscriber = new ChannelSubscriber<T>(channelSubscriber);
+                typedSubscriber->setChannel(this);
+
+                this->channelSubscribers.push_back(static_cast<ChannelSubscriberBase*>(typedSubscriber));
                 
                 return subscribe();
             }
@@ -235,10 +301,7 @@ namespace portaible
            
             }
 
-            const std::string& getChannelID() const
-            {
-                return this->channelID;
-            }
+
 
             // ChannelData<T> read(const Time& timestamp, SlotQueryMode mode = NEAREST_SLOT,
             //                     const Duration& tolerance = Duration::infinity())

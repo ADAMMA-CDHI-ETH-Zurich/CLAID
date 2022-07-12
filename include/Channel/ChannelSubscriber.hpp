@@ -55,12 +55,21 @@ namespace portaible
     Data on channels is stored in a RingBuffer. New data is added to the next slot.
     The RingBuffer itself is thread safe, as it uses mutex.
 
-
     
   
     */
+
+    class ChannelSubscriberBase : public Subscriber, public Runnable
+    {
+        public:
+            ChannelSubscriberBase(RunnableDispatcherThread* runnableDispatcherThread) : Subscriber(runnableDispatcherThread)
+            {
+            
+            }
+    };
+
     template<typename T>
-    class ChannelSubscriber : public Subscriber, public Runnable
+    class ChannelSubscriber : public ChannelSubscriberBase
     {   
         public: 
             std::function<void(ChannelData<T>)> function;
@@ -84,7 +93,7 @@ namespace portaible
 
         public:
             ChannelSubscriber(RunnableDispatcherThread* runnableDispatcherThread,
-	                  std::function<void (ChannelData<T>)> function) : Subscriber(runnableDispatcherThread), function(function)
+	                  std::function<void (ChannelData<T>)> function) : ChannelSubscriberBase(runnableDispatcherThread), function(function)
             {
                 this->lastTimeStamp = Time::now();
             }

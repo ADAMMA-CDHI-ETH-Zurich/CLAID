@@ -2,13 +2,71 @@
 
 #include "TaggedData.hpp"
 #include "ChannelBuffer.hpp"
+#include "Untyped.hpp"
+#include "Binary/BinaryData.hpp"
 namespace portaible
 {
+    // Forward declaration
     template<typename T>
     class ChannelBuffer;
 
+    // Not a DataBase, its just the base class for ChannelData ;)
+    class ChannelDataBase
+    {
+        protected:
+            bool valid;
+
+            bool isValid() const
+            {
+                return this->valid;
+            }
+
+            ChannelDataBase(bool valid) : valid(valid)
+            {
+
+            }
+    };
+
     template<typename T>
-    class ChannelData
+    class ChannelData;
+
+    template<>
+    class ChannelData<Untyped> : public ChannelDataBase
+    {
+
+        private:
+            TaggedData<BinaryData> taggedBinaryData;
+        // We hold ? 
+        // Binary data ? 
+
+        public:
+
+            static ChannelData InvalidChannelData()
+            {
+                ChannelData channelData;
+                channelData.valid = false;
+                return channelData;
+            }
+
+            ChannelData() : ChannelDataBase(false)
+            {
+
+            }
+
+            ChannelData(TaggedData<BinaryData> taggedBinaryData) : ChannelDataBase(true), taggedBinaryData(taggedBinaryData)
+            {
+            }
+
+
+        // ChannelData(ChannelBuffer<T>* holderBuffer, TaggedData<T>& data) : ChannelDataBase(true), holderBuffer(holderBuffer), data(data)
+        // {
+        //     holderBuffer->serialize();
+        // }
+    };
+
+    // Template specialization
+    template<typename T>
+    class ChannelData : public ChannelDataBase
     {
         private:
             TaggedData<T> data;
@@ -17,7 +75,6 @@ namespace portaible
                 return data;
             }
 
-            bool valid;
 
 
             // The channel buffer that created us.
@@ -34,13 +91,12 @@ namespace portaible
                 return channelData;
             }
 
-            ChannelData() : valid(false)
+            ChannelData() : ChannelDataBase(false)
             {
-
             }
 
 
-            ChannelData(ChannelBuffer<T>* holderBuffer, TaggedData<T>& data) : holderBuffer(holderBuffer), data(data), valid(true)
+            ChannelData(ChannelBuffer<T>* holderBuffer, TaggedData<T>& data) : ChannelDataBase(true), holderBuffer(holderBuffer), data(data)
             {
                 holderBuffer->serialize();
             }
@@ -68,9 +124,6 @@ namespace portaible
                 return this->data.timestamp;
             }
 
-            bool isValid() const
-            {
-                return this->valid;
-            }
+            
     };
 }

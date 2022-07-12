@@ -1,5 +1,9 @@
+#pragma once
+
 #include <string>
 #include <unistd.h>
+
+#include "ChannelBufferBase.hpp"
 
 namespace portaible
 {
@@ -21,9 +25,31 @@ namespace portaible
                 
             }
 
+            ChannelBase(std::string channelID) : channelID(channelID)
+            {
+
+            }
+
             virtual ~ChannelBase()
             {
 
             }
+
+            const std::string& getChannelID() const
+            {
+                return this->channelID;
+            }
+
+            virtual void putBinaryData(TaggedData<BinaryData> binaryData)
+            {
+
+            }
+
+
+        protected:
+            std::vector<ChannelSubscriberBase*> channelSubscribers;
+            std::string channelID;
+
+            ChannelBufferBase* channelBuffer;
     };
 }
