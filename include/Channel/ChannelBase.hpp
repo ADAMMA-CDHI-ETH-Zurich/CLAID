@@ -40,11 +40,6 @@ namespace portaible
                 return this->channelID;
             }
 
-            virtual void putBinaryData(TaggedData<BinaryData> binaryData)
-            {
-
-            }
-
 
         protected:
             std::vector<ChannelSubscriberBase*> channelSubscribers;

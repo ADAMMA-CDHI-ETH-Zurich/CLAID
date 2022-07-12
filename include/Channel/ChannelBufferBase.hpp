@@ -24,6 +24,7 @@ namespace portaible
                 for(size_t i = 0; i < MAX_CHANNEL_BUFFER_SIZE; i++)
                 {
                     this->channelBufferElements[i].channelData = nullptr;
+                    this->channelBufferElements[i].untypedData = nullptr;
                     this->channelBufferElements[i].binaryData = nullptr;
                 }
             }
@@ -96,7 +97,7 @@ namespace portaible
                 {
                     delete this->channelBufferElements[this->currentIndex].binaryData;
                 }
-                this->channelBufferElements[this->currentIndex].binaryData = new ChannelData<Untyped>(binaryData);
+                this->channelBufferElements[this->currentIndex].binaryData = new TaggedData<BinaryData>(binaryData);
 
                 // TODO: if typed, deserialize
                 // Do we have to ? 
@@ -162,8 +163,9 @@ namespace portaible
                         tmpIndex = currentIndex - 1;
                     }
 
-
+                    printf("get 1\n");
                     latest = derived->getDataByIndex(tmpIndex);
+                    printf("get 2\n");
                     this->unlockMutex();
                     return true;
                 }
@@ -184,7 +186,7 @@ namespace portaible
                 int index = -1;
                 for(int i = 0; i < this->numElements; i++)
                 {
-                    ChannelData<T>& TaggedData = derived->getDataByIndex(i);
+                    ChannelData<T>& taggedData = derived->getDataByIndex(i);
                                         // std::cout << "Time stamps " << TaggedData.timestamp.toString() << " " << timestamp.toString() << "\n";
 
                  
@@ -192,12 +194,12 @@ namespace portaible
                     // uint64_t a = x.count();
                     // uint64_t = minimalDifference.getNanoSeconds();
 
-                    if(TaggedData.timestamp.toUnixNS() > timestamp.toUnixNS())
+                    if(taggedData.getTimestamp().toUnixNS() > timestamp.toUnixNS())
                     {
                         continue;
                     }
 
-                    int64_t diff = abs(static_cast<long>(TaggedData.timestamp.toUnixNS() - timestamp.toUnixNS()));
+                    int64_t diff = abs(static_cast<long>(taggedData.getTimestamp().toUnixNS() - timestamp.toUnixNS()));
                     if(diff <= minimalDifference)
                     {
                         minimalDifference = diff;
@@ -245,17 +247,21 @@ namespace portaible
                 for(int i = 0; i < this->numElements; i++)
                 {
                     ChannelData<T>& channelData = derived->getDataByIndex(relativeIndex(i));
-                    // if(TaggedData.timestamp < min)
-                    // {
-                    //     continue;
-                    // }
 
-                    // if(TaggedData.timestamp > max)
-                    // {
-                    //     // As the data is sorted from oldest to newest, if our timestamp is higher then max,
-                    //     // this means that timestamps of all following data will be higher then max.
-                    //     break;
-                    // }
+
+                    // TODO: THIS PROBABLY NEEDS A FIX? 
+                    // WAS COMMENTED WHEN TESTING CHANNELSYNCHRONIZER, I UNCOMMENTED IT WITHOUT CHECKING FOR BUGS.
+                    if(channelData.getTimestamp() < min)
+                    {
+                        continue;
+                    }
+
+                    if(channelData.getTimestamp() > max)
+                    {
+                        // As the data is sorted from oldest to newest, if our timestamp is higher then max,
+                        // this means that timestamps of all following data will be higher then max.
+                        break;
+                    }
                   
                     channelDataInterval.push_back(channelData);
 

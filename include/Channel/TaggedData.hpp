@@ -53,5 +53,10 @@ namespace portaible
             {
 
             }
+
+            TaggedDataBase getHeader()
+            {
+                return *static_cast<TaggedDataBase*>(this);
+            }
     };
 }

@@ -9,11 +9,32 @@ namespace portaible
     {
         private:
             std::map<std::string, ChannelBase*> typedChannels;
+            
 
+            
             template<typename T>
-            bool canCastChannel(ChannelBase* channel)
+            typename std::enable_if<!std::is_same<T, Untyped>::value,bool>::type
+            canCastChannel(ChannelBase* channel)
             {              
                 return channel->getChannelDataTypeUniqueIdentifier() == getDataTypeUniqueIdentifier<T>();
+            }
+
+            template<typename T>
+            typename std::enable_if<std::is_same<T, Untyped>::value,bool>::type
+            canCastChannel(ChannelBase* channel)
+            {              
+                // Every channel can be casted to Untyped channel.
+                // Why, you ask? Even that TypedChannel<T> does not inherit from Channel<Untyped>?
+                // Well, that's because TypedChannel<T> does not introduce any new member variables
+                // compared to ChannelBase. In other wirts, TypedChannel<T> extends ChannelBase ONLY
+                // by FUNCTIONS and NOT by variables.
+                // Thus, TypedChannel<T> merely acts as a "view" to the underlying data.
+                
+                // But wait, doesn't that mean we could cast every TypedChannel<T> to every other
+                // TypedChannel<T>? Well yes, theoretically. However, when you'd call post you might
+                // end up inserting wrong data into the ChannelBuffer. That's why for 
+                // TypedChannel<Untyped> (and Channel<Untyped>), the post function is disabled.
+                return true;
             }
 
             template<typename T>

@@ -21,6 +21,7 @@ namespace portaible
     template<>
     class ChannelBuffer<Untyped> : public ChannelBufferBase
     {
+        public:
         ChannelBuffer() : ChannelBufferBase()
         {
             this->typed = false;
@@ -33,14 +34,34 @@ namespace portaible
 
         ChannelData<Untyped>& getDataByIndex(size_t index)
         {
-            return *static_cast<ChannelData<Untyped>*>(this->getElement(index).binaryData);
+            // TODO FIX HERE 
+            // binary data is nullptr right
+            return *static_cast<ChannelData<Untyped>*>(this->getElement(index).untypedData);
+        }
+        
+        bool getLatest(ChannelData<Untyped>& latest)
+        {
+            return ChannelBufferBase::getLatest<Untyped>(this, latest);
+        }
+        // TODO Very likely this contains a bug
+        bool getClosest(const Time& timestamp, ChannelData<Untyped>& closest)
+        {
+            return ChannelBufferBase::getClosest<Untyped>(this, timestamp, closest);
+            
+        }
+
+
+
+        void getDataInterval(const Time& min, const Time& max, std::vector<ChannelData<Untyped> >& channelDataInterval)
+        {
+            ChannelBufferBase::getDataInterval<Untyped>(this, min, max, channelDataInterval);
         }
     };
 
     template<typename T>
     class ChannelBuffer : public ChannelBufferBase
     {
-        private:
+        public:
 
          
 
@@ -57,7 +78,6 @@ namespace portaible
             
             
 
-        public:
 
             ChannelData<T>& getDataByIndex(size_t index)
             {
@@ -72,11 +92,10 @@ namespace portaible
 
                 // Is this thread safe?
                 // Yes.. as long as we create copies in getLatest, getClosest and getDataInterval.
-                if(this->getElement(this->currentIndex).channelData != nullptr)
-                {
-                    delete this->getElement(this->currentIndex).channelData;
-                }
+                this->getElement(this->currentIndex).clear();
+
                 this->getElement(this->currentIndex).channelData = new ChannelData<T>(data);
+                this->getElement(this->currentIndex).untypedData = new ChannelData<Untyped>(data.getHeader());
 
                 // Do not convert to binary data / serialize. It might not be needed.
 

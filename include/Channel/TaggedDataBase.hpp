@@ -15,7 +15,6 @@ namespace portaible
             timestamp(timestamp),
             sequenceID(sequenceID) 
         {
-                
         }
 
 

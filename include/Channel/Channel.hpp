@@ -72,24 +72,24 @@ namespace portaible
             // It would not be possible to use T, because we need to write
             // template<typename> in order to use std::enable_if
             
-            template <typename U = T,
-            typename std::enable_if<!std::is_same<U, Untyped>::value>::type>
-            void post(TaggedData<T> data)
+            template <typename U = T>
+            typename std::enable_if<!std::is_same<U, Untyped>::value>::type
+            post(TaggedData<T>& data)
             {
                 verifyWriteAccess();
                 this->typedChannel->post(data);
             }
 
-            template <typename U = T,
-            typename std::enable_if<!std::is_same<U, Untyped>::value>::type>
-            void post(U& data)
+            template <typename U = T>
+            typename std::enable_if<!std::is_same<U, Untyped>::value>::type
+            post(U& data)
             {
                 this->post(TaggedData<U>(data));
             }
 
-            template <typename U = T,
-            typename std::enable_if<!std::is_same<U, Untyped>::value>::type>
-            void post(std::shared_ptr<U> data)
+            template <typename U = T>
+            typename std::enable_if<!std::is_same<U, Untyped>::value>::type
+            post(std::shared_ptr<U> data)
             {
                 this->post(TaggedData<U>(data));
             }
@@ -127,7 +127,8 @@ namespace portaible
             
             TypedChannel(const std::string& channelID) : ChannelBase(channelID)
             {
-
+                // If T is Untyped, ChannelBuffer will be Untyped automatically.
+                this->channelBuffer = new ChannelBuffer<T>();
             }
 
             virtual ~TypedChannel()
@@ -136,9 +137,9 @@ namespace portaible
             }
 
 
-            template <class U = T,
-            typename std::enable_if<!std::is_same<U, Untyped>::value>::type>
-            void post(const U& data) 
+            template <typename U = T>
+            typename std::enable_if<!std::is_same<U, Untyped>::value>::type
+            post(const U& data) 
             {
                 this->post(TaggedData<U>(data));
 
@@ -148,9 +149,9 @@ namespace portaible
             // function for Untyped channels.
             // It would not be possible to use T, because we need to write
             // template<typename> in order to use std::enable_if
-            template <typename U = T,
-            typename std::enable_if<!std::is_same<U, Untyped>::value>::type>
-            void post(std::shared_ptr<T> data)
+            template <typename U = T>
+            typename std::enable_if<!std::is_same<U, Untyped>::value>::type
+            post(std::shared_ptr<T> data)
             {
                 this->post(TaggedData<T>(data));
             }
@@ -159,11 +160,11 @@ namespace portaible
             // function for Untyped channels.
             // It would not be possible to use T, because we need to write
             // template<typename> in order to use std::enable_if
-            template <typename U = T,
-            typename std::enable_if<!std::is_base_of<U, Untyped>::value>::type>
-            void post(TaggedData<T> data)
+            template <typename U = T>
+            typename std::enable_if<!std::is_same<U, Untyped>::value>::type
+            post(TaggedData<T> data)
             {
-                this->channelBuffer.insert(data);
+                this->castBuffer()->insert(data);
                 this->signalNewDataToSubscribers();
             }           
 

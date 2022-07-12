@@ -25,6 +25,15 @@ namespace portaible
             {
 
             }
+
+        public:
+            virtual ~ChannelDataBase()
+            {
+                
+            }
+
+            virtual void getBinaryData(BinaryData& binaryData) = 0;
+
     };
 
     template<typename T>
@@ -35,9 +44,13 @@ namespace portaible
     {
 
         private:
-            TaggedData<BinaryData> taggedBinaryData;
-        // We hold ? 
-        // Binary data ? 
+            // Why not store TaggedData<BinaryData> ?
+            // Because we want to serialize only when we really need it.
+            // If someone subscribed to a channel untyped, maybe he just wants
+            // to retrieve information about individual elements but not necessarily
+            // serialize them. If the BinaryData is required, it can be retrieved using
+            // getSerializedData().
+            TaggedDataBase header;         
 
         public:
 
@@ -53,11 +66,26 @@ namespace portaible
 
             }
 
-            ChannelData(TaggedData<BinaryData> taggedBinaryData) : ChannelDataBase(true), taggedBinaryData(taggedBinaryData)
+            ChannelData(TaggedDataBase header) : ChannelDataBase(true), header(header)
             {
             }
 
+            
 
+            const Time& getTimestamp() const
+            {
+                return this->header.timestamp;
+            }
+
+            void getBinaryData(BinaryData& binaryData) 
+            {
+                
+            }
+
+            virtual TaggedDataBase getHeader()
+            {
+                return this->header;
+            }
         // ChannelData(ChannelBuffer<T>* holderBuffer, TaggedData<T>& data) : ChannelDataBase(true), holderBuffer(holderBuffer), data(data)
         // {
         //     holderBuffer->serialize();
@@ -96,11 +124,20 @@ namespace portaible
             }
 
 
-            ChannelData(ChannelBuffer<T>* holderBuffer, TaggedData<T>& data) : ChannelDataBase(true), holderBuffer(holderBuffer), data(data)
+            ChannelData(TaggedData<T>& data) : ChannelDataBase(true), data(data)
             {
                 holderBuffer->serialize();
             }
 
+            void getBinaryData(BinaryData& binaryData) 
+            {
+                
+            }
+
+            TaggedDataBase getHeader()
+            {
+                return *static_cast<TaggedDataBase*>(&data);
+            }
 
             operator const TaggedData<T>&() const 
             { 

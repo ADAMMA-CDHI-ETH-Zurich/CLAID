@@ -38,6 +38,26 @@ namespace portaible
         // And store typed ChannelBufferElements in the buffer of ChannelBuffer.
         
         ChannelDataBase* channelData = nullptr; // Typed data
-        ChannelData<Untyped>* binaryData = nullptr;  // Untyped data
+        ChannelData<Untyped>* untypedData = nullptr;  // Untyped data
+        TaggedData<BinaryData>* binaryData = nullptr;
+
+        void clear()
+        {
+            deleteIfNotNull(channelData);
+            deleteIfNotNull(untypedData);
+            deleteIfNotNull(binaryData);
+        }
+
+        private:
+            template<typename T>
+            void deleteIfNotNull(T*& ptr)
+            {
+                if(ptr != nullptr)
+                {
+                    delete ptr;
+                }
+                ptr = nullptr;
+            }
+
     };
 }
