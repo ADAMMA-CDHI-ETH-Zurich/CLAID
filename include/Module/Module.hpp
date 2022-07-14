@@ -9,7 +9,7 @@
 #include "Channel/Channel.hpp"
 #include "Channel/ChannelData.hpp"
 #include "RunnableDispatcherThread/DispatcherThreadTimer.hpp"
-
+#include "RunnableDispatcherThread/FunctionRunnableWithParams.hpp"
 
 #include "RunnableDispatcherThread/FunctionRunnable.hpp"
 #include "ClassFactory/ClassFactory.hpp"
@@ -50,6 +50,9 @@ namespace portaible
                 this->registerPeriodicFunction(function, periodInMs);
             }
 
+
+            
+
             
             virtual void initialize()
             {
@@ -63,6 +66,18 @@ namespace portaible
             void reflect(T& r)
             {
               
+            }
+
+            template<typename Class, typename... Ts>
+            void callLater(void (Class::* f)(Ts...), Class* obj, Ts... params)
+            {
+                //std::function<void(Ts...)> function = std::bind(f, obj, std::placeholders::_1, std::placeholders::_2);
+
+                FunctionRunnableWithParams<void, Ts...>* functionRunnable = new FunctionRunnableWithParams<void, Ts...>();
+                functionRunnable->bind(f, obj);
+                functionRunnable->setParams(params...);
+                functionRunnable->deleteAfterRun = true;
+                this->runnableDispatcherThread.addRunnable(functionRunnable);
             }
 
             void setID(const std::string& id)
@@ -97,11 +112,18 @@ namespace portaible
             }
     };
 
-    // A LocalModule can only communicate via local channels and 
-    // has no access to global ones (i.e., it cannot use ChannelIDs to subscribe to channels)
-    class LocalModule : public BaseModule
+    // A SubModule can only communicate via local channels (between any two Modules or SubModules) and 
+    // has no access to global ones (i.e., it cannot use ChannelIDs to subscribe to channels, cannot send data remotely).
+    class SubModule : public BaseModule
     {
-         template<typename T>
+        public:
+            virtual ~SubModule()
+            {
+
+            }
+
+        protected: 
+        template<typename T>
         Channel<T> subscribe(TypedChannel<T>& channel);
 
         template<typename T, typename Class>
@@ -126,9 +148,12 @@ namespace portaible
     };
 
     // A Module can acess all channels globally (within the current process or
-    // remote) via ChannelIDs, in contrast to a LocalModule.
+    // remote) via ChannelIDs, in contrast to a SubModule.
     class Module : public BaseModule
-    {
+    {   
+        public:
+            virtual ~Module();
+
         protected:
             template<typename T>
             Channel<T> subscribe(const std::string& channelID);

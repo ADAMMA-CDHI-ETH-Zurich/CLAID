@@ -4,18 +4,110 @@
 
 namespace portaible
 {
-    // A RemoteModule is a module that mirrors a Module running in another RunTime (remotely).
+    // A RemoteModule is a module that mirrors all Modules running in another RunTime (remotely).
     // Whenever a channel is published/subscribed or data is posted by
-    // the mirrored module, the RemoteModule will perform the same actions locally.
+    // in the remote runtime, the RemoteModule will perform the same actions locally.
     class RemoteModule : public Module
     {
         private:
-            //SocketClientModule socketClientModule
+            
+            SocketClientModule socketClientModule
 
-        void onData()
+            // Channels that were published remotely
+            std::vector<Channel<Untyped>> remotePublishedChannels;
+
+            // Channels that were subscribed remotely.
+            std::vector<Channel<Untyped>> remoteSubscribedChannels;
+
+            // LocalListener
+            // RemoteListener
+
+            // NetworkClient
+
+
+            // Can either be server module or client module
+            // Connect on data and send data..
+            SocketModule* socketModule;
+
+            
+            // Observes everything the remote connection does.
+            class RemoteObserver : public SubModule
+            {
+                // Receives data from network and is also able to send data over network ?
+                void onRemoteModuleAdded();
+                void onRemoteModuleRemoved();
+                void onRemoteModuleSubscribedToChannel();
+                void onRemoteModulePublishedChannel();
+            };
+
+            // Observes everything we do locally.
+            class LocalObserver : public SubModule
+            {
+                // Does not receive data from network, but is able to send data over network.
+
+                void onLocalModuleAdded();
+                void onLocalModuleRemoved();
+                void onLocalModuleSubcribedToChannel();
+                void onLocalModulePublishedChannel();
+            };
+
+        void onDataReceived()
         {
-            onPublish();
-            onSubscribe();
+            onRemotePublish();
+            onRemoteSubscribe();
+            onRemoteModuleAdded();
+            onRemoteModuleRemoved();
+            onRemoteData();
+        }
+
+
+        void onRemotePublish(std::string& channelID)
+        {
+            // A channel got published in the remote runtime.
+            // We publish it aswell? 
+            // How many times? Only once or 
+            // for every time it got published in the remote framework.
+            // The latter is useful if we want to know how many subscribers a channel has.
+
+        }
+
+        void onRemoteSubscribe(std::string& channelID)
+        {
+            // Someone in the remote runtime subscribed to a channel.
+            // Thus, we subscribe. When data is available (callback was called).
+            // What about the history... do we need to send it ? Nahhhhh not for now
+
+            // TODO: Think about whether history (previous data in channel) needs to be send.
+            Channel<Untyped> remoteSubscribedChannel = this->subscribe<Untyped>(channelID, &RemoteModule::onLocalModulePostedData, this);
+            this->remoteSubscribedChannels.push_back(remoteSubscribedChannel);
+        }
+
+        void onLocalModulePostedData(ChannelData<Untyped> data)
+        { 
+            // Someone in the current runtime/process posted data to a channel, that
+            // was subscribed to in the remote Runtime. Thus, we need to send the data
+            // to the remote runtime.
+        }
+        
+
+        void onLocalPublish()
+        {
+            // Send to other runtime that new channel was published
+        }
+
+        void onLocalSubscribe()
+        {
+            // Tell the remote module in the other thread, that we subscribed.
+        }
+
+        void onLocalModuleAdded()
+        {
+
+        }
+
+        void onLocalModuleRemoved()
+        {
+
         }
 
         void onPublish(const std::string& channelID)

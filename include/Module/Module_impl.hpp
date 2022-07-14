@@ -3,13 +3,13 @@
 namespace portaible
 {
     template<typename T>
-    Channel<T> LocalModule::subscribe(TypedChannel<T>& channel)
+    Channel<T> SubModule::subscribe(TypedChannel<T>& channel)
     {
         return channel.subscribe();   
     }
 
     template<typename T, typename Class>
-    Channel<T> LocalModule::subscribe(TypedChannel<T>& channel,
+    Channel<T> SubModule::subscribe(TypedChannel<T>& channel,
                 void (Class::*f)(ChannelData<T>), Class* obj)
     {
         std::function<void (ChannelData<T>)> function = std::bind(f, obj, std::placeholders::_1);
@@ -17,7 +17,7 @@ namespace portaible
     }
 
     template<typename T>
-    Channel<T> LocalModule::subscribe(TypedChannel<T>& channel, std::function<void (ChannelData<T>)> function)
+    Channel<T> SubModule::subscribe(TypedChannel<T>& channel, std::function<void (ChannelData<T>)> function)
     {
         ChannelSubscriber<T> channelSubscriber(&this->runnableDispatcherThread, function);
         return channel.subscribe(channelSubscriber);

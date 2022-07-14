@@ -84,7 +84,8 @@ namespace portaible
             typename std::enable_if<!std::is_same<U, Untyped>::value>::type
             post(U& data)
             {
-                this->post(TaggedData<U>(data));
+                TaggedData<U> taggedData(data);
+                this->post(taggedData);
             }
 
             template <typename U = T>

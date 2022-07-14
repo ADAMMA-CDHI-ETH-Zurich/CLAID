@@ -163,9 +163,7 @@ namespace portaible
                         tmpIndex = currentIndex - 1;
                     }
 
-                    printf("get 1\n");
                     latest = derived->getDataByIndex(tmpIndex);
-                    printf("get 2\n");
                     this->unlockMutex();
                     return true;
                 }

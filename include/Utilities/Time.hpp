@@ -208,10 +208,14 @@ public:
 		return std::chrono::duration_cast<std::chrono::nanoseconds>(*this - Time::unixEpoch()).count();
 	}
 
-	static void getCurrentDateTime(int& year, int& month, int& day, int& hour, int& minute, int& second)
+	void toDateTime(int& year, int& month, int& day, int& hour, int& minute, int& second)
 	{
-		std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-		time_t tt = std::chrono::system_clock::to_time_t(now);
+		Time::toDateTime(*this, year, month, day, hour, minute, second);
+	}
+
+	static void toDateTime(Time& time, int& year, int& month, int& day, int& hour, int& minute, int& second)
+	{
+		time_t tt = std::chrono::system_clock::to_time_t(time);
 		tm local_tm = *localtime(&tt);
 
 		year = local_tm.tm_year + 1900;
@@ -220,6 +224,12 @@ public:
 		hour = local_tm.tm_hour;
 		minute = local_tm.tm_min;
 		second = local_tm.tm_sec;
+	}
+
+	static void getCurrentDateTime(int& year, int& month, int& day, int& hour, int& minute, int& second)
+	{
+		Time now = Time::now();
+		Time::toDateTime(now, year, month, day, hour, minute, second);
 	}
 
 	static void timeString(std::string& timeString)
@@ -249,7 +259,6 @@ public:
 
 	bool operator==(const Time& d) const
 	{
-		printf("operator\n");
 		return this->toUnixNS() == d.toUnixNS();
 	}
 
