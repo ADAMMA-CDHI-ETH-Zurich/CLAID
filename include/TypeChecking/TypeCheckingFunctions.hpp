@@ -20,13 +20,8 @@ namespace portaible
     }
 
     template<typename T>
-    std::string getDataTypeRTTIString()
+    std::string getDataTypeRTTIString(T& t)
     {
-        // Sadly, we need an instance in order to use typeid :(
-        // So this generates some overhead :/
-        // Don't use it that often!    
-        T t;
-        
         std::string name = typeid(t).name();
 
 
@@ -53,9 +48,17 @@ namespace portaible
             return name;
         #endif
 
-        
+    }
 
-    // return typeid(t).name();
+    template<typename T>
+    std::string getDataTypeRTTIString()
+    {
+        // Sadly, we need an instance in order to use typeid :(
+        // So this generates some overhead :/
+        // Don't use it that often!    
+        T t;
+
+        return getDataTypeRTTIString(t);
     }
 }
 

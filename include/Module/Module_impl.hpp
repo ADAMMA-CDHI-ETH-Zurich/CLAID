@@ -81,3 +81,4 @@ Channel<T> Module::publish(const std::string& channelID)
     return PORTAIBLE_RUNTIME->channelManager.publish<T>(channelID);
 }
 }
+

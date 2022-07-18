@@ -3,7 +3,6 @@
 #include "XMLNumericVal.hpp"
 
 #include "Reflection/Serializer.hpp"
-#include "RunTime/RunTime.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 
 namespace portaible
@@ -47,6 +46,17 @@ namespace portaible
                             new  XMLVal(this->currentNode, property, member ? "true" : "false"))));
             }
 
+            void callChar(const char* property, char& member)
+            {
+                std::string str = "";
+                str += member;
+
+                this->currentNode->addChild(
+                    std::static_pointer_cast<XMLNode>(
+                        std::shared_ptr<XMLVal>(
+                            new XMLVal(this->currentNode, property, str))));
+            }
+
             template<typename T>
             void callString(const char* property, T& member)
             {
@@ -74,13 +84,37 @@ namespace portaible
             template<typename T>
             void callPointer(const char* property, T*& member)
             {
-                static_assert(has_mem_classFactoryRegistrar<T>::value,
-                  "Data type (see above) was reflected as pointer and might get invoked by a Serializer, however"
-                  "the data type is not de-/serializable, as it was not registered to ClassFactory. Use DECLARE_SERIALIZATION(DataType)"
-                  "and PORTABLE_SERIALIZATION(DataType) accordingly.");
+                // In the following, we check whether serialization is implemented for member.
+                // Note, that T might not match the members real type, as member might be polymorphic.
+                // Thus, we can not use className to check whether a PolymorphicReflector was registered (see below).
 
-                this->invokeReflectOnObject(*member);
+                // Note, that this check is only necessary for SERIALIZERS.
+                // The serializer needs to make sure it stores the exact className.
+                // The deserializer deserializes the data for the object (member) based on this className.
+                // Thus, the deserializer relies on the serializer to store the correct className.
+
+                // We only need the rttiType for checking whether the type of member has implemented serialization.
+                std::string rttiTypeString = getDataTypeRTTIString(*member);
+                if(!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForRTTITypeName(rttiTypeString))
+                {
+                    // Cannot use className to check whether the type is registered to ClassFactory and PolymorphicReflector,
+                    // because getClassName is a virtual function. If a type is derived from a base class AND 
+                    // implements serialization (registered to ClassFactory and PolymorphicReflector), then getClassName()
+                    // provides the correct type. However, if the derived type does NOT implement serialization,
+                    // getClassName returns the className of the base type, which would lead into storing the wrong
+                    // class identifier in the binary data.
+                    PORTAIBLE_THROW(portaible::Exception, "XMLSerializer failed to serialize object to XML. Member \"" << property << "\" is a pointer/polymorphic object of type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                }
+
                 std::string className = member->getClassName();
+
+                PolymorphicReflector::WrappedReflectorBase<XMLSerializer>* polymorphicReflector;
+                if (!PolymorphicReflector::PolymorphicReflector<XMLSerializer>::getInstance()->getReflector(className, polymorphicReflector))
+                {
+                    PORTAIBLE_THROW(portaible::Exception, "XMLSerializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                }
+
+                polymorphicReflector->invoke(*this, static_cast<void*>(member));
                 this->currentNode->setAttribute("class", className);
             }
             
@@ -120,6 +154,15 @@ namespace portaible
                 // Do nothing
             }
             
+            void write(const char* data, size_t size)
+            {
+
+            }
+
+            void read(char*& data, size_t size)
+            {
+                
+            }
 
             template<typename T> 
             void serialize(T& obj)

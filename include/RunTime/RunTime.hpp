@@ -48,7 +48,6 @@ namespace portaible
     };
 }
 
-#include "XML/XMLDeserializer.hpp"
 
 #include "Module/Module_impl.hpp"
 #include "XMLLoader/XMLLoader_impl.hpp"

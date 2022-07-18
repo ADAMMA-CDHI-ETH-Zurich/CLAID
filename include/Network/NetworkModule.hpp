@@ -23,7 +23,7 @@ namespace portaible
                 
                 virtual ~NetworkModule()
                 {
-                    
+
                 }
 
                 virtual void sendMessage(Message message)
@@ -42,7 +42,10 @@ namespace portaible
                 
                 virtual void asyncSendMessage(Message message) = 0;
 
-                virtual void initialize();
+                virtual void initialize()
+                {
+                    
+                }
 
                 void onError()
                 {

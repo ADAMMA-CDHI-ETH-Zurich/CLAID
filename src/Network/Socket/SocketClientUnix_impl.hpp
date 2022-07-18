@@ -1,5 +1,5 @@
 
-#include "Network/SocketClient.hpp"
+#include "Network/Socket/SocketClient.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

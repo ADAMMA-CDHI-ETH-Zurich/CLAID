@@ -87,6 +87,15 @@ namespace portaible
                     r.callBool(property, member);
                 }
             };
+
+            template<class T>
+            struct ReflectorType<T, typename std::enable_if<std::is_same<T, char>::value>::type> 
+            {
+                static void call(const char* property, Derived& r, T& member) 
+                {
+                    r.callChar(property, member);
+                }
+            };
         // CLASS TYPES
 
             template<class T>
@@ -123,6 +132,7 @@ namespace portaible
                 
             }
 
+            // Calls the reflect function of the given object.
             template<typename T>
             void invokeReflectOnObject(T& obj)
             {
@@ -157,8 +167,10 @@ namespace portaible
                 ReflectorType<T>::call(property, *this->This(), member);
             }
 
+            // Determines the type of the object (can be anything, primitive or class),
+            // and decies which function to call in the reflector (e.g. callInt, callFloat, ...)
             template<typename T>
-            void callOnObject(const char* name, T& obj)
+            void callAppropriateFunctionBasedOnType(const char* name, T& obj)
             {
                 ReflectorType<T>::call(name, *this->This(), obj);
             }

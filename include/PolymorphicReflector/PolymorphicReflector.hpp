@@ -16,10 +16,19 @@ namespace portaible
 			private:
 				std::map<std::string, WrappedReflectorBase<Reflector>*> reflectors;
 
+
 			public:
 				template<typename ObjectType>
 				void registerReflector(std::string className)
 				{
+					auto it = reflectors.find(className);
+
+					if (it != reflectors.end())
+					{
+						PORTAIBLE_THROW(portaible::Exception, "Error, PolymorhpReflector for class \"" << className << "\" was registered multiple times.");
+					}
+
+
 					WrappedReflectorTyped<ObjectType, Reflector>* reflector = new WrappedReflectorTyped<ObjectType, Reflector>;
 					reflectors.insert(std::make_pair(className, static_cast<WrappedReflectorBase<Reflector>*>(reflector)));
 				}
@@ -45,6 +54,8 @@ namespace portaible
 		public:
 			RegisterHelper(std::string name)
 			{
+									printf("Registering 1 %s\n", name.c_str());
+
 				PolymorphicReflector<Reflector>::getInstance()->template registerReflector<ObjectType>(name);
 			}
 		};
@@ -52,8 +63,8 @@ namespace portaible
 	
 }
 
-#define REGISTER_POLYMORPHIC_REFLECTOR(className, Reflector) \
-	portaible::PolymorphicReflector::RegisterHelper<className, Reflector> className::polymorphicReflectorRegistrar (#className);\
+#define REGISTER_POLYMORPHIC_REFLECTOR(className, Reflector, ReflectorName) \
+	portaible::PolymorphicReflector::RegisterHelper<className, Reflector> className::polymorphicReflectorRegistrar##ReflectorName (#className);\
 
-#define DECLARE_POLYMORPHIC_REFLECTOR(className, Reflector) \
-     static portaible::PolymorphicReflector::RegisterHelper<className, Reflector> polymorphicReflectorRegistrar;
+#define DECLARE_POLYMORPHIC_REFLECTOR(className, Reflector, ReflectorName) \
+     static portaible::PolymorphicReflector::RegisterHelper<className, Reflector> polymorphicReflectorRegistrar##ReflectorName;

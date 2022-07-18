@@ -7,6 +7,8 @@
 #include "Exception/Exception.hpp"
 #include "Utilities/Singleton.hpp"
 
+#include "TypeChecking/TypeCheckingFunctions.hpp"
+
 #include <map>
 #include <string>
 
@@ -18,6 +20,11 @@ namespace portaible
 		{
 			private:
 				std::map<std::string, ClassFactoryBase*> classFactories;
+
+				// RTTI map to registered class name.
+				// Needed to verify whether a derived type was registered
+				// to use serialization (i.e. register to ClassFactory and PolymorphicReflector).
+				std::map<std::string, std::string> rttiToRegisteredClassNameMap;
 
 			public:
 				template<typename T>
@@ -31,6 +38,20 @@ namespace portaible
 					}
 
 					classFactories.insert(std::make_pair(className, static_cast<ClassFactoryBase*>(new ClassFactoryTyped<T>)));
+				
+
+					// The rttiString is not necessarily the same as class name (however, can be, depending on the compiler).
+					std::string rttiString = getDataTypeRTTIString<T>();
+					auto it2 = rttiToRegisteredClassNameMap.find(rttiString);
+
+
+					printf("Class Factory registering %s %s\n", className.c_str(), rttiString.c_str());
+					if (it2 != rttiToRegisteredClassNameMap.end())
+					{
+						PORTAIBLE_THROW(portaible::Exception, "Error, class \"" << className << "\" was registered to the ClassFactory for the first time, however it's RTTI was already memorized for another type."
+						"This should never happen and is either a serious programming mistake OR some compiler weirdness, which leads to mapping two different data types to the RTTI string.");
+					}
+					rttiToRegisteredClassNameMap.insert(std::make_pair(rttiString, className));
 				}
 
 				bool isFactoryRegisteredForClass(const std::string& className)
@@ -38,6 +59,13 @@ namespace portaible
 					auto it = classFactories.find(className);
 
 					return it != classFactories.end();
+				}
+
+				bool isFactoryRegisteredForRTTITypeName(const std::string& rttiTypename)
+				{
+					auto it = rttiToRegisteredClassNameMap.find(rttiTypename);
+
+					return it != rttiToRegisteredClassNameMap.end();
 				}
 
 				ClassFactoryBase* getFactoryForClassByName(const std::string& className)
@@ -82,9 +110,12 @@ namespace portaible
 
 
 #define DECLARE_CLASS_FACTORY(className) \
+	private:\
 	static volatile portaible::ClassFactory::RegisterHelper<className> classFactoryRegistrar;\
 	static const std::string __CLASS_NAME__;\
-	const std::string& getClassName() {return className::__CLASS_NAME__;}
+	public:\
+	const virtual std::string& getClassName() const {return className::__CLASS_NAME__;}\
+	static std::string staticGetGlassName() {return className::__CLASS_NAME__;}
 
 #define REGISTER_TO_CLASS_FACTORY(className) \
 	volatile portaible::ClassFactory::RegisterHelper<className> className::classFactoryRegistrar (#className);\

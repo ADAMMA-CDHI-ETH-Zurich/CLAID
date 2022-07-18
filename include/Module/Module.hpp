@@ -15,6 +15,16 @@
 #include "ClassFactory/ClassFactory.hpp"
 #include "PolymorphicReflector/PolymorphicReflector.hpp"
 #include "Reflection/PropertyReflector.hpp"
+#include "Serialization/Serialization.hpp"
+
+
+#define PORTAIBLE_MODULE(className)\
+    DECLARE_SERIALIZATION(className)\
+
+#define PORTAIBLE_SERIALIZATION(className)\
+    SERIALIZATION(className)\
+
+
 namespace portaible
 {
     // Base class for any type of module.
@@ -151,8 +161,13 @@ namespace portaible
     // remote) via ChannelIDs, in contrast to a SubModule.
     class Module : public BaseModule
     {   
+        PORTAIBLE_MODULE(Module)
+
         public:
-            virtual ~Module();
+            virtual ~Module()
+            {
+
+            }
 
         protected:
             template<typename T>
@@ -191,13 +206,6 @@ namespace portaible
 
 }
 
-#define PORTAIBLE_MODULE(className)\
- DECLARE_CLASS_FACTORY(className)\
- DECLARE_POLYMORPHIC_REFLECTOR(className, portaible::XMLDeserializer)\
-
-#define PORTAIBLE_SERIALIZATION(className)\
-REGISTER_TO_CLASS_FACTORY(className) \
-REGISTER_POLYMORPHIC_REFLECTOR(className, portaible::XMLDeserializer) \
 
 #define REFLECT_BASE(Reflector, Base) \
     Base::reflect(r);

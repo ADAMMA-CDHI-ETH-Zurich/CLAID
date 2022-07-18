@@ -131,6 +131,37 @@ namespace portaible
                 }
             }
 
+            void callChar(const char* property, char& member)
+            {
+                std::shared_ptr<XMLNode> node = this->getChildNode(property);
+                if(node.get() == nullptr)
+                {
+                    if (!this->defaultValueCurrentlySet())
+                    {
+                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" is missing!");
+                    }
+
+                    member = this->getCurrentDefaultValue<char>();
+                }
+                else
+                {
+                    std::shared_ptr<XMLVal> value = std::static_pointer_cast<XMLVal>(node);
+
+                    if (value.get() == nullptr)
+                    {
+                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
+                    }
+                   
+                    const std::string& str = value->getValue();
+                    if(str.size() != 1)
+                    {
+                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" is a character, however in the XML file either an empty string or a string with more than one character was specified. Got " << str << ".");
+                    }
+
+                    member = str[0];
+                }
+            }
+
             template<typename T>
             void callBeginClass(const char* property, T& member)
             {
@@ -160,7 +191,7 @@ namespace portaible
 
                 if (!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForClass(className))
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "XMLDeserializer failed to deserialize object from XML. Class \"" << className << "\" was not registered and is unknown.");
+                    PORTAIBLE_THROW(portaible::Exception, "XMLDeserializer failed to deserialize object from XML. Class \"" << className << "\" was not registered to ClassFactory and is unknown.");
                 }
 
                 member = ClassFactory::ClassFactory::getInstance()->getNewInstanceAndCast<T>(className);
@@ -262,6 +293,16 @@ namespace portaible
                 this->isSequence = false;
             }
 
+            void write(const char* data, size_t size)
+            {
+
+            }
+
+            void read(char*& data, size_t size)
+            {
+                
+            }
+
             template<typename T> 
             void deserialize(std::string name, T& obj)
             {
@@ -274,15 +315,15 @@ namespace portaible
                     PORTAIBLE_THROW(portaible::Exception, "Error in deserialization of object of type " << name << " from XML. No XML node corresponding to the object was found (<" << name << "> missing).");
                 }
                
+               invokeReflectOnObject(obj);
 
-                obj.reflect(*this);
             }
+
             template<typename T>
             void deserializeFromNode(std::string name, T& obj)
             {
-                this->callOnObject(name.c_str(), obj);
+                this->callAppropriateFunctionBasedOnType(name.c_str(), obj);
             }
-
 
             void enforceName(std::string& name, int idInSequence = 0)
             {

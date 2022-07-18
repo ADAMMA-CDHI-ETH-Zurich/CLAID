@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "Reflection/SplitReflect.hpp"
 
 namespace portaible
 {
@@ -9,8 +10,9 @@ namespace portaible
        
         public:
             // Should only be enabled for primitive types
-            template<typename T>
-            void store(T& value)
+            template <typename T>
+            typename std::enable_if<std::is_arithmetic<T>::value>::type // type of enable_if is void, if value is true, if not specified otherwise. If false, then type does not exist (see implementation of enable_if).
+            store(const T& value)
             {
                 size_t size;
                 const char* binaryData = toBinary<T>(value, size);
@@ -39,10 +41,14 @@ namespace portaible
                 }
             }
 
+            
+
             void resize(size_t size)
             {
-                this->data.resize(size);
+                size_t index = 0;
+                this->data.resize(size);      
             }
+
 
             char* getRawData()
             {
@@ -59,15 +65,59 @@ namespace portaible
                 return this->data.size();
             }
 
+            template<typename Reflector>
+            void reflect(Reflector& r)
+            {
+                splitReflect(r, *this);
+            }
+
+            void clear()
+            {
+                this->data.clear();
+            }
+
+     
+
         private:
 
-        std::vector<char> data;
-        template<typename T>
-        static const char* toBinary(const T& value, size_t& size)
-        {
-            size = sizeof(T);
-            return reinterpret_cast<const char*>(&value);
-        }
+            std::vector<char> data;
+
+            template<typename T>
+            static const char* toBinary(const T& value, size_t& size)
+            {
+                size = sizeof(T);
+                return reinterpret_cast<const char*>(&value);
+            }
+
+            
             
     };
+}
+
+
+
+namespace portaible
+{
+    // CAUTION: READ MEANS READ FROM "DATA" (NOT FROM FILE) -> SERIALIZATION
+    template<typename Reflector>
+    void reflectRead(Reflector& r, BinaryData& binaryData)
+    {
+        size_t bytes;
+        r.member("NumBytes", bytes, "");
+
+        binaryData.resize(bytes);
+
+        char* dataPtr = binaryData.getRawData();
+        r.read(dataPtr, bytes);
+    }
+
+    // CAUTION: WRITE MEANS WRITE TO "DATA" (NOT TO FILE) -> DESERIALIZATION
+    template<typename Reflector>
+    void reflectWrite(Reflector& r, BinaryData& binaryData)
+    {
+        size_t bytes;
+        r.member("NumBytes", bytes, "");
+
+        r.write(binaryData.getRawData(), bytes);
+    }
 }
