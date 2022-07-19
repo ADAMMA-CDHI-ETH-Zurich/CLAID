@@ -61,7 +61,20 @@ namespace portaible
             }
 
 
-            
+            template<typename T, typename Class>
+            ChannelSubscriber<T> makeSubscriber(void (Class::*f)(ChannelData<T>), Class* obj)         
+            {
+                std::function<void (ChannelData<T>)> function = std::bind(f, obj, std::placeholders::_1);
+                return makeSubscriber(function);
+            }   
+
+            template<typename T>
+            ChannelSubscriber<T> makeSubscriber(std::function<void (ChannelData<T>)> function)
+            {
+                // runtime::getChannel(channelID).subscribe()
+                ChannelSubscriber<T> channelSubscriber(&this->runnableDispatcherThread, function);
+                return channelSubscriber;
+            }
 
             
             virtual void initialize()

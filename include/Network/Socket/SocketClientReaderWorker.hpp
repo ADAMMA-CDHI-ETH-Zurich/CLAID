@@ -8,7 +8,7 @@
 
 namespace Socket
 {
-	class SocketClientReaderWorker
+	class Network
 	{
 		private:
 			ITCChannel<std::pair<SocketClient*, SmartPointerDataVector<char>>>* dataChannel;

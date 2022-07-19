@@ -1,20 +1,18 @@
 #pragma once
 #include "Serialization/Serialization.hpp"
-#include "Binary/BinaryData.hpp"
 
 namespace portaible
 {
-    namespace Network
+    namespace RemoteConnection
     {
-        struct MessageDataBinary
+        struct MessageHeader
         {
-            DECLARE_SERIALIZATION(MessageDataBinary)
-            BinaryData binaryData;
+            DECLARE_SERIALIZATION(MessageHeader)
 
             template<typename Reflector>
             void reflect(Reflector& r)
             {
-                r.member("BinaryData", binaryData, "");
+                
             }
             
         };

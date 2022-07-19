@@ -94,15 +94,15 @@ namespace portaible
                 // Thus, the deserializer relies on the serializer to store the correct className.
 
                 // We only need the rttiType for checking whether the type of member has implemented serialization.
+                // Cannot use className to check whether the type is registered to ClassFactory and PolymorphicReflector,
+                // because getClassName is a virtual function. If a type is derived from a base class AND 
+                // implements serialization (registered to ClassFactory and PolymorphicReflector), then getClassName()
+                // provides the correct type. However, if the derived type does NOT implement serialization,
+                // getClassName returns the className of the base type, which would lead into storing the wrong
+                // class identifier in the binary data.
                 std::string rttiTypeString = getDataTypeRTTIString(*member);
                 if(!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForRTTITypeName(rttiTypeString))
                 {
-                    // Cannot use className to check whether the type is registered to ClassFactory and PolymorphicReflector,
-                    // because getClassName is a virtual function. If a type is derived from a base class AND 
-                    // implements serialization (registered to ClassFactory and PolymorphicReflector), then getClassName()
-                    // provides the correct type. However, if the derived type does NOT implement serialization,
-                    // getClassName returns the className of the base type, which would lead into storing the wrong
-                    // class identifier in the binary data.
                     PORTAIBLE_THROW(portaible::Exception, "XMLSerializer failed to serialize object to XML. Member \"" << property << "\" is a pointer/polymorphic object of type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 

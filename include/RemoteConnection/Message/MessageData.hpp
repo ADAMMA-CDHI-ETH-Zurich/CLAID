@@ -3,7 +3,7 @@
 
 namespace portaible
 {
-    namespace Network
+    namespace RemoteConnection
     {
         struct MessageData
         {

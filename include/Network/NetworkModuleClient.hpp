@@ -1,29 +1,29 @@
 #pragma once
-#include "Network/NetworkModule.hpp"
-#include "Network/SocketClient.hpp"
+
+#include "RemoteConnection/ConnectionLink.hpp"
+#include "RemoteConnection/RemoteModule/RemoteModule.hpp"
+#include "Network/SocketConnectionModule.hpp"
 
 namespace portaible
 {
     namespace Network
     {
-        class NetworkModuleClient
+        class NetworkModuleClient : public NetworkModule
         {
             private:
-                SocketClient client;
-
-
-            public:
-                virtual void asyncSendMessage(Message message)
+                Network::SocketConnectionModule socketConnection;
+                RemoteConnection::RemoteModule remoteModule;
+                
+                RemoteConnection::ConnectionLink link;
+                
+        
+                void initialize()
                 {
-                    // Client write message.. how ? 
-
-                }
-
-                virtual void initialize()
-                {
+                    link.link(&remoteClient, &remoteModule);
                     
+                    // socketConnection.connectTo(ip, port);
                 }
-
         };
+
     }
 }
