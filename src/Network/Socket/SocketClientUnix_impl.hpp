@@ -33,8 +33,8 @@ namespace portaible
 		this->sock = socket(AF_INET, SOCK_STREAM, 0);
 		if (this->sock < 0) 
 		{
-		Logger::printfln("Failed to open socket.\n");
-		return false;
+			Logger::printfln("Failed to open socket.\n");
+			return false;
 		}
 		server = gethostbyname(address.c_str());
 		if (server == NULL) 

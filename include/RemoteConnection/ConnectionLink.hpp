@@ -1,5 +1,5 @@
 #pragma once
-#include "RemoteConnection/RemoteConnectedClient.hpp"
+#include "RemoteConnection/ConnectionModule.hpp"
 #include "RemoteConnection/RemoteModule/RemoteModule.hpp"
 namespace portaible
 {

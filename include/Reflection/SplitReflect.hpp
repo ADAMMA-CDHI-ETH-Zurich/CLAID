@@ -7,18 +7,18 @@ struct ReflectReadWriteInvoker
 {
 	static void call(Reflector& r, Type& member) 
 	{
-		reflectWrite(r, member);
+		reflectRead(r, member);
 	}
 
 }; 
 
 // Invoke reflectRead
 template<typename Reflector, typename Type>
-struct ReflectReadWriteInvoker<Reflector, Type, typename std::enable_if<Reflector::isReadOnly>::type> 
+struct ReflectReadWriteInvoker<Reflector, Type, typename std::enable_if<!Reflector::isReadOnly>::type> 
 {
 	static void call(Reflector& r, Type& member) 
 	{
-		reflectRead(r, member);
+		reflectWrite(r, member);
 	}
 };
 

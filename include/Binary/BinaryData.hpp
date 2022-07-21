@@ -98,7 +98,6 @@ namespace portaible
 
 namespace portaible
 {
-    // CAUTION: READ MEANS READ FROM "DATA" (NOT FROM FILE) -> SERIALIZATION
     template<typename Reflector>
     void reflectRead(Reflector& r, BinaryData& binaryData)
     {
@@ -111,7 +110,6 @@ namespace portaible
         r.read(dataPtr, bytes);
     }
 
-    // CAUTION: WRITE MEANS WRITE TO "DATA" (NOT TO FILE) -> DESERIALIZATION
     template<typename Reflector>
     void reflectWrite(Reflector& r, BinaryData& binaryData)
     {

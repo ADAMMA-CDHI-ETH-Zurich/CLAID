@@ -1,7 +1,8 @@
 #pragma once 
 
-#include "RemoteConnection/RemoteConnectedClient.hpp"
+#include "RemoteConnection/ConnectionModule.hpp"
 #include "Network/Socket/SocketClient.hpp"
+#include "Network/SocketReaderModule.hpp"
 namespace portaible
 {
     namespace Network
@@ -9,10 +10,18 @@ namespace portaible
         class SocketConnectionModule : public RemoteConnection::ConnectionModule
         {
             private:
-                SocketClient client;
+                SocketClient* socketClient = nullptr;
+                SocketReaderModule* readerModule = nullptr;
 
-                void start();
-                void sendMessage(const RemoteConnection::Message& message);
+                bool started = false;
+
+                // Message internally only holds references to header and data,
+                // thus passing it by copy is fine. We do it because the message
+                // received in onSendMessage is const.
+                void sendMessage(RemoteConnection::Message message);
+
+            public:
+                void start(SocketClient* socketClient);
 
         };
     }

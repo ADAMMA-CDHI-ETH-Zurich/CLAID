@@ -1,8 +1,10 @@
+#pragma once
+
 #include "Channel.hpp"
 #include "Untyped.hpp"
 #include <map>
 
-// TODO: Add Mutex when adding channels ? 
+// TODO: Add Mutex when adding channels or removing? 
 namespace portaible
 {
     class ChannelManager
@@ -26,7 +28,7 @@ namespace portaible
                 // Every channel can be casted to Untyped channel.
                 // Why, you ask? Even that TypedChannel<T> does not inherit from Channel<Untyped>?
                 // Well, that's because TypedChannel<T> does not introduce any new member variables
-                // compared to ChannelBase. In other wirts, TypedChannel<T> extends ChannelBase ONLY
+                // compared to ChannelBase. In other words, TypedChannel<T> extends ChannelBase ONLY
                 // by FUNCTIONS and NOT by variables.
                 // Thus, TypedChannel<T> merely acts as a "view" to the underlying data.
                 

@@ -3,4 +3,13 @@
 
 #include "RunTime/RunTime.hpp"
 
+namespace portaible
+{
+    // Somehow compiler does not like the constructor in the Module_imp .. soooo
+    Module::Module()
+    {
+        this->channelManager = &PORTAIBLE_RUNTIME->channelManager;
+    }
+}
+
 PORTAIBLE_SERIALIZATION(portaible::Module)

@@ -11,6 +11,11 @@ namespace RemoteConnection
         return this->makeSubscriber(&RemoteModule::onMessageReceived, this);
     }
 
+    void RemoteModule::onMessageReceived(ChannelData<Message> message)
+    {
+        
+    }    
+
     void RemoteModule::sendMessage(Message& message)
     {
         this->sendMessageChannel.post(message);

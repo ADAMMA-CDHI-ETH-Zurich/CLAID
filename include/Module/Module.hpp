@@ -24,13 +24,15 @@
 #define PORTAIBLE_SERIALIZATION(className)\
     SERIALIZATION(className)\
 
-
+#include "Channel/ChannelManager.hpp"
 namespace portaible
 {
     // Base class for any type of module.
     class BaseModule
     {
         protected:
+            ChannelManager* channelManager;
+
             std::string id;
 
             RunnableDispatcherThread runnableDispatcherThread;
@@ -77,10 +79,7 @@ namespace portaible
             }
 
             
-            virtual void initialize()
-            {
-
-            }
+            virtual void initialize() = 0;
 
             PropertyReflector propertyReflector;
 
@@ -108,16 +107,20 @@ namespace portaible
                 this->id = id;
             }
 
-           
-            
             bool isInitialized()
             {
                 return this->initialized;
             }
             
+            void waitForInitialization()
+            {
+                while(!this->initialized)
+                {
+                    
+                }
+            }
 
-
-            void start()
+            void startModule()
             {
                 // PropertyReflector will initialize all members and properties to their default values,
                 // if any have been specified.
@@ -136,30 +139,55 @@ namespace portaible
     };
 
     // A SubModule can only communicate via local channels (between any two Modules or SubModules) and 
-    // has no access to global ones (i.e., it cannot use ChannelIDs to subscribe to channels, cannot send data remotely).
+    // has no access to global ones. That means, it has it's own ChannelManager and does not use the global one.
+    // Therefore, the publish and subscribe functions are called publishLocal and subscribeLocal, but technically they are
+    // Exactly the same as for Module. The only difference between Module and SubModule is the constructor.
+    // While in Module, the internal channelManager variable is set to the global ChannelManager,
+    // SubModule creates it's own ChannelManager during start.
     class SubModule : public BaseModule
     {
+        private:
+            std::shared_ptr<ChannelManager> channelManagerSharedPtr;
         public:
+            SubModule()
+            {
+                this->channelManager = new ChannelManager;
+                // In addition to the normal channelManager ptr, we also create a sharedPtr.
+                // This will make sure that if the user creates a copy of a SubModule instance (which he should not do, but well..),
+                // this copy can still access the correct channelManager, and the channelManager will be released when all
+                // copies of the module have been destroyed.
+                // Why not make channelManager a shared_ptr in the first place?
+                // Because the Module (class Module) also uses channelManager, however it holds a reference to a global
+                // ChannelManager, which shall never be deleted even if all instances of Module have been destroyed.
+                this->channelManagerSharedPtr = std::shared_ptr<ChannelManager>(this->channelManager, std::default_delete<ChannelManager>());
+            }
+
             virtual ~SubModule()
+            {
+
+            }
+
+            virtual void initialize()
             {
 
             }
 
         protected: 
         template<typename T>
-        Channel<T> subscribe(TypedChannel<T>& channel);
+        Channel<T> subscribeLocal(const std::string& channelID);
 
         template<typename T, typename Class>
-        Channel<T> subscribe(TypedChannel<T>& channel,
+        Channel<T> subscribeLocal(const std::string& channelID,
                     void (Class::*f)(ChannelData<T>), Class* obj);
 
         template<typename T>
-        Channel<T> subscribe(TypedChannel<T>& channel, std::function<void (ChannelData<T>)> function);
+        Channel<T> subscribeLocal(const std::string& channelID, std::function<void (ChannelData<T>)> function);
         
-
+        template<typename T>
+        Channel<T> subscribeLocal(const std::string& channelID, ChannelSubscriber<T> channelSubscriber);
 
         template<typename T>
-        Channel<T> publish(const std::string& channelID);
+        Channel<T> publishLocal(const std::string& channelID);
 
         template<typename T>
         void unsubscribe()
@@ -177,12 +205,19 @@ namespace portaible
         PORTAIBLE_MODULE(Module)
 
         public:
+            Module();
+
             virtual ~Module()
             {
 
             }
 
         protected:
+            virtual void initialize()
+            {
+
+            }
+
             template<typename T>
             Channel<T> subscribe(const std::string& channelID);
 
@@ -193,15 +228,8 @@ namespace portaible
             template<typename T>
             Channel<T> subscribe(const std::string& channelID, std::function<void (ChannelData<T>)> function);
 
-            /* template<typename T, typename Class>
-            Channel<T> subscribe(TypedChannel<T>& channel,
-                        void (Class::*f)(ChannelData<T>), Class* obj);
-
             template<typename T>
-            Channel<T> subscribe(TypedChannel<T>& channel, std::function<void (ChannelData<T>)> function);*/
-
-            
-
+            Channel<T> subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber);
 
             template<typename T>
             Channel<T> publish(const std::string& channelID);

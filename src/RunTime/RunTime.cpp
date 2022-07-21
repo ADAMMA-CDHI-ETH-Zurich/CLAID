@@ -6,7 +6,7 @@ namespace portaible
     {
         for(Module*& module : this->modules)
         {
-            module->start();
+            module->startModule();
 
             while(!module->isInitialized())
             {

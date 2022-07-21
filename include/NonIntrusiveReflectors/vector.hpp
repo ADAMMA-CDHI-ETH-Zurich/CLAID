@@ -7,21 +7,6 @@ template<typename Reflector, typename T>
 void reflectRead(Reflector& r, std::vector<T>& vector)
 {
     r.beginSequence();
-    size_t count = vector.size();
-    r.count("item", count);
-
-    for(T& val : vector)
-    {
-        r.member("item", val, "");
-    }
-    r.endSequence();
-}
-
-// Write means write to data -> for example Deserialization (NOT write such as "write to XML").
-template<typename Reflector, typename T>
-void reflectWrite(Reflector& r, std::vector<T>& vector)
-{
-    r.beginSequence();
     size_t count;
     // Gets count from the current data.
     r.count("item", count);
@@ -33,6 +18,20 @@ void reflectWrite(Reflector& r, std::vector<T>& vector)
         r.member("item", vector[i], "");
     }
 
+    r.endSequence();
+}
+
+template<typename Reflector, typename T>
+void reflectWrite(Reflector& r, std::vector<T>& vector)
+{
+    r.beginSequence();
+    size_t count = vector.size();
+    r.count("item", count);
+
+    for(T& val : vector)
+    {
+        r.member("item", val, "");
+    }
     r.endSequence();
 }
 

@@ -3,45 +3,49 @@
 namespace portaible
 {
     template<typename T>
-    Channel<T> SubModule::subscribe(TypedChannel<T>& channel)
+    Channel<T> SubModule::subscribeLocal(const std::string& channelID)
     {
-        return channel.subscribe();   
+        return this->channelManager->subscribe<T>(channelID);
     }
 
     template<typename T, typename Class>
-    Channel<T> SubModule::subscribe(TypedChannel<T>& channel,
-                void (Class::*f)(ChannelData<T>), Class* obj)
+    Channel<T> SubModule::subscribeLocal(const std::string& channelID,
+                    void (Class::*f)(ChannelData<T>), Class* obj)
     {
         std::function<void (ChannelData<T>)> function = std::bind(f, obj, std::placeholders::_1);
-        return subscribe(channel, function);
+        return subscribeLocal(channelID, function); 
     }
 
     template<typename T>
-    Channel<T> SubModule::subscribe(TypedChannel<T>& channel, std::function<void (ChannelData<T>)> function)
+    Channel<T> SubModule::subscribeLocal(const std::string& channelID, std::function<void (ChannelData<T>)> function)
     {
+        // runtime::getChannel(channelID).subscribe()
         ChannelSubscriber<T> channelSubscriber(&this->runnableDispatcherThread, function);
-        return channel.subscribe(channelSubscriber);
+        return this->channelManager->subscribe<T>(channelID, channelSubscriber);
     }
-    
-
 
     template<typename T>
-    Channel<T> publish(const std::string& channelID);
-
-    template<typename T>
-    void unsubscribe()
+    Channel<T> SubModule::subscribeLocal(const std::string& channelID, ChannelSubscriber<T> channelSubscriber)
     {
+        return this->channelManager->subscribe(channelID, channelSubscriber);
+    }
 
+    template<typename T>
+    Channel<T> SubModule::publishLocal(const std::string& channelID)
+    {
+        return this->channelManager->publish<T>(channelID);
     }
 }
 
 
 namespace portaible
 {
+
+
 template<typename T>
-inline Channel<T> Module::subscribe(const std::string& channelID)
+Channel<T> Module::subscribe(const std::string& channelID)
 {
-    return PORTAIBLE_RUNTIME->channelManager.subscribe<T>(channelID);
+    return this->channelManager->subscribe<T>(channelID);
 }
 
 template<typename T, typename Class>
@@ -57,28 +61,19 @@ Channel<T> Module::subscribe(const std::string& channelID, std::function<void (C
 {
     // runtime::getChannel(channelID).subscribe()
     ChannelSubscriber<T> channelSubscriber(&this->runnableDispatcherThread, function);
-    return PORTAIBLE_RUNTIME->channelManager.subscribe<T>(channelID, channelSubscriber);
-}
-/*
-template<typename T, typename Class>
-        Channel<T> Module::subscribe(TypedChannel<T>& channel,
-                    void (Class::*f)(ChannelData<T>), Class* obj)
-{
-    std::function<void (ChannelData<T>)> function = std::bind(f, obj, std::placeholders::_1);
-    return subscribe(channel, function);
+    return this->channelManager->subscribe<T>(channelID, channelSubscriber);
 }
 
 template<typename T>
-Channel<T> Module::subscribe(TypedChannel<T>& channel, std::function<void (ChannelData<T>)> function)
+Channel<T> Module::subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber)
 {
-    ChannelSubscriber<T> channelSubscriber(&this->runnableDispatcherThread, function);
-    return channel.subscribe(channelSubscriber);
-}*/
+    return this->channelManager->subscribe(channelID, channelSubscriber);
+}
 
 template<typename T>
 Channel<T> Module::publish(const std::string& channelID)
 {
-    return PORTAIBLE_RUNTIME->channelManager.publish<T>(channelID);
+    return this->channelManager->publish<T>(channelID);
 }
 }
 

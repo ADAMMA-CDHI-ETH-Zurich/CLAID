@@ -2,7 +2,10 @@
 
 #include "RunTime/RunTime.hpp"
 #include "Binary/BinaryData.hpp"
-#include "Network/Message.hpp"
+#include "RemoteConnection/Message/Message.hpp"
+#include "RemoteConnection/Error/Error.hpp"
+#include "Network/Error/NetworkErrors.hpp"
+
 
 namespace portaible
 {
@@ -12,7 +15,7 @@ namespace portaible
         {
             protected:
                 virtual void initialize() = 0;
-                virtual void onError() = 0;
+                virtual void onError(const RemoteConnection::Error& error) = 0;
 
             public: 
           

@@ -1,4 +1,3 @@
-#pragma once
 
 #include "RemoteConnection/ConnectionModule.hpp"
 
@@ -6,43 +5,58 @@ namespace portaible
 {
 namespace RemoteConnection
 {
+    const std::string ConnectionModule::RECEIVE_CHANNEL = "ReceiveChannel";
+    const std::string ConnectionModule::SEND_CHANNEL = "SendChannel";
+    const std::string ConnectionModule::ERROR_CHANNEL = "ErrorChannel";
+
     ConnectionModule::ConnectionModule()
     {
 
     }
                 
-    // When message received from the remote connection.
-    void ConnectionModule::onMessageReceived(Message& message)
-    {
-        this->receiveChannel.post(message);
-    }
-
     // When someone wants to send a message via the remote connection.
-    void ConectionModule::onSendMessage(ChannelData<Message> message)
+    // Called by external module.
+    void ConnectionModule::onSendMessage(ChannelData<Message> message)
     {
         this->sendMessage(message->value());
     }
+
+    void ConnectionModule::initialize()
+    {
+        this->sendChannel = this->subscribeLocal<Message>(SEND_CHANNEL, &ConnectionModule::onSendMessage, this);
+        this->receiveChannel = this->publishLocal<Message>(RECEIVE_CHANNEL);
+        this->errorChannel = this->publishLocal<Error>(ERROR_CHANNEL);
+        this->setup();
+    }
+
+    Channel<Message> ConnectionModule::subscribeToReceiveChannel(ChannelSubscriber<Message> channelSubscriber)
+    {
+        return subscribeLocal<Message>(RECEIVE_CHANNEL, channelSubscriber);
+    }
+
+    Channel<Message> ConnectionModule::registerToSendChannel()
+    {
+        return publishLocal<Message>(SEND_CHANNEL);
+    }
+
+    Channel<Error> ConnectionModule::subscribeToErrorChannel(ChannelSubscriber<Error> channelSubscriber)
+    {
+        return subscribeLocal<Error>(ERROR_CHANNEL, channelSubscriber);
+    }
+
+    Channel<Error> ConnectionModule::registerToErrorChannel()
+    {
+        return publishLocal<Error>(ERROR_CHANNEL);
+    }
+
+    void ConnectionModule::setup()
+    {
+
+    }
+
+
+
     
-
-    
-
-    void ConectionModule::initialize()
-    {
-        this->subscribe(this->sendChannel, &RemoteConnectedClient::onSendMessage, this);
-        this->start();
-    }
-
-    Channel<Message> ConectionModule::subscribeToReceiveChannel(ChannelSubscriber<Message> channelSubscriber)
-    {
-        return this->receiveChannel.subscribe(channelSubscriber);
-    }
-
-    Channel<Message> ConectionModule::registerToSendChannel()
-    {
-        return this->sendChannel.publish();
-    }
-
-
     
 }
 }
