@@ -17,6 +17,7 @@ namespace Network
 
         this->socketClient = socketClient;
         this->readerModule = new SocketReaderModule(socketClient, this->registerToSendChannel(), this->registerToErrorChannel());
+        this->readerModule->startModule();
         
     }
 

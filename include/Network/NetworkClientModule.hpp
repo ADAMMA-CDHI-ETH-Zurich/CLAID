@@ -9,13 +9,12 @@ namespace portaible
 {
     namespace Network
     {
-        class NetworkModuleClient : public NetworkModule
+        class NetworkClientModule : public NetworkModule
         {
             private:
                 Network::SocketConnectionModule socketConnection;
                 RemoteConnection::RemoteModule remoteModule;
                 RemoteConnection::ConnectionLink link;
-
                 SocketClient socketClient;    
 
                 std::string address;
@@ -48,7 +47,8 @@ namespace portaible
                     socketConnection.waitForInitialization();
                     remoteModule.waitForInitialization();
 
-                    socketConnection.subscribeToErrorChannel(this->makeSubscriber(&NetworkModuleClient::onErrorReceived, this));
+                    // Subscribe to the error channel of the socket connection.
+                    socketConnection.subscribeToErrorChannel(this->makeSubscriber(&NetworkClientModule::onErrorReceived, this));
 
                     link.link(&socketConnection, &remoteModule);
 

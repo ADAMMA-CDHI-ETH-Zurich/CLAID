@@ -3,6 +3,7 @@ namespace portaible
 {
 bool Network::SocketClient::write(BinaryData& data)
 {
+    // First, we write the size (number of bytes) of the data.
     size_t size = data.getNumBytes();
     std::vector<char> tmp(sizeof(size_t));
     
@@ -11,6 +12,7 @@ bool Network::SocketClient::write(BinaryData& data)
     if(!writeBytes(tmp))
         return false;
 
+    // Now write the data itself.
     if(!writeBytes(data.getData()))
         return false;
 
@@ -19,6 +21,7 @@ bool Network::SocketClient::write(BinaryData& data)
 
 bool Network::SocketClient::read(BinaryData& data)
 {
+    // We read the number of bytes first
     size_t* dataNumBytes;
     std::vector<char> byteBuffer;
     // Read data size
@@ -30,10 +33,15 @@ bool Network::SocketClient::read(BinaryData& data)
 
     dataNumBytes = reinterpret_cast<size_t*>(byteBuffer.data());
 
+    // Now read the data
     data.resize(*dataNumBytes);
     
-    return this->readBytes(data.getData(), *dataNumBytes);
+    if(!this->readBytes(data.getData(), *dataNumBytes))
+    {
+        return false;
+    }
 
+    return true;
 }
 }
 
