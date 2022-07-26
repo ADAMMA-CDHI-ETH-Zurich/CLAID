@@ -168,7 +168,7 @@ namespace portaible
         public:
       
             
-            TypedChannel(ChannelManager* channelManager, const std::string& channelID) : ChannelBase(channelID)
+            TypedChannel(ChannelManager* channelManager, const std::string& channelID) : ChannelBase(channelID), channelManager(channelManager)
             {
                 // If T is Untyped, ChannelBuffer will be Untyped automatically.
                 this->channelBuffer = new ChannelBuffer<T>();
