@@ -3,7 +3,7 @@
 #include "RunTime/RunTime.hpp"
 #include "RemoteConnection/Message/Message.hpp"
 #include "RemoteConnection/Error/Error.hpp"
-#include "Network/Socket/SocketClient.hpp"
+#include "Network/Socket/Client/SocketClient.hpp"
 #include "Network/Error/NetworkErrors.hpp"
 namespace portaible
 {
@@ -23,7 +23,7 @@ namespace portaible
                 template<typename T>
                 void postError()
                 {
-                    Error error;
+                    RemoteConnection::Error error;
                     error.set<T>();
                     this->errorChannel.post(error);
                 }

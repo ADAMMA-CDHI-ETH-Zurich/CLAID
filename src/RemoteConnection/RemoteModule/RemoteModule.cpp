@@ -23,13 +23,25 @@ namespace RemoteConnection
 
     void RemoteModule::setSendMessageChannel(Channel<Message> channel)
     {
-        this->sendMessageChannel = channel;
+        this->sendMessageChannel = std::move(channel);
     }
 
     void RemoteModule::setReceiveMessageChannel(Channel<Message> channel)
     {
-        this->receiveMessageChannel = channel;
+        this->receiveMessageChannel = std::move(channel);
     }
+
+    void RemoteModule::unpublishSendMessageChannel()
+    {
+        this->sendMessageChannel.unpublish();
+    }
+
+    void RemoteModule::unsubscribeReceiveMessageChannel()
+    {
+        this->receiveMessageChannel.unsubscribe();
+    }
+
+    
 
 
 

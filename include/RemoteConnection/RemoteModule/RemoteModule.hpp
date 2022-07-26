@@ -55,6 +55,9 @@ namespace portaible
 
                 void setSendMessageChannel(Channel<Message> channel);
                 void setReceiveMessageChannel(Channel<Message> channel);
+                
+                void unpublishSendMessageChannel();
+                void unsubscribeReceiveMessageChannel();
             
         };
     }

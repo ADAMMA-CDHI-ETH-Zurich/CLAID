@@ -1,4 +1,4 @@
-#include "Network/Socket/SocketClient.hpp"
+#include "Network/Socket/Client/SocketClient.hpp"
 namespace portaible
 {
 bool Network::SocketClient::write(BinaryData& data)

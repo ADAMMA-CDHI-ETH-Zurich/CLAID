@@ -7,6 +7,16 @@
 #include "ChannelAccessRights.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 #include "Exception/Exception.hpp"
+
+namespace portaible
+{
+    template<typename T>
+    class Channel;
+
+    class ChannelManager;
+}
+#include "Channel/ChannelManager.hpp"
+
 #include <vector>
 
 namespace portaible
@@ -17,11 +27,17 @@ namespace portaible
     {
         private:
             TypedChannel<T>* typedChannel;
-            ChannelAccessRights channelAccessRights;
+            const ChannelSubscriberBase* subscriberPtr;
+
+            // Stored as ptr, to make sure that if the channel object was copied 
+            // and unsubcribe or unpublish was called later, all copied instances 
+            // lose their access rights.
+            std::shared_ptr<ChannelAccessRights> channelAccessRights;
+
 
             void verifyReadAccess()
             {
-                if(this->channelAccessRights != ChannelAccessRights::READ && this->channelAccessRights != ChannelAccessRights::READ_WRITE)
+                if(*this->channelAccessRights.get() != ChannelAccessRights::READ && *this->channelAccessRights.get() != ChannelAccessRights::READ_WRITE)
                 {
                     PORTAIBLE_THROW(Exception, "Cannot read from channel with ID " << typedChannel->getChannelID() << " as it was only published, not subscribed to.");
                 }
@@ -29,18 +45,26 @@ namespace portaible
 
             void verifyWriteAccess()
             {
-                if(this->channelAccessRights != ChannelAccessRights::WRITE && this->channelAccessRights != ChannelAccessRights::READ_WRITE)
+                if(*this->channelAccessRights.get() != ChannelAccessRights::WRITE && *this->channelAccessRights.get() != ChannelAccessRights::READ_WRITE)
                 {
                     PORTAIBLE_THROW(Exception, "Cannot post to channel with ID " << typedChannel->getChannelID().c_str() << " as it was only subscribed but not published.");
                 }
             }
         public:
 
-            Channel()
+
+
+            Channel() : subscriberPtr(nullptr)
             {
+                this->channelAccessRights = std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::NONE));
             }
 
-            Channel(TypedChannel<T>* typedChannel, ChannelAccessRights channelAccessRights) : typedChannel(typedChannel), channelAccessRights(channelAccessRights)
+            Channel(TypedChannel<T>* typedChannel, std::shared_ptr<ChannelAccessRights> channelAccessRights) : typedChannel(typedChannel), channelAccessRights(channelAccessRights), subscriberPtr(nullptr)
+            {
+
+            }
+
+            Channel(TypedChannel<T>* typedChannel, std::shared_ptr<ChannelAccessRights> channelAccessRights, ChannelSubscriberBase* subscriberPtr) : typedChannel(typedChannel), channelAccessRights(channelAccessRights), subscriberPtr(subscriberPtr)
             {
 
             }
@@ -105,15 +129,33 @@ namespace portaible
                 return this->typedChannel->getChannelID();
             }
 
+            void unsubscribe()
+            {
+                this->typedChannel->callUnsubscribe(*this);
+                *this->channelAccessRights.get() = ChannelAccessRights::NONE;
+            }
+
+            void unpublish()
+            {
+                this->typedChannel->callUnpublish(*this);
+                *this->channelAccessRights.get() = ChannelAccessRights::NONE;
+            }
+
+            const ChannelSubscriberBase* getSubcriberHandle()
+            {
+                return this->subscriberPtr;
+            }
+
+
     };
-    
     // TODO: Add mutex when subscribing / unsubscribing
     template<typename T>
     class TypedChannel : public ChannelBase
     {
 
         private:
-       
+            // The channelManager, that created this channel.
+            ChannelManager* channelManager;
 
             void signalNewDataToSubscribers()
             {
@@ -126,7 +168,7 @@ namespace portaible
         public:
       
             
-            TypedChannel(const std::string& channelID) : ChannelBase(channelID)
+            TypedChannel(ChannelManager* channelManager, const std::string& channelID) : ChannelBase(channelID)
             {
                 // If T is Untyped, ChannelBuffer will be Untyped automatically.
                 this->channelBuffer = new ChannelBuffer<T>();
@@ -277,7 +319,7 @@ namespace portaible
            
             Channel<T> subscribe()
             {
-                return Channel<T>(this, ChannelAccessRights::READ);
+                return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::READ)));
             }
 
             Channel<T> subscribe(ChannelSubscriber<T> channelSubscriber)
@@ -285,14 +327,15 @@ namespace portaible
                 ChannelSubscriber<T>* typedSubscriber = new ChannelSubscriber<T>(channelSubscriber);
                 typedSubscriber->setChannel(this);
 
+                ChannelSubscriberBase* untypedSubscriber = static_cast<ChannelSubscriberBase*>(typedSubscriber); 
                 this->channelSubscribers.push_back(static_cast<ChannelSubscriberBase*>(typedSubscriber));
                 
-                return subscribe();
+                return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::READ)), untypedSubscriber);
             }
 
             Channel<T> publish()
             {
-                return Channel<T>(this, ChannelAccessRights::WRITE);
+                return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::WRITE)));
             }
 
             void getChannelDataInterval(const Time& min, const Time& max, std::vector<ChannelData<T> >& channelDataInterval)
@@ -303,6 +346,51 @@ namespace portaible
            
             }
 
+            // Unsubscribe and unpublish are a bit ugly.. I know
+            // Because: Usually, a Channel<T> is created using ChannelManager.publish or subscribe, which are called by a Module.
+            // But to unsubscribe or unpublish, it does not make sense to call them via the module.
+            // Rather, the Channel<T> object itself should now how to unsubscribe/unpublish (i.e., revoking it's access rights).
+            // So normally, neither the ChannelManager not corresponding Module need to care about it.
+            // But, the ChannelManager should be notified when a channel was unsubscribed/unpublished from.
+            // In TypedChannel<T>.unsubscribe, we could call ChannelManager.unsubscribe (or publish respectively).
+            // However, then the order is reversed compared to publish/subscrube (ChannelManager.subscribe -> TypedChannel.subscribe vs.
+            // TypedChannel.subscribe -> ChannelManager.subscribe).
+            // Thus, we implement this callUnsubscribe and callPublish functions, which calls the corresponding functions of the ChannelManager,
+            // which afterwards calls the corresponding function of the TypedChannel.
+            // It's suboptimal, but luckily the user never needs to care about this implementation.
+            void callUnsubscribe(Channel<T>& channel)
+            {
+                this->channelManager->unsubscribe(channel);
+            }
+
+            void callUnpublish(Channel<T>& channel)
+            {
+                this->channelManager->unpublish(channel);
+            }
+
+            void unsubscribe(Channel<T>& channel)
+            {
+                const ChannelSubscriberBase* subscriber = channel.getSubcriberHandle();
+
+                if(subscriber != nullptr)
+                {
+                    auto it = std::find(this->channelSubscribers.begin(), this->channelSubscribers.end(), subscriber);
+
+                    if(it != this->channelSubscribers.end())
+                    {
+                        this->channelSubscribers.erase(it);
+                    }
+                }
+
+                
+
+            }
+
+            void unpublish(Channel<T>& channel)
+            {
+                // What to do?
+
+            }
 
 
             // ChannelData<T> read(const Time& timestamp, SlotQueryMode mode = NEAREST_SLOT,
@@ -312,15 +400,7 @@ namespace portaible
             //                     }
     };
 
-    template<typename T>
-    class LocalTypedChannel : public TypedChannel<T>
-    {
-        public:
-            LocalTypedChannel() : TypedChannel<T>("LocalChannel")
-            {
 
-            }
-    };
 
 
 }

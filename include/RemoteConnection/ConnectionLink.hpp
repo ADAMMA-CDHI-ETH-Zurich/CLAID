@@ -8,14 +8,14 @@ namespace portaible
         class ConnectionLink 
         {
             private:
-                ConnectionModule* remoteClient;
-                RemoteModule* remoteModule;
+                ConnectionModule* connection = nullptr;
+                RemoteModule* remoteModule = nullptr;
 
 
             public:
 
-                void link(ConnectionModule* client, RemoteModule* module);
-
+                void link(ConnectionModule* connection, RemoteModule* module);
+                void unlink();
         };
     }
 }

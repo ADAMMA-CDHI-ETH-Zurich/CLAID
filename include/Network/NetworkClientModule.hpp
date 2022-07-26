@@ -75,7 +75,7 @@ namespace portaible
                 template<typename T>
                 void postError()
                 {
-                    Error error;
+                    RemoteConnection::Error error;
                     error.set<T>();
                     this->errorChannel.post(error);
                 }

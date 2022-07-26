@@ -74,7 +74,7 @@ namespace portaible
                 else
                 {
                     // Channel not found, create new.
-                    TypedChannel<T>* newChannel = new TypedChannel<T>(channelID);
+                    TypedChannel<T>* newChannel = new TypedChannel<T>(this, channelID);
                     this->typedChannels.insert(std::make_pair(channelID, static_cast<ChannelBase*>(newChannel)));
                     return newChannel->subscribe();
                 }
@@ -107,7 +107,7 @@ namespace portaible
                 {
 
                     // Channel not found, create new.
-                    TypedChannel<T>* newChannel = new TypedChannel<T>(channelID);
+                    TypedChannel<T>* newChannel = new TypedChannel<T>(this, channelID);
                     this->typedChannels.insert(std::make_pair(channelID, static_cast<ChannelBase*>(newChannel)));
                     return newChannel->subscribe(channelSubscriber);
                 }
@@ -136,9 +136,63 @@ namespace portaible
                 else
                 {
                     // Channel not found, create new.
-                    TypedChannel<T>* newChannel = new TypedChannel<T>(channelID);
+                    TypedChannel<T>* newChannel = new TypedChannel<T>(this, channelID);
                     this->typedChannels.insert(std::make_pair(channelID, static_cast<ChannelBase*>(newChannel)));
                     return newChannel->publish();
+                }
+            }
+
+            template<typename T>
+            void unsubscribe(Channel<T>& channelObject)
+            {
+                const std::string channelID = channelObject.getChannelID();
+
+                auto it = typedChannels.find(channelID);
+
+                if(it != typedChannels.end())
+                {
+                    ChannelBase* channel = it->second;
+                    if(canCastChannel<T>(channel))
+                    {
+                        TypedChannel<T>* typedChannel = castChannel<T>(channel);
+                        typedChannel->unsubscribe(channelObject);
+                    }
+                    else
+                    {
+                        PORTAIBLE_THROW(Exception, "Error, cannot unsubscribe from channel with ID" << channelID << 
+                            "The type of the channel (" << channel->getChannelDataTypeUniqueIdentifierRTTIString() << ") cannot be cast to " << getDataTypeRTTIString<T>() << ".");
+                    }
+                }
+                else
+                {
+                    PORTAIBLE_THROW(Exception, "Error, unsubscribe was called on a channel with channel ID " << channelID << ", which does not exist. This should never happen and most likely is a programming mistake");
+                }
+            }
+
+            template<typename T>
+            void unpublish(Channel<T>& channelObject)
+            {
+                const std::string channelID = channelObject.getChannelID();
+
+                auto it = typedChannels.find(channelID);
+
+                if(it != typedChannels.end())
+                {
+                    ChannelBase* channel = it->second;
+                    if(canCastChannel<T>(channel))
+                    {
+                        TypedChannel<T>* typedChannel = castChannel<T>(channel);
+                        typedChannel->unpublish(channelObject);
+                    }
+                    else
+                    {
+                        PORTAIBLE_THROW(Exception, "Error, cannot unpublish channel with ID" << channelID << 
+                            "The type of the channel (" << channel->getChannelDataTypeUniqueIdentifierRTTIString() << ") cannot be cast to " << getDataTypeRTTIString<T>() << ".");
+                    }
+                }
+                else
+                {
+                    PORTAIBLE_THROW(Exception, "Error, unpublish was called on a channel with channel ID " << channelID << ", which does not exist. This should never happen and most likely is a programming mistake");
                 }
             }
 

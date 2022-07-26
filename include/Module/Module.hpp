@@ -136,6 +136,11 @@ namespace portaible
 
                 this->runnableDispatcherThread.addRunnable(functionRunnable);
             }
+
+            void stopModule()
+            {
+                
+            }
     };
 
     // A SubModule can only communicate via local channels (between any two Modules or SubModules) and 

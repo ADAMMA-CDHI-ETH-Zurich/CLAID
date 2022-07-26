@@ -1,8 +1,8 @@
 #include "Network/Socket/Server/SocketServer.hpp"
-
+#include <arpa/inet.h>
 namespace portaible
 {
-namespace network
+namespace Network
 {
     bool SocketServer::bindTo(size_t port)
     {
@@ -47,7 +47,7 @@ namespace network
         int clientSocket;
         struct sockaddr_in clientAddress; 
         
-        clientSocket = accept(this->serverSocket, (struct sockaddr *)&clientAddress, (socklen_t*)&clientAddress);
+        clientSocket = ::accept(this->serverSocket, (struct sockaddr *)&clientAddress, (socklen_t*)&clientAddress);
         if (clientSocket < 0) 
         { 
             Logger::printfln("SocketServer:ClientHandler failed to accept client. Is Server down??\n");
@@ -59,8 +59,8 @@ namespace network
             struct sockaddr_in* pV4Addr = (struct sockaddr_in*)&clientAddress;
             struct in_addr ipAddr = pV4Addr->sin_addr;
             char str[INET_ADDRSTRLEN];
-            inet_ntop( AF_INET, &ipAddr, str, INET_ADDRSTRLEN );
-            ConsolePrinter::printf("SocketServer:ClientHandler successfully accepted client with address %s %d\n", str, clientSocket);
+            ::inet_ntop( AF_INET, &ipAddr, str, INET_ADDRSTRLEN );
+            Logger::printfln("SocketServer:ClientHandler successfully accepted client with address %s %d\n", str, clientSocket);
             
             client = SocketClient(clientSocket);
             return true;
@@ -73,18 +73,18 @@ namespace network
 
     // }
 
-    Socket::SocketServer::Server::SocketServerError Socket::SocketServer::Server::getLastError()
+    SocketServer::SocketServerError SocketServer::getLastError()
+    {
+        return this->lastError;
+    }
+
+
+    SocketServer::SocketServer()
     {
 
     }
 
-
-    Socket::SocketServer::Server::Server()
-    {
-
-    }
-
-    Socket::SocketServer::Server::~Server()
+    SocketServer::~SocketServer()
     {
 
     }

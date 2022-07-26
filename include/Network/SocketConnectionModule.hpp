@@ -1,7 +1,7 @@
 #pragma once 
 
 #include "RemoteConnection/ConnectionModule.hpp"
-#include "Network/Socket/SocketClient.hpp"
+#include "Network/Socket/Client/SocketClient.hpp"
 #include "Network/SocketReaderModule.hpp"
 namespace portaible
 {

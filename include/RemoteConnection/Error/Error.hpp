@@ -30,7 +30,7 @@ namespace portaible
                 {
                     ErrorType* ptr = error.get();
                     
-                    T* castError = dynamic_cast<T>(ptr);
+                    T* castError = dynamic_cast<T*>(ptr);
 
                     return castError != nullptr;
                 }

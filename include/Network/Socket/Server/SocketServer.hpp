@@ -14,7 +14,7 @@
 #include <string.h> 
 #include <functional>
 
-#include "SocketClient.hpp"
+#include "Network/Socket/Client/SocketClient.hpp"
 
 //#include <thread.h>
 namespace portaible
