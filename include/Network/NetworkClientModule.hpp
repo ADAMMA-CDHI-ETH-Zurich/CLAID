@@ -2,6 +2,7 @@
 
 #include "RemoteConnection/ConnectionLink.hpp"
 #include "RemoteConnection/RemoteModule/RemoteModule.hpp"
+#include "RemoteConnection/RemoteConnectedEntity.hpp"
 #include "Network/SocketConnectionModule.hpp"
 #include "Network/NetworkModule.hpp"
 
@@ -12,10 +13,8 @@ namespace portaible
         class NetworkClientModule : public NetworkModule
         {
             private:
-                Network::SocketConnectionModule socketConnection;
-                RemoteConnection::RemoteModule remoteModule;
-                RemoteConnection::ConnectionLink link;
-                SocketClient socketClient;    
+
+                RemoteConnection::RemoteConnectedEntity* remoteConnectedEntitiy;
 
                 std::string address;
 
@@ -41,21 +40,16 @@ namespace portaible
 
                 void initialize()
                 {
-                    socketConnection.startModule();
-                    remoteModule.startModule();
-
-                    socketConnection.waitForInitialization();
-                    remoteModule.waitForInitialization();
+                  
 
                     // Subscribe to the error channel of the socket connection.
-                    socketConnection.subscribeToErrorChannel(this->makeSubscriber(&NetworkClientModule::onErrorReceived, this));
-
-                    link.link(&socketConnection, &remoteModule);
-
-                    this->errorChannel = socketConnection.registerToErrorChannel();
+                    // socketConnection.subscribeToErrorChannel(this->makeSubscriber(&NetworkClientModule::onErrorReceived, this));
+                    // this->errorChannel = socketConnection.registerToErrorChannel();
 
                     std::string ip;
                     int port;
+
+                    SocketClient socketClient;
 
                     getIPAndPortFromAddress(address, ip, port);
                     if(!socketClient.connectTo(ip, port))
@@ -64,7 +58,9 @@ namespace portaible
                         return;
                     }
 
-                    socketConnection.start(&this->socketClient);
+                    
+                    this->remoteConnectedEntitiy = RemoteConnection::RemoteConnectedEntity::Create<SocketConnectionModule>(socketClient);
+                    this->remoteConnectedEntitiy->setup();
                 }
 
                 void onErrorReceived(ChannelData<RemoteConnection::Error> error)

@@ -6,8 +6,12 @@ namespace portaible
 namespace Network
 {
 
+    SocketConnectionModule::SocketConnectionModule(SocketClient& socketClient) : socketClient(socketClient), readerModule(&this->socketClient, this->registerToSendChannel(), this->registerToErrorChannel())
+    {
 
-    void SocketConnectionModule::start(SocketClient* socketClient)
+    }
+
+    void SocketConnectionModule::setup()
     {
         if(this->started)
         {
@@ -15,9 +19,8 @@ namespace Network
         }
         this->started = true;
 
-        this->socketClient = socketClient;
-        this->readerModule = new SocketReaderModule(socketClient, this->registerToSendChannel(), this->registerToErrorChannel());
-        this->readerModule->startModule();
+        this->readerModule.startModule();
+        this->readerModule.waitForInitialization();
         
     }
 
@@ -26,7 +29,7 @@ namespace Network
         BinaryData binaryData;
         BinarySerializer serializer;
         serializer.serialize(message);
-        this->socketClient->write(serializer.binaryData);
+        this->socketClient.write(serializer.binaryData);
     }
 
 

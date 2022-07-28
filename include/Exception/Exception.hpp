@@ -60,9 +60,9 @@ namespace portaible
 
 
 		struct Info {
-			std::string message;	/// The exception message
-			std::string file;		/// The file the exception occurred
-			int         line;		/// The line the exception occurred
+			std::string message;	
+			std::string file;		
+			int         line;		
 
 		public:
 			Info(const std::string& iMessage, const std::string& iFile, int iLine) :
@@ -81,7 +81,7 @@ namespace portaible
 	protected:
 		std::list<Info> mInfos;
 
-		mutable std::string mMessage; ///< as cache for what()
+		mutable std::string mMessage; 
 	};
 
 }

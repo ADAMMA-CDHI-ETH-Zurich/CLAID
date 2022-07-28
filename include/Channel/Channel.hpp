@@ -39,7 +39,7 @@ namespace portaible
             {
                 if(*this->channelAccessRights.get() != ChannelAccessRights::READ && *this->channelAccessRights.get() != ChannelAccessRights::READ_WRITE)
                 {
-                    PORTAIBLE_THROW(Exception, "Cannot read from channel with ID " << typedChannel->getChannelID() << " as it was only published, not subscribed to.");
+                    PORTAIBLE_THROW(Exception, "Cannot read from channel with ID " << typedChannel->getChannelID() << " as it was either only published or has been unsubscribed.");
                 }
             }
 
@@ -47,7 +47,7 @@ namespace portaible
             {
                 if(*this->channelAccessRights.get() != ChannelAccessRights::WRITE && *this->channelAccessRights.get() != ChannelAccessRights::READ_WRITE)
                 {
-                    PORTAIBLE_THROW(Exception, "Cannot post to channel with ID " << typedChannel->getChannelID().c_str() << " as it was only subscribed but not published.");
+                    PORTAIBLE_THROW(Exception, "Cannot post to channel with ID " << typedChannel->getChannelID().c_str() << " as it was either only subscribed or has been unpublished.");
                 }
             }
         public:

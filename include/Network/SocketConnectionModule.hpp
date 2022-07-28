@@ -10,8 +10,8 @@ namespace portaible
         class SocketConnectionModule : public RemoteConnection::ConnectionModule
         {
             private:
-                SocketClient* socketClient = nullptr;
-                SocketReaderModule* readerModule = nullptr;
+                SocketClient socketClient;
+                SocketReaderModule readerModule;
 
                 bool started = false;
 
@@ -21,7 +21,9 @@ namespace portaible
                 void sendMessage(RemoteConnection::Message message);
 
             public:
-                void start(SocketClient* socketClient);
+                SocketConnectionModule(SocketClient& socketClient);
+                void start();
+                void setup();
 
         };
     }

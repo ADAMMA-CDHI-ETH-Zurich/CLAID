@@ -49,11 +49,11 @@ namespace portaible
                     this->errorChannel.post(error);
                 }
 
+                void initialize();
 
             public:
                 ConnectionModule();
 
-                void initialize();
 
                 Channel<Message> subscribeToReceiveChannel(ChannelSubscriber<Message> channelSubscriber);
                 Channel<Message> registerToSendChannel();
