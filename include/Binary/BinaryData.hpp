@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "Reflection/SplitReflect.hpp"
+#include "Reflection/SplitReflectInType.hpp"
 
 namespace portaible
 {
@@ -9,6 +9,33 @@ namespace portaible
         
        
         public:
+            template<typename Reflector>
+            void reflect(Reflector& r)
+            {
+                splitReflectInType(r, *this);
+            }
+
+            template<typename Reflector>
+            void reflectRead(Reflector& r)
+            {
+                size_t bytes;
+                r.member("NumBytes", bytes, "");
+
+                this->resize(bytes);
+
+                char* dataPtr = this->getRawData();
+                r.read(dataPtr, bytes);
+            }
+
+            template<typename Reflector>
+            void reflectWrite(Reflector& r)
+            {
+                size_t bytes;
+                r.member("NumBytes", bytes, "");
+
+                r.write(this->getRawData(), bytes);
+            }
+
             // Should only be enabled for primitive types
             template <typename T>
             typename std::enable_if<std::is_arithmetic<T>::value>::type // type of enable_if is void, if value is true, if not specified otherwise. If false, then type does not exist (see implementation of enable_if).
@@ -65,12 +92,6 @@ namespace portaible
                 return this->data.size();
             }
 
-            template<typename Reflector>
-            void reflect(Reflector& r)
-            {
-                splitReflect(r, *this);
-            }
-
             void clear()
             {
                 this->data.clear();
@@ -95,27 +116,3 @@ namespace portaible
 }
 
 
-
-namespace portaible
-{
-    template<typename Reflector>
-    void reflectRead(Reflector& r, BinaryData& binaryData)
-    {
-        size_t bytes;
-        r.member("NumBytes", bytes, "");
-
-        binaryData.resize(bytes);
-
-        char* dataPtr = binaryData.getRawData();
-        r.read(dataPtr, bytes);
-    }
-
-    template<typename Reflector>
-    void reflectWrite(Reflector& r, BinaryData& binaryData)
-    {
-        size_t bytes;
-        r.member("NumBytes", bytes, "");
-
-        r.write(binaryData.getRawData(), bytes);
-    }
-}

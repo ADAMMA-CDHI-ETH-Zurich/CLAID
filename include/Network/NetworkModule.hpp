@@ -15,7 +15,6 @@ namespace portaible
         {
             protected:
                 virtual void initialize() = 0;
-                virtual void onError(const RemoteConnection::Error& error) = 0;
 
             public: 
           

@@ -21,7 +21,7 @@ class ArgumentParser
 
         void printHelpIfInvalidArgumentFound();
 
-    template<typename T> void add_argument(std::string argument, T& var, T defaultValue, std::string description);
+        template<typename T> void add_argument(std::string argument, T& var, T defaultValue, std::string description);
 
    
 };

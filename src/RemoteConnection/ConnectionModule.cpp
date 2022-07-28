@@ -18,6 +18,7 @@ namespace RemoteConnection
     // Called by external module.
     void ConnectionModule::onSendMessage(ChannelData<Message> message)
     {
+        Logger::printfln("onSendMessage");
         this->sendMessage(message->value());
     }
 

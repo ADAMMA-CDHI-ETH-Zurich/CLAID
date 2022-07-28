@@ -9,15 +9,17 @@ namespace Network
         this->port = port;
         if ((this->serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
         {
-            this->lastError = SocketServerErrorType::SOCKET_CREATION_FAILED;
+            this->lastError.errorType = SocketServerErrorType::SOCKET_CREATION_FAILED;
+            this->lastError.errorString = strerror(errno);
             return false;
         }
 
         int opt;
-        if (setsockopt(this->serverSocket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, 
+        if (setsockopt(this->serverSocket, SOL_SOCKET, SO_REUSEADDR, 
                                                     &opt, sizeof(opt))) 
         { 
-            this->lastError = SocketServerErrorType::SET_SOCK_OPT_FAILED;
+            this->lastError.errorType = SocketServerErrorType::SET_SOCK_OPT_FAILED;
+            this->lastError.errorString = strerror(errno);
             return false;
         } 
         
@@ -29,14 +31,16 @@ namespace Network
         if (bind(this->serverSocket, (struct sockaddr *)&this->address,  
                                     sizeof(this->address))<0) 
         { 
-            this->lastError = SocketServerErrorType::BIND_FAILED;
+            this->lastError.errorType = SocketServerErrorType::BIND_FAILED;
+            this->lastError.errorString = strerror(errno);
             return false;
         } 
 
 
         if (listen(this->serverSocket, 3) < 0) 
         { 
-            this->lastError = SocketServerErrorType::LISTEN_FAILED;
+            this->lastError.errorType = SocketServerErrorType::LISTEN_FAILED;
+            this->lastError.errorString = strerror(errno);
             return false;
         } 
         return true;
@@ -52,6 +56,7 @@ namespace Network
         { 
             Logger::printfln("SocketServer:ClientHandler failed to accept client. Is Server down??\n");
             Logger::printfln("recv: %s (%d)\n", strerror(errno), errno);
+            this->lastError.errorString = SocketServerErrorType::ACCEPT_FAILED;
             return false;
         } 
         else

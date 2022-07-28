@@ -5,6 +5,7 @@ namespace portaible
     namespace Network
     {
         const std::string ClientAcceptModule::CLIENT_ACCEPT_CHANNEL = "ClientAcceptChannel";
+        const std::string ClientAcceptModule::ERROR_CHANNEL = "ErrorChannel";
 
 
         void ClientAcceptModule::initialize()
@@ -12,11 +13,16 @@ namespace portaible
             this->clientAcceptChannel = this->publishLocal<SocketClient>(CLIENT_ACCEPT_CHANNEL);
         }
 
-        void ClientAcceptModule::subscribeToClientAcceptChannel(ChannelSubscriber<SocketClient> subscriber)
+        Channel<SocketClient> ClientAcceptModule::subscribeToClientAcceptChannel(ChannelSubscriber<SocketClient> subscriber)
         {
-            this->subscribeLocal<SocketClient>(CLIENT_ACCEPT_CHANNEL);
+            return this->subscribeLocal<SocketClient>(CLIENT_ACCEPT_CHANNEL, subscriber);
         }
         
+        Channel<RemoteConnection::Error> ClientAcceptModule::subscribeToErrorChannel(ChannelSubscriber<RemoteConnection::Error> subscriber)
+        {
+            return this->subscribeLocal<RemoteConnection::Error>(ERROR_CHANNEL, subscriber);
+        }
+
         void ClientAcceptModule::start(SocketServer* server)
         {
             this->server = server;
@@ -28,6 +34,7 @@ namespace portaible
 
         void ClientAcceptModule::run()
         {
+            Logger::printfln("ClientAcceptModule::run");
             while(this->active)
             {
                 SocketClient client;
@@ -35,8 +42,9 @@ namespace portaible
                 if(!this->server->accept(client))
                 {
                     // TODO: POST ERROR ACCEPT FAILED
+                    PORTAIBLE_THROW(Exception, "Failed to accept client");
                 }
-                
+                Logger::printfln("Post");
                 this->clientAcceptChannel.post(client);
             }
         }

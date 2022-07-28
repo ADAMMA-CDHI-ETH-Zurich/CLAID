@@ -22,8 +22,8 @@ namespace RemoteConnection
         ChannelSubscriber<Message> subscriber = module->getSubscriberForMessageReceiveChannel();
 
 
-        module->setReceiveMessageChannel(connection->subscribeToReceiveChannel(subscriber));
-        module->setSendMessageChannel(connection->registerToSendChannel());
+        this->remoteModule->setReceiveMessageChannel(connection->subscribeToReceiveChannel(subscriber));
+        this->remoteModule->setSendMessageChannel(connection->registerToSendChannel());
     }
 
     void ConnectionLink::unlink()

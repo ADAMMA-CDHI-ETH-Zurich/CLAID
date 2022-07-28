@@ -2,9 +2,8 @@
 #include <vector>
 
 // Only difference between the two is, basically, that reflectWrite needs to resize the vector.
-// Read means read from data -> for example Serialization (NOT read such as "read from XML").
 template<typename Reflector, typename T>
-void reflectRead(Reflector& r, std::vector<T>& vector)
+void reflectWrite(Reflector& r, std::vector<T>& vector)
 {
     r.beginSequence();
     size_t count;
@@ -22,7 +21,7 @@ void reflectRead(Reflector& r, std::vector<T>& vector)
 }
 
 template<typename Reflector, typename T>
-void reflectWrite(Reflector& r, std::vector<T>& vector)
+void reflectRead(Reflector& r, std::vector<T>& vector)
 {
     r.beginSequence();
     size_t count = vector.size();

@@ -3,6 +3,7 @@ namespace portaible
 {
 bool Network::SocketClient::write(BinaryData& data)
 {
+    Logger::printfln("Calling write");
     // First, we write the size (number of bytes) of the data.
     size_t size = data.getNumBytes();
     std::vector<char> tmp(sizeof(size_t));

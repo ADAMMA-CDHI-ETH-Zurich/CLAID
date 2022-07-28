@@ -178,27 +178,27 @@ namespace portaible
             }
 
         protected: 
-        template<typename T>
-        Channel<T> subscribeLocal(const std::string& channelID);
+            template<typename T>
+            Channel<T> subscribeLocal(const std::string& channelID);
 
-        template<typename T, typename Class>
-        Channel<T> subscribeLocal(const std::string& channelID,
-                    void (Class::*f)(ChannelData<T>), Class* obj);
+            template<typename T, typename Class>
+            Channel<T> subscribeLocal(const std::string& channelID,
+                        void (Class::*f)(ChannelData<T>), Class* obj);
 
-        template<typename T>
-        Channel<T> subscribeLocal(const std::string& channelID, std::function<void (ChannelData<T>)> function);
-        
-        template<typename T>
-        Channel<T> subscribeLocal(const std::string& channelID, ChannelSubscriber<T> channelSubscriber);
+            template<typename T>
+            Channel<T> subscribeLocal(const std::string& channelID, std::function<void (ChannelData<T>)> function);
+            
+            template<typename T>
+            Channel<T> subscribeLocal(const std::string& channelID, ChannelSubscriber<T> channelSubscriber);
 
-        template<typename T>
-        Channel<T> publishLocal(const std::string& channelID);
+            template<typename T>
+            Channel<T> publishLocal(const std::string& channelID);
 
-        template<typename T>
-        void unsubscribe()
-        {
+            template<typename T>
+            void unsubscribe()
+            {
 
-        }
+            }
 
                 
     };

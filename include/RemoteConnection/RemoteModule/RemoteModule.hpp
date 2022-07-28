@@ -48,6 +48,8 @@ namespace portaible
             //     void onMessage(Message message);
             //     void onConnectionLost();
 
+                void initialize();
+
             public:
             //     void notifyOnMessage(Message message);
             //     void notifyOnConnectionLost();
@@ -58,7 +60,9 @@ namespace portaible
                 
                 void unpublishSendMessageChannel();
                 void unsubscribeReceiveMessageChannel();
-            
+
+
+                            
         };
     }
     

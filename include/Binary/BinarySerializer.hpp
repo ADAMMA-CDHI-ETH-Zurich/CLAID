@@ -86,6 +86,8 @@ namespace portaible
                     PORTAIBLE_THROW(portaible::Exception, "BinarySerializer failed to serialize object to binary. Member \"" << property << "\" is a pointer/polymorphic object of type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
+                // If there is a factory available for data type with given RTTI string (see above), then the className will
+                // be the correct name of the Polymorphic class.
                 std::string className = member->getClassName();
 
                 PolymorphicReflector::WrappedReflectorBase<BinarySerializer>* polymorphicReflector;

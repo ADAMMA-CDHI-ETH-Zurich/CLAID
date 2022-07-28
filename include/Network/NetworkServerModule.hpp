@@ -3,12 +3,13 @@
 #include "Network/Socket/Client/SocketClient.hpp"
 #include "Network/Socket/Server/SocketServer.hpp"
 #include "Network/Socket/Server/ClientAcceptModule.hpp"
-
+#include "Network/SocketConnectionModule.hpp"
+#include "Network/NetworkModule.hpp"
 
 #include "RemoteConnection/ConnectionLink.hpp"
 #include "RemoteConnection/RemoteModule/RemoteModule.hpp"
-#include "Network/SocketConnectionModule.hpp"
-#include "Network/NetworkModule.hpp"
+#include "RemoteConnection/RemoteConnectedEntity.hpp"
+
 
 namespace portaible
 {
@@ -16,48 +17,31 @@ namespace portaible
     {
         class NetworkServerModule : public NetworkModule
         {
+            PORTAIBLE_MODULE(NetworkServerModule)
             private:
-                std::vector<RemoteConnection::RemoteModule*> remoteModules;
-                std::vector<SocketConnectionModule*> socketConnections;
-                std::vector<SocketClient*> clients;
-                std::vector<RemoteConnection::ConnectionLink> links;
-
-                void insert(RemoteConnection::RemoteModule*& remoteModule, SocketConnectionModule*& socketConnectionModule, SocketClient*& client, RemoteConnection::ConnectionLink& link)
-                {
-                    this->remoteModules.push_back(remoteModule);
-                    this->socketConnections.push_back(socketConnectionModule);
-                    this->clients.push_back(client);
-                    this->links.push_back(link);
-                }
-
-                void onClientAccepted(ChannelData<SocketClient> socketClient)
-                {
-                    // Insert new
-                    RemoteConnection::RemoteModule* remoteModule = new RemoteConnection::RemoteModule();
-                    SocketConnectionModule* socketConnectionModule = new SocketConnectionModule();
-                    SocketClient* newClient = new SocketClient(socketClient->value());
-                    RemoteConnection::ConnectionLink link;
 
 
+                std::vector<RemoteConnection::RemoteConnectedEntity*> remoteConnectedEntities;
+                std::map<RemoteConnection::RemoteConnectedEntity*, Channel<RemoteConnection::Error>> errorChannels;
 
-                    std::function<void (ChannelData<Error>)> callbackFunction = std::bind(&NetworkServerModule::onError, this, newClient, std::placeholders::_1);
-                    socketConnectionModule->subscribeToErrorChannel();
-                    
-                    
-                    link.link(socketConnectionModule, remoteModule);
+                Channel<RemoteConnection::Error> clientAcceptErrorChannel;
+                Channel<SocketClient> clientAcceptChannel;
 
-                    remoteModule->startModule();
-                    socketConnectionModule->startModule();
+                ClientAcceptModule clientAcceptModule;
+                SocketServer server;
+                size_t port;
 
-                    this->insert(remoteModule, socketConnectionModule, newClient, link);
-                }
-
-                void onError(SocketClient* client, ChannelData<Error> error)
-                {
-
-                }
+                void onClientAccepted(ChannelData<SocketClient> socketClient);
+                void onClientAcceptError(ChannelData<RemoteConnection::Error> error);
+                void onError(RemoteConnection::RemoteConnectedEntity* entity, ChannelData<RemoteConnection::Error> error);
+                void initialize();
 
             public:
+                template<typename Reflector>
+                void reflect(Reflector& r)
+                {
+                    r.member("Port", this->port, "");
+                }
 
 
         };

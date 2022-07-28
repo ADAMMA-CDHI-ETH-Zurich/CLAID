@@ -28,3 +28,4 @@ inline void splitReflect(Reflector& r, Type& member)
 {
 	ReflectReadWriteInvoker<Reflector, Type>::call(r, member);
 }
+

@@ -28,13 +28,20 @@ namespace portaible
             public:
                 RemoteConnectedEntity() = delete;
 
+                // We use factory function to make sure that the RemoteConnectedEntity uses
+                // a ConnectionModule that was created by itself. I.e.: We make sure we have ownership
+                // over the ConnectionModule and it's not exposed to "the outside world".
                 template<typename ConnectionModuleType, typename... arguments>
-                static RemoteConnectedEntity* Create(arguments...);
+                static RemoteConnectedEntity* Create(arguments... args)
+                {
+                    return new RemoteConnectedEntity(new ConnectionModuleType(args...));
+                }
 
                 void setup();
                 void disintegrate();
 
-                Channel<Error> subscribeToErrorChannel(ChannelSubscriber<Error> subscriber);
+                Channel<Error> subscribeToErrorChannel(ChannelSubscriber<Error> channelSubscriber);
+                Channel<Error> registerToErrorChannel();
 
         };
     }

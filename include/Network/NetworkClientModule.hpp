@@ -12,6 +12,7 @@ namespace portaible
     {
         class NetworkClientModule : public NetworkModule
         {
+            PORTAIBLE_MODULE(NetworkClientModule)
             private:
 
                 RemoteConnection::RemoteConnectedEntity* remoteConnectedEntitiy;
@@ -30,7 +31,8 @@ namespace portaible
                     }
 
                     ip = address.substr(0, characterIndex);
-                    port = std::atoi(address.substr(characterIndex).c_str());
+                    Logger::printfln("atoi %s", address.substr(characterIndex).c_str());
+                    port = std::atoi(address.substr(characterIndex + 1).c_str());
 
                     if(port < 0)
                     {

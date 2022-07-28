@@ -27,8 +27,8 @@ namespace portaible
             public:
                 SocketServer* server = nullptr;
 
-                void subscribeToClientAcceptChannel(ChannelSubscriber<SocketClient> subscriber);
-                void subscribeToErrorChannel(ChannelSubscriber<RemoteConnection::Error> subscriber);
+                Channel<SocketClient> subscribeToClientAcceptChannel(ChannelSubscriber<SocketClient> subscriber);
+                Channel<RemoteConnection::Error> subscribeToErrorChannel(ChannelSubscriber<RemoteConnection::Error> subscriber);
                 void start(SocketServer* server);
                 
                 

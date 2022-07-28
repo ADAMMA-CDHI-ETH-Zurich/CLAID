@@ -41,11 +41,12 @@ namespace Network
             BinaryData binaryData;
             if(!this->socketClient->read(binaryData))
             {
+                Logger::printfln("Read failed");
                 postError<ErrorReadFromSocketFailed>();
                 this->active = false;
                 break;
             }
-
+            Logger::printfln("read sth");
             // BinaryData is a message -> deserialize to message?
             BinaryDeserializer deserializer;
             RemoteConnection::Message message;

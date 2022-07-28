@@ -54,8 +54,6 @@ namespace portaible
 		public:
 			RegisterHelper(std::string name)
 			{
-									printf("Registering 1 %s\n", name.c_str());
-
 				PolymorphicReflector<Reflector>::getInstance()->template registerReflector<ObjectType>(name);
 			}
 		};

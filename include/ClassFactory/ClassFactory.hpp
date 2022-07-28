@@ -45,7 +45,6 @@ namespace portaible
 					auto it2 = rttiToRegisteredClassNameMap.find(rttiString);
 
 
-					printf("Class Factory registering %s %s\n", className.c_str(), rttiString.c_str());
 					if (it2 != rttiToRegisteredClassNameMap.end())
 					{
 						PORTAIBLE_THROW(portaible::Exception, "Error, class \"" << className << "\" was registered to the ClassFactory for the first time, however it's RTTI was already memorized for another type."

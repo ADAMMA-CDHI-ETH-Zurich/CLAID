@@ -30,12 +30,14 @@ namespace portaible
 					SET_SOCK_OPT_FAILED, // setsockopt(...) failed
 					BIND_FAILED, // bind(...) failed
 					LISTEN_FAILED, // listen(...) failed
+					ACCEPT_FAILED, // accept(...) failed
 				};
 
 				struct SocketServerError
 				{
 					SocketServerErrorType errorType;
 					int additionalErrorID; // Error ID of the function that throws the error, e.g. WSAStartup fails with WSA_INVALID_PARAMETER
+					std::string errorString;
 				
 					SocketServerError()
 					{
@@ -45,6 +47,21 @@ namespace portaible
 					SocketServerError(SocketServerErrorType errorType, int additionalErrorID = -1) : errorType(errorType), additionalErrorID(additionalErrorID)
 					{
 
+					}
+
+					std::string errorTypeAsString()
+					{
+						std::vector<std::string> map = {"SOCKET_CREATION_FAILED", 
+											"SET_SOCK_OPT_FAILED", 
+											"BIND_FAILED", 
+											"LISTEN_FAILED", 
+											"ACCEPT_FAILED"};
+
+						int idx = static_cast<int>(this->errorType);
+
+						if(idx < 0 || idx >= map.size())
+							return "Unknown Error";
+						return map[idx];
 					}
 				};
 

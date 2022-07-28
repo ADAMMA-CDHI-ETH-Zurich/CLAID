@@ -30,7 +30,7 @@ namespace portaible
 
 		XMLParser xmlParser;
 
-		return (!xmlParser.parseFromString(fileContent, this->xmlNode));
+		return (xmlParser.parseFromString(fileContent, this->xmlNode));
 		
 	}
 
