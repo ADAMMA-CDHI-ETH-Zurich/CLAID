@@ -51,6 +51,10 @@ namespace portaible
 
                 void initialize();
 
+                // Should be exposed to the outside. The ConnectionModule is responsible for receiving the messages.
+                Channel<Message> registerToReceiveChannel();
+
+
             public:
                 ConnectionModule();
 

@@ -123,7 +123,7 @@ namespace portaible
 
 	Network::SocketClient::~SocketClient()
 	{
-		this->close();
+
 	}
 
 

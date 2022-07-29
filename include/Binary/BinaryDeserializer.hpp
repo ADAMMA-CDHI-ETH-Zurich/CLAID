@@ -6,7 +6,7 @@
 
 namespace portaible
 {
-    class BinaryDeserializer : public Serializer<BinaryDeserializer>
+    class BinaryDeserializer : public Deserializer<BinaryDeserializer>
     {
     
         private:
@@ -116,14 +116,9 @@ namespace portaible
                 // Do nothing
             }
 
-            void write(const char* data, size_t size)
-            {
-
-            }
-
             void read(char*& data, size_t size)
             {
-                
+                this->binaryDataReader.readBytes(data, size);
             }
 
             
@@ -139,7 +134,6 @@ namespace portaible
 
 
                 this->binaryDataReader.readString(storedName);
-                printf("names %s %s\n", storedName.c_str(), name.c_str());
 
                 if(name != storedName)
                 {

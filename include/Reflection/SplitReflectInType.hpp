@@ -13,7 +13,7 @@ struct ClassReflectReadWriteInvoker
 
 // Invoke reflectRead
 template<typename Reflector, typename Type>
-struct ClassReflectReadWriteInvoker<Reflector, Type, typename std::enable_if<!Reflector::isReadOnly>::type> 
+struct ClassReflectReadWriteInvoker<Reflector, Type, typename std::enable_if<Reflector::isReadOnly>::type> 
 {
 	static void call(Reflector& r, Type& obj) 
 	{
@@ -23,7 +23,7 @@ struct ClassReflectReadWriteInvoker<Reflector, Type, typename std::enable_if<!Re
 
 
 template<typename Reflector, typename Type>
-inline void splitReflectInType(Reflector& r, Type obj)
+inline void splitReflectInType(Reflector& r, Type& obj)
 {
 	ClassReflectReadWriteInvoker<Reflector, Type>::call(r, obj);
 }

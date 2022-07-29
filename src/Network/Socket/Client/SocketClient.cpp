@@ -6,6 +6,8 @@ bool Network::SocketClient::write(BinaryData& data)
     Logger::printfln("Calling write");
     // First, we write the size (number of bytes) of the data.
     size_t size = data.getNumBytes();
+        Logger::printfln("Calling write bytes %ul", size);
+
     std::vector<char> tmp(sizeof(size_t));
     
     *reinterpret_cast<size_t*>(tmp.data()) = size;

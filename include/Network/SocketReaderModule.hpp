@@ -28,11 +28,12 @@ namespace portaible
                     this->errorChannel.post(error);
                 }
 
+                void initialize();
+
             public:
                 SocketReaderModule();
                 SocketReaderModule(SocketClient* client, Channel<RemoteConnection::Message> messageReceivedChannel, Channel<RemoteConnection::Error> errorChannel);
 
-                void start();
                 void stop();
 
                 bool isStopped();

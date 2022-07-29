@@ -42,6 +42,13 @@ namespace RemoteConnection
     {
         Logger::printfln("RECEIVED MESSAGE\n");
         Logger::printfln("%s", message->value().header->description.c_str());
+        std::vector<std::string> channelNames;
+        Message m = message->value();
+        m.data->as<MessageDataBinary>()->get<std::vector<std::string>>(channelNames);
+        for(std::string name : channelNames)
+        {
+            Logger::printfln("Channel names %s\n", name.c_str());
+        }
     }    
 
     void RemoteModule::initialize()
@@ -53,6 +60,7 @@ namespace RemoteConnection
         {
             channelNames.push_back(PORTAIBLE_RUNTIME->getChannelNameByIndex(i));
         }
+        channelNames.push_back("Bla test");
         Logger::printfln("RemoteModule sending.");
         Message message = Message::CreateMessage<MessageHeader, MessageDataBinary>();
                 Logger::printfln("RemoteModule sending 2.");

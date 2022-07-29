@@ -30,7 +30,7 @@ namespace portaible
             template<typename Reflector>
             void reflectWrite(Reflector& r)
             {
-                size_t bytes;
+                size_t bytes = this->data.size();
                 r.member("NumBytes", bytes, "");
 
                 r.write(this->getRawData(), bytes);
@@ -68,7 +68,15 @@ namespace portaible
                 }
             }
 
-            
+            void insertBytes(const char* bytes, size_t numBytes)
+            {
+                for(size_t i = 0; i < numBytes; i++)
+                {
+                    this->data.push_back(*bytes);
+                    bytes++;
+                }
+            }
+
 
             void resize(size_t size)
             {

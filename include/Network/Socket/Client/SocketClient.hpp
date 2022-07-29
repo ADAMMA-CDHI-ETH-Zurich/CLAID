@@ -53,7 +53,6 @@ namespace portaible
 				};
 
 			private:
-				int sock;
 				
 				bool connected = false;
 
@@ -61,7 +60,8 @@ namespace portaible
 				SocketClientError lastError;
 
 			public:
-				
+								int sock;
+
 				void close();
 
 				bool connectTo(std::string address, int port);

@@ -146,5 +146,5 @@ bool Socket::SocketClient::isValidIP4Adress(const std::string& string)
 
 Socket::SocketClient::~SocketClient()
 {
-	this->close();
+
 }

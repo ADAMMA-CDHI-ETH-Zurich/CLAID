@@ -35,6 +35,12 @@ namespace RemoteConnection
         return subscribeLocal<Message>(RECEIVE_CHANNEL, channelSubscriber);
     }
 
+    Channel<Message> ConnectionModule::registerToReceiveChannel()
+    {
+        return publishLocal<Message>(RECEIVE_CHANNEL);
+    }
+
+
     Channel<Message> ConnectionModule::registerToSendChannel()
     {
         return publishLocal<Message>(SEND_CHANNEL);

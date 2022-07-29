@@ -140,13 +140,9 @@ namespace portaible
             
             void write(const char* data, size_t size)
             {
-
+                this->binaryData.insertBytes(data, size);
             }
 
-            void read(char*& data, size_t size)
-            {
-                
-            }
 
             template<typename T> 
             void serialize(T& obj)

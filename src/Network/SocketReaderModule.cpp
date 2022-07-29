@@ -20,12 +20,13 @@ namespace Network
     }
     
     
-    void SocketReaderModule::start()
+    void SocketReaderModule::initialize()
     {
         // start might be called by another module / from another thread.
         // Thus, we make sure that we switch to our thread (of this module).
         this->active = true;
         this->stopped = false;
+        Logger::printfln("call later");
         this->callLater(&SocketReaderModule::run, this);
     }
 
@@ -38,6 +39,9 @@ namespace Network
 
         while(this->active)
         {
+            Logger::printfln("reading");
+                    Logger::printfln("Socket client fd in reader %d", socketClient->sock);
+
             BinaryData binaryData;
             if(!this->socketClient->read(binaryData))
             {
@@ -46,7 +50,7 @@ namespace Network
                 this->active = false;
                 break;
             }
-            Logger::printfln("read sth");
+            Logger::printfln("read %d bytes", binaryData.getNumBytes());
             // BinaryData is a message -> deserialize to message?
             BinaryDeserializer deserializer;
             RemoteConnection::Message message;

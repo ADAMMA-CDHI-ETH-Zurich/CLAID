@@ -6,13 +6,14 @@ namespace portaible
 namespace Network
 {
 
-    SocketConnectionModule::SocketConnectionModule(SocketClient& socketClient) : socketClient(socketClient), readerModule(&this->socketClient, this->registerToSendChannel(), this->registerToErrorChannel())
+    SocketConnectionModule::SocketConnectionModule(SocketClient& socketClient) : socketClient(socketClient), readerModule(&this->socketClient, this->registerToReceiveChannel(), this->registerToErrorChannel())
     {
-
+        Logger::printfln("Socket client fd %d", socketClient.sock);
     }
 
     void SocketConnectionModule::setup()
     {
+        Logger::printfln("SocketConnectionModule setup");
         if(this->started)
         {
             PORTAIBLE_THROW(Exception, "Error! Start was called twice on SocketConnectionModule.");
@@ -26,6 +27,8 @@ namespace Network
 
     void SocketConnectionModule::sendMessage(RemoteConnection::Message message)
     {
+        Logger::printfln("Send message");
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         BinaryData binaryData;
         BinarySerializer serializer;
         serializer.serialize(message);
