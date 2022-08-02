@@ -62,7 +62,7 @@ namespace portaible
     class ChannelSubscriberBase : public Subscriber, public Runnable
     {
         public:
-            ChannelSubscriberBase(RunnableDispatcherThread* runnableDispatcherThread) : Subscriber(runnableDispatcherThread)
+            ChannelSubscriberBase(std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread) : Subscriber(runnableDispatcherThread)
             {
             
             }
@@ -92,7 +92,7 @@ namespace portaible
              }
 
         public:
-            ChannelSubscriber(RunnableDispatcherThread* runnableDispatcherThread,
+            ChannelSubscriber(std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread,
 	                  std::function<void (ChannelData<T>)> function) : ChannelSubscriberBase(runnableDispatcherThread), function(function)
             {
                 this->lastTimeStamp = Time::now();

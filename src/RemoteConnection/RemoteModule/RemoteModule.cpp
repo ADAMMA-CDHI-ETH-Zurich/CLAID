@@ -2,6 +2,8 @@
 
 #include "RemoteConnection/Message/MessageDataBinary.hpp"
 
+#include "RemoteConnection/RemoteModule/LocalObserver.hpp"
+
 namespace portaible
 {
 namespace RemoteConnection
@@ -74,6 +76,10 @@ namespace RemoteConnection
         Logger::printfln("RemoteModule cal sending.");
 
         this->sendMessage(message);
+
+        // By using spawnSubModule, the LocalObserver will run on the same thread as the RemoteModule (no extra overhead).
+        this->spawnSubModule<LocalObserver>();
+    
     }
 
 

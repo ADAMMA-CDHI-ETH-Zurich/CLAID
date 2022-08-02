@@ -134,6 +134,7 @@ namespace portaible
 
 
                 this->binaryDataReader.readString(storedName);
+                printf("names %s %s\n", storedName.c_str(), name.c_str());
 
                 if(name != storedName)
                 {

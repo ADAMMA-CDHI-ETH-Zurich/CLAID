@@ -11,18 +11,35 @@ namespace portaible
     {
 
     }
+    
+
+
     void TimerBase::start()
     {
         this->active = true;
         this->thread = std::thread(&TimerBase::runInternal, this);
     }
 
+    void TimerBase::stop()
+    {
+        std::unique_lock<std::mutex> lock{this->mutex};
+        this->active = false;
+        lock.unlock();
+
+        cv.notify_one();
+        this->thread.join();
+    }
+
     void TimerBase::runInternal()
     {
-        while(this->active)
+
+        auto endTime = std::chrono::system_clock::now();
+
+        std::unique_lock<std::mutex> lock{this->mutex};
+        while (!this->cv.wait_until(lock, endTime += std::chrono::milliseconds(periodInMs),
+                                 [&]{ return !this->active; }))
         {
             this->run();
-            std::this_thread::sleep_for(std::chrono::milliseconds(this->periodInMs));
         }
     }
 }

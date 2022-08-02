@@ -20,7 +20,7 @@ namespace portaible
     Channel<T> SubModule::subscribeLocal(const std::string& channelID, std::function<void (ChannelData<T>)> function)
     {
         // runtime::getChannel(channelID).subscribe()
-        ChannelSubscriber<T> channelSubscriber(&this->runnableDispatcherThread, function);
+        ChannelSubscriber<T> channelSubscriber(this->runnableDispatcherThread, function);
         return this->channelManager->subscribe<T>(channelID, channelSubscriber);
     }
 
@@ -60,7 +60,7 @@ template<typename T>
 Channel<T> Module::subscribe(const std::string& channelID, std::function<void (ChannelData<T>)> function)
 {
     // runtime::getChannel(channelID).subscribe()
-    ChannelSubscriber<T> channelSubscriber(&this->runnableDispatcherThread, function);
+    ChannelSubscriber<T> channelSubscriber(this->runnableDispatcherThread, function);
     return this->channelManager->subscribe<T>(channelID, channelSubscriber);
 }
 

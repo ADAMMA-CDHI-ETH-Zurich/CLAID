@@ -28,7 +28,6 @@ namespace Network
     void SocketConnectionModule::sendMessage(RemoteConnection::Message message)
     {
         Logger::printfln("Send message");
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         BinaryData binaryData;
         BinarySerializer serializer;
         serializer.serialize(message);

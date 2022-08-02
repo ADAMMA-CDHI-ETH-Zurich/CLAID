@@ -30,12 +30,20 @@ namespace portaible
     // Base class for any type of module.
     class BaseModule
     {
+        private:
+            // Explicitly forbid copying.
+            BaseModule(const BaseModule&) = delete;
+
+            bool isRunning = false;
+
         protected:
             ChannelManager* channelManager;
+            std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread = nullptr;
+
+            std::vector<DispatcherThreadTimer*> timers;
 
             std::string id;
 
-            RunnableDispatcherThread runnableDispatcherThread;
 
             void initializeInternal()
             {
@@ -51,8 +59,9 @@ namespace portaible
             void registerPeriodicFunction(std::function<void()> function, size_t periodInMs)
             {
                 FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(function);
-                DispatcherThreadTimer* dispatcherThreadTimer = new DispatcherThreadTimer(&this->runnableDispatcherThread, static_cast<Runnable*>(functionRunnable), periodInMs);
+                DispatcherThreadTimer* dispatcherThreadTimer = new DispatcherThreadTimer(this->runnableDispatcherThread, static_cast<Runnable*>(functionRunnable), periodInMs);
                 dispatcherThreadTimer->start();
+                this->timers.push_back(dispatcherThreadTimer);
             }
 
             template<typename Class>
@@ -74,7 +83,7 @@ namespace portaible
             ChannelSubscriber<T> makeSubscriber(std::function<void (ChannelData<T>)> function)
             {
                 // runtime::getChannel(channelID).subscribe()
-                ChannelSubscriber<T> channelSubscriber(&this->runnableDispatcherThread, function);
+                ChannelSubscriber<T> channelSubscriber(this->runnableDispatcherThread, function);
                 return channelSubscriber;
             }
 
@@ -84,6 +93,11 @@ namespace portaible
             PropertyReflector propertyReflector;
 
         public:
+            BaseModule()
+            {
+            }
+
+          
             template<typename T>
             void reflect(T& r)
             {
@@ -93,13 +107,18 @@ namespace portaible
             template<typename Class, typename... Ts>
             void callLater(void (Class::* f)(Ts...), Class* obj, Ts... params)
             {
+                if(this->runnableDispatcherThread.get() == nullptr)
+                {
+                    PORTAIBLE_THROW(Exception, "Error! callLater was called while module is stopped."
+                    "Please only use callLater while the Module is running.");
+                }
                 //std::function<void(Ts...)> function = std::bind(f, obj, std::placeholders::_1, std::placeholders::_2);
 
                 FunctionRunnableWithParams<void, Ts...>* functionRunnable = new FunctionRunnableWithParams<void, Ts...>();
                 functionRunnable->bind(f, obj);
                 functionRunnable->setParams(params...);
                 functionRunnable->deleteAfterRun = true;
-                this->runnableDispatcherThread.addRunnable(functionRunnable);
+                this->runnableDispatcherThread->addRunnable(functionRunnable);
             }
 
             void setID(const std::string& id)
@@ -126,20 +145,46 @@ namespace portaible
                 // if any have been specified.
                 this->propertyReflector.reflect(this->id, *this);
 
+                if(this->runnableDispatcherThread.get() == nullptr)
+                {
+                    Logger::printfln("Spawning runnable dispatcher thread");
+                    this->runnableDispatcherThread = std::shared_ptr<RunnableDispatcherThread>(new RunnableDispatcherThread());
+                }
 
-                this->runnableDispatcherThread.start();
-
+                // If we are a SubModule that was spawned by a Module,
+                // we might use the same runnableDispatcherThread.
+                // Thus, it might already have been started before.
+                if(!this->runnableDispatcherThread->isRunning())
+                {
+                    this->runnableDispatcherThread->start();
+                }
                 std::function<void ()> initFunc = std::bind(&BaseModule::initializeInternal, this);
                 FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(initFunc);
 
                 functionRunnable->deleteAfterRun = true;
 
-                this->runnableDispatcherThread.addRunnable(functionRunnable);
+                this->runnableDispatcherThread->addRunnable(functionRunnable);
+
+                this->isRunning = true;
             }
 
             void stopModule()
             {
+                if(!this->isRunning)
+                {
+                    return;
+                }
+
+                this->runnableDispatcherThread->stop();
+                this->runnableDispatcherThread->join();
                 
+                for(DispatcherThreadTimer* timer : this->timers)
+                {
+                    // Will block until the timer is stopped.
+                    timer->stop();
+                }
+
+                this->isRunning = false;
             }
     };
 
@@ -149,16 +194,34 @@ namespace portaible
     // Exactly the same as for Module. The only difference between Module and SubModule is the constructor.
     // While in Module, the internal channelManager variable is set to the global ChannelManager,
     // SubModule creates it's own ChannelManager during start.
+
+    // By default, a SubModule always runs in it's own thread.
+    // However, using the spawnSubModule function of Module, a SubModule
+    // can also be running on the same thread as the parent Module.
     class SubModule : public BaseModule
     {
+        // SubModuleFactory is allowed to call setDispatcherThread.
+        friend class SubModuleFactory;
         private:
             std::shared_ptr<ChannelManager> channelManagerSharedPtr;
+            
+            void setDispatcherThread(std::shared_ptr<RunnableDispatcherThread> thread)
+            {
+                if(this->runnableDispatcherThread != nullptr)
+                {
+                    PORTAIBLE_THROW(Exception, "Error: setDispatcherThread of SubModule was called AFTER the module has been started."
+                    "If dispatcher thread shall be set manually, this needs to be done BEFORE startModule() of the SubModule was called.");
+                }
+                this->runnableDispatcherThread = thread;
+            }
+
         public:
-            SubModule()
+        
+            SubModule() : BaseModule()
             {
                 this->channelManager = new ChannelManager;
                 // In addition to the normal channelManager ptr, we also create a sharedPtr.
-                // This will make sure that if the user creates a copy of a SubModule instance (which he should not do, but well..),
+                // This will make sure that if the user creates a copy of a SubModule instance (which should not be possible, but well..),
                 // this copy can still access the correct channelManager, and the channelManager will be released when all
                 // copies of the module have been destroyed.
                 // Why not make channelManager a shared_ptr in the first place?
@@ -203,6 +266,21 @@ namespace portaible
                 
     };
 
+    class SubModuleFactory
+    {
+        public:
+        // We use factory function to make sure that the RemoteConnectedEntity uses
+        // a ConnectionModule that was created by itself. I.e.: We make sure we have ownership
+        // over the ConnectionModule and it's not exposed to "the outside world".
+        template<typename SubModuleType, typename... arguments>
+        static SubModuleType* spawnSubModuleInThread(std::shared_ptr<RunnableDispatcherThread> thread, arguments... args)
+        {
+            SubModuleType* subModule = new SubModuleType(args...);
+            subModule->setDispatcherThread(thread);
+            return subModule;
+        }
+    };
+
     // A Module can acess all channels globally (within the current process or
     // remote) via ChannelIDs, in contrast to a SubModule.
     class Module : public BaseModule
@@ -214,8 +292,22 @@ namespace portaible
 
             virtual ~Module()
             {
-
+                for(SubModule* subModule : this->subModulesInSameThread)
+                {
+                    // Waits for the module to stop.
+                    subModule->stopModule();
+                    delete subModule;
+                }
             }
+
+        private: 
+            // SubModules that were created by the Module using spawnSubModule.
+            // Those subModules run in the same thread as Module.
+            // SubModuels can also be created manually (just by creating a corresponding member variable
+            // and running startModule manually), however then they run in their own separate thread.
+            std::vector<SubModule*> subModulesInSameThread;
+
+            
 
         protected:
             virtual void initialize()
@@ -245,10 +337,19 @@ namespace portaible
 
             }
 
+            template<typename SubModuleType, typename... arguments>
+            void spawnSubModule(arguments... args)
+            {
+                SubModuleType* subModule = SubModuleFactory::spawnSubModuleInThread<SubModuleType, arguments...>(this->runnableDispatcherThread, args...);
+                subModule->startModule();
+                subModule->waitForInitialization();
+                this->subModulesInSameThread.push_back(static_cast<SubModule*>(subModule));
+            }
+
     };
 
-
-
+    
+    
 
 }
 

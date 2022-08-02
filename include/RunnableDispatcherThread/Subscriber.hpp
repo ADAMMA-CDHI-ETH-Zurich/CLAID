@@ -4,7 +4,7 @@ namespace portaible
 {
     class Subscriber
     {   public:
-            RunnableDispatcherThread* runnableDispatcherThread;
+            std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread;
 
         public:
             void signalNewDataIsAvailable()
@@ -19,7 +19,7 @@ namespace portaible
 
             }
 
-            Subscriber(RunnableDispatcherThread* runnableDispatcherThread) : runnableDispatcherThread(runnableDispatcherThread)
+            Subscriber(std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread) : runnableDispatcherThread(runnableDispatcherThread)
             {
                 
             }

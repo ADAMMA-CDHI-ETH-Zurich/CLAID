@@ -34,16 +34,7 @@ namespace portaible
             //         void onRemoteModulePublishedChannel();
             //     };
 
-            //     // Observes everything we do locally.
-            //     class LocalObserver 
-            //     {
-            //         // Does not receive data from network, but is able to send data over network.
-
-            //         void onLocalModuleAdded();
-            //         void onLocalModuleRemoved();
-            //         void onLocalModuleSubcribedToChannel();
-            //         void onLocalModulePublishedChannel();
-            //     };
+                
 
             //     void onMessage(Message message);
             //     void onConnectionLost();

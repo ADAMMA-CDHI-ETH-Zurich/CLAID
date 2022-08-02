@@ -7,23 +7,30 @@
 // TODO: Add Mutex when adding channels or removing? 
 namespace portaible
 {
+
+
     class ChannelManager
     {
         private:
-            std::map<std::string, ChannelBase*> typedChannels;
+            std::map<std::string, std::shared_ptr<ChannelBase>> typedChannels;
             
+            std::mutex channelMapMutex;
 
-            
+            std::shared_ptr<TypedChannel<std::string>> onChannelSubscribedChannel;
+            std::shared_ptr<TypedChannel<std::string>> onChannelPublishedChannel;
+            std::shared_ptr<TypedChannel<std::string>> onChannelUnsubscribedChannel;
+            std::shared_ptr<TypedChannel<std::string>> onChannelUnpublishedChannel;
+
             template<typename T>
             typename std::enable_if<!std::is_same<T, Untyped>::value,bool>::type
-            canCastChannel(ChannelBase* channel)
+            canCastChannel(std::shared_ptr<ChannelBase> channel)
             {              
                 return channel->getChannelDataTypeUniqueIdentifier() == getDataTypeUniqueIdentifier<T>();
             }
 
             template<typename T>
             typename std::enable_if<std::is_same<T, Untyped>::value,bool>::type
-            canCastChannel(ChannelBase* channel)
+            canCastChannel(std::shared_ptr<ChannelBase> channel)
             {              
                 // Every channel can be casted to Untyped channel.
                 // Why, you ask? Even that TypedChannel<T> does not inherit from Channel<Untyped>?
@@ -40,30 +47,56 @@ namespace portaible
             }
 
             template<typename T>
-            TypedChannel<T>* castChannel(ChannelBase* channel)
+            std::shared_ptr<TypedChannel<T>> castChannel(std::shared_ptr<ChannelBase> channel)
             {
-                return static_cast<TypedChannel<T>*>(channel);
+                return std::static_pointer_cast<TypedChannel<T>>(channel);
             }
+
+     
+
+            template<typename T>
+            std::shared_ptr<TypedChannel<T>> registerNewChannel(const std::string& channelID)
+            {
+                std::shared_ptr<TypedChannel<T>> newChannel = std::shared_ptr<TypedChannel<T>>(new TypedChannel<T>(this, channelID));
+
+                this->channelMapMutex.lock();
+                this->typedChannels.insert(std::make_pair(channelID, std::static_pointer_cast<ChannelBase>(newChannel)));
+                this->channelMapMutex.unlock();   
+
+                return newChannel;       
+            }
+
+            void onChannelSubscribed(const std::string& channelID);
+            void onChannelPublished(const std::string& channelID);
+            void onChannelUnsubscribed(const std::string& channelID);
+            void onChannelUnpublished(const std::string& channelID);
+
+            // Explicitly forbid copying.
+            ChannelManager(const ChannelManager&) = delete;
 
 
         public:
+
+            ChannelManager();
+            ~ChannelManager();
 
             // template<typename T>
             // publish
 
             template<typename T>
-            Channel<T> subscribe(const std::string& channelID)
+            Channel<T> subscribe(const std::string& channelID, bool silent = false)
             {
+                Channel<T> returnChannel;
                 auto it = typedChannels.find(channelID);
 
                 if(it != typedChannels.end())
                 {
-                    ChannelBase* channel = it->second;
+                    std::shared_ptr<ChannelBase> channel = it->second;
                     if(canCastChannel<T>(channel))
                     {
                         // Safely cast ChannelBase to TypedChannel.
-                        TypedChannel<T>* typedChannel = castChannel<T>(channel);
-                        return typedChannel->subscribe();
+                        std::shared_ptr<TypedChannel<T>> typedChannel = castChannel<T>(channel);
+                        returnChannel = typedChannel->subscribe();                  
                     }
                     else
                     {
@@ -74,28 +107,35 @@ namespace portaible
                 else
                 {
                     // Channel not found, create new.
-                    TypedChannel<T>* newChannel = new TypedChannel<T>(this, channelID);
-                    this->typedChannels.insert(std::make_pair(channelID, static_cast<ChannelBase*>(newChannel)));
-                    return newChannel->subscribe();
+                    TypedChannel<T>* newChannel = registerNewChannel<T>(channelID);   
+                    returnChannel = newChannel->subscribe();
                 }
+
+                if(!silent)
+                {
+                    this->onChannelSubscribed(channelID);
+                }
+
+                return returnChannel;
             }
 
   
 
             template<typename T>
-            Channel<T> subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber)
+            Channel<T> subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber, bool silent = false)
             {
+                Channel<T> returnChannel;
                 auto it = typedChannels.find(channelID);
 
                 if(it != typedChannels.end())
                 {
-                    ChannelBase* channel = it->second;
+                    std::shared_ptr<ChannelBase> channel = it->second;
                     if(canCastChannel<T>(channel))
                     {
                         // Safely cast ChannelBase to TypedChannel.
-                        TypedChannel<T>* typedChannel = castChannel<T>(channel);
+                        std::shared_ptr<TypedChannel<T>> typedChannel = castChannel<T>(channel);
 
-                        return typedChannel->subscribe(channelSubscriber);
+                        returnChannel = typedChannel->subscribe(channelSubscriber);
                     }
                     else
                     {
@@ -107,25 +147,31 @@ namespace portaible
                 {
 
                     // Channel not found, create new.
-                    TypedChannel<T>* newChannel = new TypedChannel<T>(this, channelID);
-                    this->typedChannels.insert(std::make_pair(channelID, static_cast<ChannelBase*>(newChannel)));
-                    return newChannel->subscribe(channelSubscriber);
+                    std::shared_ptr<TypedChannel<T>> newChannel = registerNewChannel<T>(channelID);
+                    returnChannel = newChannel->subscribe(channelSubscriber);
                 }
+
+                if(!silent)
+                {
+                    this->onChannelSubscribed(channelID);
+                }
+                return returnChannel;
             }
 
             template<typename T>
-            Channel<T> publish(const std::string& channelID)
+            Channel<T> publish(const std::string& channelID, bool silent = false)
             {
+                Channel<T> returnChannel;
                 auto it = typedChannels.find(channelID);
 
                 if(it != typedChannels.end())
                 {
-                    ChannelBase* channel = it->second;
+                    std::shared_ptr<ChannelBase> channel = it->second;
                     if(canCastChannel<T>(channel))
                     {
                         // Safely cast ChannelBase to TypedChannel.
-                        TypedChannel<T>* typedChannel = castChannel<T>(channel);
-                        return typedChannel->publish();
+                        std::shared_ptr<TypedChannel<T>> typedChannel = castChannel<T>(channel);
+                        returnChannel = typedChannel->publish();
                     }
                     else
                     {
@@ -136,14 +182,19 @@ namespace portaible
                 else
                 {
                     // Channel not found, create new.
-                    TypedChannel<T>* newChannel = new TypedChannel<T>(this, channelID);
-                    this->typedChannels.insert(std::make_pair(channelID, static_cast<ChannelBase*>(newChannel)));
-                    return newChannel->publish();
+                    std::shared_ptr<TypedChannel<T>> newChannel = registerNewChannel<T>(channelID);
+                    returnChannel = newChannel->publish();
                 }
+
+                if(!silent)
+                {
+                    this->onChannelPublished(channelID);
+                }
+                return returnChannel;
             }
 
             template<typename T>
-            void unsubscribe(Channel<T>& channelObject)
+            void unsubscribe(Channel<T>& channelObject, bool silent = false)
             {
                 const std::string channelID = channelObject.getChannelID();
 
@@ -151,10 +202,10 @@ namespace portaible
 
                 if(it != typedChannels.end())
                 {
-                    ChannelBase* channel = it->second;
+                    std::shared_ptr<ChannelBase> channel = it->second;
                     if(canCastChannel<T>(channel))
                     {
-                        TypedChannel<T>* typedChannel = castChannel<T>(channel);
+                        std::shared_ptr<TypedChannel<T>> typedChannel = castChannel<T>(channel);
                         typedChannel->unsubscribe(channelObject);
                     }
                     else
@@ -167,10 +218,15 @@ namespace portaible
                 {
                     PORTAIBLE_THROW(Exception, "Error, unsubscribe was called on a channel with channel ID " << channelID << ", which does not exist. This should never happen and most likely is a programming mistake");
                 }
+
+                if(!silent)
+                {
+                    this->onChannelUnsubscribed(channelID);
+                }
             }
 
             template<typename T>
-            void unpublish(Channel<T>& channelObject)
+            void unpublish(Channel<T>& channelObject, bool silent = false)
             {
                 const std::string channelID = channelObject.getChannelID();
 
@@ -178,10 +234,10 @@ namespace portaible
 
                 if(it != typedChannels.end())
                 {
-                    ChannelBase* channel = it->second;
+                    std::shared_ptr<ChannelBase> channel = it->second;
                     if(canCastChannel<T>(channel))
                     {
-                        TypedChannel<T>* typedChannel = castChannel<T>(channel);
+                        std::shared_ptr<TypedChannel<T>> typedChannel = castChannel<T>(channel);
                         typedChannel->unpublish(channelObject);
                     }
                     else
@@ -193,6 +249,11 @@ namespace portaible
                 else
                 {
                     PORTAIBLE_THROW(Exception, "Error, unpublish was called on a channel with channel ID " << channelID << ", which does not exist. This should never happen and most likely is a programming mistake");
+                }
+
+                if(!silent)
+                {
+                    this->onChannelUnpublished(channelID);
                 }
             }
 
@@ -208,7 +269,10 @@ namespace portaible
                 return it->first;
             }
 
-            
+            Channel<std::string> observeSubscribedChannels(ChannelSubscriber<std::string> subscriber);
+            Channel<std::string> observePublishedChannels(ChannelSubscriber<std::string> subscriber);
+            Channel<std::string> observeUnsubscribedChannels(ChannelSubscriber<std::string> subscriber);
+            Channel<std::string> observeUnpublishedChannels(ChannelSubscriber<std::string> subscriber);
 
     };
 }
