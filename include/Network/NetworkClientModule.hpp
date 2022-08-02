@@ -44,9 +44,7 @@ namespace portaible
                 {
                   
 
-                    // Subscribe to the error channel of the socket connection.
-                    // socketConnection.subscribeToErrorChannel(this->makeSubscriber(&NetworkClientModule::onErrorReceived, this));
-                    // this->errorChannel = socketConnection.registerToErrorChannel();
+                    
 
                     std::string ip;
                     int port;
@@ -56,13 +54,16 @@ namespace portaible
                     getIPAndPortFromAddress(address, ip, port);
                     if(!socketClient.connectTo(ip, port))
                     {
-                        this->postError<ErrorConnectToAdressFailed>();
+                        this->callError<ErrorConnectToAdressFailed>();
                         return;
                     }
 
                     
                     this->remoteConnectedEntitiy = RemoteConnection::RemoteConnectedEntity::Create<SocketConnectionModule>(socketClient);
                     this->remoteConnectedEntitiy->setup();
+
+                    // Subscribe to the error channel of the socket connection.
+                    this->errorChannel = remoteConnectedEntitiy->subscribeToErrorChannel(this->makeSubscriber(&NetworkClientModule::onErrorReceived, this));
                 }
 
                 void onErrorReceived(ChannelData<RemoteConnection::Error> error)
@@ -71,18 +72,23 @@ namespace portaible
                 }
 
                 template<typename T>
-                void postError()
+                void callError()
                 {
                     RemoteConnection::Error error;
                     error.set<T>();
-                    this->errorChannel.post(error);
+                    
+                    // Make sure to call onError asynchronous. That way, we avoid recursive calls of onError.
+                    // (E.g.: If error is ErrorConnectToAdressFailed, then we might try to reconnect. If that fails again,
+                    // it would call onError again, and so on and so forth resulting in unbound recursion, which would eventually lead
+                    // to a stack overflow).
+                    this->callLater<NetworkClientModule, RemoteConnection::Error>(&NetworkClientModule::onError, this, error);
                 }
 
-                void onError(const RemoteConnection::Error& error)
+                void onError(RemoteConnection::Error error)
                 {
                     if(error.is<ErrorConnectToAdressFailed>())
                     {
-
+                        Logger::printfln("Error connecting to adress failed.");
                     }
                     else if(error.is<ErrorReadFromSocketFailed>())
                     {

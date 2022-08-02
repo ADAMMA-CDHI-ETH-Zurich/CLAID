@@ -57,4 +57,16 @@ namespace portaible
     {
         this->onChannelUnpublishedChannel->post(channelID);
     }
+
+    void getSubscribedAndPublishedChannels(std::vector<std::string>& subscribedChannels, std::vector<std::string>& publishedChannels)
+    {
+        // While we do this, publishing and subscribing of channels should be blocked..
+        this->block
+
+        getNumSubscribers
+        getNumPublishers
+        // Need to add subscribed and published channel as many times there are subscribers / publishers.
+
+        this->unblock
+    }
 }

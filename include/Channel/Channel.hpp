@@ -131,14 +131,34 @@ namespace portaible
 
             void unsubscribe()
             {
-                this->typedChannel->callUnsubscribe(*this);
-                *this->channelAccessRights.get() = ChannelAccessRights::NONE;
+                // If the access rights are NONE already, possible unsubscribe has been called
+                // on a copy of a Channel<T> object. Thus, we do not 
+                // unsubscribe again. Also see comments in TypedChannel<T>::unsubscribe (and unpublish)
+                if(*this->channelAccessRights.get() != ChannelAccessRights::NONE)
+                {
+                    this->typedChannel->callUnsubscribe(*this);
+                    *this->channelAccessRights.get() = ChannelAccessRights::NONE;
+                }
+                else
+                {
+                    // TODO LOG WARNING
+                }
             }
 
             void unpublish()
             {
-                this->typedChannel->callUnpublish(*this);
-                *this->channelAccessRights.get() = ChannelAccessRights::NONE;
+                // If the access rights are NONE already, possible unpublish has been called
+                // on a copy of a Channel<T> object. Thus, we do not 
+                // unpublish again. Also see comments in TypedChannel<T>::unpublish (and unsubscribe)
+                if(*this->channelAccessRights.get() != ChannelAccessRights::NONE)
+                {
+                    this->typedChannel->callUnpublish(*this);
+                    *this->channelAccessRights.get() = ChannelAccessRights::NONE;
+                }
+                else
+                {
+                    // TODO LOG WARNING
+                }
             }
 
             const ChannelSubscriberBase* getSubcriberHandle()
@@ -164,6 +184,9 @@ namespace portaible
                     channelSubscriber->signalNewDataIsAvailable();
                 } 
             }
+
+            size_t numPublishers;
+            size_t numSubscribers;
 
         public:
       
@@ -319,6 +342,7 @@ namespace portaible
            
             Channel<T> subscribe()
             {
+                this->numSubscribers++;
                 return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::READ)));
             }
 
@@ -330,11 +354,13 @@ namespace portaible
                 ChannelSubscriberBase* untypedSubscriber = static_cast<ChannelSubscriberBase*>(typedSubscriber); 
                 this->channelSubscribers.push_back(static_cast<ChannelSubscriberBase*>(typedSubscriber));
                 
+                this->numSubscribers++;
                 return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::READ)), untypedSubscriber);
             }
 
             Channel<T> publish()
             {
+                this->numPublishers++;
                 return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::WRITE)));
             }
 
@@ -382,14 +408,45 @@ namespace portaible
                     }
                 }
 
-                
+                if(this->numSubscribers == 0)
+                {
+                    PORTAIBLE_THROW(Exception, "Error! Unsubscribe was called for channel with id " << this->channelID << ". However, it's number of subscribers is already 0."
+                    "There must be a bug somewhere that allows to unsubscribe a channel multiple times.");
+                }
+
+                numSubscribers--;
 
             }
 
             void unpublish(Channel<T>& channel)
             {
-                // What to do?
+                // Could numPublishers be already 0, when unpublish is called?
+                // Yes, theoretically.
+                // Consider the following:
+                /*
+                    Channel<int> c1 = typedChannel.publish("IntChannel"); // typedChannel.numPublishers = 1
+                    Channel<int> c2 = c1;
 
+                    c1.unpublish(); // typedChannel.numPublishers = 0
+                    c2.unpublish(); // typedChannel.numPublishers = -1 // theoretically numPublishers would be negative now (not possible, as numPublishers
+                                       is size_t, therefore underflow).
+                */
+                // Copying channels is not forbidden (e.g. in order to allow to store multiple channels in a vector).
+                // Thus, theoretically someone could create a channel, copy it, and call unpublish on both channels.
+                // However, see implementation of Channel.unpublish: it checks the access rights and if it does not have write access anymore,
+                // it assumes it has been unpublished already (complementary for unsubscribe).
+                // Therefore, it would not call typedChannel.unpublish().
+                // Thus, we throw an exception here if number of publishers would get negative.
+            
+
+
+                if(this->numPublishers == 0)
+                {
+                    PORTAIBLE_THROW(Exception, "Error! Unpublish was called for channel with id " << this->channelID << ". However, it's number of publishers is already 0."
+                    "There must be a bug somewhere that allows to unpublish a channel multiple times.");
+                }
+
+                numPublishers--;
             }
 
 

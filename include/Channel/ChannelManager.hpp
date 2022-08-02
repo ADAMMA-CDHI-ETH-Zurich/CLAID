@@ -21,6 +21,8 @@ namespace portaible
             std::shared_ptr<TypedChannel<std::string>> onChannelUnsubscribedChannel;
             std::shared_ptr<TypedChannel<std::string>> onChannelUnpublishedChannel;
 
+            bool accessToChannelsBlocked = false;
+
             template<typename T>
             typename std::enable_if<!std::is_same<T, Untyped>::value,bool>::type
             canCastChannel(std::shared_ptr<ChannelBase> channel)
@@ -74,6 +76,28 @@ namespace portaible
             // Explicitly forbid copying.
             ChannelManager(const ChannelManager&) = delete;
 
+            void waitIfRequired()
+            {
+                // While retrieving the list of subscribed and published channels (see getSubscribedAndPublishedChannels),
+                // we need to make sure that not channels are published / subscribed in the meantime.
+                // Thus, we make sure that any thread calling subscribe or publish (or unsubscribe, unpublish) is blocked
+                // in the meantime. Normally, that's a use case for shared_mutex.
+                // But since we target C++11, we do not have shared_mutex yet,
+                // which would be the better and cleaner solution.
+                // Thus, we do it ugly. For now.
+
+                while(!accessToChannelsBlocked);
+            }
+
+            void blockAccessToChannels()
+            {
+                this->accessToChannelsBlocked = true;
+            }
+
+            void unblockAccessToChannels()
+            {
+                this->accessToChannelsBlocked = false;
+            }
 
         public:
 
@@ -83,9 +107,13 @@ namespace portaible
             // template<typename T>
             // publish
 
+            
+
             template<typename T>
             Channel<T> subscribe(const std::string& channelID, bool silent = false)
             {
+                this->waitIfRequired();
+
                 Channel<T> returnChannel;
                 auto it = typedChannels.find(channelID);
 
@@ -124,6 +152,9 @@ namespace portaible
             template<typename T>
             Channel<T> subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber, bool silent = false)
             {
+                this->waitIfRequired();
+
+
                 Channel<T> returnChannel;
                 auto it = typedChannels.find(channelID);
 
@@ -161,6 +192,8 @@ namespace portaible
             template<typename T>
             Channel<T> publish(const std::string& channelID, bool silent = false)
             {
+                waitIfRequired();
+
                 Channel<T> returnChannel;
                 auto it = typedChannels.find(channelID);
 
@@ -196,6 +229,8 @@ namespace portaible
             template<typename T>
             void unsubscribe(Channel<T>& channelObject, bool silent = false)
             {
+                waitIfRequired();
+
                 const std::string channelID = channelObject.getChannelID();
 
                 auto it = typedChannels.find(channelID);
@@ -228,6 +263,8 @@ namespace portaible
             template<typename T>
             void unpublish(Channel<T>& channelObject, bool silent = false)
             {
+                waitIfRequired();
+
                 const std::string channelID = channelObject.getChannelID();
 
                 auto it = typedChannels.find(channelID);
@@ -269,10 +306,15 @@ namespace portaible
                 return it->first;
             }
 
+            
+
+
             Channel<std::string> observeSubscribedChannels(ChannelSubscriber<std::string> subscriber);
             Channel<std::string> observePublishedChannels(ChannelSubscriber<std::string> subscriber);
             Channel<std::string> observeUnsubscribedChannels(ChannelSubscriber<std::string> subscriber);
             Channel<std::string> observeUnpublishedChannels(ChannelSubscriber<std::string> subscriber);
+
+            void getSubscribedAndPublishedChannels(std::vector<std::string>& subscribedChannels, std::vector<std::string>& publishedChannels);
 
     };
 }
