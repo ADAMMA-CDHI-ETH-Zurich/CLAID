@@ -9,7 +9,7 @@ namespace portaible
     class LocalObserver : public SubModule
     {
         private:
-            ChannelManager* observedChannelManager;
+            ChannelManager* observedChannelManager = nullptr;
             // Does not receive data from network, but is able to send data over network.
             Channel<std::string> subscribedChannel;
             Channel<std::string> publishedChannel;

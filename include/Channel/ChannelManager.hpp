@@ -14,7 +14,7 @@ namespace portaible
         private:
             std::map<std::string, std::shared_ptr<ChannelBase>> typedChannels;
             
-            std::mutex channelMapMutex;
+            std::mutex channelMutex;
 
             std::shared_ptr<TypedChannel<std::string>> onChannelSubscribedChannel;
             std::shared_ptr<TypedChannel<std::string>> onChannelPublishedChannel;
@@ -61,9 +61,8 @@ namespace portaible
             {
                 std::shared_ptr<TypedChannel<T>> newChannel = std::shared_ptr<TypedChannel<T>>(new TypedChannel<T>(this, channelID));
 
-                this->channelMapMutex.lock();
+                std::unique_lock<std::mutex> lock(this->channelMutex);
                 this->typedChannels.insert(std::make_pair(channelID, std::static_pointer_cast<ChannelBase>(newChannel)));
-                this->channelMapMutex.unlock();   
 
                 return newChannel;       
             }
@@ -304,6 +303,21 @@ namespace portaible
                 auto it = this->typedChannels.begin();
                 std::advance(it, id);
                 return it->first;
+            }
+
+            std::vector<std::string> getChannelIDs()
+            {
+
+            }
+
+            bool hasChannelSubscriber(const std::string& channelID)
+            {
+
+            }
+
+            bool hasChannelPublisher(const std::string& channelID)
+            {
+                
             }
 
             
