@@ -15,7 +15,7 @@ namespace portaible
             PORTAIBLE_MODULE(NetworkClientModule)
             private:
 
-                RemoteConnection::RemoteConnectedEntity* remoteConnectedEntitiy;
+                RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity;
 
                 std::string address;
 
@@ -57,13 +57,19 @@ namespace portaible
                         this->callError<ErrorConnectToAdressFailed>();
                         return;
                     }
+                    Logger::printfln("Connected successfully");
 
-                    
-                    this->remoteConnectedEntitiy = RemoteConnection::RemoteConnectedEntity::Create<SocketConnectionModule>(socketClient);
-                    this->remoteConnectedEntitiy->setup();
+                    Logger::printfln("Creating RemoteConnected Entity.");
 
-                    // Subscribe to the error channel of the socket connection.
-                    this->errorChannel = remoteConnectedEntitiy->subscribeToErrorChannel(this->makeSubscriber(&NetworkClientModule::onErrorReceived, this));
+                    this->remoteConnectedEntity = RemoteConnection::RemoteConnectedEntity::Create<SocketConnectionModule>(socketClient);
+                    Logger::printfln("RemoteConnectedEntity calling setup.");
+
+                    // First setup, then subscribe to errroChannel. Subscribing/publishing is only allowed during or after initialization
+                    // of the corresponding module.
+                    this->remoteConnectedEntity->setup();
+                    this->errorChannel = remoteConnectedEntity->subscribeToErrorChannel(this->makeSubscriber(&NetworkClientModule::onErrorReceived, this));
+                    this->remoteConnectedEntity->start();
+
                 }
 
                 void onErrorReceived(ChannelData<RemoteConnection::Error> error)

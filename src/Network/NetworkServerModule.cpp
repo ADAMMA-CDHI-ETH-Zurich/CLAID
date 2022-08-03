@@ -16,10 +16,12 @@ namespace portaible
             std::function<void (ChannelData<RemoteConnection::Error>)> callbackFunction =
                 std::bind(&NetworkServerModule::onError, this, remoteConnectedEntity, std::placeholders::_1);
                     
-            Channel<RemoteConnection::Error> errorChannel = remoteConnectedEntity->subscribeToErrorChannel(this->makeSubscriber(callbackFunction));
-            
+            // First setup, then subscribe to errroChannel. Subscribing/publishing is only allowed during or after initialization
+            // of the corresponding module.
             remoteConnectedEntity->setup();
-            
+            Channel<RemoteConnection::Error> errorChannel = remoteConnectedEntity->subscribeToErrorChannel(this->makeSubscriber(callbackFunction));
+            remoteConnectedEntity->start();
+
             this->remoteConnectedEntities.push_back(remoteConnectedEntity);
             this->errorChannels.insert(std::make_pair(remoteConnectedEntity, errorChannel));
         }
@@ -42,11 +44,13 @@ namespace portaible
                 PORTAIBLE_THROW(Exception, "Failed to start server on port " << this->port);
             }
 
+            this->clientAcceptModule.startModule();
+            this->clientAcceptModule.waitForInitialization();
+
             this->clientAcceptChannel = this->clientAcceptModule.subscribeToClientAcceptChannel(this->makeSubscriber(&NetworkServerModule::onClientAccepted, this));
             this->clientAcceptErrorChannel = this->clientAcceptModule.subscribeToErrorChannel(this->makeSubscriber(&NetworkServerModule::onClientAcceptError, this));
 
-            this->clientAcceptModule.startModule();
-            this->clientAcceptModule.waitForInitialization();
+            
 
             this->clientAcceptModule.start(&this->server);
         }

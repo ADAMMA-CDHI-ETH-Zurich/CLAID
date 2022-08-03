@@ -58,6 +58,8 @@ namespace portaible
             public:
                 ConnectionModule();
 
+                virtual void start() = 0;
+
 
                 Channel<Message> subscribeToReceiveChannel(ChannelSubscriber<Message> channelSubscriber);
                 Channel<Message> registerToSendChannel();

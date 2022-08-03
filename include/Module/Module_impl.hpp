@@ -5,6 +5,7 @@ namespace portaible
     template<typename T>
     Channel<T> SubModule::subscribeLocal(const std::string& channelID)
     {
+        verifySafeAccessToChannels(channelID);
         return this->channelManager->subscribe<T>(channelID);
     }
 
@@ -12,6 +13,7 @@ namespace portaible
     Channel<T> SubModule::subscribeLocal(const std::string& channelID,
                     void (Class::*f)(ChannelData<T>), Class* obj)
     {
+        verifySafeAccessToChannels(channelID);
         std::function<void (ChannelData<T>)> function = std::bind(f, obj, std::placeholders::_1);
         return subscribeLocal(channelID, function); 
     }
@@ -19,6 +21,7 @@ namespace portaible
     template<typename T>
     Channel<T> SubModule::subscribeLocal(const std::string& channelID, std::function<void (ChannelData<T>)> function)
     {
+        verifySafeAccessToChannels(channelID);
         // runtime::getChannel(channelID).subscribe()
         ChannelSubscriber<T> channelSubscriber(this->runnableDispatcherThread, function);
         return this->channelManager->subscribe<T>(channelID, channelSubscriber);
@@ -27,12 +30,14 @@ namespace portaible
     template<typename T>
     Channel<T> SubModule::subscribeLocal(const std::string& channelID, ChannelSubscriber<T> channelSubscriber)
     {
+        verifySafeAccessToChannels(channelID);
         return this->channelManager->subscribe(channelID, channelSubscriber);
     }
 
     template<typename T>
     Channel<T> SubModule::publishLocal(const std::string& channelID)
     {
+        verifySafeAccessToChannels(channelID);
         return this->channelManager->publish<T>(channelID);
     }
 }
@@ -45,6 +50,7 @@ namespace portaible
 template<typename T>
 Channel<T> Module::subscribe(const std::string& channelID)
 {
+    verifySafeAccessToChannels(channelID);
     return this->channelManager->subscribe<T>(channelID);
 }
 
@@ -52,6 +58,7 @@ template<typename T, typename Class>
 Channel<T> Module::subscribe(const std::string& channelID,
                 void (Class::*f)(ChannelData<T>), Class* obj)
 {
+    verifySafeAccessToChannels(channelID);
     std::function<void (ChannelData<T>)> function = std::bind(f, obj, std::placeholders::_1);
     return subscribe(channelID, function); 
 }
@@ -59,6 +66,7 @@ Channel<T> Module::subscribe(const std::string& channelID,
 template<typename T>
 Channel<T> Module::subscribe(const std::string& channelID, std::function<void (ChannelData<T>)> function)
 {
+    verifySafeAccessToChannels(channelID);
     // runtime::getChannel(channelID).subscribe()
     ChannelSubscriber<T> channelSubscriber(this->runnableDispatcherThread, function);
     return this->channelManager->subscribe<T>(channelID, channelSubscriber);
@@ -67,12 +75,14 @@ Channel<T> Module::subscribe(const std::string& channelID, std::function<void (C
 template<typename T>
 Channel<T> Module::subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber)
 {
+    verifySafeAccessToChannels(channelID);
     return this->channelManager->subscribe(channelID, channelSubscriber);
 }
 
 template<typename T>
 Channel<T> Module::publish(const std::string& channelID)
 {
+    verifySafeAccessToChannels(channelID);
     return this->channelManager->publish<T>(channelID);
 }
 }

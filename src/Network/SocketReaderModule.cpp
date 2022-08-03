@@ -11,10 +11,8 @@ namespace Network
 
     }
             
-    SocketReaderModule::SocketReaderModule(SocketClient* socketClient, 
-                                            Channel<RemoteConnection::Message> messageReceivedChannel, 
-                                            Channel<RemoteConnection::Error> errorChannel) : 
-                                            socketClient(socketClient), messageReceivedChannel(messageReceivedChannel), errorChannel(errorChannel)
+    SocketReaderModule::SocketReaderModule(SocketClient* socketClient) : 
+                                            socketClient(socketClient)
     {
 
     }
@@ -68,7 +66,18 @@ namespace Network
         }
         this->stopped = true;
     }
-                
+              
+    void SocketReaderModule::setMessageReceivedChannel(Channel<RemoteConnection::Message> messageReceivedChannel)
+    {
+        this->messageReceivedChannel = messageReceivedChannel;
+    }
+    
+    
+    void SocketReaderModule::setErrorChannel(Channel<RemoteConnection::Error> errorChannel)
+    {
+        this->errorChannel = errorChannel;
+    }
+
     void SocketReaderModule::stop()
     {
         this->stopped = false;

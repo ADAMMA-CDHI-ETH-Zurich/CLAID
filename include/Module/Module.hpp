@@ -35,6 +35,18 @@ namespace portaible
             BaseModule(const BaseModule&) = delete;
 
             bool isRunning = false;
+            bool baseModuleInitialized = false;
+            
+            bool isSafeToAccessChannels()
+            {
+                // If runnableDispatcherThread is invalid, subscribing to channels 
+                // might result in segfaults (if data is posted to the channel and a subscriber callback
+                // is triggered).
+                return this->runnableDispatcherThread.get() != nullptr && this->baseModuleInitialized;
+            } 
+
+        
+            
 
         protected:
             ChannelManager* channelManager;
@@ -47,6 +59,7 @@ namespace portaible
 
             void initializeInternal()
             {
+                this->baseModuleInitialized = true;
                 this->initialize();
                 this->initialized = true;
             }
@@ -87,6 +100,15 @@ namespace portaible
                 return channelSubscriber;
             }
 
+            void verifySafeAccessToChannels(const std::string& channelID)
+            {
+                if(!this->isSafeToAccessChannels())
+                {
+                    PORTAIBLE_THROW(Exception, "Error, Module of Class " << getDataTypeRTTIString(*this) << " tried to publish or subscribe to channel with ID \"" << channelID << "\", while the Module has not yet been initialized."
+                    "Please only use publish and subscribe in the initialize function, or anytime after initialization was finished successfully (i.e. Module has been started and initialized).");
+                }
+            }
+
             
             virtual void initialize() = 0;
 
@@ -95,9 +117,14 @@ namespace portaible
         public:
             BaseModule()
             {
+                if(this->runnableDispatcherThread.get() != nullptr)
+                {   
+                    PORTAIBLE_THROW(Exception, "Error! Constructor of BaseModule called, but RunnableDispatcherThread is not null!")
+                }
+                Logger::printfln("Spawning runnable dispatcher thread");
+                this->runnableDispatcherThread = std::shared_ptr<RunnableDispatcherThread>(new RunnableDispatcherThread());
             }
-
-          
+        
             template<typename T>
             void reflect(T& r)
             {
@@ -141,15 +168,16 @@ namespace portaible
 
             void startModule()
             {
+                if(this->runnableDispatcherThread.get() == nullptr)
+                {
+                    PORTAIBLE_THROW(Exception, "Error! startMoudle was called while with RunnableDispatcherThread not set!");
+                }
+
                 // PropertyReflector will initialize all members and properties to their default values,
                 // if any have been specified.
                 this->propertyReflector.reflect(this->id, *this);
 
-                if(this->runnableDispatcherThread.get() == nullptr)
-                {
-                    Logger::printfln("Spawning runnable dispatcher thread");
-                    this->runnableDispatcherThread = std::shared_ptr<RunnableDispatcherThread>(new RunnableDispatcherThread());
-                }
+             
 
                 // If we are a SubModule that was spawned by a Module,
                 // we might use the same runnableDispatcherThread.
@@ -163,9 +191,10 @@ namespace portaible
 
                 functionRunnable->deleteAfterRun = true;
 
+                this->isRunning = true;
+
                 this->runnableDispatcherThread->addRunnable(functionRunnable);
 
-                this->isRunning = true;
             }
 
             void stopModule()
@@ -207,11 +236,6 @@ namespace portaible
             
             void setDispatcherThread(std::shared_ptr<RunnableDispatcherThread> thread)
             {
-                if(this->runnableDispatcherThread != nullptr)
-                {
-                    PORTAIBLE_THROW(Exception, "Error: setDispatcherThread of SubModule was called AFTER the module has been started."
-                    "If dispatcher thread shall be set manually, this needs to be done BEFORE startModule() of the SubModule was called.");
-                }
                 this->runnableDispatcherThread = thread;
             }
 

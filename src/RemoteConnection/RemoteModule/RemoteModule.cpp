@@ -16,12 +16,18 @@ namespace RemoteConnection
 
     void RemoteModule::sendMessage(Message& message)
     {
+        if(!this->sendMessageChannelSet)
+        {
+            PORTAIBLE_THROW(Exception, "Error! RemoteModule tried to send a message, however a channel to send messages was never set."
+            "Please make sure to call setSendMessageChannel of RemoteModule " << __FILE__ << " " << __LINE__);
+        }
         Logger::printfln("SendMessageChannel post");
         this->sendMessageChannel.post(message);
     }
 
     void RemoteModule::setSendMessageChannel(Channel<Message> channel)
     {
+        this->sendMessageChannelSet = true;
         this->sendMessageChannel = channel;
     }
 
@@ -55,6 +61,18 @@ namespace RemoteConnection
 
     void RemoteModule::initialize()
     {
+        
+    
+    }
+
+    void RemoteModule::start()
+    {
+        // Why start not in initialize? 
+        // Because setSendMessageChannel might not have been called yet.
+        // RemoteModule is used with ConnectionLink and RemoteConnectedEntity,
+        // which make sure to first link the RemoteModule to a ConnectionModule and 
+        // then calling start afterwards.
+        Logger::printfln("Initialize");
         size_t numChannels = PORTAIBLE_RUNTIME->getNumChannels();
         std::vector<std::string> channelNames;
 
@@ -79,8 +97,9 @@ namespace RemoteConnection
 
         // By using spawnSubModule, the LocalObserver will run on the same thread as the RemoteModule (no extra overhead).
         this->spawnSubModule<LocalObserver>();
-    
     }
+
+    
 
 
 

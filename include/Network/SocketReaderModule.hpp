@@ -32,7 +32,11 @@ namespace portaible
 
             public:
                 SocketReaderModule();
-                SocketReaderModule(SocketClient* client, Channel<RemoteConnection::Message> messageReceivedChannel, Channel<RemoteConnection::Error> errorChannel);
+                SocketReaderModule(SocketClient* client);
+
+                void setMessageReceivedChannel(Channel<RemoteConnection::Message> messageReceivedChannel);
+                void setErrorChannel(Channel<RemoteConnection::Error> errorChannel);
+
 
                 void stop();
 

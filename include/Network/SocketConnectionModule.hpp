@@ -19,11 +19,11 @@ namespace portaible
                 // thus passing it by copy is fine. We do it because the message
                 // received in onSendMessage is const.
                 void sendMessage(RemoteConnection::Message message);
+                void setup();
 
             public:
-                SocketConnectionModule(SocketClient& socketClient);
+                SocketConnectionModule(SocketClient socketClient);
                 void start();
-                void setup();
 
         };
     }

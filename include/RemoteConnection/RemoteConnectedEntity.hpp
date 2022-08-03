@@ -34,10 +34,14 @@ namespace portaible
                 template<typename ConnectionModuleType, typename... arguments>
                 static RemoteConnectedEntity* Create(arguments... args)
                 {
+                    Logger::printfln("Factory");
+       
+               
                     return new RemoteConnectedEntity(new ConnectionModuleType(args...));
                 }
 
                 void setup();
+                void start();
                 void disintegrate();
 
                 Channel<Error> subscribeToErrorChannel(ChannelSubscriber<Error> channelSubscriber);

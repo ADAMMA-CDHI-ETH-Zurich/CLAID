@@ -61,7 +61,8 @@ namespace portaible
             {
                 std::shared_ptr<TypedChannel<T>> newChannel = std::shared_ptr<TypedChannel<T>>(new TypedChannel<T>(this, channelID));
 
-                std::unique_lock<std::mutex> lock(this->channelMutex);
+                // Dont lock the mutex here, as it already get's locked in publish or subscribe functions.
+                //std::unique_lock<std::mutex> lock(this->channelMutex);
                 this->typedChannels.insert(std::make_pair(channelID, std::static_pointer_cast<ChannelBase>(newChannel)));
 
                 return newChannel;       
@@ -75,29 +76,7 @@ namespace portaible
             // Explicitly forbid copying.
             ChannelManager(const ChannelManager&) = delete;
 
-            void waitIfRequired()
-            {
-                // While retrieving the list of subscribed and published channels (see getSubscribedAndPublishedChannels),
-                // we need to make sure that not channels are published / subscribed in the meantime.
-                // Thus, we make sure that any thread calling subscribe or publish (or unsubscribe, unpublish) is blocked
-                // in the meantime. Normally, that's a use case for shared_mutex.
-                // But since we target C++11, we do not have shared_mutex yet,
-                // which would be the better and cleaner solution.
-                // Thus, we do it ugly. For now.
-
-                while(!accessToChannelsBlocked);
-            }
-
-            void blockAccessToChannels()
-            {
-                this->accessToChannelsBlocked = true;
-            }
-
-            void unblockAccessToChannels()
-            {
-                this->accessToChannelsBlocked = false;
-            }
-
+ 
         public:
 
             ChannelManager();
@@ -111,7 +90,7 @@ namespace portaible
             template<typename T>
             Channel<T> subscribe(const std::string& channelID, bool silent = false)
             {
-                this->waitIfRequired();
+                std::unique_lock<std::mutex> lock(this->channelMutex);
 
                 Channel<T> returnChannel;
                 auto it = typedChannels.find(channelID);
@@ -151,7 +130,7 @@ namespace portaible
             template<typename T>
             Channel<T> subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber, bool silent = false)
             {
-                this->waitIfRequired();
+                std::unique_lock<std::mutex> lock(this->channelMutex);
 
 
                 Channel<T> returnChannel;
@@ -191,7 +170,7 @@ namespace portaible
             template<typename T>
             Channel<T> publish(const std::string& channelID, bool silent = false)
             {
-                waitIfRequired();
+                std::unique_lock<std::mutex> lock(this->channelMutex);
 
                 Channel<T> returnChannel;
                 auto it = typedChannels.find(channelID);
@@ -228,7 +207,7 @@ namespace portaible
             template<typename T>
             void unsubscribe(Channel<T>& channelObject, bool silent = false)
             {
-                waitIfRequired();
+                std::unique_lock<std::mutex> lock(this->channelMutex);
 
                 const std::string channelID = channelObject.getChannelID();
 
@@ -262,7 +241,7 @@ namespace portaible
             template<typename T>
             void unpublish(Channel<T>& channelObject, bool silent = false)
             {
-                waitIfRequired();
+                std::unique_lock<std::mutex> lock(this->channelMutex);
 
                 const std::string channelID = channelObject.getChannelID();
 
@@ -307,17 +286,17 @@ namespace portaible
 
             std::vector<std::string> getChannelIDs()
             {
-
+                return {};
             }
 
             bool hasChannelSubscriber(const std::string& channelID)
             {
-
+                return false;
             }
 
             bool hasChannelPublisher(const std::string& channelID)
             {
-                
+                return false;
             }
 
             

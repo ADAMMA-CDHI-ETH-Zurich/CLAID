@@ -24,6 +24,7 @@ namespace RemoteConnection
 
     void ConnectionModule::initialize()
     {
+        Logger::printfln("ConnectionModule init");
         this->sendChannel = this->subscribeLocal<Message>(SEND_CHANNEL, &ConnectionModule::onSendMessage, this);
         this->receiveChannel = this->publishLocal<Message>(RECEIVE_CHANNEL);
         this->errorChannel = this->publishLocal<Error>(ERROR_CHANNEL);

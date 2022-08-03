@@ -19,6 +19,8 @@ namespace portaible
                 // Channels that were subscribed remotely.
                 std::vector<Channel<Untyped>> remoteSubscribedChannels;
 
+                bool sendMessageChannelSet = false;
+
                 Channel<Message> sendMessageChannel;
                 Channel<Message> receiveMessageChannel;
 
@@ -51,6 +53,8 @@ namespace portaible
                 
                 void unpublishSendMessageChannel();
                 void unsubscribeReceiveMessageChannel();
+
+                void start();
 
 
                             
