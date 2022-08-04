@@ -26,5 +26,7 @@ namespace portaible
             void addRunnable(Runnable* runnable);
 
             bool isRunning() const;
+
+            std::thread::id getThreadID();
     };
 }

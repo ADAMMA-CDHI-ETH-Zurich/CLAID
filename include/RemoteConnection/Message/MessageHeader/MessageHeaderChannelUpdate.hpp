@@ -5,7 +5,7 @@ namespace portaible
 {
     namespace RemoteConnection
     {
-        struct MessageHeaderChannelUpdate
+        struct MessageHeaderChannelUpdate : public MessageHeader
         {
             DECLARE_SERIALIZATION(MessageHeaderChannelUpdate)
 

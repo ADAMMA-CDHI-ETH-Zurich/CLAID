@@ -61,4 +61,10 @@ namespace portaible
         // ITCChannel is thread safe !
         this->runnablesChannel.put(runnable);
     }
+
+    std::thread::id RunnableDispatcherThread::getThreadID()
+    {
+        return this->thread.get_id();
+    }
+
 }

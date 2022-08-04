@@ -2,6 +2,11 @@
 
 #include "RunTime/RunTime.hpp"
 #include "RemoteConnection/Message/Message.hpp"
+
+#include "RemoteConnection/RemoteModule/LocalObserver.hpp"
+#include "RemoteConnection/RemoteModule/RemoteObserver.hpp"
+
+
 namespace portaible
 {
     namespace RemoteConnection
@@ -12,7 +17,9 @@ namespace portaible
         class RemoteModule : public Module
         {
             private:
-                
+                LocalObserver* localObserver = nullptr;
+                RemoteObserver* remoteObserver = nullptr;
+
                 // Channels that were published remotely
                 std::vector<Channel<Untyped>> remotePublishedChannels;
 
@@ -24,29 +31,15 @@ namespace portaible
                 Channel<Message> sendMessageChannel;
                 Channel<Message> receiveMessageChannel;
 
-                void onMessageReceived(ChannelData<Message> message);
                 void sendMessage(Message& message);
-            //     // Observes everything the remote connection does.
-            //     class RemoteObserver 
-            //     {
-            //         // Receives data from network and is also able to send data over network ?
-            //         void onRemoteModuleAdded();
-            //         void onRemoteModuleRemoved();
-            //         void onRemoteModuleSubscribedToChannel();
-            //         void onRemoteModulePublishedChannel();
-            //     };
 
-                
-
-            //     void onMessage(Message message);
-            //     void onConnectionLost();
 
                 void initialize();
 
             public:
             //     void notifyOnMessage(Message message);
             //     void notifyOnConnectionLost();
-                ChannelSubscriber<Message> getSubscriberForMessageReceiveChannel();
+                ChannelSubscriber<Message> getSubscriberForReceptionOfMessages();
 
                 void setSendMessageChannel(Channel<Message> channel);
                 void setReceiveMessageChannel(Channel<Message> channel);

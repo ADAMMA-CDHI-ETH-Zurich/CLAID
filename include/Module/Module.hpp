@@ -160,6 +160,17 @@ namespace portaible
             
             void waitForInitialization()
             {
+                // If this thread is runnable dispatcher thread, this results in a deadlock.
+
+                if(std::this_thread::get_id() == this->runnableDispatcherThread->getThreadID())
+                {
+                    PORTAIBLE_THROW(Exception, "Error! Function waitForInitialization() of Module " << getDataTypeRTTIString(*this) << "\n"
+                    << " was called from the same thread the Module runs in. This results in an unresolvable deadlock."
+                    << "This might happen if you call waitForInitializiation() in any of the Modules functions, or "
+                    << "if you use forkSubModuleInThread to create a local SubModule and then call waitForInitialization() on that SubModule "
+                    << "(remember the forked SubModule runs on the same thread as the parent Module that forked it).");
+                }
+
                 while(!this->initialized)
                 {
                     
@@ -212,6 +223,10 @@ namespace portaible
                     // Will block until the timer is stopped.
                     timer->stop();
                 }
+
+                // Should we ? That means when restarting the module,
+                // timers need to be registered again.. Which seems fine though.
+                this->timers.clear();
 
                 this->isRunning = false;
             }
@@ -377,12 +392,20 @@ namespace portaible
             // Please note: By spawning a submodule in the same thread,
             // the submodule will have the same unique identifier as the original module.
             template<typename SubModuleType, typename... arguments>
-            void forkSubModuleInThread(arguments... args)
+            SubModuleType* forkSubModuleInThread(arguments... args)
             {
                 SubModuleType* subModule = SubModuleFactory::spawnSubModuleInThread<SubModuleType, arguments...>(this->runnableDispatcherThread, args...);
                 subModule->startModule();
+                // Don't do this! forkSubModuleInThread is called from the parent Module.
+                // The thread of the SubModule will be the same thread as the parent Module.
+                // By calling waitForInitialization, we block (shared) thread.
+                // startModule inserts a Runnable into this thread, but as the thread is blocked by
+                // waitForInitialization, that Runnable can never get executed, thus the subModule
+                // will never be initialized.
+                // 
                 subModule->waitForInitialization();
                 this->subModulesInSameThread.push_back(static_cast<SubModule*>(subModule));
+                return subModule;
             }
 
     };

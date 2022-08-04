@@ -1,5 +1,4 @@
 #include "RemoteConnection/RemoteModule/RemoteModule.hpp"
-#include "RemoteConnection/RemoteModule/LocalObserver.hpp"
 #include "RemoteConnection/Message/MessageData/MessageDataBinary.hpp"
 
 namespace portaible
@@ -7,9 +6,15 @@ namespace portaible
 namespace RemoteConnection
 {
     //     void notifyOnConnectionLost();
-    ChannelSubscriber<Message> RemoteModule::getSubscriberForMessageReceiveChannel()
+    ChannelSubscriber<Message> RemoteModule::getSubscriberForReceptionOfMessages()
     {
-        return this->makeSubscriber(&RemoteModule::onMessageReceived, this);
+        if(this->remoteObserver == nullptr)
+        {
+            PORTAIBLE_THROW(Exception, "Error in RemoteModule: getSubscriberForReceptionOfMessages() was called before "
+            "the RemoteModule has been initialized. Please call startModule() first");
+        }
+
+        return this->remoteObserver->getSubscriberForReceptionOfMessages();
     }
 
     void RemoteModule::sendMessage(Message& message)
@@ -44,24 +49,15 @@ namespace RemoteConnection
         this->receiveMessageChannel.unsubscribe();
     }
 
-    void RemoteModule::onMessageReceived(ChannelData<Message> message)
-    {
-        Logger::printfln("RECEIVED MESSAGE\n");
-
-        std::vector<std::string> channelNames;
-        Message m = message->value();
-        m.data->as<MessageDataBinary>()->get<std::vector<std::string>>(channelNames);
-
-        for(std::string name : channelNames)
-        {
-            Logger::printfln("Channel name: %s", name.c_str());
-        }
-    }    
+   
 
     void RemoteModule::initialize()
     {
-        
-    
+                Logger::printfln("RemoteModule init");
+
+        // By using forkSubModuleInThread, the LocalObserver will run on the same thread as the RemoteModule (no extra overhead).
+        this->localObserver = this->forkSubModuleInThread<LocalObserver>(this->sendMessageChannel);
+        this->remoteObserver = this->forkSubModuleInThread<RemoteObserver>();
     }
 
     void RemoteModule::start()
@@ -70,7 +66,7 @@ namespace RemoteConnection
         {
             PORTAIBLE_THROW(Exception, "Error! RemoteModule started without calling setSendMessageChannel before!"
             "Please provide a channel for sending messages (i.e. Channel<RemoteConnection::Message> and call setSendMessageChannel "
-            "prior to calling start")
+            "prior to calling start");
         }
         // Why start not in initialize? 
         // Because setSendMessageChannel might not have been called yet.
@@ -80,7 +76,7 @@ namespace RemoteConnection
         Logger::printfln("Initialize");
         size_t numChannels = PORTAIBLE_RUNTIME->getNumChannels();
         std::vector<std::string> channelNames = {"IntChannel", "CoughChannel", "TestChannel"};
-        Message message = Message::CreateMessage<MessageHeader, MessageDataBinary>();
+        Message message = Message::CreateMessage<MessageHeaderChannelUpdate, MessageDataBinary>();
         message.data->as<MessageDataBinary>()->set<std::vector<std::string>>(channelNames);
         this->sendMessage(message);
 
@@ -92,8 +88,7 @@ namespace RemoteConnection
         Logger::printfln("RemoteModule cal sending.");
 
 
-        // By using forkSubModuleInThread, the LocalObserver will run on the same thread as the RemoteModule (no extra overhead).
-        this->forkSubModuleInThread<LocalObserver>(this->sendMessageChannel);
+        
     }
 
     

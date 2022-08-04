@@ -219,7 +219,7 @@ namespace portaible
             {
                 size_t m;
                 this->callInt(property, m);
-                member = m;
+                member = static_cast<T>(m);
             }
 
             template<typename T>
