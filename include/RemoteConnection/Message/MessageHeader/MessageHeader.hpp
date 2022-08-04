@@ -12,10 +12,8 @@ namespace portaible
             template<typename Reflector>
             void reflect(Reflector& r)
             {
-                r.member("Description", description, "");
             }
 
-            std::string description;
             
         };
     }

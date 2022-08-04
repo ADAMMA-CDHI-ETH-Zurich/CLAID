@@ -215,6 +215,14 @@ namespace portaible
             }
 
             template<typename T>
+            void callEnum(const char* property, T& member)
+            {
+                size_t m;
+                this->callInt(property, m);
+                member = m;
+            }
+
+            template<typename T>
             void callString(const char* property, T& member)
             {
                 std::shared_ptr<XMLNode> node = this->getChildNode(property);

@@ -6,7 +6,7 @@ namespace portaible
     Channel<T> SubModule::subscribeLocal(const std::string& channelID)
     {
         verifySafeAccessToChannels(channelID);
-        return this->channelManager->subscribe<T>(channelID);
+        return this->channelManager->subscribe<T>(channelID, this->getUniqueIdentifier());
     }
 
     template<typename T, typename Class>
@@ -24,21 +24,21 @@ namespace portaible
         verifySafeAccessToChannels(channelID);
         // runtime::getChannel(channelID).subscribe()
         ChannelSubscriber<T> channelSubscriber(this->runnableDispatcherThread, function);
-        return this->channelManager->subscribe<T>(channelID, channelSubscriber);
+        return this->channelManager->subscribe<T>(channelID, channelSubscriber, this->getUniqueIdentifier());
     }
 
     template<typename T>
     Channel<T> SubModule::subscribeLocal(const std::string& channelID, ChannelSubscriber<T> channelSubscriber)
     {
         verifySafeAccessToChannels(channelID);
-        return this->channelManager->subscribe(channelID, channelSubscriber);
+        return this->channelManager->subscribe(channelID, channelSubscriber, this->getUniqueIdentifier());
     }
 
     template<typename T>
     Channel<T> SubModule::publishLocal(const std::string& channelID)
     {
         verifySafeAccessToChannels(channelID);
-        return this->channelManager->publish<T>(channelID);
+        return this->channelManager->publish<T>(channelID, this->getUniqueIdentifier());
     }
 }
 
@@ -51,7 +51,7 @@ template<typename T>
 Channel<T> Module::subscribe(const std::string& channelID)
 {
     verifySafeAccessToChannels(channelID);
-    return this->channelManager->subscribe<T>(channelID);
+    return this->channelManager->subscribe<T>(channelID, this->getUniqueIdentifier());
 }
 
 template<typename T, typename Class>
@@ -69,21 +69,21 @@ Channel<T> Module::subscribe(const std::string& channelID, std::function<void (C
     verifySafeAccessToChannels(channelID);
     // runtime::getChannel(channelID).subscribe()
     ChannelSubscriber<T> channelSubscriber(this->runnableDispatcherThread, function);
-    return this->channelManager->subscribe<T>(channelID, channelSubscriber);
+    return this->channelManager->subscribe<T>(channelID, channelSubscriber, this->getUniqueIdentifier());
 }
 
 template<typename T>
 Channel<T> Module::subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber)
 {
     verifySafeAccessToChannels(channelID);
-    return this->channelManager->subscribe(channelID, channelSubscriber);
+    return this->channelManager->subscribe(channelID, channelSubscriber, this->getUniqueIdentifier());
 }
 
 template<typename T>
 Channel<T> Module::publish(const std::string& channelID)
 {
     verifySafeAccessToChannels(channelID);
-    return this->channelManager->publish<T>(channelID);
+    return this->channelManager->publish<T>(channelID, this->getUniqueIdentifier());
 }
 }
 

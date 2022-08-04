@@ -1,8 +1,8 @@
 #pragma once
 
 #include <memory.h>
-#include "MessageHeader.hpp"
-#include "MessageData.hpp"
+#include "RemoteConnection/Message/MessageHeader/MessageHeader.hpp"
+#include "RemoteConnection/Message/MessageData/MessageData.hpp"
 #include "Serialization/Serialization.hpp"
 #include "Binary/BinaryData.hpp"
 

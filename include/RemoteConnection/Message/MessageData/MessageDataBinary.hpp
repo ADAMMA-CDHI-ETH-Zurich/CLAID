@@ -1,7 +1,7 @@
 #pragma once
 #include "Serialization/Serialization.hpp"
 #include "Binary/BinaryData.hpp"
-#include "RemoteConnection/Message/MessageData.hpp"
+#include "RemoteConnection/Message/MessageData/MessageData.hpp"
 
 namespace portaible
 {

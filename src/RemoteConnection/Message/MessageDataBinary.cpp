@@ -1,3 +1,3 @@
-#include "RemoteConnection/Message/MessageDataBinary.hpp"
+#include "RemoteConnection/Message/MessageData/MessageDataBinary.hpp"
 
 SERIALIZATION(portaible::RemoteConnection::MessageDataBinary)

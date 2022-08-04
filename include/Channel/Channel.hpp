@@ -28,6 +28,7 @@ namespace portaible
         private:
             TypedChannel<T>* typedChannel;
             const ChannelSubscriberBase* subscriberPtr;
+            size_t publisherSubscriberUniqueIdentifier = {0};
 
             // Stored as ptr, to make sure that if the channel object was copied 
             // and unsubcribe or unpublish was called later, all copied instances 
@@ -54,17 +55,23 @@ namespace portaible
 
 
 
-            Channel() : subscriberPtr(nullptr)
+            Channel() :  subscriberPtr(nullptr), publisherSubscriberUniqueIdentifier(0)
             {
                 this->channelAccessRights = std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::NONE));
             }
 
-            Channel(TypedChannel<T>* typedChannel, std::shared_ptr<ChannelAccessRights> channelAccessRights) : typedChannel(typedChannel), channelAccessRights(channelAccessRights), subscriberPtr(nullptr)
+            Channel(TypedChannel<T>* typedChannel, 
+                std::shared_ptr<ChannelAccessRights> channelAccessRights, size_t publisherSubscriberUniqueIdentifier) : 
+                typedChannel(typedChannel), channelAccessRights(channelAccessRights), 
+                subscriberPtr(nullptr), publisherSubscriberUniqueIdentifier(publisherSubscriberUniqueIdentifier)
             {
 
             }
 
-            Channel(TypedChannel<T>* typedChannel, std::shared_ptr<ChannelAccessRights> channelAccessRights, ChannelSubscriberBase* subscriberPtr) : typedChannel(typedChannel), channelAccessRights(channelAccessRights), subscriberPtr(subscriberPtr)
+            Channel(TypedChannel<T>* typedChannel, 
+                std::shared_ptr<ChannelAccessRights> channelAccessRights, ChannelSubscriberBase* subscriberPtr, size_t publisherSubscriberUniqueIdentifier) : 
+                typedChannel(typedChannel), channelAccessRights(channelAccessRights), 
+                subscriberPtr(subscriberPtr), publisherSubscriberUniqueIdentifier(publisherSubscriberUniqueIdentifier)
             {
 
             }
@@ -83,7 +90,7 @@ namespace portaible
                 return typedChannel->read(timestamp, tolerance);
             }
 
-             ChannelData<T> read(const uint32_t sequenceID,
+             ChannelData<T> read(const uint64_t sequenceID,
                                 const Duration& searchIntervall = Duration::seconds(1))
             {
                 verifyReadAccess();
@@ -106,17 +113,18 @@ namespace portaible
 
             template <typename U = T>
             typename std::enable_if<!std::is_same<U, Untyped>::value>::type
-            post(U& data)
+            post(U& data, const Time timestamp = Time::now(), uint64_t sequenceID = 0)
             {
-                TaggedData<U> taggedData(data);
+                TaggedData<U> taggedData(data, timestamp, sequenceID);
                 this->post(taggedData);
             }
 
             template <typename U = T>
             typename std::enable_if<!std::is_same<U, Untyped>::value>::type
-            post(std::shared_ptr<U> data)
+            post(std::shared_ptr<U> data, const Time timestamp = Time::now(), uint64_t sequenceID = 0)
             {
-                this->post(TaggedData<U>(data));
+                TaggedData<U> taggedData(data, timestamp, sequenceID);
+                this->post(taggedData);
             }
 
             void getChannelDataIntervall(const Time& min, const Time& max, std::vector<ChannelData<T>>& channelDataIntervall)
@@ -166,6 +174,11 @@ namespace portaible
                 return this->subscriberPtr;
             }
 
+            size_t getPublisherSubscriberUniqueIdentifier()
+            {
+                return this->publisherSubscriberUniqueIdentifier;
+            }
+
 
     };
     // TODO: Add mutex when subscribing / unsubscribing
@@ -185,8 +198,8 @@ namespace portaible
                 } 
             }
 
-            size_t numPublishers;
-            size_t numSubscribers;
+            size_t numPublishers = 0;
+            size_t numSubscribers = 0;
 
         public:
       
@@ -195,6 +208,8 @@ namespace portaible
             {
                 // If T is Untyped, ChannelBuffer will be Untyped automatically.
                 this->channelBuffer = new ChannelBuffer<T>();
+                this->numPublishers = 0;
+                this->numSubscribers = 0;
             }
 
             virtual ~TypedChannel()
@@ -205,10 +220,9 @@ namespace portaible
 
             template <typename U = T>
             typename std::enable_if<!std::is_same<U, Untyped>::value>::type
-            post(const U& data) 
+            post(const U& data, const Time timestamp = Time::now(), uint64_t sequenceID = 0) 
             {
-                this->post(TaggedData<U>(data));
-
+                this->post(TaggedData<U>(data, timestamp, sequenceID));
             }
 
             // Use new template parameter U to allow to remove this
@@ -217,11 +231,11 @@ namespace portaible
             // template<typename> in order to use std::enable_if
             template <typename U = T>
             typename std::enable_if<!std::is_same<U, Untyped>::value>::type
-            post(std::shared_ptr<T> data)
+            post(std::shared_ptr<T> data, const Time timestamp = Time::now(), uint64_t sequenceID = 0)
             {
-                this->post(TaggedData<T>(data));
+                this->post(TaggedData<T>(data, timestamp, sequenceID));
             }
-
+    
             // Use new template parameter U to allow to remove this
             // function for Untyped channels.
             // It would not be possible to use T, because we need to write
@@ -319,7 +333,7 @@ namespace portaible
                 }
             }
 
-            ChannelData<T> read(const uint32_t sequenceID,
+            ChannelData<T> read(const uint64_t sequenceID,
                                 const Duration& searchInterval)
             {
                 Time newestTimeStamp = this->read()->timestamp;
@@ -340,13 +354,13 @@ namespace portaible
                 return ChannelData<T>::InvalidChannelData();
             }
            
-            Channel<T> subscribe()
+            Channel<T> subscribe(size_t publisherSubscriberUniqueIdentifier)
             {
                 this->numSubscribers++;
-                return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::READ)));
+                return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::READ)), publisherSubscriberUniqueIdentifier);
             }
 
-            Channel<T> subscribe(ChannelSubscriber<T> channelSubscriber)
+            Channel<T> subscribe(ChannelSubscriber<T> channelSubscriber, size_t publisherSubscriberUniqueIdentifier)
             {
                 ChannelSubscriber<T>* typedSubscriber = new ChannelSubscriber<T>(channelSubscriber);
                 typedSubscriber->setChannel(this);
@@ -355,21 +369,19 @@ namespace portaible
                 this->channelSubscribers.push_back(static_cast<ChannelSubscriberBase*>(typedSubscriber));
                 
                 this->numSubscribers++;
-                return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::READ)), untypedSubscriber);
+                return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::READ)), untypedSubscriber, publisherSubscriberUniqueIdentifier);
             }
 
-            Channel<T> publish()
+            Channel<T> publish(size_t publisherSubscriberUniqueIdentifier)
             {
                 this->numPublishers++;
-                return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::WRITE)));
+                return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::WRITE)), publisherSubscriberUniqueIdentifier);
             }
 
             void getChannelDataInterval(const Time& min, const Time& max, std::vector<ChannelData<T> >& channelDataInterval)
             {
                 channelDataInterval.clear();
-                this->channelBuffer.getDataInterval(min, max, channelDataInterval);
-
-           
+                this->channelBuffer.getDataInterval(min, max, channelDataInterval);           
             }
 
             // Unsubscribe and unpublish are a bit ugly.. I know
@@ -449,6 +461,15 @@ namespace portaible
                 numPublishers--;
             }
 
+            size_t getNumPublishers()
+            {
+                return this->numPublishers;
+            }
+
+            size_t getNumSubscribers()
+            {
+                return this->numSubscribers;
+            }
 
             // ChannelData<T> read(const Time& timestamp, SlotQueryMode mode = NEAREST_SLOT,
             //                     const Duration& tolerance = Duration::infinity())

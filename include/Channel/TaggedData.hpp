@@ -23,7 +23,7 @@ namespace portaible
                 this->data = std::shared_ptr<T>(new T(data));
             }
     
-            TaggedData(const T& data, const Time& timestamp, uint32_t sequenceID = 0) : TaggedDataBase(timestamp, sequenceID)
+            TaggedData(const T& data, const Time& timestamp, uint64_t sequenceID = 0) : TaggedDataBase(timestamp, sequenceID)
             {
                 // Copy is necessary.
                 this->data = std::shared_ptr<T>(new T(data));
@@ -34,7 +34,7 @@ namespace portaible
                 this->data = data;
             }
 
-            TaggedData(std::shared_ptr<T>& data, const Time& timestamp, uint32_t sequenceID = 0) : TaggedDataBase(timestamp, sequenceID)
+            TaggedData(std::shared_ptr<T>& data, const Time& timestamp, uint64_t sequenceID = 0) : TaggedDataBase(timestamp, sequenceID)
             {
                 this->data = data;
             }

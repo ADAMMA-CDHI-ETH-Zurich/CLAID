@@ -11,7 +11,7 @@ namespace portaible
         TaggedDataBase() : sequenceID(0), timestamp(Time::min()) {}
 
 
-        TaggedDataBase(const Time& timestamp, uint32_t sequenceID = 0) :
+        TaggedDataBase(const Time& timestamp, uint64_t sequenceID = 0) :
             timestamp(timestamp),
             sequenceID(sequenceID) 
         {
@@ -30,6 +30,6 @@ namespace portaible
     public:
 
         Time timestamp;
-        uint32_t sequenceID;
+        uint64_t sequenceID;
     };
 }

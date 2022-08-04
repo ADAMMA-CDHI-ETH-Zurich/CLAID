@@ -84,6 +84,14 @@ namespace portaible
             template<typename T>
             void callPointer(const char* property, T*& member)
             {
+                if(member == nullptr)
+                {
+                    // What to do with nullptrs? Do not serialize?
+                    PORTAIBLE_THROW(Exception, "Error, XMLSerializer can not serialize member " << property << "."
+                    << "The member is a pointer of type " << getDataTypeRTTIString<T>() << ", but the value of the pointer is null.");
+                    return;
+                }
+
                 // In the following, we check whether serialization is implemented for member.
                 // Note, that T might not match the members real type, as member might be polymorphic.
                 // Thus, we can not use className to check whether a PolymorphicReflector was registered (see below).
@@ -128,10 +136,19 @@ namespace portaible
                 if(ptr == nullptr)
                 {
                     // What to do with nullptrs? Do not serialize?
+                    PORTAIBLE_THROW(Exception, "Error, XMLSerializer can not serialize member " << property << "."
+                    << "The member is a shared_ptr of type " << getDataTypeRTTIString<T>(member) << ", but the value of the pointer is null");
                     return;
                 }
 
                 this->callPointer<BaseTypeT>(property, ptr);
+            }
+
+            template<typename T>
+            void callEnum(const char* property, T& member)
+            {
+                size_t m = static_cast<size_t>(member);
+                this->callInt(property, m);
             }
 
             void count(const std::string& name, size_t& count)

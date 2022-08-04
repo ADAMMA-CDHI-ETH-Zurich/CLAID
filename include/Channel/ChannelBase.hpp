@@ -40,6 +40,9 @@ namespace portaible
                 return this->channelID;
             }
 
+            virtual size_t getNumPublishers() = 0;
+            virtual size_t getNumSubscribers() = 0;
+
 
         protected:
             std::vector<ChannelSubscriberBase*> channelSubscribers;

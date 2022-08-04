@@ -119,6 +119,16 @@ namespace portaible
                 }
             };
 
+        // ENUM TYPES
+
+            template<class T>
+            struct ReflectorType<T, typename std::enable_if<std::is_enum<T>::value>::type>
+            {
+                static void call(const char* property, Derived& r, T& member)
+                {
+                    r.callEnum(property, member);
+                }
+            };
             
 
         public:

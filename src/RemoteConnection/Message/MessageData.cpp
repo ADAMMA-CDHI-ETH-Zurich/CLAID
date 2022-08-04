@@ -1,3 +1,3 @@
-#include "RemoteConnection/Message/MessageData.hpp"
+#include "RemoteConnection/Message/MessageData/MessageData.hpp"
 
 SERIALIZATION(portaible::RemoteConnection::MessageData)

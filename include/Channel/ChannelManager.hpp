@@ -68,10 +68,10 @@ namespace portaible
                 return newChannel;       
             }
 
-            void onChannelSubscribed(const std::string& channelID);
-            void onChannelPublished(const std::string& channelID);
-            void onChannelUnsubscribed(const std::string& channelID);
-            void onChannelUnpublished(const std::string& channelID);
+            void onChannelSubscribed(const std::string& channelID, uint64_t uniqueModuleID);
+            void onChannelPublished(const std::string& channelID, uint64_t uniqueModuleID);
+            void onChannelUnsubscribed(const std::string& channelID, uint64_t uniqueModuleID);
+            void onChannelUnpublished(const std::string& channelID, uint64_t uniqueModuleID);
 
             // Explicitly forbid copying.
             ChannelManager(const ChannelManager&) = delete;
@@ -86,9 +86,11 @@ namespace portaible
             // publish
 
             
-
+            // uniqueModuleID can be used to identify which module has subscribed / published to a channel.
+            // It is only used for the onChannel(Un)Subscribed, onChannel(Un)Published functions.
+            // So far only has a use for the RemoteModule
             template<typename T>
-            Channel<T> subscribe(const std::string& channelID, bool silent = false)
+            Channel<T> subscribe(const std::string& channelID, uint64_t uniqueModuleID)
             {
                 std::unique_lock<std::mutex> lock(this->channelMutex);
 
@@ -102,7 +104,7 @@ namespace portaible
                     {
                         // Safely cast ChannelBase to TypedChannel.
                         std::shared_ptr<TypedChannel<T>> typedChannel = castChannel<T>(channel);
-                        returnChannel = typedChannel->subscribe();                  
+                        returnChannel = typedChannel->subscribe(uniqueModuleID);                  
                     }
                     else
                     {
@@ -114,21 +116,17 @@ namespace portaible
                 {
                     // Channel not found, create new.
                     TypedChannel<T>* newChannel = registerNewChannel<T>(channelID);   
-                    returnChannel = newChannel->subscribe();
+                    returnChannel = newChannel->subscribe(uniqueModuleID);
                 }
 
-                if(!silent)
-                {
-                    this->onChannelSubscribed(channelID);
-                }
-
+                this->onChannelSubscribed(channelID, uniqueModuleID);
                 return returnChannel;
             }
 
   
 
             template<typename T>
-            Channel<T> subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber, bool silent = false)
+            Channel<T> subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber, uint64_t uniqueModuleID)
             {
                 std::unique_lock<std::mutex> lock(this->channelMutex);
 
@@ -144,7 +142,7 @@ namespace portaible
                         // Safely cast ChannelBase to TypedChannel.
                         std::shared_ptr<TypedChannel<T>> typedChannel = castChannel<T>(channel);
 
-                        returnChannel = typedChannel->subscribe(channelSubscriber);
+                        returnChannel = typedChannel->subscribe(channelSubscriber, uniqueModuleID);
                     }
                     else
                     {
@@ -157,18 +155,16 @@ namespace portaible
 
                     // Channel not found, create new.
                     std::shared_ptr<TypedChannel<T>> newChannel = registerNewChannel<T>(channelID);
-                    returnChannel = newChannel->subscribe(channelSubscriber);
+                    returnChannel = newChannel->subscribe(channelSubscriber, uniqueModuleID);
                 }
 
-                if(!silent)
-                {
-                    this->onChannelSubscribed(channelID);
-                }
+               
+                this->onChannelSubscribed(channelID, uniqueModuleID);
                 return returnChannel;
             }
 
             template<typename T>
-            Channel<T> publish(const std::string& channelID, bool silent = false)
+            Channel<T> publish(const std::string& channelID, uint64_t uniqueModuleID)
             {
                 std::unique_lock<std::mutex> lock(this->channelMutex);
 
@@ -182,7 +178,7 @@ namespace portaible
                     {
                         // Safely cast ChannelBase to TypedChannel.
                         std::shared_ptr<TypedChannel<T>> typedChannel = castChannel<T>(channel);
-                        returnChannel = typedChannel->publish();
+                        returnChannel = typedChannel->publish(uniqueModuleID);
                     }
                     else
                     {
@@ -194,18 +190,16 @@ namespace portaible
                 {
                     // Channel not found, create new.
                     std::shared_ptr<TypedChannel<T>> newChannel = registerNewChannel<T>(channelID);
-                    returnChannel = newChannel->publish();
+                    returnChannel = newChannel->publish(uniqueModuleID);
                 }
 
-                if(!silent)
-                {
-                    this->onChannelPublished(channelID);
-                }
+
+                this->onChannelPublished(channelID, uniqueModuleID);
                 return returnChannel;
             }
 
             template<typename T>
-            void unsubscribe(Channel<T>& channelObject, bool silent = false)
+            void unsubscribe(Channel<T>& channelObject)
             {
                 std::unique_lock<std::mutex> lock(this->channelMutex);
 
@@ -232,14 +226,11 @@ namespace portaible
                     PORTAIBLE_THROW(Exception, "Error, unsubscribe was called on a channel with channel ID " << channelID << ", which does not exist. This should never happen and most likely is a programming mistake");
                 }
 
-                if(!silent)
-                {
-                    this->onChannelUnsubscribed(channelID);
-                }
+                this->onChannelUnsubscribed(channelID, channelObject.getPublisherSubscriberUniqueIdentifier());
             }
 
             template<typename T>
-            void unpublish(Channel<T>& channelObject, bool silent = false)
+            void unpublish(Channel<T>& channelObject)
             {
                 std::unique_lock<std::mutex> lock(this->channelMutex);
 
@@ -266,48 +257,24 @@ namespace portaible
                     PORTAIBLE_THROW(Exception, "Error, unpublish was called on a channel with channel ID " << channelID << ", which does not exist. This should never happen and most likely is a programming mistake");
                 }
 
-                if(!silent)
-                {
-                    this->onChannelUnpublished(channelID);
-                }
+                this->onChannelUnpublished(channelID, channelObject.getPublisherSubscriberUniqueIdentifier());
             }
 
-            size_t getNumChannels()
-            {
-                return this->typedChannels.size();
-            }
+            size_t getNumChannels();
 
-            const std::string& getChannelNameByIndex(size_t id)
-            {
-                auto it = this->typedChannels.begin();
-                std::advance(it, id);
-                return it->first;
-            }
-
-            std::vector<std::string> getChannelIDs()
-            {
-                return {};
-            }
-
-            bool hasChannelSubscriber(const std::string& channelID)
-            {
-                return false;
-            }
-
-            bool hasChannelPublisher(const std::string& channelID)
-            {
-                return false;
-            }
-
-            
+            const std::string& getChannelNameByIndex(size_t id);
 
 
-            Channel<std::string> observeSubscribedChannels(ChannelSubscriber<std::string> subscriber);
-            Channel<std::string> observePublishedChannels(ChannelSubscriber<std::string> subscriber);
-            Channel<std::string> observeUnsubscribedChannels(ChannelSubscriber<std::string> subscriber);
-            Channel<std::string> observeUnpublishedChannels(ChannelSubscriber<std::string> subscriber);
+            bool hasChannelPublisher(const std::string& channelID);
+            bool hasChannelSubscriber(const std::string& channelID);
 
-            void getSubscribedAndPublishedChannels(std::vector<std::string>& subscribedChannels, std::vector<std::string>& publishedChannels);
+                 
+            Channel<std::string> observeSubscribedChannels(ChannelSubscriber<std::string> subscriber, uint64_t observerUniqueModuleID);
+            Channel<std::string> observePublishedChannels(ChannelSubscriber<std::string> subscriber, uint64_t observerUniqueModuleID);
+            Channel<std::string> observeUnsubscribedChannels(ChannelSubscriber<std::string> subscriber, uint64_t observerUniqueModuleID);
+            Channel<std::string> observeUnpublishedChannels(ChannelSubscriber<std::string> subscriber, uint64_t observerUniqueModuleID);
+
+            void getChannelIDs(std::vector<std::string>& channelIDs);
 
     };
 }

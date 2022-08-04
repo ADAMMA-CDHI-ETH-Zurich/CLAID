@@ -18,55 +18,94 @@ namespace portaible
 
     }
 
-    Channel<std::string> ChannelManager::observeSubscribedChannels(ChannelSubscriber<std::string> subscriber)
+    size_t ChannelManager::getNumChannels()
     {
-        return this->onChannelSubscribedChannel->subscribe(subscriber);
+        return this->typedChannels.size();
     }
 
-    Channel<std::string> ChannelManager::observePublishedChannels(ChannelSubscriber<std::string> subscriber)
+    const std::string& ChannelManager::getChannelNameByIndex(size_t id)
     {
-        return this->onChannelPublishedChannel->subscribe(subscriber);
+        auto it = this->typedChannels.begin();
+        std::advance(it, id);
+        return it->first;
     }
 
-    Channel<std::string> ChannelManager::observeUnsubscribedChannels(ChannelSubscriber<std::string> subscriber)
+    void ChannelManager::getChannelIDs(std::vector<std::string>& channelIDs)
     {
-        return this->onChannelUnsubscribedChannel->subscribe(subscriber);
+        std::unique_lock<std::mutex> lock(this->channelMutex);
+        channelIDs.clear();
+
+        for(auto it : this->typedChannels)
+        {
+            channelIDs.push_back(it.first);
+        }
+    }
+
+    bool ChannelManager::hasChannelPublisher(const std::string& channelID)
+    {
+        std::unique_lock<std::mutex> lock(this->channelMutex);
+        auto it = this->typedChannels.find(channelID);
+        
+        if(it == typedChannels.end())
+        {
+            return false;
+        }
+
+        return it->second->getNumPublishers() > 0;
+    }
+
+    bool ChannelManager::hasChannelSubscriber(const std::string& channelID)
+    {
+        std::unique_lock<std::mutex> lock(this->channelMutex);
+        auto it = this->typedChannels.find(channelID);
+        
+        if(it == typedChannels.end())
+        {
+            return false;
+        }
+
+        return it->second->getNumSubscribers() > 0;
+    }
+
+    Channel<std::string> ChannelManager::observeSubscribedChannels(ChannelSubscriber<std::string> subscriber, uint64_t observerUniqueModuleID)
+    {
+        return this->onChannelSubscribedChannel->subscribe(subscriber, observerUniqueModuleID);
+    }
+
+    Channel<std::string> ChannelManager::observePublishedChannels(ChannelSubscriber<std::string> subscriber, uint64_t observerUniqueModuleID)
+    {
+        return this->onChannelPublishedChannel->subscribe(subscriber, observerUniqueModuleID);
+    }
+
+    Channel<std::string> ChannelManager::observeUnsubscribedChannels(ChannelSubscriber<std::string> subscriber, uint64_t observerUniqueModuleID)
+    {
+        return this->onChannelUnsubscribedChannel->subscribe(subscriber, observerUniqueModuleID);
     }
     
-    Channel<std::string> ChannelManager::observeUnpublishedChannels(ChannelSubscriber<std::string> subscriber)
+    Channel<std::string> ChannelManager::observeUnpublishedChannels(ChannelSubscriber<std::string> subscriber, uint64_t observerUniqueModuleID)
     {
-        return this->onChannelUnpublishedChannel->subscribe(subscriber);
+        return this->onChannelUnpublishedChannel->subscribe(subscriber, observerUniqueModuleID);
     }
 
-    void ChannelManager::onChannelSubscribed(const std::string& channelID)
+    void ChannelManager::onChannelSubscribed(const std::string& channelID, uint64_t uniqueModuleID)
     {
-        this->onChannelSubscribedChannel->post(channelID);
+        this->onChannelSubscribedChannel->post(channelID, Time::now(), uniqueModuleID);
     }
 
-    void ChannelManager::onChannelPublished(const std::string& channelID)
+    void ChannelManager::onChannelPublished(const std::string& channelID, uint64_t uniqueModuleID)
     {
-        this->onChannelPublishedChannel->post(channelID);
+        this->onChannelPublishedChannel->post(channelID, Time::now(), uniqueModuleID);
     }
 
-    void ChannelManager::onChannelUnsubscribed(const std::string& channelID)
+    void ChannelManager::onChannelUnsubscribed(const std::string& channelID, uint64_t uniqueModuleID)
     {
-        this->onChannelUnsubscribedChannel->post(channelID);
+        this->onChannelUnsubscribedChannel->post(channelID, Time::now(), uniqueModuleID);
     }
 
-    void ChannelManager::onChannelUnpublished(const std::string& channelID)
+    void ChannelManager::onChannelUnpublished(const std::string& channelID, uint64_t uniqueModuleID)
     {
-        this->onChannelUnpublishedChannel->post(channelID);
+        this->onChannelUnpublishedChannel->post(channelID, Time::now(), uniqueModuleID);
     }
 
-    void ChannelManager::getSubscribedAndPublishedChannels(std::vector<std::string>& subscribedChannels, std::vector<std::string>& publishedChannels)
-    {
-        // While we do this, publishing and subscribing of channels should be blocked..
-        // this->block
 
-        // getNumSubscribers
-        // getNumPublishers
-        // // Need to add subscribed and published channel as many times there are subscribers / publishers.
-
-        // this->unblock
-    }
 }

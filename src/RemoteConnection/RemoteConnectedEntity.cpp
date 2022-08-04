@@ -42,6 +42,8 @@ namespace RemoteConnection
     {
         this->link.unlink();
         this->remoteModule.stopModule();
+        // TODO: Implement connection module stop
+        PORTAIBLE_THROW(Exception, "Disintegrate was called but connectionmodule.stop was not implemented yet.");
     }
 
     Channel<Error> RemoteConnectedEntity::subscribeToErrorChannel(ChannelSubscriber<Error> channelSubscriber)

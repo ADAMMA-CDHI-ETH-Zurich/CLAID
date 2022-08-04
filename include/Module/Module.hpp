@@ -59,6 +59,7 @@ namespace portaible
 
             void initializeInternal()
             {
+                Logger::printfln("Starting module %s", getDataTypeRTTIString(*this).c_str());
                 this->baseModuleInitialized = true;
                 this->initialize();
                 this->initialized = true;
@@ -109,7 +110,7 @@ namespace portaible
                 }
             }
 
-            
+                       
             virtual void initialize() = 0;
 
             PropertyReflector propertyReflector;
@@ -121,7 +122,6 @@ namespace portaible
                 {   
                     PORTAIBLE_THROW(Exception, "Error! Constructor of BaseModule called, but RunnableDispatcherThread is not null!")
                 }
-                Logger::printfln("Spawning runnable dispatcher thread");
                 this->runnableDispatcherThread = std::shared_ptr<RunnableDispatcherThread>(new RunnableDispatcherThread());
             }
         
@@ -215,6 +215,17 @@ namespace portaible
 
                 this->isRunning = false;
             }
+
+            uint64_t getUniqueIdentifier()
+            {
+                // Use the ID of the dispatcher thread as unique identifier.
+                // That mans that submodules spawned by spawnSubModuleInSameThread also have the same identifier!
+
+                static_assert(sizeof(uint64_t) >= sizeof(intptr_t), "Error, type uint64_t is smaller than type intptr_t."
+                "Can not store pointers/adresses in objects of type uint64_t with the current compiler, settings or target architecture.");
+
+                return reinterpret_cast<uint64_t>(this->runnableDispatcherThread.get());
+            }
     };
 
     // A SubModule can only communicate via local channels (between any two Modules or SubModules) and 
@@ -227,6 +238,8 @@ namespace portaible
     // By default, a SubModule always runs in it's own thread.
     // However, using the spawnSubModule function of Module, a SubModule
     // can also be running on the same thread as the parent Module.
+    // Please note: By spawning a submodule in the same thread,
+    // the submodule will have the same unique identifier as the original module.
     class SubModule : public BaseModule
     {
         // SubModuleFactory is allowed to call setDispatcherThread.
@@ -293,9 +306,9 @@ namespace portaible
     class SubModuleFactory
     {
         public:
-        // We use factory function to make sure that the RemoteConnectedEntity uses
-        // a ConnectionModule that was created by itself. I.e.: We make sure we have ownership
-        // over the ConnectionModule and it's not exposed to "the outside world".
+        // Helper factory that allows to access the private constructor of SubModule (as it is a friend class of SubModule).
+        // Please note: By spawning a submodule in the same thread,
+        // the submodule will have the same unique identifier as the original module.
         template<typename SubModuleType, typename... arguments>
         static SubModuleType* spawnSubModuleInThread(std::shared_ptr<RunnableDispatcherThread> thread, arguments... args)
         {
@@ -361,8 +374,10 @@ namespace portaible
 
             }
 
+            // Please note: By spawning a submodule in the same thread,
+            // the submodule will have the same unique identifier as the original module.
             template<typename SubModuleType, typename... arguments>
-            void spawnSubModule(arguments... args)
+            void forkSubModuleInThread(arguments... args)
             {
                 SubModuleType* subModule = SubModuleFactory::spawnSubModuleInThread<SubModuleType, arguments...>(this->runnableDispatcherThread, args...);
                 subModule->startModule();

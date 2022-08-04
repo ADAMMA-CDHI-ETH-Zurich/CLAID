@@ -13,6 +13,11 @@ namespace portaible
         class NetworkClientModule : public NetworkModule
         {
             PORTAIBLE_MODULE(NetworkClientModule)
+             NetworkClientModule()
+                {
+                //    Channel<int> d  = this->publish<int>("Test");
+                }
+
             private:
 
                 RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity;
@@ -39,6 +44,8 @@ namespace portaible
                         PORTAIBLE_THROW(Exception, "Error! Port " << port << " is invalid.");
                     }
                 }
+
+               
 
                 void initialize()
                 {
