@@ -66,3 +66,6 @@ namespace portaible
 
 #define DECLARE_POLYMORPHIC_REFLECTOR(className, Reflector, ReflectorName) \
      static portaible::PolymorphicReflector::RegisterHelper<className, Reflector> polymorphicReflectorRegistrar##ReflectorName;
+
+
+	 

@@ -62,3 +62,6 @@ struct has_non_member_function_##Identifier<P0, P1,                             
 
 #define HAS_NON_MEMBER_FUNCTION_WITH_TWO_ARGUMENTS_DETECTOR(ReturnType, FunctionName)\
         HAS_NON_MEMBER_FUNCTION_WITH_TWO_ARGUMENTS_DEFINITION_DETECTOR(FunctionName, ReturnType, FunctionName)
+
+
+        

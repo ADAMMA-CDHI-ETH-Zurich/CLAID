@@ -7,7 +7,7 @@
 #include "ChannelAccessRights.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 #include "Exception/Exception.hpp"
-
+#include <algorithm>
 namespace portaible
 {
     template<typename T>
@@ -198,6 +198,27 @@ namespace portaible
                 } 
             }
 
+            // Templated helper functions to solve redundant dependencies:
+            // ChannelManager needs TypedChannel<T>, but TypedChannel<T> needs ChannelManager to unsubscribe / unpublish
+            // (i.e. it needs to call the corresponding functions of the ChannelManager the TypedChannel belongs to).
+            // Therefore, at the beginning of this file, we provided the forward declaration, which is incomplete (i.e. does not define the
+            // unsubscribe and unpublish functions of ChannelManager). Clang is smart enough to get it anyways.
+            // Gcc too, but throws a lot of warnings which are annyoing.
+            // Thus, by wrapping it into another templated function, we can suppress this warnings as this templated function is only evaluated
+            // when it is used (i.e. channel.unsubscribe() or unpublish() is used), and by that time ChannelManager has been fully defined already.
+            // Not the prettiest solution, but it works.
+            template<typename A>
+            void callUnsubscribeHelper(A& a, Channel<T>& channel)
+            {
+                a.unsubscribe(channel);
+            }
+
+            template<typename A>
+            void callUnpublishHelper(A& a, Channel<T>& channel)
+            {
+                a.unpublish(channel);
+            }
+
             size_t numPublishers = 0;
             size_t numSubscribers = 0;
 
@@ -381,7 +402,7 @@ namespace portaible
             void getChannelDataInterval(const Time& min, const Time& max, std::vector<ChannelData<T> >& channelDataInterval)
             {
                 channelDataInterval.clear();
-                this->channelBuffer.getDataInterval(min, max, channelDataInterval);           
+                this->channelBuffer->getDataInterval(min, max, channelDataInterval);           
             }
 
             // Unsubscribe and unpublish are a bit ugly.. I know
@@ -396,15 +417,24 @@ namespace portaible
             // Thus, we implement this callUnsubscribe and callPublish functions, which calls the corresponding functions of the ChannelManager,
             // which afterwards calls the corresponding function of the TypedChannel.
             // It's suboptimal, but luckily the user never needs to care about this implementation.
+
+
+            
+
             void callUnsubscribe(Channel<T>& channel)
             {
-                this->channelManager->unsubscribe(channel);
+                //this->channelManager->unsubscribe(channel);
+                callUnsubscribeHelper<ChannelManager>(*this->channelManager, channel);
             }
+
 
             void callUnpublish(Channel<T>& channel)
             {
-                this->channelManager->unpublish(channel);
+                callUnpublishHelper<ChannelManager>(*this->channelManager, channel);
+//                this->channelManager->unpublish(channel);
             }
+            
+
 
             void unsubscribe(Channel<T>& channel)
             {

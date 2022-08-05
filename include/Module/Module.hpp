@@ -160,8 +160,7 @@ namespace portaible
             
             void waitForInitialization()
             {
-                // If this thread is runnable dispatcher thread, this results in a deadlock.
-
+                // If this thread is runnable dispatcher thread, waiting would result in a deadlock.
                 if(std::this_thread::get_id() == this->runnableDispatcherThread->getThreadID())
                 {
                     PORTAIBLE_THROW(Exception, "Error! Function waitForInitialization() of Module " << getDataTypeRTTIString(*this) << "\n"
@@ -396,14 +395,15 @@ namespace portaible
             {
                 SubModuleType* subModule = SubModuleFactory::spawnSubModuleInThread<SubModuleType, arguments...>(this->runnableDispatcherThread, args...);
                 subModule->startModule();
-                // Don't do this! forkSubModuleInThread is called from the parent Module.
+                // Don't use waitForInitialization()! forkSubModuleInThread is called from the parent Module.
                 // The thread of the SubModule will be the same thread as the parent Module.
                 // By calling waitForInitialization, we block (shared) thread.
                 // startModule inserts a Runnable into this thread, but as the thread is blocked by
                 // waitForInitialization, that Runnable can never get executed, thus the subModule
                 // will never be initialized.
                 // 
-                subModule->waitForInitialization();
+                // subModule->waitForInitialization();
+                
                 this->subModulesInSameThread.push_back(static_cast<SubModule*>(subModule));
                 return subModule;
             }
@@ -416,5 +416,4 @@ namespace portaible
 }
 
 
-#define REFLECT_BASE(Reflector, Base) \
-    Base::reflect(r);
+#define REFLECT_BASE(Reflector, Base) Base::reflect(r);

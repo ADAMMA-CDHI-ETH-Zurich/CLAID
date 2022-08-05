@@ -114,7 +114,7 @@ namespace portaible
 	static const std::string __CLASS_NAME__;\
 	public:\
 	const virtual std::string& getClassName() const {return className::__CLASS_NAME__;}\
-	static std::string staticGetGlassName() {return className::__CLASS_NAME__;}
+	static std::string staticGetClassName() {return className::__CLASS_NAME__;}
 
 #define REGISTER_TO_CLASS_FACTORY(className) \
 	volatile portaible::ClassFactory::RegisterHelper<className> className::classFactoryRegistrar (#className);\

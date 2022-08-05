@@ -4,7 +4,6 @@
 #include "Untyped.hpp"
 #include <map>
 
-// TODO: Add Mutex when adding channels or removing? 
 namespace portaible
 {
 
@@ -278,3 +277,4 @@ namespace portaible
 
     };
 }
+
