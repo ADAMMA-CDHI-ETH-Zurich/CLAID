@@ -3,7 +3,8 @@
 #include "RunTime/RunTime.hpp"
 #include "RemoteConnection/Message/Message.hpp"
 
-
+#include "RemoteConnection/Message/MessageHeader/MessageHeaderChannelUpdate.hpp"
+#include "RemoteConnection/Message/MessageData/MessageDataString.hpp"
 namespace portaible
 {
     namespace RemoteConnection
@@ -31,6 +32,14 @@ namespace portaible
                 void onChannelPublished(const std::string& channelID);
                 void onChannelUnsubscribed(const std::string& channelID);
                 void onChannelUnpublished(const std::string& channelID);
+
+                void sendMessage(const Message& message);
+
+
+                Message createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType type, const std::string& string);
+
+    
+
             public:
                 LocalObserver(Channel<RemoteConnection::Message> sendMessageChannel);
                 void observe(ChannelManager* manager);

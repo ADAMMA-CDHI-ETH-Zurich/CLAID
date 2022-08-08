@@ -20,68 +20,99 @@ namespace portaible
 
     template<>
     class ChannelBuffer<Untyped> : public ChannelBufferBase
-    {
+    {    
+
         public:
-        ChannelBuffer() : ChannelBufferBase()
-        {
-            this->typed = false;
-        }
+            ChannelBuffer() : ChannelBufferBase()
+            {
+                this->dataTypeName = "Untyped";
+            }
 
-        virtual std::string getDataTypeName()
-        {
-            return "Untyped";
-        }
 
-        ChannelData<Untyped>& getDataByIndex(size_t index)
-        {
-            // TODO FIX HERE 
-            // binary data is nullptr right
-            return *static_cast<ChannelData<Untyped>*>(this->getElement(index).untypedData);
-        }
-        
-        bool getLatest(ChannelData<Untyped>& latest)
-        {
-            return ChannelBufferBase::getLatest<Untyped>(this, latest);
-        }
-        // TODO Very likely this contains a bug
-        bool getClosest(const Time& timestamp, ChannelData<Untyped>& closest)
-        {
-            return ChannelBufferBase::getClosest<Untyped>(this, timestamp, closest);
+            ChannelData<Untyped>& getDataByIndex(size_t index)
+            {
+                return *static_cast<ChannelData<Untyped>*>(this->getElement(index)->untypedData);
+            }
             
-        }
+            bool getLatest(ChannelData<Untyped>& latest)
+            {
+                return ChannelBufferBase::getLatest<Untyped>(this, latest);
+            }
+            // TODO Very likely this contains a bug
+            bool getClosest(const Time& timestamp, ChannelData<Untyped>& closest)
+            {
+                return ChannelBufferBase::getClosest<Untyped>(this, timestamp, closest);
+                
+            }
 
+            void getDataInterval(const Time& min, const Time& max, std::vector<ChannelData<Untyped> >& channelDataInterval)
+            {
+                ChannelBufferBase::getDataInterval<Untyped>(this, min, max, channelDataInterval);
+            }
 
+            virtual bool isTyped() const
+            {
+                return false;
+            }
+            
+            template<typename NewType>
+            ChannelBuffer<NewType>* type()
+            {
+                this->lockMutex();
+                ChannelBuffer<NewType>* newBuffer = new ChannelBuffer<NewType>(this->channelBufferElements, this->currentIndex, this->numElements, this->dataTypeName);
 
-        void getDataInterval(const Time& min, const Time& max, std::vector<ChannelData<Untyped> >& channelDataInterval)
-        {
-            ChannelBufferBase::getDataInterval<Untyped>(this, min, max, channelDataInterval);
-        }
-    };
+                for(std::shared_ptr<ChannelBufferElement>& element : this->channelBufferElements)
+                {
+                    // type the element.
+                }
+
+                this->unlockMutex();
+
+                return newBuffer;
+            }          
+
+            intptr_t getDataTypeIdentifier() const
+            {
+                return getDataTypeUniqueIdentifier<Untyped>();
+            }  
+    };  
 
     template<typename T>
     class ChannelBuffer : public ChannelBufferBase
     {
+        private:
+            
         public:
 
          
 
             ChannelBuffer() : ChannelBufferBase()
             {
-                this->typed = true;
+                this->dataTypeName = getDataTypeRTTIString<T>();
             }
 
-            virtual std::string getDataTypeName()
+            // Used by type function of ChannelBuffer<Untyped>
+            ChannelBuffer(std::shared_ptr<ChannelBufferElement> channelBufferElements[MAX_CHANNEL_BUFFER_SIZE],
+            size_t currentIndex,
+            size_t numElements, std::string dataTypeName) 
             {
-                return getDataTypeRTTIString<T>();
-            }
 
-            
+                for(size_t i = 0; i < MAX_CHANNEL_BUFFER_SIZE; i++)
+                {
+                    this->channelBufferElements[i] = channelBufferElements[i];
+                }
+
+                this->currentIndex = currentIndex;
+                this->numElements = numElements;
+                this->dataTypeName = dataTypeName;
+            }  
+
             
 
 
             ChannelData<T>& getDataByIndex(size_t index)
             {
-                return *static_cast<ChannelData<T>*>(this->getElement(index).channelData);
+                return *static_cast<ChannelData<T>*>(this->getElement(index)->channelData);
             }
             
 
@@ -92,10 +123,11 @@ namespace portaible
 
                 // Is this thread safe?
                 // Yes.. as long as we create copies in getLatest, getClosest and getDataInterval.
-                this->getElement(this->currentIndex).clear();
+                std::shared_ptr<ChannelBufferElement>& element = this->getElement(this->currentIndex);
+                element = newChannelBufferElement();
 
-                this->getElement(this->currentIndex).channelData = new ChannelData<T>(data);
-                this->getElement(this->currentIndex).untypedData = new ChannelData<Untyped>(data.getHeader());
+                element->channelData = new ChannelData<T>(data);
+                element->untypedData = new ChannelData<Untyped>(data.getHeader());
 
                 // Do not convert to binary data / serialize. It might not be needed.
 
@@ -122,11 +154,21 @@ namespace portaible
                 ChannelBufferBase::getDataInterval<T>(this, min, max, channelDataInterval);
             }
 
+            virtual bool isTyped() const
+            {
+                return true;
+            }
+
             void serialize()
             {
 
             }
-        
+
+            intptr_t getDataTypeIdentifier() const
+            {
+                return getDataTypeUniqueIdentifier<T>();
+            }
+
     };
 }
 

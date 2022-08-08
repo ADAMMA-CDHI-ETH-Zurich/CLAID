@@ -113,10 +113,10 @@ namespace portaible
 
             template <typename U = T>
             typename std::enable_if<!std::is_same<U, Untyped>::value>::type
-            post(U& data, const Time timestamp = Time::now(), uint64_t sequenceID = 0)
+            post(const U& data, const Time timestamp = Time::now(), uint64_t sequenceID = 0)
             {
                 TaggedData<U> taggedData(data, timestamp, sequenceID);
-                this->post(taggedData);
+                this->post<U>(taggedData);
             }
 
             template <typename U = T>
@@ -124,7 +124,7 @@ namespace portaible
             post(std::shared_ptr<U> data, const Time timestamp = Time::now(), uint64_t sequenceID = 0)
             {
                 TaggedData<U> taggedData(data, timestamp, sequenceID);
-                this->post(taggedData);
+                this->post<U>(taggedData);
             }
 
             void getChannelDataIntervall(const Time& min, const Time& max, std::vector<ChannelData<T>>& channelDataIntervall)
@@ -219,8 +219,7 @@ namespace portaible
                 a.unpublish(channel);
             }
 
-            size_t numPublishers = 0;
-            size_t numSubscribers = 0;
+            
 
         public:
       
@@ -231,6 +230,23 @@ namespace portaible
                 this->channelBuffer = new ChannelBuffer<T>();
                 this->numPublishers = 0;
                 this->numSubscribers = 0;
+            }
+
+            // Used by type() to type channel (TypedChannel<Untyped> -> TypedChannel<T>)
+            TypedChannel(std::vector<ChannelSubscriberBase*> channelSubscribers,
+                        std::string channelID,
+                        size_t numPublishers,
+                        size_t numSubscribers,
+                        ChannelManager* channelManager,
+                        ChannelBufferBase* channelBuffer) 
+            {
+                this->channelSubscribers = channelSubscribers;
+                this->channelID = channelID;
+                this->numPublishers = numPublishers;
+                this->numSubscribers = numSubscribers;
+                this->channelManager = channelManager;
+                this->channelBuffer = channelBuffer;
+
             }
 
             virtual ~TypedChannel()
@@ -271,12 +287,12 @@ namespace portaible
 
             intptr_t getChannelDataTypeUniqueIdentifier()
             {
-                return getDataTypeUniqueIdentifier<T>();
+                return this->channelBuffer->getDataTypeIdentifier();
             }
 
-            std::string getChannelDataTypeUniqueIdentifierRTTIString()
+            std::string getChannelDataTypeName()
             {
-                return getDataTypeRTTIString<T>();
+                return this->channelBuffer->getDataTypeName();
             }
 
         
@@ -506,6 +522,23 @@ namespace portaible
             //                     {
 
             //                     }
+
+            template <typename NewType, typename U = T>
+            typename std::enable_if<std::is_same<U, Untyped>::value && !std::is_same<NewType, Untyped>::value>::type
+            type() 
+            {   
+                if(this->channelBuffer->isTyped())
+                {
+                    PORTAIBLE_THROW(Exception, "Error, tried to type a channel to type " << getDataTypeRTTIString<NewType>() << ", but the channel has already been typed "
+                    << " to type " << this->channelBuffer->getDataTypeName());
+                }
+                ChannelBuffer<Untyped>* untypedBuffer = static_cast<ChannelBuffer<Untyped>*>(this->channelBuffer);
+                ChannelBuffer<NewType>* typedBuffer = untypedBuffer->type<NewType>();
+                this->channelBuffer = static_cast<ChannelBufferBase*>(typedBuffer);
+                delete untypedBuffer;
+
+
+            }
     };
 
 

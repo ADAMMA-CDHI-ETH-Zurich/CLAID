@@ -84,7 +84,65 @@ namespace portaible
             // template<typename T>
             // publish
 
+            // If T is untyped, we can't type.
+            // Need to pass TypedChannel<Untyped> as type UntypedChannel, otherwise
+            // we get a weird compiler error.
+            template <typename T, typename UntypedChannel>
+            typename std::enable_if<std::is_same<T, Untyped>::value>::type
+            typeChannelIfPossible(std::shared_ptr<ChannelBase> channel)
+            {
+            }
+
+            template <typename T, typename UntypedChannel>
+            typename std::enable_if<!std::is_same<T, Untyped>::value>::type
+            typeChannelIfPossible(std::shared_ptr<ChannelBase> channel)
+            {
+                // Attempting to type channel
+                std::shared_ptr<UntypedChannel> untypedChannel = std::static_pointer_cast<UntypedChannel>(channel);
+                untypedChannel->template type<T>();
+                
+
+            }
+
+
+            template<typename T>
+            std::shared_ptr<TypedChannel<T>> getMakeTypedChannel(const std::string& channelID)
+            {
+                auto it = typedChannels.find(channelID);
+                if(it != typedChannels.end())
+                {
+                    std::shared_ptr<ChannelBase> channel = it->second;
+
+                    // If channel is untyped, but T is another type then Untyped, we can type the channel
+                    if(!channel->isTyped())
+                    {
+                       typeChannelIfPossible<T, TypedChannel<Untyped>>(channel);
+                    }
+
+                    
+
+                    if(canCastChannel<T>(channel))
+                    {
+                        // Safely cast ChannelBase to TypedChannel.
+                        std::shared_ptr<TypedChannel<T>> typedChannel = castChannel<T>(channel);
+                        return typedChannel;
+                    }
+                    else
+                    {
+                        PORTAIBLE_THROW(Exception, "Cannot cast channel \"" << channelID << "\"! The channel has type " << channel->getChannelDataTypeName() << ", however an access with type" << getDataTypeRTTIString<T>() << " was inquired!" );
+                    }
+                    
+                }
+                else
+                {
+                    // Channel not found, create new.
+                    std::shared_ptr<TypedChannel<T>> newChannel = registerNewChannel<T>(channelID);   
+                    return newChannel;
+                }
+
+            }
             
+
             // uniqueModuleID can be used to identify which module has subscribed / published to a channel.
             // It is only used for the onChannel(Un)Subscribed, onChannel(Un)Published functions.
             // So far only has a use for the RemoteModule
@@ -94,30 +152,10 @@ namespace portaible
                 std::unique_lock<std::mutex> lock(this->channelMutex);
 
                 Channel<T> returnChannel;
-                auto it = typedChannels.find(channelID);
 
-                if(it != typedChannels.end())
-                {
-                    std::shared_ptr<ChannelBase> channel = it->second;
-                    if(canCastChannel<T>(channel))
-                    {
-                        // Safely cast ChannelBase to TypedChannel.
-                        std::shared_ptr<TypedChannel<T>> typedChannel = castChannel<T>(channel);
-                        returnChannel = typedChannel->subscribe(uniqueModuleID);                  
-                    }
-                    else
-                    {
-                        PORTAIBLE_THROW(Exception, "Cannot subscribe to channel " << channelID << "! The channel has type " << channel->getChannelDataTypeUniqueIdentifierRTTIString() << ", however a subscription with type" << getDataTypeRTTIString<T>() << " was inquired!" );
-                    }
-                    
-                }
-                else
-                {
-                    // Channel not found, create new.
-                    TypedChannel<T>* newChannel = registerNewChannel<T>(channelID);   
-                    returnChannel = newChannel->subscribe(uniqueModuleID);
-                }
+                std::shared_ptr<TypedChannel<T>> channel = getMakeTypedChannel<T>(channelID);
 
+                returnChannel = channel->subscribe(uniqueModuleID);                  
                 this->onChannelSubscribed(channelID, uniqueModuleID);
                 return returnChannel;
             }
@@ -131,33 +169,10 @@ namespace portaible
 
 
                 Channel<T> returnChannel;
-                auto it = typedChannels.find(channelID);
+                std::shared_ptr<TypedChannel<T>> channel = getMakeTypedChannel<T>(channelID);
 
-                if(it != typedChannels.end())
-                {
-                    std::shared_ptr<ChannelBase> channel = it->second;
-                    if(canCastChannel<T>(channel))
-                    {
-                        // Safely cast ChannelBase to TypedChannel.
-                        std::shared_ptr<TypedChannel<T>> typedChannel = castChannel<T>(channel);
-
-                        returnChannel = typedChannel->subscribe(channelSubscriber, uniqueModuleID);
-                    }
-                    else
-                    {
-                        PORTAIBLE_THROW(Exception, "Cannot subscribe to channel " << channelID << "! The channel has type " << channel->getChannelDataTypeUniqueIdentifierRTTIString() << ", however a subscription with type" << getDataTypeRTTIString<T>() << " was inquired!" );
-                    }
-                    
-                }
-                else
-                {
-
-                    // Channel not found, create new.
-                    std::shared_ptr<TypedChannel<T>> newChannel = registerNewChannel<T>(channelID);
-                    returnChannel = newChannel->subscribe(channelSubscriber, uniqueModuleID);
-                }
-
-               
+                returnChannel = channel->subscribe(channelSubscriber, uniqueModuleID);
+                               
                 this->onChannelSubscribed(channelID, uniqueModuleID);
                 return returnChannel;
             }
@@ -168,29 +183,10 @@ namespace portaible
                 std::unique_lock<std::mutex> lock(this->channelMutex);
 
                 Channel<T> returnChannel;
-                auto it = typedChannels.find(channelID);
+                std::shared_ptr<TypedChannel<T>> channel = getMakeTypedChannel<T>(channelID);
 
-                if(it != typedChannels.end())
-                {
-                    std::shared_ptr<ChannelBase> channel = it->second;
-                    if(canCastChannel<T>(channel))
-                    {
-                        // Safely cast ChannelBase to TypedChannel.
-                        std::shared_ptr<TypedChannel<T>> typedChannel = castChannel<T>(channel);
-                        returnChannel = typedChannel->publish(uniqueModuleID);
-                    }
-                    else
-                    {
-                        PORTAIBLE_THROW(Exception, "Cannot publish channel " << channelID << "! The channel already exists and has type " << channel->getChannelDataTypeUniqueIdentifierRTTIString() << ", however, publishing of a channel with the same channel ID but type" << getDataTypeRTTIString<T>() << " was requested!" );
-                    }
-                    
-                }
-                else
-                {
-                    // Channel not found, create new.
-                    std::shared_ptr<TypedChannel<T>> newChannel = registerNewChannel<T>(channelID);
-                    returnChannel = newChannel->publish(uniqueModuleID);
-                }
+                returnChannel = channel->publish(uniqueModuleID);
+           
 
 
                 this->onChannelPublished(channelID, uniqueModuleID);
@@ -201,6 +197,8 @@ namespace portaible
             void unsubscribe(Channel<T>& channelObject)
             {
                 std::unique_lock<std::mutex> lock(this->channelMutex);
+
+                // Here we dont use getMakeTypedChannel because we use the already created Channel<T> object to unsubscribe.
 
                 const std::string channelID = channelObject.getChannelID();
 
@@ -217,7 +215,7 @@ namespace portaible
                     else
                     {
                         PORTAIBLE_THROW(Exception, "Error, cannot unsubscribe from channel with ID" << channelID << 
-                            "The type of the channel (" << channel->getChannelDataTypeUniqueIdentifierRTTIString() << ") cannot be cast to " << getDataTypeRTTIString<T>() << ".");
+                            "The type of the channel (" << channel->getChannelDataTypeName() << ") cannot be cast to " << getDataTypeRTTIString<T>() << ".");
                     }
                 }
                 else
@@ -232,6 +230,9 @@ namespace portaible
             void unpublish(Channel<T>& channelObject)
             {
                 std::unique_lock<std::mutex> lock(this->channelMutex);
+
+                // Here we dont use getMakeTypedChannel because we use the already created Channel<T> object to unpublish.
+
 
                 const std::string channelID = channelObject.getChannelID();
 
@@ -248,7 +249,7 @@ namespace portaible
                     else
                     {
                         PORTAIBLE_THROW(Exception, "Error, cannot unpublish channel with ID" << channelID << 
-                            "The type of the channel (" << channel->getChannelDataTypeUniqueIdentifierRTTIString() << ") cannot be cast to " << getDataTypeRTTIString<T>() << ".");
+                            "The type of the channel (" << channel->getChannelDataTypeName() << ") cannot be cast to " << getDataTypeRTTIString<T>() << ".");
                     }
                 }
                 else

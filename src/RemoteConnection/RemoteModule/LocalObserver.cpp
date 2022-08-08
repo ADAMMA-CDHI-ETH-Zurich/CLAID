@@ -67,22 +67,50 @@ namespace portaible
         void LocalObserver::onChannelSubscribed(const std::string& channelID)
         {
             Logger::printfln("OnChannelSubscribed %s", channelID.c_str());
+
+            // Send message to remotely connected RunTime that we have a local subscriber for that channel.
+            // Therefore, a corresponding RemoteModule running in the other framework can subscribe to that channel.
+            //notifyRemoteEntityAboutLocalSubscription(channelID);
+
+           Message message = createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType::CHANNEL_SUBSCRIBED, channelID);
+           this->sendMessage(message);
         }
 
         void LocalObserver::onChannelPublished(const std::string& channelID)
         {
-            Logger::printfln("OnChannelPublished %s", channelID.c_str());
+            Message message = createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType::CHANNEL_PUBLISHED, channelID);
+            this->sendMessage(message);
         }
 
         void LocalObserver::onChannelUnsubscribed(const std::string& channelID)
         {
-            Logger::printfln("OnChannelUnsubscribed %s", channelID.c_str());
+            Message message = createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType::CHANNEL_UNSUBSCRIBED, channelID);
+            this->sendMessage(message);
         }
 
         void LocalObserver::onChannelUnpublished(const std::string& channelID)
         {
-            Logger::printfln("OnChannelUnpublished %s", channelID.c_str());
+            Message message = createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType::CHANNEL_UNPUBLISHED, channelID);
+            this->sendMessage(message);
         }
+
+        void LocalObserver::sendMessage(const Message& message)
+        {
+            this->sendMessageChannel.post(message);
+        }
+
+        Message LocalObserver::createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType type, const std::string& string)
+        {
+            Message message = Message::CreateMessage<MessageHeaderChannelUpdate, MessageDataString>();
+            MessageHeaderChannelUpdate& header = *message.header->as<MessageHeaderChannelUpdate>();
+            MessageDataString& data = *message.data->as<MessageDataString>();
+
+            header.updateType = MessageHeaderChannelUpdate::UpdateType::CHANNEL_SUBSCRIBED;
+            data.string = string;
+
+            return message;
+        }
+                
 
         void LocalObserver::observe(ChannelManager* manager)
         {
@@ -99,9 +127,13 @@ namespace portaible
             this->unpublishedChannel = manager->observeUnpublishedChannels(this->makeSubscriber(&LocalObserver::onChannelUnpublishedCallback, this), this->getUniqueIdentifier());
         
             // Since now we get called whenever there is a new channel (un)published or (un)subscribed.
+            // Even if it happens while we are still in this function, we will get notified about it afterwards,
+            // as the updates are posted to a channel.
+            // When calling manager->getChannelIDs, the ChannelManager locks a mutex, therefore publishing or subscribing channels
+            // is not possible. This makes sure that while the function getChannelIDs(...) is called, no channels are (un)published or (un)subscribed.
 
             // We now need to synchronize with the manager.
-            // We retrieve the list of published and subscribed channels.
+            // We retrieve the list of published and subscribed channels and call onChannelPublished or onChannelSubscribed accordingly.
         
             std::vector<std::string> channelIDs;
             manager->getChannelIDs(channelIDs);
@@ -110,14 +142,12 @@ namespace portaible
             {
                 if(manager->hasChannelPublisher(channelID))
                 {
-
+                    this->onChannelPublished(channelID);
                 }
                 
                 if(manager->hasChannelSubscriber(channelID))
-                {
-                    // Send message to remotely connected RunTime that we have a local subscriber for that channel.
-                    // Therefore, a corresponding RemoteModule running in the other framework can subscribe to that channel.
-                    //notifyRemoteEntityAboutLocalSubscription(channelID);
+                {  
+                    this->onChannelSubscribed(channelID);
                 }
             }       
         }

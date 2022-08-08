@@ -1,6 +1,7 @@
 #pragma once
 #include "Binary/BinaryData.hpp"
-
+#include "TypeChecking/TypeCheckingFunctions.hpp"
+#include "Exception/Exception.hpp"
 namespace portaible
 {
     class BinaryDataReader

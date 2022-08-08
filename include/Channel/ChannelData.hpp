@@ -49,7 +49,7 @@ namespace portaible
             // If someone subscribed to a channel untyped, maybe he just wants
             // to retrieve information about individual elements but not necessarily
             // serialize them. If the BinaryData is required, it can be retrieved using
-            // getSerializedData().
+            // getBinaryData().
             TaggedDataBase header;         
 
         public:

@@ -12,6 +12,7 @@ namespace portaible
     template<typename T>
     class TypedChannel;
 
+
     /*
     1st super fast subscriber
 

@@ -230,11 +230,14 @@ namespace portaible
                 this->isRunning = false;
             }
 
+            // UNIQUE IN THE CURRENT RUNTIME!
+            // NOT unique if module RunTimes are connected. In that case, the identifier might not be unique between RunTimes.
             uint64_t getUniqueIdentifier()
             {
                 // Use the ID of the dispatcher thread as unique identifier.
                 // That mans that submodules spawned by spawnSubModuleInSameThread also have the same identifier!
-
+                // See comment above: only unique in the local RunTime.
+                
                 static_assert(sizeof(uint64_t) >= sizeof(intptr_t), "Error, type uint64_t is smaller than type intptr_t."
                 "Can not store pointers/adresses in objects of type uint64_t with the current compiler, settings or target architecture.");
 

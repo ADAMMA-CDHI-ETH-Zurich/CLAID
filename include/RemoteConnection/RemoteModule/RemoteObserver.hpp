@@ -3,8 +3,13 @@
 #include "RunTime/RunTime.hpp"
 #include "RemoteConnection/Message/Message.hpp"
 #include "RemoteConnection/Message/MessageHeader/MessageHeaderChannelUpdate.hpp"
+#include "RemoteConnection/Message/MessageHeader/MessageHeaderChannelData.hpp"
 #include "RemoteConnection/Message/MessageData/MessageDataString.hpp"
+#include "RemoteConnection/Message/MessageData/MessageDataBinary.hpp"
 #include "Utilities/VariadicTemplateHelpers.hpp"
+
+#include <map>
+
 namespace portaible
 {
     namespace RemoteConnection
@@ -14,12 +19,39 @@ namespace portaible
         class RemoteObserver : public SubModule
         {
             private:
-                void onMessageReceived(ChannelData<Message> message);
-                void onChannelUpdate(const MessageHeaderChannelUpdate& header, const MessageDataString& data);
-                void onChannelPublished(const std::string& channelID);
+                
+                // This holds the references used to subscribe to the channels with the given ID, 
+                // when it was subscribed to by the remotely running RunTime for the first time.
+                // Only for the first subscription, we need to have a callback (in order to be able to send
+                // the data to the remote RunTime whenever new data was published to the channel running in this local RunTime).
+                // In other words: If (a Module in) the remote RunTime subscribes to a channel, we will be notified.
+                // We then check if we already subscribed to that channel aswell. If no, we subscribe it and register a callback function,
+                // so that whenever data is published to the channel in this local RunTime, we can send it to the remote RunTime.
+                // If yes, then we also subscribe to the channel (in order to mirror the amount of subscriptions in the remote RunTime,
+                // make sure we have the same amount of subscribers in all the connected RunTimes), but do not register a callback, as it is
+                // not necessary to send the data multiple times.
+                std::map<std::string, Channel<Untyped>> subscribedChannelsWithCallback;
 
-            public:
-                ChannelSubscriber<Message> getSubscriberForReceptionOfMessages();
+                // See comment above. This map holds the references used to subscribe to the channels with the given ID WITHOUT a registered callbacks.
+                std::multimap<std::string, Channel<Untyped>> subscribedChannels;
+
+                // This holds the references used to publish the channels with the given IDs.
+                // Whenever a channel was published in the remote RunTime, we publish it aswell, in order to match/mirror the number of channels published
+                // in the other framework.
+                std::multimap<std::string, Channel<Untyped>> publishedChannels;
+                
+                ChannelManager* globalChannelManager = nullptr;
+
+                void onMessageReceived(ChannelData<Message> message);
+                void onChannelUpdateMessage(const MessageHeaderChannelUpdate& header, const MessageDataString& data);
+                void onChannelDataMessage(const MessageHeaderChannelData& header, const MessageDataBinary& data);            
+
+                void onChannelSubscribed(const std::string& channelID);
+                void onChannelPublished(const std::string& channelID);
+                void onChannelUnsubscribed(const std::string& channelID);
+                void onChannelUnpublished(const std::string& channelID);
+
+                void onRemoteChannelData(std::string channelID, ChannelData<Untyped> binaryData);            
 
      
 
@@ -71,6 +103,55 @@ namespace portaible
                     }
                     return false;
                 }
+
+
+                                
+                template<typename T>
+                Channel<T> subscribe(const std::string& channelID)
+                {
+                    verifySafeAccessToChannels(channelID);
+                    return this->channelManager->subscribe<T>(channelID, this->getUniqueIdentifier());
+                }
+
+                template<typename T, typename Class>
+                Channel<T> subscribe(const std::string& channelID,
+                                void (Class::*f)(ChannelData<T>), Class* obj)
+                {
+                    verifySafeAccessToChannels(channelID);
+                    std::function<void (ChannelData<T>)> function = std::bind(f, obj, std::placeholders::_1);
+                    return subscribe(channelID, function); 
+                }
+
+                template<typename T>
+                Channel<T> subscribe(const std::string& channelID, std::function<void (ChannelData<T>)> function)
+                {
+                    verifySafeAccessToChannels(channelID);
+                    // runtime::getChannel(channelID).subscribe()
+                    ChannelSubscriber<T> channelSubscriber(this->runnableDispatcherThread, function);
+                    return this->channelManager->subscribe<T>(channelID, channelSubscriber, this->getUniqueIdentifier());
+                }
+
+                template<typename T>
+                Channel<T> subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber)
+                {
+                    verifySafeAccessToChannels(channelID);
+                    return this->channelManager->subscribe(channelID, channelSubscriber, this->getUniqueIdentifier());
+                }
+
+                template<typename T>
+                Channel<T> publish(const std::string& channelID)
+                {
+                    verifySafeAccessToChannels(channelID);
+                    return this->channelManager->publish<T>(channelID, this->getUniqueIdentifier());
+                }
+
+
+            public:
+
+                RemoteObserver(ChannelManager* globalChannelManager);
+
+                ChannelSubscriber<Message> getSubscriberForReceptionOfMessages();
+
 
         };
     }

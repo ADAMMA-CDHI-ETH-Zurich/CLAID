@@ -2,6 +2,7 @@
 
 #include "TaggedData.hpp"
 #include "Binary/BinaryData.hpp"
+#include "Binary/BinaryDataReader.hpp"
 #include "Exception/Exception.hpp"
 #include "ChannelBufferElement.hpp"
 #include <vector>
@@ -19,26 +20,52 @@ namespace portaible
             {
                 this->currentIndex = 0;
                 this->numElements = 0;
-                this->typed = false;
 
                 for(size_t i = 0; i < MAX_CHANNEL_BUFFER_SIZE; i++)
                 {
-                    this->channelBufferElements[i].channelData = nullptr;
-                    this->channelBufferElements[i].untypedData = nullptr;
-                    this->channelBufferElements[i].binaryData = nullptr;
+                    this->channelBufferElements[i] = std::shared_ptr<ChannelBufferElement>(new ChannelBufferElement);
+                    this->channelBufferElements[i]->channelData = nullptr;
+                    this->channelBufferElements[i]->untypedData = nullptr;
+                    this->channelBufferElements[i]->binaryData = nullptr;
                 }
             }
 
-            bool isTyped()
+            virtual bool isTyped() const = 0;
+
+            std::shared_ptr<ChannelBufferElement> newChannelBufferElement()
             {
-                return this->typed;
+                std::shared_ptr<ChannelBufferElement> element = std::shared_ptr<ChannelBufferElement>(new ChannelBufferElement);
+                element->channelData = nullptr;
+                element->untypedData = nullptr;
+                element->binaryData = nullptr;
+
+                return element;
+            }
+
+            void getTypeNameFromBinaryData(BinaryData& binaryData, std::string& typeName)
+            {
+                BinaryDataReader reader(&binaryData);
+                reader.readString(typeName);
+            }
+
+            template<typename T>
+            void deserializeBinaryDataOfChannelElementToTypedData(std::shared_ptr<ChannelBufferElement> element)
+            {
+
+            }
+
+            virtual intptr_t getDataTypeIdentifier() const = 0;
+
+            std::string getDataTypeName() const
+            {
+                return this->dataTypeName;
             }
 
         protected:
-            ChannelBufferElement channelBufferElements[MAX_CHANNEL_BUFFER_SIZE];
+            std::shared_ptr<ChannelBufferElement> channelBufferElements[MAX_CHANNEL_BUFFER_SIZE];
             size_t currentIndex = 0;
             size_t numElements = 0;
-            bool typed = false;
+            std::string dataTypeName;
 
             // GlobalIndex means index 0 is oldest element, MAX_CHANNEL_BUFFER_SIZE - 1 is highest element.
             int relativeIndex(int globalIndex)
@@ -91,13 +118,43 @@ namespace portaible
             {
                 this->lockMutex();
 
+
+                // Check data types by typename string.
+                std::string binaryDataTypeName;
+                this->getTypeNameFromBinaryData(binaryData.value(), binaryDataTypeName);
+                if(this->getDataTypeName() != "Untyped")
+                {
+                    if(binaryDataTypeName != this->getDataTypeName())
+                    {
+                        // ERROR!
+                        PORTAIBLE_THROW(Exception, "Error, tried to insert binary data to channel buffer. Previously, data of type \"" <<
+                        this->getDataTypeName() << "\" has been inserted into the buffer, but now it was tried to insert data of type \"" << binaryDataTypeName << "\"."
+                        << "Only binary data of ONE type should ever be added to the buffer.")
+                    }
+                }
+                else
+                {
+                    // data type name is untyped, which is only the case if never any
+                    // binary data has been written to the buffer.
+                    // Now that we want to insert some binary data, we can get it's data type name
+                    // (which is serialized into the data), and set our data type name accordingly.
+                    // This makes sure that all the binary data inserted has the same type.
+                    // Otherwise, it would be possible to insert binary data of different types, e.g string, float, int.
+                    // So, for the first time binary data is inserted, we store it's data type name.
+                    // This does NOT mean, that we type the channel. It only means that we store the data type name of the untyped
+                    // binary data for the future, so that we can make sure that the user does not insert data of different random types
+                    // into the buffer. Even the buffer is untyped, only binary data of one type should be added to it.
+                    // Otherwise, as soon as we type the channel/buffer (e.g. in ChannelManager), we definitely WILL get errors.
+                    this->dataTypeName = binaryDataTypeName;
+                }
+                
+
+
+
                 // Is this thread safe?
                 // Yes.. as long as we create copies in getLatest, getClosest and getDataInterval.
-                if(this->channelBufferElements[this->currentIndex].binaryData != nullptr)
-                {
-                    delete this->channelBufferElements[this->currentIndex].binaryData;
-                }
-                this->channelBufferElements[this->currentIndex].binaryData = new TaggedData<BinaryData>(binaryData);
+                this->channelBufferElements[this->currentIndex] = newChannelBufferElement();
+                this->channelBufferElements[this->currentIndex]->binaryData = new TaggedData<BinaryData>(binaryData);
 
                 // TODO: if typed, deserialize
                 // Do we have to ? 
@@ -127,7 +184,7 @@ namespace portaible
                 }
             }
 
-            ChannelBufferElement& getElement(size_t index)
+            std::shared_ptr<ChannelBufferElement>& getElement(size_t index)
             {
                 if(index < 0 || index >= MAX_CHANNEL_BUFFER_SIZE)
                 {
@@ -248,7 +305,6 @@ namespace portaible
 
 
                     // TODO: THIS PROBABLY NEEDS A FIX? 
-                    // WAS COMMENTED WHEN TESTING CHANNELSYNCHRONIZER, I UNCOMMENTED IT WITHOUT CHECKING FOR BUGS.
                     if(channelData.getTimestamp() < min)
                     {
                         continue;
@@ -272,7 +328,7 @@ namespace portaible
 
 
 
-            virtual std::string getDataTypeName() = 0;
+            
     };
 
 }
