@@ -45,8 +45,8 @@ namespace Network
         Logger::printfln("Send message");
         BinaryData binaryData;
         BinarySerializer serializer;
-        serializer.serialize(message);
-        this->socketClient.write(serializer.binaryData);
+        serializer.serialize(message, &binaryData);
+        this->socketClient.write(binaryData);
     }
 
 

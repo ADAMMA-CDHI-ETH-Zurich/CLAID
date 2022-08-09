@@ -2,12 +2,16 @@
 
 #include "ChannelData.hpp"
 #include "Binary/BinaryData.hpp"
-
+#include "Exception/Exception.hpp"
 namespace portaible
 {
+   
+    class ChannelDataBase;
+    template<typename T>
+    class ChannelData;
+
     struct ChannelBufferElement
     {
-
         // ChannelData is used by typed channels,
         // BinaryData is used by untyped channels.
         // They can be converted to each other, as ChannelData
@@ -20,33 +24,59 @@ namespace portaible
         // Thus, whenever the corresponding data of the typed channel is serialized,
         // we store the serialized data aswell.
 
+        protected:
+            TaggedDataBase header;
+            TaggedData<BinaryData> binaryData;
 
-        // Store it as pointers? Or others..
-        // ChannelData uses TaggedData internally, which stores
-        // data as a shared_ptr. Thus, we do not need to care about
-        // copying data at this point here.
-        // ChannelBuffer provides a view on the data: 
-        // ChannelBuffer can either be ChannelBuffer<Untyped> or
-        // ChannelBuffer<T>. The untyped one does not know how to 
-        // cast ChannelDataBase* into the typed data.
-        // Thus, we leave it as pointer here. Only when a channel has been typed
-        // (ChannelDataBuffer<Untyped> was replaced by a ChannelBuffer<T>), we can access
-        // the typed data, the ChannelBuffer<T> will cast it accordingly.
-        // Alternative: Derive from ChannelBufferElement, i.e. 
-        // template<typename T>
-        // class ChannelBufferElementTyped : public ChannelBufferElement
-        // And store typed ChannelBufferElements in the buffer of ChannelBuffer.
-        
-        ChannelDataBase* channelData = nullptr; // Typed data
-        ChannelData<Untyped>* untypedData = nullptr;  // Untyped data
-        TaggedData<BinaryData>* binaryData = nullptr;
+            bool dataAvailable = false;
+       
 
-        void clear()
-        {
-            deleteIfNotNull(channelData);
-            deleteIfNotNull(untypedData);
-            deleteIfNotNull(binaryData);
-        }
+        public:
+
+
+            ChannelBufferElement() : dataAvailable(false)
+            {
+
+            }
+
+            ChannelBufferElement(TaggedData<BinaryData> binaryData) : binaryData(binaryData), dataAvailable(true)
+            {
+                this->header = binaryData.getHeader();
+            }
+            
+            virtual ~ChannelBufferElement()
+            {
+            }
+
+            void lock()
+            {
+                this->mutex.lock();
+            }
+
+            void unlock()
+            {
+                this->mutex.unlock();
+            }
+
+            TaggedDataBase getHeader()
+            {
+                return this->header;
+            }
+
+            virtual TaggedData<BinaryData> getBinaryData()
+            {
+                if(!this->dataAvailable)
+                {
+                    PORTAIBLE_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement (untyped), but no data was ever set (no data available)");
+                }
+
+                return this->binaryData;
+            }
+
+            bool isDataAvailable() const
+            {
+                return this->dataAvailable;
+            }
 
         private:
             template<typename T>
@@ -58,6 +88,8 @@ namespace portaible
                 }
                 ptr = nullptr;
             }
+
+            std::mutex mutex;
 
     };
 }

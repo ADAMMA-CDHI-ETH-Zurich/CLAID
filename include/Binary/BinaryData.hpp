@@ -84,7 +84,6 @@ namespace portaible
                 this->data.resize(size);      
             }
 
-
             char* getRawData()
             {
                 return this->data.data();

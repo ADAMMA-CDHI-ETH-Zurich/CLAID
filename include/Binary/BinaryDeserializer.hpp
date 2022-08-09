@@ -2,7 +2,9 @@
 #include "BinaryData.hpp"
 #include "BinaryDataReader.hpp"
 #include "Reflection/Serializer.hpp"
+#include "Reflection/Deserializer.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
+#include "Serialization/Serialization.hpp"
 
 namespace portaible
 {

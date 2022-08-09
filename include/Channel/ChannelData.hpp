@@ -1,14 +1,19 @@
 #pragma once
 
 #include "TaggedData.hpp"
-#include "ChannelBuffer.hpp"
 #include "Untyped.hpp"
 #include "Binary/BinaryData.hpp"
+#include "Channel/ChannelBufferElement.hpp"
+
+
+
+#include "Binary/BinarySerializer.hpp"
+
 namespace portaible
 {
     // Forward declaration
-    template<typename T>
-    class ChannelBuffer;
+ 
+    class ChannelBufferElement;
 
     // Not a DataBase, its just the base class for ChannelData ;)
     class ChannelDataBase
@@ -32,7 +37,7 @@ namespace portaible
                 
             }
 
-            virtual void getBinaryData(BinaryData& binaryData) = 0;
+            virtual TaggedData<BinaryData> getBinaryData() = 0;
 
     };
 
@@ -50,7 +55,13 @@ namespace portaible
             // to retrieve information about individual elements but not necessarily
             // serialize them. If the BinaryData is required, it can be retrieved using
             // getBinaryData().
-            TaggedDataBase header;         
+            TaggedDataBase header;     
+
+            // The ChannelBufferElement that our data belongs to.
+            // This makes sure that the ChannelBufferElement is not deleted as long as an instance
+            // of ChannelData still holds it.
+            // Can also be used to retrieve binaryData.
+            std::shared_ptr<ChannelBufferElement> channelBufferElement;   
 
         public:
 
@@ -66,7 +77,8 @@ namespace portaible
 
             }
 
-            ChannelData(TaggedDataBase header) : ChannelDataBase(true), header(header)
+            ChannelData(TaggedDataBase header, 
+                std::shared_ptr<ChannelBufferElement> channelBufferElement) : ChannelDataBase(true), header(header), channelBufferElement(channelBufferElement)
             {
             }
 
@@ -77,10 +89,16 @@ namespace portaible
                 return this->header.timestamp;
             }
 
-            void getBinaryData(BinaryData& binaryData) 
+            const uint64_t getSequenceID()
             {
-                
+                return this->header.sequenceID;
             }
+
+            TaggedData<BinaryData> getBinaryData() 
+            {
+                return channelBufferElement->getBinaryData();
+            }
+
 
             virtual TaggedDataBase getHeader()
             {
@@ -103,12 +121,11 @@ namespace portaible
                 return data;
             }
 
-
-
-            // The channel buffer that created us.
-            // More specifically: We are an entry in the ChannelData[MAX_CHANNEL_BUFFER_SIZE] channelBuffer
-            // array of the associated ChannelBuffer.
-            ChannelBuffer<T>* holderBuffer;
+            // The ChannelBufferElement that our data belongs to.
+            // This makes sure that the ChannelBufferElement is not deleted as long as an instance
+            // of ChannelData still holds it.
+            // Can also be used to retrieve binaryData.
+            std::shared_ptr<ChannelBufferElement> channelBufferElement;   
 
         public:
 
@@ -124,19 +141,31 @@ namespace portaible
             }
 
 
-            ChannelData(TaggedData<T>& data) : ChannelDataBase(true), data(data)
+            ChannelData(TaggedData<T>& data, 
+                std::shared_ptr<ChannelBufferElement> channelBufferElement) : ChannelDataBase(true), data(data), channelBufferElement(channelBufferElement)
             {
-                holderBuffer->serialize();
             }
 
-            void getBinaryData(BinaryData& binaryData) 
+
+
+            TaggedData<BinaryData> getBinaryData() 
             {
-                
+                return channelBufferElement->getBinaryData();
             }
 
             TaggedDataBase getHeader()
             {
                 return *static_cast<TaggedDataBase*>(&data);
+            }
+
+            const Time& getTimestamp() const
+            {
+                return this->data.timestamp;
+            }
+
+            const uint64_t getSequenceID()
+            {
+                return this->data.sequenceID;
             }
 
             operator const TaggedData<T>&() const 
@@ -156,10 +185,6 @@ namespace portaible
                 return &this->internalValue();
             }
 
-            const Time& getTimestamp() const
-            {
-                return this->data.timestamp;
-            }
 
             
     };

@@ -53,8 +53,6 @@ namespace portaible
                 return std::static_pointer_cast<TypedChannel<T>>(channel);
             }
 
-     
-
             template<typename T>
             std::shared_ptr<TypedChannel<T>> registerNewChannel(const std::string& channelID)
             {
@@ -100,8 +98,6 @@ namespace portaible
                 // Attempting to type channel
                 std::shared_ptr<UntypedChannel> untypedChannel = std::static_pointer_cast<UntypedChannel>(channel);
                 untypedChannel->template type<T>();
-                
-
             }
 
 
@@ -117,9 +113,7 @@ namespace portaible
                     if(!channel->isTyped())
                     {
                        typeChannelIfPossible<T, TypedChannel<Untyped>>(channel);
-                    }
-
-                    
+                    }                    
 
                     if(canCastChannel<T>(channel))
                     {

@@ -3,6 +3,7 @@
 #include "TaggedData.hpp"
 #include "Binary/BinaryData.hpp"
 #include "Binary/BinaryDataReader.hpp"
+#include "Binary/BinaryDeserializer.hpp"
 #include "Exception/Exception.hpp"
 #include "ChannelBufferElement.hpp"
 #include <vector>
@@ -23,36 +24,38 @@ namespace portaible
 
                 for(size_t i = 0; i < MAX_CHANNEL_BUFFER_SIZE; i++)
                 {
-                    this->channelBufferElements[i] = std::shared_ptr<ChannelBufferElement>(new ChannelBufferElement);
-                    this->channelBufferElements[i]->channelData = nullptr;
-                    this->channelBufferElements[i]->untypedData = nullptr;
-                    this->channelBufferElements[i]->binaryData = nullptr;
+                    this->channelBufferElements[i] = newEmptyChannelBufferElement();
                 }
             }
 
             virtual bool isTyped() const = 0;
 
-            std::shared_ptr<ChannelBufferElement> newChannelBufferElement()
-            {
-                std::shared_ptr<ChannelBufferElement> element = std::shared_ptr<ChannelBufferElement>(new ChannelBufferElement);
-                element->channelData = nullptr;
-                element->untypedData = nullptr;
-                element->binaryData = nullptr;
+            // Might be overriden by typed ChannelBuffer.
 
+            virtual std::shared_ptr<ChannelBufferElement> newEmptyChannelBufferElement()
+            {
+                std::shared_ptr<ChannelBufferElement> element = std::shared_ptr<ChannelBufferElement>();
+     
                 return element;
             }
 
+            virtual std::shared_ptr<ChannelBufferElement> newChannelBufferElementFromBinaryData(TaggedData<BinaryData>& binaryData)
+            {
+                std::shared_ptr<ChannelBufferElement> element = std::shared_ptr<ChannelBufferElement>(new ChannelBufferElement(binaryData));
+     
+                return element;
+            }
+
+            
+
             void getTypeNameFromBinaryData(BinaryData& binaryData, std::string& typeName)
             {
+                // First bytes of the binary data are the RTTI string identifiying the type.
                 BinaryDataReader reader(&binaryData);
                 reader.readString(typeName);
             }
 
-            template<typename T>
-            void deserializeBinaryDataOfChannelElementToTypedData(std::shared_ptr<ChannelBufferElement> element)
-            {
-
-            }
+            
 
             virtual intptr_t getDataTypeIdentifier() const = 0;
 
@@ -111,8 +114,6 @@ namespace portaible
                 this->mutex.unlock();
             }
 
-           
-
             
             virtual void insertBinaryData(TaggedData<BinaryData>& binaryData)
             {
@@ -153,22 +154,16 @@ namespace portaible
 
                 // Is this thread safe?
                 // Yes.. as long as we create copies in getLatest, getClosest and getDataInterval.
-                this->channelBufferElements[this->currentIndex] = newChannelBufferElement();
-                this->channelBufferElements[this->currentIndex]->binaryData = new TaggedData<BinaryData>(binaryData);
+                // If buffer is typed, binary data automatically get's deserialized in overriden function newChannelBufferElementFromBinaryData in ChannelBuffer<T>.
+                // ChannelBuffer<T> uses ChannelBufferElementTyped<T>, which deserializes the data in it's constructor (the constructor that uses binary data).
+                this->channelBufferElements[this->currentIndex] = newChannelBufferElementFromBinaryData(binaryData);
 
-                // TODO: if typed, deserialize
-                // Do we have to ? 
-                // What if no one wants to access typed data.....
-                // Deserialize on typed read ? e.g. in getDataByIndex ? 
-                if(this->isTyped())
-                {
-                    // deserialize
-                }
 
                 increaseIndex();
                 this->unlockMutex();
             }
 
+   
             void increaseIndex()
             {
                 this->currentIndex++;
@@ -202,7 +197,6 @@ namespace portaible
 
                 if(numElements == 0)
                 {
-
                     // No data available yet
                     this->unlockMutex();
                     return false;
@@ -241,7 +235,7 @@ namespace portaible
                 int index = -1;
                 for(int i = 0; i < this->numElements; i++)
                 {
-                    ChannelData<T>& taggedData = derived->getDataByIndex(i);
+                    ChannelData<T> taggedData = derived->getDataByIndex(i);
                                         // std::cout << "Time stamps " << TaggedData.timestamp.toString() << " " << timestamp.toString() << "\n";
 
                  
@@ -301,7 +295,7 @@ namespace portaible
                 // Iterate from oldest to newest.
                 for(int i = 0; i < this->numElements; i++)
                 {
-                    ChannelData<T>& channelData = derived->getDataByIndex(relativeIndex(i));
+                    ChannelData<T> channelData = derived->getDataByIndex(relativeIndex(i));
 
 
                     // TODO: THIS PROBABLY NEEDS A FIX? 

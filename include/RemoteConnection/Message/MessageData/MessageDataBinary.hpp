@@ -22,8 +22,8 @@ namespace portaible
             void set(T& data)
             {
                 BinarySerializer serializer;
-                serializer.serialize(data);
-                this->binaryData = serializer.binaryData;
+                serializer.serialize(data, &binaryData);
+               
             }
 
             template<typename T>

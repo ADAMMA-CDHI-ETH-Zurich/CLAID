@@ -4,6 +4,7 @@
 
 #include "Reflection/Serializer.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
+#include "PolymorphicReflector/PolymorphicReflector.hpp"
 
 namespace portaible
 {
@@ -13,7 +14,7 @@ namespace portaible
 
         public:
             
-            BinaryData binaryData;
+            BinaryData* binaryData;
 
             BinarySerializer()
             {
@@ -23,29 +24,29 @@ namespace portaible
             template<typename T>
             void callFloatOrDouble(const char* property, T& member)
             {
-                this->binaryData.store(member);
+                this->binaryData->store(member);
             }   
 
             // Also includes any variants of signed, unsigned, short, long, long long, ...
             template<typename T>
             void callInt(const char* property, T& member)
             {
-                this->binaryData.store(member);
+                this->binaryData->store(member);
             }
 
             void callBool(const char* property, bool& member)
             {
-                this->binaryData.store(member);
+                this->binaryData->store(member);
             }
 
             void callChar(const char* property, char& member)
             {
-                this->binaryData.store(member);
+                this->binaryData->store(member);
             }
 
             void callString(const char* property, std::string& member)
             {
-                this->binaryData.storeString(member);
+                this->binaryData->storeString(member);
             }
 
             template<typename T>
@@ -105,7 +106,7 @@ namespace portaible
                 }
 
                 // Store class name
-                this->binaryData.storeString(member->getClassName());
+                this->binaryData->storeString(member->getClassName());
 
                 polymorphicReflector->invoke(*this, static_cast<void*>(member));               
             }
@@ -136,12 +137,12 @@ namespace portaible
 
             void count(const std::string& name, size_t& count)
             {
-                this->binaryData.store(count);
+                this->binaryData->store(count);
             }
 
             void countElements(size_t& count)
             {
-                this->binaryData.store(count);
+                this->binaryData->store(count);
             }
 
             void beginSequence()
@@ -156,18 +157,19 @@ namespace portaible
             
             void write(const char* data, size_t size)
             {
-                this->binaryData.insertBytes(data, size);
+                this->binaryData->insertBytes(data, size);
             }
 
 
             template<typename T> 
-            void serialize(T& obj)
+            void serialize(T& obj, BinaryData* targetContainer)
             {
-                this->binaryData.clear();
+                this->binaryData = targetContainer;
+                this->binaryData->clear();
 
                 // Store data type string in order to check it during deserialization.
                 std::string name = portaible::getDataTypeRTTIString<T>();
-                this->binaryData.storeString(name);
+                this->binaryData->storeString(name);
 
 
                 invokeReflectOnObject(obj);
@@ -181,7 +183,7 @@ namespace portaible
                 // as it might be needed for deserialization etc.
                 // Thus, this function allows to make sure the string "name" is explicitly stored.
                 
-                this->binaryData.storeString(name);
+                this->binaryData->storeString(name);
             }
 
     };

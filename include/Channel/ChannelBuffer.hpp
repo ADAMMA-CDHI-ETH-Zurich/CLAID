@@ -4,6 +4,7 @@
 #include "TaggedData.hpp"
 #include "ChannelData.hpp"
 #include "ChannelBufferBase.hpp"
+#include "Channel/ChannelBufferElementTyped.hpp"
 #include "Binary/BinaryData.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 #include <vector>
@@ -29,9 +30,13 @@ namespace portaible
             }
 
 
-            ChannelData<Untyped>& getDataByIndex(size_t index)
+            ChannelData<Untyped> getDataByIndex(size_t index)
             {
-                return *static_cast<ChannelData<Untyped>*>(this->getElement(index)->untypedData);
+                this->lockMutex();
+                std::shared_ptr<ChannelBufferElement>& element = this->getElement(index);
+                ChannelData<Untyped> data(element->getHeader(), element);
+                this->unlockMutex();
+                return data;
             }
             
             bool getLatest(ChannelData<Untyped>& latest)
@@ -54,17 +59,29 @@ namespace portaible
             {
                 return false;
             }
+
+            
             
             template<typename NewType>
             ChannelBuffer<NewType>* type()
             {
                 this->lockMutex();
-                ChannelBuffer<NewType>* newBuffer = new ChannelBuffer<NewType>(this->channelBufferElements, this->currentIndex, this->numElements, this->dataTypeName);
 
-                for(std::shared_ptr<ChannelBufferElement>& element : this->channelBufferElements)
+                std::shared_ptr<ChannelBufferElement> newElements[MAX_CHANNEL_BUFFER_SIZE];
+
+                for(size_t i = 0; i < MAX_CHANNEL_BUFFER_SIZE; i++)
                 {
-                    // type the element.
+                    // In constructor, the binary data automatically gets deserialized.
+                    // Note, that binary data is not copied, as TaggedData<BinaryData> uses a shared_ptr internally.
+                    std::shared_ptr<ChannelBufferElementTyped<NewType>> 
+                        typedElement(new ChannelBufferElementTyped<NewType>(this->channelBufferElements[i]->getBinaryData()));
+                    newElements[i] = std::static_pointer_cast<ChannelBufferElement>(typedElement);
                 }
+
+
+
+                ChannelBuffer<NewType>* newBuffer = new ChannelBuffer<NewType>(newElements, this->currentIndex, this->numElements, this->dataTypeName);
+
 
                 this->unlockMutex();
 
@@ -82,6 +99,24 @@ namespace portaible
     {
         private:
             
+            
+            // Overriden from ChannelBufferBase
+            std::shared_ptr<ChannelBufferElement> newChannelBufferElementFromBinaryData(TaggedData<BinaryData>& binaryData)
+            {
+                // Constructor automatically deserializes the data if possible.
+                std::shared_ptr<ChannelBufferElementTyped<T>> typedElement(new ChannelBufferElementTyped<T>(binaryData));
+              
+                return std::static_pointer_cast<ChannelBufferElementTyped<T>>(typedElement);
+            }
+
+            std::shared_ptr<ChannelBufferElement> newChannelBufferElementFromTypedData(TaggedData<T>& data)
+            {
+                // Constructor automatically deserializes the data if possible.
+                std::shared_ptr<ChannelBufferElementTyped<T>> typedElement(new ChannelBufferElementTyped<T>(data));
+              
+                return std::static_pointer_cast<ChannelBufferElementTyped<T>>(typedElement);
+            }
+
         public:
 
          
@@ -110,9 +145,19 @@ namespace portaible
             
 
 
-            ChannelData<T>& getDataByIndex(size_t index)
+            ChannelData<T> getDataByIndex(size_t index)
             {
-                return *static_cast<ChannelData<T>*>(this->getElement(index)->channelData);
+                if(this->getElement(index)->isDataAvailable())
+                {
+                    PORTAIBLE_THROW(Exception, "Error! Tried to access channel data at index " << index << " in ChannelBuffer (data type \""
+                    << this->getDataTypeName() << "\", but data was not available.");
+                }
+
+                // Elements are typed.
+                std::shared_ptr<ChannelBufferElementTyped<T>> 
+                    typedElement = std::static_pointer_cast<ChannelBufferElementTyped<T>>(this->getElement(index));
+
+                return ChannelData<T>(typedElement->getTypedData(), this->getElement(index));
             }
             
 
@@ -124,17 +169,17 @@ namespace portaible
                 // Is this thread safe?
                 // Yes.. as long as we create copies in getLatest, getClosest and getDataInterval.
                 std::shared_ptr<ChannelBufferElement>& element = this->getElement(this->currentIndex);
-                element = newChannelBufferElement();
+                element = newChannelBufferElementFromTypedData(data);
 
-                element->channelData = new ChannelData<T>(data);
-                element->untypedData = new ChannelData<Untyped>(data.getHeader());
-
+        
                 // Do not convert to binary data / serialize. It might not be needed.
 
                 increaseIndex();
                 this->unlockMutex();
 
             }
+
+         
 
             bool getLatest(ChannelData<T>& latest)
             {
@@ -144,10 +189,7 @@ namespace portaible
             bool getClosest(const Time& timestamp, ChannelData<T>& closest)
             {
                 return ChannelBufferBase::getClosest<T>(this, timestamp, closest);
-                
             }
-
-
 
             void getDataInterval(const Time& min, const Time& max, std::vector<ChannelData<T> >& channelDataInterval)
             {
@@ -159,10 +201,6 @@ namespace portaible
                 return true;
             }
 
-            void serialize()
-            {
-
-            }
 
             intptr_t getDataTypeIdentifier() const
             {
