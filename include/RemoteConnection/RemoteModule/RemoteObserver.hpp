@@ -41,6 +41,7 @@ namespace portaible
                 std::multimap<std::string, Channel<Untyped>> publishedChannels;
                 
                 ChannelManager* globalChannelManager = nullptr;
+                Channel<RemoteConnection::Message> sendMessageChannel;
 
                 void onMessageReceived(ChannelData<Message> message);
                 void onChannelUpdateMessage(const MessageHeaderChannelUpdate& header, const MessageDataString& data);
@@ -51,7 +52,8 @@ namespace portaible
                 void onChannelUnsubscribed(const std::string& channelID);
                 void onChannelUnpublished(const std::string& channelID);
 
-                void onRemoteChannelData(std::string channelID, ChannelData<Untyped> binaryData);            
+                void onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo(std::string channelID, ChannelData<Untyped> binaryData);            
+                void sendMessage(const Message& message);
 
      
 
@@ -148,8 +150,8 @@ namespace portaible
 
             public:
 
-                RemoteObserver(ChannelManager* globalChannelManager);
-
+                RemoteObserver(ChannelManager* globalChannelManager, Channel<Message> sendMessageChannel);
+                
                 ChannelSubscriber<Message> getSubscriberForReceptionOfMessages();
 
 

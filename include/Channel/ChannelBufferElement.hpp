@@ -28,8 +28,13 @@ namespace portaible
             TaggedDataBase header;
             TaggedData<BinaryData> binaryData;
 
+            // If data is available at all (either binary or typed)
             bool dataAvailable = false;
-       
+
+            // If binary data is available (either set directly or typed data has been serialized).
+            bool binaryDataAvailable = false;
+            std::mutex mutex;
+
 
         public:
 
@@ -39,7 +44,7 @@ namespace portaible
 
             }
 
-            ChannelBufferElement(TaggedData<BinaryData> binaryData) : binaryData(binaryData), dataAvailable(true)
+            ChannelBufferElement(TaggedData<BinaryData> binaryData) : binaryData(binaryData), dataAvailable(true), binaryDataAvailable(true)
             {
                 this->header = binaryData.getHeader();
             }
@@ -67,7 +72,7 @@ namespace portaible
             {
                 if(!this->dataAvailable)
                 {
-                    PORTAIBLE_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement (untyped), but no data was ever set (no data available)");
+                    PORTAIBLE_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement (untyped), but no data was never set (no data available).");
                 }
 
                 return this->binaryData;
@@ -78,18 +83,9 @@ namespace portaible
                 return this->dataAvailable;
             }
 
-        private:
-            template<typename T>
-            void deleteIfNotNull(T*& ptr)
-            {
-                if(ptr != nullptr)
-                {
-                    delete ptr;
-                }
-                ptr = nullptr;
-            }
 
-            std::mutex mutex;
+
+
 
     };
 }

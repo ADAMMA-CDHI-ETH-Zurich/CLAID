@@ -24,7 +24,7 @@ namespace portaible
         void reflect(Reflector& r)
         {
             r.member("Timestamp",  timestamp, "The timestamp", Time::now());
-            r.member("SequenceID", sequenceID, "A user defined sequence ID", 0);
+            r.template member<uint64_t>("SequenceID", sequenceID, "A user defined sequence ID", 0);
         }
 
     public:

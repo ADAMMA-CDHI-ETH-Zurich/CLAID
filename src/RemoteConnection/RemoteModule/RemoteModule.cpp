@@ -57,7 +57,7 @@ namespace RemoteConnection
 
         // By using forkSubModuleInThread, the LocalObserver will run on the same thread as the RemoteModule (no extra overhead).
         this->localObserver = this->forkSubModuleInThread<LocalObserver>(this->sendMessageChannel);
-        this->remoteObserver = this->forkSubModuleInThread<RemoteObserver>(&PORTAIBLE_RUNTIME->channelManager);
+        this->remoteObserver = this->forkSubModuleInThread<RemoteObserver>(&PORTAIBLE_RUNTIME->channelManager, this->sendMessageChannel);
     }
 
     void RemoteModule::start()

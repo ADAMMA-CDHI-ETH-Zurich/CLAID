@@ -5,7 +5,7 @@ namespace portaible
 {
     namespace RemoteConnection
     {
-        RemoteObserver::RemoteObserver(ChannelManager* globalChannelManager) : globalChannelManager(globalChannelManager)
+        RemoteObserver::RemoteObserver(ChannelManager* globalChannelManager, Channel<Message> sendMessageChannel) : globalChannelManager(globalChannelManager), sendMessageChannel(sendMessageChannel)
         {
 
         }
@@ -79,9 +79,12 @@ namespace portaible
 
         void RemoteObserver::onChannelDataMessage(const MessageHeaderChannelData& header, const MessageDataBinary& data)
         {
-            
+            // onChannelDataReceivedFromRemoteRunTime
         }
 
+        // Some module in the remote RunTime subscribed to a channel.
+        // Thus, whenever data is published to that channel in the local RunTime, we need
+        // to send the data to the remote RunTime.
         void RemoteObserver::onChannelSubscribed(const std::string& channelID)
         {
             // See comments in header on subscribedChannelsWithCallback
@@ -91,7 +94,7 @@ namespace portaible
             {
                 // Cannot pass reference to bind.
                 std::string channelIDCopy = channelID;
-                std::function<void (ChannelData<Untyped>)> function = std::bind(&RemoteObserver::onRemoteChannelData, this, channelIDCopy, std::placeholders::_1);
+                std::function<void (ChannelData<Untyped>)> function = std::bind(&RemoteObserver::onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo, this, channelIDCopy, std::placeholders::_1);
                 Channel<Untyped> channel = this->subscribe<Untyped>(channelID, function);
                 this->subscribedChannelsWithCallback.insert(std::make_pair(channelID, channel));
             }
@@ -168,31 +171,49 @@ namespace portaible
             }
         }
 
-        void RemoteObserver::onRemoteChannelData(std::string channelID, ChannelData<Untyped> data)
+        void RemoteObserver::onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo(std::string channelID, ChannelData<Untyped> data)
         {
             // Need to send to the remote RunTime
-            Logger::printfln("On data received from remote framework");
+            // Get tagged binary data
+            TaggedData<BinaryData> taggedBinaryData;
+            MessageDataBinary messageDataBinary;
+
+            Message message = Message::CreateMessage<MessageHeaderChannelData, MessageDataBinary>();
+    
+            message.header->as<MessageHeaderChannelData>()->targetChannel = channelID;
+            // Set will serialize TaggedData<BinaryData>.
+            // TaggedData holds the header (timestamp, sequenceID) and the binary data.
+            // Thus, timestamp and sequenceID will be serialized, the binary data will be copied into a bigger
+            // binary data buffer that contains timestamp, sequenceID and the binary data itself.
+            message.data->as<MessageDataBinary>()->set<TaggedData<BinaryData>>(taggedBinaryData);
+            this->sendMessage(message);
+
             
-            // Check if we have published that channel.
-            auto it = this->publishedChannels.find(channelID);
+            // // Check if we have published that channel.
+            // auto it = this->publishedChannels.find(channelID);
 
-            if(it != this->publishedChannels.end())
-            {
-                //channelData.readBinaryData();
-                //it->second.writeBinaryData();
-            }
-            else
-            {
-                // Error, more unpublish channel more often than publish.
-                // This should not happen. That would mean in the remote RunTime, channel was unpublished more than
-                // published. Possibily the local and remote RunTime are out of sync.
+            // if(it != this->publishedChannels.end())
+            // {
+            //     //channelData.readBinaryData();
+            //     //it->second.writeBinaryData();
+            // }
+            // else
+            // {
+            //     // Error, more unpublish channel more often than publish.
+            //     // This should not happen. That would mean in the remote RunTime, channel was unpublished more than
+            //     // published. Possibily the local and remote RunTime are out of sync.
 
-                // ERROR! No publisher left, we unpublished more than we have published.
-                // Local and remote RunTime out of sync? Severe error.
-                PORTAIBLE_THROW(Exception, "Error in RemoteObserver: Received message that indicates we shall unpublish channel with ID \"" << channelID << "\", "
-                << "however we have no publisher left for that channel. Therefore, we unpublished more than we published. Somehow, we have to have missed a publish in " 
-                << "the remotely running RunTime, therefore the local and remote RunTime probably are out of sync.");
-            }
+            //     // ERROR! No publisher left, we unpublished more than we have published.
+            //     // Local and remote RunTime out of sync? Severe error.
+            //     PORTAIBLE_THROW(Exception, "Error in RemoteObserver: Received message that indicates we shall unpublish channel with ID \"" << channelID << "\", "
+            //     << "however we have no publisher left for that channel. Therefore, we unpublished more than we published. Somehow, we have to have missed a publish in " 
+            //     << "the remotely running RunTime, therefore the local and remote RunTime probably are out of sync.");
+            // }
+        }
+
+        void RemoteObserver::sendMessage(const Message& message)
+        {
+            this->sendMessageChannel.post(message);
         }
                 
     }

@@ -34,7 +34,7 @@ namespace portaible
 
             virtual std::shared_ptr<ChannelBufferElement> newEmptyChannelBufferElement()
             {
-                std::shared_ptr<ChannelBufferElement> element = std::shared_ptr<ChannelBufferElement>();
+                std::shared_ptr<ChannelBufferElement> element = std::shared_ptr<ChannelBufferElement>(new ChannelBufferElement);
      
                 return element;
             }

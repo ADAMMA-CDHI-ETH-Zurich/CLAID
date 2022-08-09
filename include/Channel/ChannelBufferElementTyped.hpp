@@ -37,11 +37,7 @@ namespace portaible
 
                 this->typedData = TaggedData<T> (dataPtr, 
                             this->header.timestamp, 
-                            this->header.sequenceID);
-
-
-                           
-
+                            this->header.sequenceID);     
             }
 
        
@@ -50,22 +46,65 @@ namespace portaible
             typename std::enable_if<!has_mem_reflect<U>::value && !has_non_member_function_reflect<BinaryDeserializer&, U&>::value>::type
             deserializeBinaryDataToTypedData()
             {
-                PORTAIBLE_THROW(Exception, "Error! Binary data posted to a channel with data type \"" << getDataTypeRTTIString<T>() << "\", that has a typed ChannelBuffer." 
-                << "I.e., there is a typed subscriber or publisher available, but untyped data was posted. Cannot deserialize untyped binary data to typed data, " <<
-                "as the mentioned data type does not contain a reflect function. Please add reflect function for the data type.");
+                PORTAIBLE_THROW(Exception, "Error! Cannot deserialize untyped binary data posted to a channel with data type \"" << getDataTypeRTTIString<T>() << "\"" <<
+                " as no reflect function is available for the mentioned data type. Please add a reflect function to the datatype.");
+            }
+
+            // If T has no reflect function, then we cannot serialize typed data to binary. However, this is only a problem if
+            // data is posted to a typed channel, and subscribed to in untyped manner, and binary data is read from the untyped subscriber.
+            // If the untyped subscriber never wants to access the binary data, then we don't have a problem.
+            // Thus, we throw an exception if the function is called with a type that has no reflect function (see other template specialization below).
+            template <typename U = T>
+            typename std::enable_if<has_mem_reflect<U>::value || has_non_member_function_reflect<BinaryDeserializer&, U&>::value>::type
+            serializeTypedDataToBinaryData()
+            {
+
+                // Serialize data if possible.
+                std::unique_lock<std::mutex> (this->mutex);
+                // TaggedData internally uses shared_ptr.
+                // Thus, we already create it, so we save a copy operation
+                // when creating the TaggedData object below.
+                std::shared_ptr<BinaryData> binaryData(new BinaryData);
+                BinarySerializer serializer;
+                serializer.serialize(this->typedData.value(), binaryData.get());
+
+                // Store the binary data in ChannelBufferElemnt, so that it
+                // is available, if someone else wants to use it.
+                // Therefore, we do not need to serialize it multiple times.
+                this->binaryData = 
+                    TaggedData<BinaryData>(binaryData, 
+                    this->header.timestamp, 
+                    this->header.sequenceID); 
+            }
+
+       
+            // See comment above.
+            template <typename U = T>
+            typename std::enable_if<!has_mem_reflect<U>::value && !has_non_member_function_reflect<BinaryDeserializer&, U&>::value>::type
+            serializeTypedDataToBinaryData()
+            {
+                PORTAIBLE_THROW(Exception, "Error! Cannot serialize typed data to binary data. A subscriber tried to get binary data from a channel of type \"" << getDataTypeRTTIString<T>() << "\", " <<
+                "but typed data could not be serialized, as no reflect function is available for the mentioned data type. Please add a reflect function to the datatype.");
             }
 
         public:
+
+            ChannelBufferElementTyped() : ChannelBufferElement()
+            {
+
+            }
 
             ChannelBufferElementTyped(TaggedData<T> typedData)
             {
                 this->typedData = typedData;
                 this->header = typedData.getHeader();
+                this->binaryDataAvailable = false;
             }
 
             ChannelBufferElementTyped(TaggedData<BinaryData> binaryData) : ChannelBufferElement(binaryData)
             {
                 this->deserializeBinaryDataToTypedData();
+                this->binaryDataAvailable = true;
             }
 
             TaggedData<T>& getTypedData()
@@ -73,25 +112,23 @@ namespace portaible
                 return this->typedData;
             }
 
-            virtual void serializeIfTyped()
+            TaggedData<BinaryData> getBinaryData()
             {
-                
-                // std::unique_lock<std::mutex> (this->mutex);
-                // // TaggedData internally uses shared_ptr.
-                // // Thus, we already create it, so we save a copy operation
-                // // when creating the TaggedData object below.
-                // std::shared_ptr<BinaryData> binaryData(new BinaryData);
-                // BinarySerializer serializer;
-                // //serializer.serialize(this->data.value(), binaryData.get());
+                if(!this->dataAvailable)
+                {
+                    PORTAIBLE_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement<T> (type \"" << getDataTypeRTTIString<T>() << "\"), but no data was never set (no data available).");
+                }
 
-                // // Store the binary data in ChannelBufferElemnt, so that it
-                // // is available, if someone else wants to use it.
-                // // Therefore, we do not need to serialize it multiple times.
-                // this->channelBufferElement->binaryData = 
-                //     new TaggedData<BinaryData>(binaryData, 
-                //     this->getTimestamp(), 
-                //     this->getSequenceID());
+                if(!this->binaryDataAvailable)
+                {
+                    
+                }
+           
+
+                return this->binaryData;
             }
+
+   
 
     };
 }

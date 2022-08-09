@@ -32,10 +32,8 @@ namespace portaible
 
             ChannelData<Untyped> getDataByIndex(size_t index)
             {
-                this->lockMutex();
                 std::shared_ptr<ChannelBufferElement>& element = this->getElement(index);
                 ChannelData<Untyped> data(element->getHeader(), element);
-                this->unlockMutex();
                 return data;
             }
             
@@ -74,7 +72,21 @@ namespace portaible
                     // In constructor, the binary data automatically gets deserialized.
                     // Note, that binary data is not copied, as TaggedData<BinaryData> uses a shared_ptr internally.
                     std::shared_ptr<ChannelBufferElementTyped<NewType>> 
-                        typedElement(new ChannelBufferElementTyped<NewType>(this->channelBufferElements[i]->getBinaryData()));
+                        typedElement;
+                    
+                    if(this->channelBufferElements[i]->isDataAvailable())
+                    {   
+                        typedElement = 
+                        std::shared_ptr<ChannelBufferElementTyped<NewType>>(
+                            new ChannelBufferElementTyped<NewType>(this->channelBufferElements[i]->getBinaryData()));
+                    }
+                    else
+                    {
+                        typedElement = 
+                        std::shared_ptr<ChannelBufferElementTyped<NewType>>(
+                            new ChannelBufferElementTyped<NewType>());
+                    }
+                     
                     newElements[i] = std::static_pointer_cast<ChannelBufferElement>(typedElement);
                 }
 
