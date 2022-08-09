@@ -7,7 +7,7 @@
 #include "RemoteConnection/Message/MessageData/MessageDataString.hpp"
 #include "RemoteConnection/Message/MessageData/MessageDataBinary.hpp"
 #include "Utilities/VariadicTemplateHelpers.hpp"
-
+#include "RemoteConnection/RemoteModule/Observer.hpp"
 #include <map>
 
 namespace portaible
@@ -16,7 +16,7 @@ namespace portaible
     {
         // Observes everything we do locally (i.e. channels 
         // that were (un)published or (un)subscribed within the RunTime (global ChannelManager)).
-        class RemoteObserver : public SubModule
+        class RemoteObserver : public Observer
         {
             private:
                 
@@ -41,7 +41,6 @@ namespace portaible
                 std::multimap<std::string, Channel<Untyped>> publishedChannels;
                 
                 ChannelManager* globalChannelManager = nullptr;
-                Channel<RemoteConnection::Message> sendMessageChannel;
 
                 void onMessageReceived(ChannelData<Message> message);
                 void onChannelUpdateMessage(const MessageHeaderChannelUpdate& header, const MessageDataString& data);
@@ -54,6 +53,8 @@ namespace portaible
 
                 void onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo(std::string channelID, ChannelData<Untyped> binaryData);            
                 void sendMessage(const Message& message);
+
+                void onChannelDataReceivedFromRemoteRunTime(const std::string& targetChannel, TaggedData<BinaryData>& data);
 
      
 
@@ -112,7 +113,7 @@ namespace portaible
                 Channel<T> subscribe(const std::string& channelID)
                 {
                     verifySafeAccessToChannels(channelID);
-                    return this->channelManager->subscribe<T>(channelID, this->getUniqueIdentifier());
+                    return this->globalChannelManager->subscribe<T>(channelID, this->getUniqueIdentifier());
                 }
 
                 template<typename T, typename Class>
@@ -130,28 +131,28 @@ namespace portaible
                     verifySafeAccessToChannels(channelID);
                     // runtime::getChannel(channelID).subscribe()
                     ChannelSubscriber<T> channelSubscriber(this->runnableDispatcherThread, function);
-                    return this->channelManager->subscribe<T>(channelID, channelSubscriber, this->getUniqueIdentifier());
+                    return this->globalChannelManager->subscribe<T>(channelID, channelSubscriber, this->getUniqueIdentifier());
                 }
 
                 template<typename T>
                 Channel<T> subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber)
                 {
                     verifySafeAccessToChannels(channelID);
-                    return this->channelManager->subscribe(channelID, channelSubscriber, this->getUniqueIdentifier());
+                    return this->globalChannelManager->subscribe(channelID, channelSubscriber, this->getUniqueIdentifier());
                 }
 
                 template<typename T>
                 Channel<T> publish(const std::string& channelID)
                 {
                     verifySafeAccessToChannels(channelID);
-                    return this->channelManager->publish<T>(channelID, this->getUniqueIdentifier());
+                    return this->globalChannelManager->publish<T>(channelID, this->getUniqueIdentifier());
                 }
 
 
             public:
 
-                RemoteObserver(ChannelManager* globalChannelManager, Channel<Message> sendMessageChannel);
-                
+                RemoteObserver(ChannelManager* globalChannelManager);
+
                 ChannelSubscriber<Message> getSubscriberForReceptionOfMessages();
 
 

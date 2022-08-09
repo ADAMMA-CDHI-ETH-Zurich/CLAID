@@ -5,7 +5,7 @@ namespace portaible
 {
     namespace RemoteConnection
     {
-        LocalObserver::LocalObserver(Channel<Message> sendMessageChannel) : sendMessageChannel(sendMessageChannel)
+        LocalObserver::LocalObserver() 
         {
 
         }
@@ -66,7 +66,7 @@ namespace portaible
 
         void LocalObserver::onChannelSubscribed(const std::string& channelID)
         {
-            Logger::printfln("OnChannelSubscribed %s", channelID.c_str());
+            Logger::printfln("LocalObserver::OnChannelSubscribed %s", channelID.c_str());
 
             // Send message to remotely connected RunTime that we have a local subscriber for that channel.
             // Therefore, a corresponding RemoteModule running in the other framework can subscribe to that channel.
@@ -94,18 +94,13 @@ namespace portaible
             this->sendMessage(message);
         }
 
-        void LocalObserver::sendMessage(const Message& message)
-        {
-            this->sendMessageChannel.post(message);
-        }
-
         Message LocalObserver::createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType type, const std::string& string)
         {
             Message message = Message::CreateMessage<MessageHeaderChannelUpdate, MessageDataString>();
             MessageHeaderChannelUpdate& header = *message.header->as<MessageHeaderChannelUpdate>();
             MessageDataString& data = *message.data->as<MessageDataString>();
 
-            header.updateType = MessageHeaderChannelUpdate::UpdateType::CHANNEL_SUBSCRIBED;
+            header.updateType = type;
             data.string = string;
 
             return message;

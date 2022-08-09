@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "TaggedDataBase.hpp"
+#include "Serialization/Serialization.hpp"
 #include <unistd.h>
 #include <iostream>
 namespace portaible
@@ -15,6 +16,13 @@ namespace portaible
          
 
         public:
+
+            template<typename Reflector>
+            void reflect(Reflector& r)
+            {
+                REFLECT_BASE(r, TaggedDataBase);
+                r.member("Data", this->data, "");
+            }
 
             TaggedData() {}
 

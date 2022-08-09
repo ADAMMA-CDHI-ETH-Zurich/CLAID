@@ -5,7 +5,7 @@ namespace portaible
 {
     namespace RemoteConnection
     {
-        RemoteObserver::RemoteObserver(ChannelManager* globalChannelManager, Channel<Message> sendMessageChannel) : globalChannelManager(globalChannelManager), sendMessageChannel(sendMessageChannel)
+        RemoteObserver::RemoteObserver(ChannelManager* globalChannelManager) : globalChannelManager(globalChannelManager)
         {
 
         }
@@ -79,19 +79,35 @@ namespace portaible
 
         void RemoteObserver::onChannelDataMessage(const MessageHeaderChannelData& header, const MessageDataBinary& data)
         {
-            // onChannelDataReceivedFromRemoteRunTime
+
+            // we know what we are doing... hopefully
+            // Deserialization does not alter the original binary data.
+            // However, our reflection system does not support const types.
+            const MessageDataBinary* constPtr = &data;
+            MessageDataBinary* nonConstPtr = const_cast<MessageDataBinary*>(constPtr);
+            
+            std::shared_ptr<BinaryData> binaryData(new BinaryData);
+            nonConstPtr->getBinaryData(*binaryData.get());
+
+
+            TaggedData<BinaryData> taggedBinaryData(binaryData, header.header.timestamp, header.header.sequenceID);
+            Logger::printfln("Received timestamp %d", header.header.timestamp.toUnixTimestamp());
+            this->onChannelDataReceivedFromRemoteRunTime(header.targetChannel, taggedBinaryData);
         }
+
 
         // Some module in the remote RunTime subscribed to a channel.
         // Thus, whenever data is published to that channel in the local RunTime, we need
         // to send the data to the remote RunTime.
         void RemoteObserver::onChannelSubscribed(const std::string& channelID)
         {
+            Logger::printfln("RemoteModule:: onChannelSubscribed %s", channelID.c_str());
             // See comments in header on subscribedChannelsWithCallback
             auto it = this->subscribedChannelsWithCallback.find(channelID);
 
             if(it == this->subscribedChannelsWithCallback.end())
             {
+                Logger::printfln("Subscribing with callback");
                 // Cannot pass reference to bind.
                 std::string channelIDCopy = channelID;
                 std::function<void (ChannelData<Untyped>)> function = std::bind(&RemoteObserver::onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo, this, channelIDCopy, std::placeholders::_1);
@@ -100,6 +116,8 @@ namespace portaible
             }
             else
             {
+                                Logger::printfln("Subscribing without callback");
+
                 Channel<Untyped> channel = this->subscribe<Untyped>(channelID);
                 this->subscribedChannels.insert(std::make_pair(channelID, channel));
             }
@@ -171,21 +189,46 @@ namespace portaible
             }
         }
 
+
+        void RemoteObserver::onChannelDataReceivedFromRemoteRunTime(const std::string& targetChannel, TaggedData<BinaryData>& data)
+        {
+            Logger::printfln("OnChannelDataReceivedFromRemuteRunTIme %s", targetChannel.c_str());
+            // Check if we have publisher for channel (we SHOULD! otherwise RunTimes out of sync,
+            // because how could the remote RunTime have posted that data we just received in the first place?).
+            
+            auto it = this->publishedChannels.find(targetChannel);
+
+            if(it == this->publishedChannels.end())
+            {
+                PORTAIBLE_THROW(Exception, "Error, received data from remote RunTime for channel with channelID \"" << targetChannel << "\", "
+                << "but we do not have a publisher for that channel? That should not be possible, because how could the remote RunTime have posted data to the channel "
+                << "in the first place, if no publisher is available ? ");
+            }
+
+            it->second.postBinaryData(data);
+        }
+
         void RemoteObserver::onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo(std::string channelID, ChannelData<Untyped> data)
         {
+            Logger::printfln("RemoteModule:: onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo");
+
             // Need to send to the remote RunTime
             // Get tagged binary data
-            TaggedData<BinaryData> taggedBinaryData;
             MessageDataBinary messageDataBinary;
 
             Message message = Message::CreateMessage<MessageHeaderChannelData, MessageDataBinary>();
     
             message.header->as<MessageHeaderChannelData>()->targetChannel = channelID;
+            message.header->as<MessageHeaderChannelData>()->header = data.getHeader();
+            Logger::printfln("Setting header timestamp %s %d", channelID.c_str(), data.getHeader().timestamp.toUnixTimestamp());
             // Set will serialize TaggedData<BinaryData>.
             // TaggedData holds the header (timestamp, sequenceID) and the binary data.
             // Thus, timestamp and sequenceID will be serialized, the binary data will be copied into a bigger
             // binary data buffer that contains timestamp, sequenceID and the binary data itself.
-            message.data->as<MessageDataBinary>()->set<TaggedData<BinaryData>>(taggedBinaryData);
+            TaggedData<BinaryData> taggedData = data.getBinaryData();
+
+            BinaryData binaryData = taggedData.value();
+            message.data->as<MessageDataBinary>()->setBinaryData(binaryData);
             this->sendMessage(message);
 
             

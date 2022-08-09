@@ -85,6 +85,12 @@ namespace portaible
 
                 bool equal = n == this->lastTimeStamp;
 
+                if(channel->getChannelID() == "StringChannel")
+                {
+                    int x = 10;
+                }
+                std::cout << "timestamps " << n.toUnixTimestamp() << " " << this->lastTimeStamp.toUnixTimestamp();
+                
                 if (!equal)
                 {
                     this->lastTimeStamp = n;

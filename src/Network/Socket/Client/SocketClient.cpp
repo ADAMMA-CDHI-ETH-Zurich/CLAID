@@ -35,6 +35,7 @@ bool Network::SocketClient::read(BinaryData& data)
     }
 
     dataNumBytes = reinterpret_cast<size_t*>(byteBuffer.data());
+    Logger::printfln("Read header, continuing to read %d bytes", *dataNumBytes);
 
     // Now read the data
     data.resize(*dataNumBytes);

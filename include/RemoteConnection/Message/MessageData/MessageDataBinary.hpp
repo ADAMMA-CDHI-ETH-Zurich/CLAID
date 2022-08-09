@@ -18,6 +18,16 @@ namespace portaible
                 r.member("Data", binaryData, "");
             }
 
+            void setBinaryData(BinaryData& binaryData)
+            {
+                this->binaryData = binaryData;
+            }
+
+            void getBinaryData(BinaryData& binaryData)
+            {
+                binaryData = this->binaryData;
+            }
+
             template<typename T>
             void set(T& data)
             {

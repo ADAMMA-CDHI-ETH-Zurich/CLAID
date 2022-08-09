@@ -5,17 +5,20 @@
 
 #include "RemoteConnection/Message/MessageHeader/MessageHeaderChannelUpdate.hpp"
 #include "RemoteConnection/Message/MessageData/MessageDataString.hpp"
+#include "RemoteConnection/RemoteModule/Observer.hpp"
+
+
 namespace portaible
 {
     namespace RemoteConnection
     {
         // Observes everything we do locally (i.e. channels 
         // that were (un)published or (un)subscribed within the RunTime (global ChannelManager)).
-        class LocalObserver : public SubModule
+        class LocalObserver : public Observer
         {
             private:
                 ChannelManager* observedChannelManager = nullptr;
-                Channel<RemoteConnection::Message> sendMessageChannel;
+      
 
                 // Does not receive data from network, but is able to send data over network.
                 Channel<std::string> subscribedChannel;
@@ -33,7 +36,6 @@ namespace portaible
                 void onChannelUnsubscribed(const std::string& channelID);
                 void onChannelUnpublished(const std::string& channelID);
 
-                void sendMessage(const Message& message);
 
 
                 Message createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType type, const std::string& string);
@@ -41,7 +43,7 @@ namespace portaible
     
 
             public:
-                LocalObserver(Channel<RemoteConnection::Message> sendMessageChannel);
+                LocalObserver();
                 void observe(ChannelManager* manager);
 
         };

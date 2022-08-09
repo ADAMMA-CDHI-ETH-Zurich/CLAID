@@ -419,4 +419,3 @@ namespace portaible
 }
 
 
-#define REFLECT_BASE(Reflector, Base) Base::reflect(r);

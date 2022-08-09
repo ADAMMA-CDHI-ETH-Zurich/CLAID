@@ -19,3 +19,5 @@
     REGISTER_POLYMORPHIC_REFLECTOR(className, portaible::XMLSerializer, XMLSerializer) \
     REGISTER_POLYMORPHIC_REFLECTOR(className, portaible::BinarySerializer, BinarySerializer)\
     REGISTER_POLYMORPHIC_REFLECTOR(className, portaible::BinaryDeserializer, BinaryDeserializer)
+
+#define REFLECT_BASE(Reflector, Base) Base::reflect(r);

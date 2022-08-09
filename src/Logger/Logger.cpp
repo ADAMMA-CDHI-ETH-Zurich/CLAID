@@ -56,7 +56,7 @@ void portaible::Logger::printfln(const char *format, ...)
 
 		LOGCAT(ss.str().c_str(), __LINE__);
 	#else
-		std::cout << ss.str().c_str() << "\n";
+		std::cout << ss.str().c_str() << "\n" << std::flush;
 	#endif
 
 }

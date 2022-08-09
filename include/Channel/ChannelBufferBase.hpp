@@ -64,6 +64,54 @@ namespace portaible
                 return this->dataTypeName;
             }
 
+            virtual void insertBinaryData(TaggedData<BinaryData>& binaryData)
+            {
+                this->lockMutex();
+
+
+                // Check data types by typename string.
+                std::string binaryDataTypeName;
+                this->getTypeNameFromBinaryData(binaryData.value(), binaryDataTypeName);
+                if(this->getDataTypeName() != "Untyped")
+                {
+                    if(binaryDataTypeName != this->getDataTypeName())
+                    {
+                        // ERROR!
+                        PORTAIBLE_THROW(Exception, "Error, tried to insert binary data to channel buffer. Previously, data of type \"" <<
+                        this->getDataTypeName() << "\" has been inserted into the buffer, but now it was tried to insert data of type \"" << binaryDataTypeName << "\"."
+                        << "Only binary data of ONE type should ever be added to the buffer.")
+                    }
+                }
+                else
+                {
+                    // data type name is untyped, which is only the case if never any
+                    // binary data has been written to the buffer.
+                    // Now that we want to insert some binary data, we can get it's data type name
+                    // (which is serialized into the data), and set our data type name accordingly.
+                    // This makes sure that all the binary data inserted has the same type.
+                    // Otherwise, it would be possible to insert binary data of different types, e.g string, float, int.
+                    // So, for the first time binary data is inserted, we store it's data type name.
+                    // This does NOT mean, that we type the channel. It only means that we store the data type name of the untyped
+                    // binary data for the future, so that we can make sure that the user does not insert data of different random types
+                    // into the buffer. Even the buffer is untyped, only binary data of one type should be added to it.
+                    // Otherwise, as soon as we type the channel/buffer (e.g. in ChannelManager), we definitely WILL get errors.
+                    this->dataTypeName = binaryDataTypeName;
+                }
+                
+
+
+
+                // Is this thread safe?
+                // Yes.. as long as we create copies in getLatest, getClosest and getDataInterval.
+                // If buffer is typed, binary data automatically get's deserialized in overriden function newChannelBufferElementFromBinaryData in ChannelBuffer<T>.
+                // ChannelBuffer<T> uses ChannelBufferElementTyped<T>, which deserializes the data in it's constructor (the constructor that uses binary data).
+                this->channelBufferElements[this->currentIndex] = newChannelBufferElementFromBinaryData(binaryData);
+
+
+                increaseIndex();
+                this->unlockMutex();
+            }
+
         protected:
             std::shared_ptr<ChannelBufferElement> channelBufferElements[MAX_CHANNEL_BUFFER_SIZE];
             size_t currentIndex = 0;
@@ -115,53 +163,7 @@ namespace portaible
             }
 
             
-            virtual void insertBinaryData(TaggedData<BinaryData>& binaryData)
-            {
-                this->lockMutex();
-
-
-                // Check data types by typename string.
-                std::string binaryDataTypeName;
-                this->getTypeNameFromBinaryData(binaryData.value(), binaryDataTypeName);
-                if(this->getDataTypeName() != "Untyped")
-                {
-                    if(binaryDataTypeName != this->getDataTypeName())
-                    {
-                        // ERROR!
-                        PORTAIBLE_THROW(Exception, "Error, tried to insert binary data to channel buffer. Previously, data of type \"" <<
-                        this->getDataTypeName() << "\" has been inserted into the buffer, but now it was tried to insert data of type \"" << binaryDataTypeName << "\"."
-                        << "Only binary data of ONE type should ever be added to the buffer.")
-                    }
-                }
-                else
-                {
-                    // data type name is untyped, which is only the case if never any
-                    // binary data has been written to the buffer.
-                    // Now that we want to insert some binary data, we can get it's data type name
-                    // (which is serialized into the data), and set our data type name accordingly.
-                    // This makes sure that all the binary data inserted has the same type.
-                    // Otherwise, it would be possible to insert binary data of different types, e.g string, float, int.
-                    // So, for the first time binary data is inserted, we store it's data type name.
-                    // This does NOT mean, that we type the channel. It only means that we store the data type name of the untyped
-                    // binary data for the future, so that we can make sure that the user does not insert data of different random types
-                    // into the buffer. Even the buffer is untyped, only binary data of one type should be added to it.
-                    // Otherwise, as soon as we type the channel/buffer (e.g. in ChannelManager), we definitely WILL get errors.
-                    this->dataTypeName = binaryDataTypeName;
-                }
-                
-
-
-
-                // Is this thread safe?
-                // Yes.. as long as we create copies in getLatest, getClosest and getDataInterval.
-                // If buffer is typed, binary data automatically get's deserialized in overriden function newChannelBufferElementFromBinaryData in ChannelBuffer<T>.
-                // ChannelBuffer<T> uses ChannelBufferElementTyped<T>, which deserializes the data in it's constructor (the constructor that uses binary data).
-                this->channelBufferElements[this->currentIndex] = newChannelBufferElementFromBinaryData(binaryData);
-
-
-                increaseIndex();
-                this->unlockMutex();
-            }
+            
 
    
             void increaseIndex()

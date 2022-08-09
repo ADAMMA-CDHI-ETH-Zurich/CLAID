@@ -75,6 +75,7 @@ namespace portaible
                     TaggedData<BinaryData>(binaryData, 
                     this->header.timestamp, 
                     this->header.sequenceID); 
+
             }
 
        
@@ -98,12 +99,14 @@ namespace portaible
             {
                 this->typedData = typedData;
                 this->header = typedData.getHeader();
+                this->dataAvailable = true;
                 this->binaryDataAvailable = false;
             }
 
             ChannelBufferElementTyped(TaggedData<BinaryData> binaryData) : ChannelBufferElement(binaryData)
             {
                 this->deserializeBinaryDataToTypedData();
+                this->dataAvailable = true;
                 this->binaryDataAvailable = true;
             }
 
@@ -121,7 +124,8 @@ namespace portaible
 
                 if(!this->binaryDataAvailable)
                 {
-                    
+                    serializeTypedDataToBinaryData();
+                    this->binaryDataAvailable = true;
                 }
            
 

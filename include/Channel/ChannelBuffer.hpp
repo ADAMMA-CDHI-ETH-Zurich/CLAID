@@ -159,7 +159,7 @@ namespace portaible
 
             ChannelData<T> getDataByIndex(size_t index)
             {
-                if(this->getElement(index)->isDataAvailable())
+                if(!this->getElement(index)->isDataAvailable())
                 {
                     PORTAIBLE_THROW(Exception, "Error! Tried to access channel data at index " << index << " in ChannelBuffer (data type \""
                     << this->getDataTypeName() << "\", but data was not available.");

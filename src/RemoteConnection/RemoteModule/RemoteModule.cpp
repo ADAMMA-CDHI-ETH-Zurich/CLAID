@@ -30,8 +30,18 @@ namespace RemoteConnection
 
     void RemoteModule::setSendMessageChannel(Channel<Message> channel)
     {
+        if(this->localObserver == nullptr || this->remoteObserver == nullptr)
+        {
+            PORTAIBLE_THROW(Exception, "Error, RemoteModule::setSendMessageChannel called before RemoteModule has been initialized. "
+            << "Please initialize RemoteModule before setting the channel used to send messages");
+        }
+
+        this->localObserver->setSendMessageChannel(channel);
+        this->remoteObserver->setSendMessageChannel(channel);
+        
         this->sendMessageChannelSet = true;
         this->sendMessageChannel = channel;
+
     }
 
     void RemoteModule::setReceiveMessageChannel(Channel<Message> channel)
@@ -53,11 +63,9 @@ namespace RemoteConnection
 
     void RemoteModule::initialize()
     {
-                Logger::printfln("RemoteModule init");
-
         // By using forkSubModuleInThread, the LocalObserver will run on the same thread as the RemoteModule (no extra overhead).
-        this->localObserver = this->forkSubModuleInThread<LocalObserver>(this->sendMessageChannel);
-        this->remoteObserver = this->forkSubModuleInThread<RemoteObserver>(&PORTAIBLE_RUNTIME->channelManager, this->sendMessageChannel);
+        this->localObserver = this->forkSubModuleInThread<LocalObserver>();
+        this->remoteObserver = this->forkSubModuleInThread<RemoteObserver>(&PORTAIBLE_RUNTIME->channelManager);
     }
 
     void RemoteModule::start()
@@ -68,26 +76,28 @@ namespace RemoteConnection
             "Please provide a channel for sending messages (i.e. Channel<RemoteConnection::Message> and call setSendMessageChannel "
             "prior to calling start");
         }
-        // Why start not in initialize? 
-        // Because setSendMessageChannel might not have been called yet.
-        // RemoteModule is used with ConnectionLink and RemoteConnectedEntity,
-        // which make sure to first link the RemoteModule to a ConnectionModule and 
-        // then calling start afterwards.
-        Logger::printfln("Initialize");
-        size_t numChannels = PORTAIBLE_RUNTIME->getNumChannels();
-        std::vector<std::string> channelNames = {"IntChannel", "CoughChannel", "TestChannel"};
-        Message message = Message::CreateMessage<MessageHeaderChannelUpdate, MessageDataBinary>();
-        message.data->as<MessageDataBinary>()->set<std::vector<std::string>>(channelNames);
-        this->sendMessage(message);
-
-         for(size_t i = 0; i < numChannels; i++)
-        {
-            channelNames.push_back(PORTAIBLE_RUNTIME->getChannelNameByIndex(i));
-        }
-
-        Logger::printfln("RemoteModule cal sending.");
+        // // Why "start" not in initialize? 
+        // // Because setSendMessageChannel might not have been called yet.
+        // // RemoteModule is used with ConnectionLink and RemoteConnectedEntity,
+        // // which make sure to first link the RemoteModule to a ConnectionModule and 
+        // // then calling start afterwards.
 
 
+        // Logger::printfln("Initialize");
+        // size_t numChannels = PORTAIBLE_RUNTIME->getNumChannels();
+        // std::vector<std::string> channelNames = {"IntChannel", "CoughChannel", "TestChannel"};
+        // Message message = Message::CreateMessage<MessageHeaderChannelUpdate, MessageDataBinary>();
+        // message.data->as<MessageDataBinary>()->set<std::vector<std::string>>(channelNames);
+        // this->sendMessage(message);
+
+        //  for(size_t i = 0; i < numChannels; i++)
+        // {
+        //     channelNames.push_back(PORTAIBLE_RUNTIME->getChannelNameByIndex(i));
+        // }
+
+        // Logger::printfln("RemoteModule cal sending.");
+
+        this->localObserver->observe(&PORTAIBLE_RUNTIME->channelManager);
         
     }
 

@@ -48,7 +48,7 @@ namespace portaible
             {
                 if(*this->channelAccessRights.get() != ChannelAccessRights::WRITE && *this->channelAccessRights.get() != ChannelAccessRights::READ_WRITE)
                 {
-                    PORTAIBLE_THROW(Exception, "Cannot post to channel with ID " << typedChannel->getChannelID().c_str() << " as it was either only subscribed or has been unpublished.");
+                    PORTAIBLE_THROW(Exception, "Cannot post to channel with ID " << typedChannel->getChannelID() << " as it was either only subscribed or has been unpublished.");
                 }
             }
         public:
@@ -125,6 +125,13 @@ namespace portaible
             {
                 TaggedData<U> taggedData(data, timestamp, sequenceID);
                 this->post<U>(taggedData);
+            }
+
+            void postBinaryData(TaggedData<BinaryData>& binaryData)
+            {
+                this->verifyWriteAccess();
+                this->typedChannel->postBinaryData(binaryData);
+            
             }
 
             void getChannelDataIntervall(const Time& min, const Time& max, std::vector<ChannelData<T>>& channelDataIntervall)
@@ -331,6 +338,12 @@ namespace portaible
                 }
                 // If T is Untyped -> then ? 
                 // 
+            }
+
+            void postBinaryData(TaggedData<BinaryData>& binaryData)
+            {
+                this->castBuffer()->insertBinaryData(binaryData);
+                this->signalNewDataToSubscribers();
             }
             
             ChannelData<T> read()
