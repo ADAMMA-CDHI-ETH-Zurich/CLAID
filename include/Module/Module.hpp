@@ -63,6 +63,7 @@ namespace portaible
                 this->baseModuleInitialized = true;
                 this->initialize();
                 this->initialized = true;
+                Logger::printfln("Module %s unique id: %ul", getDataTypeRTTIString(*this).c_str(), this->getUniqueIdentifier());
             }
 
             bool initialized = false;

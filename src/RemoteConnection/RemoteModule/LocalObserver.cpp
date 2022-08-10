@@ -18,6 +18,7 @@ namespace portaible
             // is set to the unique identifier of the module that subscribed or published 
             // a channel.
             size_t moduleIdentifier = channelID->sequenceID;
+            Logger::printfln("Module %u subscribed %u %d", moduleIdentifier, this->getUniqueIdentifier(), moduleIdentifier == this->getUniqueIdentifier());
             // We do not want to get notified about subcribing or publishing that we did ourselves.
             if(moduleIdentifier == this->getUniqueIdentifier())
                 return;

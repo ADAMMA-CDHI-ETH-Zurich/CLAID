@@ -28,7 +28,6 @@ namespace portaible
    
         void test()
         {
-            printf("Test\n");
         }
 
         void start()

@@ -22,7 +22,6 @@ namespace portaible
 
                 RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity;
 
-                std::string address;
 
                 Channel<RemoteConnection::Error> errorChannel;
                 
@@ -57,13 +56,17 @@ namespace portaible
                     int port;
 
                     SocketClient socketClient;
+                    Logger::printfln("Trying to connect");
 
                     getIPAndPortFromAddress(address, ip, port);
+                    Logger::printfln("Trying to connect to %s %d", ip.c_str(), port);
+
                     if(!socketClient.connectTo(ip, port))
                     {
                         this->callError<ErrorConnectToAdressFailed>();
                         return;
                     }
+
                     Logger::printfln("Connected successfully");
 
                     Logger::printfln("Creating RemoteConnected Entity.");
@@ -110,6 +113,8 @@ namespace portaible
                 }
 
             public:
+                std::string address;
+
                 template<typename Reflector>
                 void reflect(Reflector& r)
                 {

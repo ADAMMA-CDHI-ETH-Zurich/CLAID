@@ -17,7 +17,7 @@ namespace portaible
 
 		if (!file.is_open())
 		{
-			printf("Error! Could not open file \"%s\".", filePath.c_str());
+			Logger::printfln("Error! Could not open file \"%s\".", filePath.c_str());
 			return false;
 		}
 
@@ -48,7 +48,7 @@ namespace portaible
 
 		if (!file.is_open())
 		{
-			printf("Error! Could not open file \"%s\".", filePath.c_str());
+			Logger::printfln("Error! Could not open file \"%s\".", filePath.c_str());
 			return false;
 		}
 

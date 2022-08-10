@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Utilities/Time.hpp"
 
 #include "RunTime/RunTime.hpp"

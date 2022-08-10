@@ -20,7 +20,8 @@ namespace portaible
     }
 
     template<typename T>
-    std::string getDataTypeRTTIString(T& t)
+    typename std::enable_if<!std::is_same<T, std::string>::value, std::string>::type
+    getDataTypeRTTIString(T& t)
     {
         std::string name = typeid(t).name();
 
@@ -49,6 +50,13 @@ namespace portaible
         #endif
 
     }
+    template<typename T>
+    typename std::enable_if<std::is_same<T, std::string>::value, std::string>::type
+    getDataTypeRTTIString(T& t)
+    {
+        return "std::string";
+    }
+
 
     template<typename T>
     std::string getDataTypeRTTIString()

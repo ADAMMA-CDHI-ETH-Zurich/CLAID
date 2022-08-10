@@ -6,12 +6,17 @@ namespace portaible
     {
         for(Module*& module : this->modules)
         {
+            Logger::printfln("starting module");
             module->startModule();
+            Logger::printfln("started module");
 
             while(!module->isInitialized())
             {
-                
+                            Logger::printfln("wait");
+
             }
+                        Logger::printfln("started");
+
         }
     }
 

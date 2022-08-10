@@ -50,6 +50,9 @@ namespace Network
     {
         int clientSocket;
         struct sockaddr_in clientAddress; 
+        // CRUCIAL ON ANDROID! IF NOT ZEROING, WEIRD STUFF CAN HAPPEN !
+        // E.G. ACCEPT FAILS BECAUSE OF "invalid_argument".
+        bzero((char *) &clientAddress, sizeof(clientAddress));
         
         clientSocket = ::accept(this->serverSocket, (struct sockaddr *)&clientAddress, (socklen_t*)&clientAddress);
         if (clientSocket < 0) 

@@ -29,7 +29,6 @@ namespace portaible
 
                 ClientAcceptModule clientAcceptModule;
                 SocketServer server;
-                size_t port;
 
                 void onClientAccepted(ChannelData<SocketClient> socketClient);
                 void onClientAcceptError(ChannelData<RemoteConnection::Error> error);
@@ -42,6 +41,7 @@ namespace portaible
                 {
                     r.member("Port", this->port, "");
                 }
+                size_t port;
 
 
         };

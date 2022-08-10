@@ -26,9 +26,12 @@ namespace portaible
 	bool Network::SocketClient::connectTo(std::string address, int port)
 	{
 		struct sockaddr_in serv_addr;
-		struct hostent *server;
+		struct hostent server;
+
+		bzero(&serv_addr, sizeof(serv_addr));
 
 		char buffer[256];
+		Logger::printfln("Connect to 1");
 		
 		this->sock = socket(AF_INET, SOCK_STREAM, 0);
 		if (this->sock < 0) 
@@ -36,25 +39,44 @@ namespace portaible
 			Logger::printfln("Failed to open socket.\n");
 			return false;
 		}
-		server = gethostbyname(address.c_str());
-		if (server == NULL) 
-		{
-			Logger::printfln("Error invalid IP address.\n");
-			return false;
-		}
-		bzero((char *) &serv_addr, sizeof(serv_addr));
+				Logger::printfln("Connect to 2");
 
-		serv_addr.sin_family = AF_INET;
-		bcopy((char *)server->h_addr, 
-			(char *)&serv_addr.sin_addr.s_addr,
-			server->h_length);
+		
 
-		serv_addr.sin_port = htons(port);
+		// 		Logger::printfln("Connect to 3");
+
+		// if (server == NULL) 
+		// {
+		// 			Logger::printfln("Connect to 4");
+
+		// 	Logger::printfln("Error invalid IP address.\n");
+		// 	return false;
+		// }
+		// 		Logger::printfln("Connect to 5");
+
+		//bzero((char *) &serv_addr, sizeof(serv_addr));
+		Logger::printfln("Connect to 6");
+
+		serv_addr.sin_addr.s_addr = inet_addr(address.c_str()); // sets IP of server
+		serv_addr.sin_family = AF_INET; // uses internet address domain
+		serv_addr.sin_port = htons(port); // sets PORT on server
+		// serv_addr.sin_family = AF_INET;
+		// bcopy((char *)server->h_addr, 
+		// 	(char *)&serv_addr.sin_addr.s_addr,
+		// 	server->h_length);
+
+		Logger::printfln("Connect to 7");
+
+		
+				Logger::printfln("Connect to 8");
+
 		if (connect(this->sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) 
 		{
 			Logger::printfln("Could not connect to %s:%d", address.c_str(), port);
 			return false;
 		}
+				Logger::printfln("Connect to 9");
+
 		this->connected = true;
 		return true;
 	}
@@ -82,7 +104,7 @@ namespace portaible
 		int bytesReceived = 0;
 
 		bytesReceived = recv(this->sock, byteBuffer.data(), numBytes, MSG_WAITALL);
-
+		Logger::printfln("Bytes received %d %d", bytesReceived, numBytes);
 		if (bytesReceived < 1)
 		{
 			Logger::printfln("SocketClient: read failed on socket %d: %s (%d)\n", this->sock, strerror(errno), errno);
