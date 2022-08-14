@@ -88,7 +88,7 @@ namespace portaible
                 {
                     // What to do with nullptrs? Do not serialize?
                     PORTAIBLE_THROW(Exception, "Error, XMLSerializer can not serialize member " << property << "."
-                    << "The member is a pointer of type " << getDataTypeRTTIString<T>() << ", but the value of the pointer is null.");
+                    << "The member is a pointer of type " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << ", but the value of the pointer is null.");
                     return;
                 }
 
@@ -108,7 +108,7 @@ namespace portaible
                 // provides the correct type. However, if the derived type does NOT implement serialization,
                 // getClassName returns the className of the base type, which would lead into storing the wrong
                 // class identifier in the binary data.
-                std::string rttiTypeString = getDataTypeRTTIString(*member);
+                std::string rttiTypeString = TypeChecking::getCompilerSpecificRunTimeNameOfObject(*member);
                 if(!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForRTTITypeName(rttiTypeString))
                 {
                     PORTAIBLE_THROW(portaible::Exception, "XMLSerializer failed to serialize object to XML. Member \"" << property << "\" is a pointer/polymorphic object of type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
@@ -137,7 +137,7 @@ namespace portaible
                 {
                     // What to do with nullptrs? Do not serialize?
                     PORTAIBLE_THROW(Exception, "Error, XMLSerializer can not serialize member " << property << "."
-                    << "The member is a shared_ptr of type " << getDataTypeRTTIString<T>(member) << ", but the value of the pointer is null");
+                    << "The member is a shared_ptr of type " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << ", but the value of the pointer is null");
                     return;
                 }
 
@@ -184,7 +184,7 @@ namespace portaible
             template<typename T> 
             void serialize(T& obj)
             {
-                std::string name = portaible::getDataTypeRTTIString<T>();
+                std::string name = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
                 std::shared_ptr<XMLNode> node = std::shared_ptr<XMLNode>(new XMLNode(currentNode, name));
                 this->currentNode->addChild(node);
                 this->currentNode = node;

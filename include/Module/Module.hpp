@@ -59,11 +59,11 @@ namespace portaible
 
             void initializeInternal()
             {
-                Logger::printfln("Starting module %s", getDataTypeRTTIString(*this).c_str());
+                Logger::printfln("Starting module %s", this->getModuleName().c_str());
                 this->baseModuleInitialized = true;
                 this->initialize();
                 this->initialized = true;
-                Logger::printfln("Module %s unique id: %ul", getDataTypeRTTIString(*this).c_str(), this->getUniqueIdentifier());
+                Logger::printfln("Module %s unique id: %ul", this->getModuleName().c_str(), this->getUniqueIdentifier());
             }
 
             bool initialized = false;
@@ -106,11 +106,12 @@ namespace portaible
             {
                 if(!this->isSafeToAccessChannels())
                 {
-                    PORTAIBLE_THROW(Exception, "Error, Module of Class " << getDataTypeRTTIString(*this) << " tried to publish or subscribe to channel with ID \"" << channelID << "\", while the Module has not yet been initialized."
+                    PORTAIBLE_THROW(Exception, "Error, Module of Class " << this->getModuleName() << " tried to publish or subscribe to channel with ID \"" << channelID << "\", while the Module has not yet been initialized."
                     "Please only use publish and subscribe in the initialize function, or anytime after initialization was finished successfully (i.e. Module has been started and initialized).");
                 }
             }
 
+            
                        
             virtual void initialize() = 0;
 
@@ -164,7 +165,7 @@ namespace portaible
                 // If this thread is runnable dispatcher thread, waiting would result in a deadlock.
                 if(std::this_thread::get_id() == this->runnableDispatcherThread->getThreadID())
                 {
-                    PORTAIBLE_THROW(Exception, "Error! Function waitForInitialization() of Module " << getDataTypeRTTIString(*this) << "\n"
+                    PORTAIBLE_THROW(Exception, "Error! Function waitForInitialization() of Module " << this->getModuleName() << "\n"
                     << " was called from the same thread the Module runs in. This results in an unresolvable deadlock."
                     << "This might happen if you call waitForInitializiation() in any of the Modules functions, or "
                     << "if you use forkSubModuleInThread to create a local SubModule and then call waitForInitialization() on that SubModule "
@@ -243,6 +244,11 @@ namespace portaible
                 "Can not store pointers/adresses in objects of type uint64_t with the current compiler, settings or target architecture.");
 
                 return reinterpret_cast<uint64_t>(this->runnableDispatcherThread.get());
+            }
+
+            std::string getModuleName()
+            {
+                return TypeChecking::getCompilerSpecificRunTimeNameOfObject(*this);   
             }
     };
 

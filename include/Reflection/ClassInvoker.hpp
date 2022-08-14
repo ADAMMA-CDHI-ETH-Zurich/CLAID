@@ -23,7 +23,7 @@ namespace portaible
 
    // For class string
     template<typename Reflector, typename T>
-    struct ClassInvoker<Reflector, T, typename std::enable_if<std::is_base_of<T, std::string>::value>::type>
+    struct ClassInvoker<Reflector, T, typename std::enable_if<std::is_same<T, std::string>::value>::type>
     {
         static void call(Reflector& r, const char* property, T& member) 
         {
@@ -34,7 +34,7 @@ namespace portaible
 
     // For class std::shared_ptr
     template<typename Reflector, typename T>
-    struct ClassInvoker<Reflector, T, typename std::enable_if<std::is_base_of<T, std::shared_ptr<typename T::element_type>>::value>::type>
+    struct ClassInvoker<Reflector, T, typename std::enable_if<std::is_same<T, std::shared_ptr<typename T::element_type>>::value>::type>
     {
         static void call(Reflector& r, const char* property, T& member) 
         {

@@ -26,7 +26,7 @@ namespace portaible
             typename std::enable_if<!std::is_same<T, Untyped>::value,bool>::type
             canCastChannel(std::shared_ptr<ChannelBase> channel)
             {              
-                return channel->getChannelDataTypeUniqueIdentifier() == getDataTypeUniqueIdentifier<T>();
+                return channel->getChannelDataTypeUniqueIdentifier() == TypeChecking::getDataTypeUniqueIdentifier<T>();
             }
 
             template<typename T>
@@ -123,7 +123,7 @@ namespace portaible
                     }
                     else
                     {
-                        PORTAIBLE_THROW(Exception, "Cannot cast channel \"" << channelID << "\"! The channel has type " << channel->getChannelDataTypeName() << ", however an access with type" << getDataTypeRTTIString<T>() << " was inquired!" );
+                        PORTAIBLE_THROW(Exception, "Cannot cast channel \"" << channelID << "\"! The channel has type " << channel->getChannelDataTypeName() << ", however an access with type" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << " was inquired!" );
                     }
                     
                 }
@@ -209,7 +209,7 @@ namespace portaible
                     else
                     {
                         PORTAIBLE_THROW(Exception, "Error, cannot unsubscribe from channel with ID" << channelID << 
-                            "The type of the channel (" << channel->getChannelDataTypeName() << ") cannot be cast to " << getDataTypeRTTIString<T>() << ".");
+                            "The type of the channel (" << channel->getChannelDataTypeName() << ") cannot be cast to " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << ".");
                     }
                 }
                 else
@@ -243,7 +243,7 @@ namespace portaible
                     else
                     {
                         PORTAIBLE_THROW(Exception, "Error, cannot unpublish channel with ID" << channelID << 
-                            "The type of the channel (" << channel->getChannelDataTypeName() << ") cannot be cast to " << getDataTypeRTTIString<T>() << ".");
+                            "The type of the channel (" << channel->getChannelDataTypeName() << ") cannot be cast to " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << ".");
                     }
                 }
                 else

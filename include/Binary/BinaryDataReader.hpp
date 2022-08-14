@@ -48,7 +48,7 @@ namespace portaible
                 // Test if we run out of bounds if we continue reading from the data.
                 if(this->readingPtr + size > this->dataEndPtr)
                 {
-                    PORTAIBLE_THROW(Exception, "Error reading from BinaryData. Trying to read value of type \"" << getDataTypeRTTIString<T>() << "\" which requires " << size << " bytes of data, " 
+                    PORTAIBLE_THROW(Exception, "Error reading from BinaryData. Trying to read value of type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\" which requires " << size << " bytes of data, " 
                     << "but only " << std::distance(this->readingPtr, this->dataEndPtr) << " bytes are left to read from the binary data (i.e. BinaryData contains less bytes than required).\n"
                     << "Total number of bytes available is: " << this->data->getNumBytes() << ", number of bytes previously read already is " << std::distance(this->data->getRawData(), this->readingPtr));
                 }

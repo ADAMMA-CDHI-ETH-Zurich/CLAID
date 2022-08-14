@@ -46,7 +46,7 @@ namespace portaible
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" is missing!");
+                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
                     member = this->getCurrentDefaultValue<T>();
@@ -72,7 +72,7 @@ namespace portaible
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" is missing!");
+                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
                     member = this->getCurrentDefaultValue<T>();
@@ -96,7 +96,7 @@ namespace portaible
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" is missing!");
+                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
                     member = this->getCurrentDefaultValue<bool>();
@@ -138,7 +138,7 @@ namespace portaible
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" is missing!");
+                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
                     member = this->getCurrentDefaultValue<char>();
@@ -168,7 +168,7 @@ namespace portaible
                 std::shared_ptr<XMLNode> node = this->currentXMLNode->findChild(property);
                 if(node.get() == nullptr)
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node " << property << " is missing!");
+                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                 }
 
                 this->currentXMLNode = node;
@@ -230,7 +230,7 @@ namespace portaible
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" is missing!");
+                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
                     member = this->getCurrentDefaultValue<T>();
@@ -358,7 +358,19 @@ namespace portaible
                 name = this->currentXMLNode->children[idInSequence]->name;
             }
 
-            
+            std::string getDebugNodeName(std::shared_ptr<XMLNode> node)
+            {
+                if(node->hasAttribute("class"))
+                {
+                    std::string className;
+                    node->getAttribute("class", className);
+                    return node->name + std::string(" (") + className + std::string(")");
+                }
+                else
+                {
+                    return node->name;
+                }
+            }
 
         
     };

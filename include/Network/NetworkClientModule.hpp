@@ -37,11 +37,14 @@ namespace portaible
                     ip = address.substr(0, characterIndex);
                     Logger::printfln("atoi %s", address.substr(characterIndex).c_str());
                     port = std::atoi(address.substr(characterIndex + 1).c_str());
+                    Logger::printfln("atoi exec");
 
                     if(port < 0)
                     {
                         PORTAIBLE_THROW(Exception, "Error! Port " << port << " is invalid.");
                     }
+                    Logger::printfln("atoi done");
+
                 }
 
                
@@ -61,7 +64,7 @@ namespace portaible
                     getIPAndPortFromAddress(address, ip, port);
                     Logger::printfln("Trying to connect to %s %d", ip.c_str(), port);
 
-                    if(!socketClient.connectTo(ip, port))
+                    if(!socketClient.connectTo(ip, port, this->timeoutInMs))
                     {
                         this->callError<ErrorConnectToAdressFailed>();
                         return;
@@ -114,11 +117,13 @@ namespace portaible
 
             public:
                 std::string address;
+                size_t timeoutInMs;
 
                 template<typename Reflector>
                 void reflect(Reflector& r)
                 {
                     r.member("ConnectTo", this->address, "");
+                    r.member("TimeoutMsWhenTryingToConnect", this->timeoutInMs, "How long to wait for a response when (trying to) connect to a server.");
                 }
         };
 

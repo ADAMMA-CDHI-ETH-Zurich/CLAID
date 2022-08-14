@@ -59,12 +59,15 @@ namespace portaible
 
 				SocketClientError lastError;
 
+				
+
+
 			public:
-								int sock;
+				int sock;
 
 				void close();
 
-				bool connectTo(std::string address, int port);
+				bool connectTo(std::string address, int port, size_t timeoutInMs = 3);
 
 				// See SocketClient.cpp for implementation of these two functions,
 				// not the __imple.hpp files.

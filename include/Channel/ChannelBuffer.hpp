@@ -102,7 +102,7 @@ namespace portaible
 
             intptr_t getDataTypeIdentifier() const
             {
-                return getDataTypeUniqueIdentifier<Untyped>();
+                return TypeChecking::getDataTypeUniqueIdentifier<Untyped>();
             }  
     };  
 
@@ -135,7 +135,7 @@ namespace portaible
 
             ChannelBuffer() : ChannelBufferBase()
             {
-                this->dataTypeName = getDataTypeRTTIString<T>();
+                this->dataTypeName = TypeChecking::getCompilerIndependentTypeNameOfClass<T>();
             }
 
             // Used by type function of ChannelBuffer<Untyped>
@@ -216,7 +216,7 @@ namespace portaible
 
             intptr_t getDataTypeIdentifier() const
             {
-                return getDataTypeUniqueIdentifier<T>();
+                return TypeChecking::getDataTypeUniqueIdentifier<T>();
             }
 
     };

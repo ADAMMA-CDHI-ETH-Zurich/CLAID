@@ -139,7 +139,7 @@ namespace portaible
                 this->binaryDataReader = binaryDataReader;
 
                 // Read data type string and check if it matches the data type of obj.
-                std::string name = portaible::getDataTypeRTTIString<T>();
+                std::string name = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
                 std::string storedName;
 
 

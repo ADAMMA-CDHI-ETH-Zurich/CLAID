@@ -542,7 +542,7 @@ namespace portaible
             {   
                 if(this->channelBuffer->isTyped())
                 {
-                    PORTAIBLE_THROW(Exception, "Error, tried to type a channel to type " << getDataTypeRTTIString<NewType>() << ", but the channel has already been typed "
+                    PORTAIBLE_THROW(Exception, "Error, tried to type a channel to type " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<NewType>() << ", but the channel has already been typed "
                     << " to type " << this->channelBuffer->getDataTypeName());
                 }
                 ChannelBuffer<Untyped>* untypedBuffer = static_cast<ChannelBuffer<Untyped>*>(this->channelBuffer);

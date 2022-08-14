@@ -41,14 +41,15 @@ namespace portaible
 				
 
 					// The rttiString is not necessarily the same as class name (however, can be, depending on the compiler).
-					std::string rttiString = getDataTypeRTTIString<T>();
+					std::string rttiString = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
 					auto it2 = rttiToRegisteredClassNameMap.find(rttiString);
 
 
 					if (it2 != rttiToRegisteredClassNameMap.end())
 					{
-						PORTAIBLE_THROW(portaible::Exception, "Error, class \"" << className << "\" was registered to the ClassFactory for the first time, however it's RTTI was already memorized for another type."
-						"This should never happen and is either a serious programming mistake OR some compiler weirdness, which leads to mapping two different data types to the RTTI string.");
+						PORTAIBLE_THROW(portaible::Exception, "Error, class with className \"" << className << "\" was registered to the ClassFactory for the first time and it's compiler specific RTTI name is \"" << rttiString << "\".\n" <<
+						"But this compiler specific RTTI name was already memorized when registering another class, \"" << it->second << "\"." 
+						"This should never happen and is either a serious programming mistake OR some compiler weirdness, which leads to mapping two different data types to the same RTTI string.");
 					}
 					rttiToRegisteredClassNameMap.insert(std::make_pair(rttiString, className));
 				}

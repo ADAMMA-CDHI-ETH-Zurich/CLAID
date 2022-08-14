@@ -22,7 +22,7 @@ namespace portaible
 
                 if(!this->dataAvailable)
                 {
-                    PORTAIBLE_THROW(Exception, "Tried to deserialize binary data of ChannelBufferElement to type \"" << getDataTypeRTTIString<T>() << "\", however no binary data was set.");
+                    PORTAIBLE_THROW(Exception, "Tried to deserialize binary data of ChannelBufferElement to type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\", however no binary data was set.");
                 }
 
                 BinaryDeserializer deserializer;
@@ -46,7 +46,7 @@ namespace portaible
             typename std::enable_if<!has_mem_reflect<U>::value && !has_non_member_function_reflect<BinaryDeserializer&, U&>::value>::type
             deserializeBinaryDataToTypedData()
             {
-                PORTAIBLE_THROW(Exception, "Error! Cannot deserialize untyped binary data posted to a channel with data type \"" << getDataTypeRTTIString<T>() << "\"" <<
+                PORTAIBLE_THROW(Exception, "Error! Cannot deserialize untyped binary data posted to a channel with data type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\"" <<
                 " as no reflect function is available for the mentioned data type. Please add a reflect function to the datatype.");
             }
 
@@ -84,7 +84,7 @@ namespace portaible
             typename std::enable_if<!has_mem_reflect<U>::value && !has_non_member_function_reflect<BinaryDeserializer&, U&>::value>::type
             serializeTypedDataToBinaryData()
             {
-                PORTAIBLE_THROW(Exception, "Error! Cannot serialize typed data to binary data. A subscriber tried to get binary data from a channel of type \"" << getDataTypeRTTIString<T>() << "\", " <<
+                PORTAIBLE_THROW(Exception, "Error! Cannot serialize typed data to binary data. A subscriber tried to get binary data from a channel of type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\", " <<
                 "but typed data could not be serialized, as no reflect function is available for the mentioned data type. Please add a reflect function to the datatype.");
             }
 
@@ -119,7 +119,7 @@ namespace portaible
             {
                 if(!this->dataAvailable)
                 {
-                    PORTAIBLE_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement<T> (type \"" << getDataTypeRTTIString<T>() << "\"), but no data was never set (no data available).");
+                    PORTAIBLE_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement<T> (type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\"), but no data was never set (no data available).");
                 }
 
                 if(!this->binaryDataAvailable)

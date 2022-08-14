@@ -4,11 +4,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
+
 #include <netinet/in.h>
+#include <netinet/tcp.h> 
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
+
 
 namespace portaible
 {
@@ -23,7 +25,79 @@ namespace portaible
 
 	}
 
-	bool Network::SocketClient::connectTo(std::string address, int port)
+	int connectWithTimeout(int sock, sockaddr_in& addr, size_t timeOutInSeconds)
+	{
+		int res; 
+		long arg; 
+		fd_set myset; 
+		struct timeval tv; 
+		int valopt; 
+		socklen_t lon; 
+
+		// Set non-blocking 
+		if( (arg = fcntl(sock, F_GETFL, NULL)) < 0) { 
+			fprintf(stderr, "Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
+			exit(0); 
+		} 
+		arg |= O_NONBLOCK; 
+		if( fcntl(sock, F_SETFL, arg) < 0) { 
+			fprintf(stderr, "Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
+			exit(0); 
+		} 
+		// Trying to connect with timeout 
+		res = connect(sock, (struct sockaddr *)&addr, sizeof(addr)); 
+		if (res < 0) { 
+			if (errno == EINPROGRESS) { 
+				fprintf(stderr, "EINPROGRESS in connect() - selecting\n"); 
+				do { 
+				tv.tv_sec = timeOutInSeconds; 
+				tv.tv_usec = 0; 
+				FD_ZERO(&myset); 
+				FD_SET(sock, &myset); 
+				res = select(sock+1, NULL, &myset, NULL, &tv); 
+				if (res < 0 && errno != EINTR) { 
+					fprintf(stderr, "Error connecting %d - %s\n", errno, strerror(errno)); 
+					exit(0); 
+				} 
+				else if (res > 0) { 
+					// Socket selected for write 
+					lon = sizeof(int); 
+					if (getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
+						fprintf(stderr, "Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
+						exit(0); 
+					} 
+					// Check the value returned... 
+					if (valopt) { 
+						fprintf(stderr, "Error in delayed connection() %d - %s\n", valopt, strerror(valopt)); 
+						exit(0); 
+					} 
+					break; 
+				} 
+				else { 
+					fprintf(stderr, "Timeout in select() - Cancelling!\n"); 
+					exit(0); 
+				} 
+				} while (1); 
+			} 
+			else { 
+				fprintf(stderr, "Error connecting %d - %s\n", errno, strerror(errno)); 
+				exit(0); 
+			} 
+		} 
+		// Set to blocking mode again... 
+		if( (arg = fcntl(sock, F_GETFL, NULL)) < 0) { 
+			fprintf(stderr, "Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
+			exit(0); 
+		} 
+		arg &= (~O_NONBLOCK); 
+		if( fcntl(sock, F_SETFL, arg) < 0) { 
+			fprintf(stderr, "Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
+			exit(0); 
+		} 
+		return res;
+	}
+
+	bool Network::SocketClient::connectTo(std::string address, int port, size_t timeoutInMs)
 	{
 		struct sockaddr_in serv_addr;
 		struct hostent server;
@@ -39,6 +113,12 @@ namespace portaible
 			Logger::printfln("Failed to open socket.\n");
 			return false;
 		}
+		// int status = fcntl(sock, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK);
+
+		// 	if (status == -1){
+		// 	Logger::printfln("error calling fcntl");
+		// 	// handle the error.  By the way, I've never seen fcntl fail in this way
+		// 	}
 				Logger::printfln("Connect to 2");
 
 		
@@ -70,11 +150,21 @@ namespace portaible
 		
 				Logger::printfln("Connect to 8");
 
-		if (connect(this->sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) 
+		// Usually, when we try to connect to a server and the port is not opened,
+		// connect fails immediately. However, if the port is opened but connection with server application
+		// is not possible for other reasons (e.g. blocked by firewall), then connect blocks and never returns.
+		// https://stackoverflow.com/questions/2597608/c-socket-connection-timeout
+	
+		// try to connect for 3 seconds, otherwise cancel.
+
+		int res = connectWithTimeout(this->sock, serv_addr, timeoutInMs);//connect(this->sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+		if (res < 0) 
 		{
-			Logger::printfln("Could not connect to %s:%d", address.c_str(), port);
+			Logger::printfln("Could not connect to %s:%d %d %s %d", address.c_str(), port, res, strerror(errno), errno);
 			return false;
 		}
+		Logger::printfln("connected %d %s %d",  res, strerror(errno), errno);
+
 				Logger::printfln("Connect to 9");
 
 		this->connected = true;
@@ -119,7 +209,7 @@ namespace portaible
 		return true;
 	}
 
-
+	
 
 
 	bool Network::SocketClient::isConnected()

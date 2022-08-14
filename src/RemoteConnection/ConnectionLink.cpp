@@ -18,13 +18,13 @@ namespace RemoteConnection
 
         if(!connection->isInitialized())
         {
-            PORTAIBLE_THROW(Exception, "Error, tried to link ConnectionModule of type " << getDataTypeRTTIString(*connection) << " to RemoteModule"
+            PORTAIBLE_THROW(Exception, "Error, tried to link ConnectionModule of type " << connection->getModuleName() << " to RemoteModule"
             << " without ConnectionModule being initialized. Please call startModule before linkage");
         }
 
         if(!module->isInitialized())
         {
-            PORTAIBLE_THROW(Exception, "Error, tried to link RemoteModule to ConnectionModule of type " << getDataTypeRTTIString(*connection) 
+            PORTAIBLE_THROW(Exception, "Error, tried to link RemoteModule to ConnectionModule of type " << connection->getModuleName() 
             << " without RemoteModule being initialized. Please call startModule before linkage");
         }
 
