@@ -33,8 +33,9 @@ namespace portaible
 
                 void sendMessage(Message& message);
 
-
+               
                 void initialize();
+                void terminate();
 
             public:
             //     void notifyOnMessage(Message message);
@@ -47,7 +48,9 @@ namespace portaible
                 void unpublishSendMessageChannel();
                 void unsubscribeReceiveMessageChannel();
 
+
                 void start();
+                void stop();
 
 
                             

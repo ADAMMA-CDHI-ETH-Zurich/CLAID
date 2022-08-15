@@ -36,7 +36,9 @@ namespace portaible
 
             bool isRunning = false;
             bool baseModuleInitialized = false;
-            
+            bool terminated = false;
+            bool initialized = false;
+
             bool isSafeToAccessChannels()
             {
                 // If runnableDispatcherThread is invalid, subscribing to channels 
@@ -52,7 +54,7 @@ namespace portaible
             ChannelManager* channelManager;
             std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread = nullptr;
 
-            std::vector<DispatcherThreadTimer*> timers;
+            std::map<std::string, DispatcherThreadTimer*> timers;
 
             std::string id;
 
@@ -61,30 +63,63 @@ namespace portaible
             {
                 Logger::printfln("Starting module %s", this->getModuleName().c_str());
                 this->baseModuleInitialized = true;
+                this->terminated = false;
                 this->initialize();
                 this->initialized = true;
                 Logger::printfln("Module %s unique id: %ul", this->getModuleName().c_str(), this->getUniqueIdentifier());
             }
 
-            bool initialized = false;
+            void terminateInternal()
+            {
+                this->terminate();
+                this->baseModuleInitialized = false;
+                this->initialized = false;
+                this->terminated = true;
+
+            }
+
 
             std::vector<DispatcherThreadTimer*> timer;
 
 
-            void registerPeriodicFunction(std::function<void()> function, size_t periodInMs)
+            void registerPeriodicFunction(const std::string& name, std::function<void()> function, size_t periodInMs)
             {
+                auto it = this->timers.find(name);
+
+                if(it != this->timers.end())
+                {
+                    PORTAIBLE_THROW(Exception, "Error in Module " << this->getModuleName() << ". Tried to register function with name \"" << name << "\", but a periodic function with the same name was already registered before.");
+                }
+
                 FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(function);
                 DispatcherThreadTimer* dispatcherThreadTimer = new DispatcherThreadTimer(this->runnableDispatcherThread, static_cast<Runnable*>(functionRunnable), periodInMs);
                 dispatcherThreadTimer->start();
-                this->timers.push_back(dispatcherThreadTimer);
+                this->timers.insert(std::make_pair(name, dispatcherThreadTimer));
             }
 
             template<typename Class>
-            void registerPeriodicFunction(void (Class::* f)(), Class* obj, size_t periodInMs)
+            void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, size_t periodInMs)
             {
                 std::function<void()> function = std::bind(f, obj);
-                this->registerPeriodicFunction(function, periodInMs);
+                this->registerPeriodicFunction(name, function, periodInMs);
             }
+
+            void unregisterPeriodicFunction(const std::string& name)
+            {
+                auto it = this->timers.find(name);
+
+                if(it == this->timers.end())
+                {
+                    PORTAIBLE_THROW(Exception, "Error, tried to unregister periodic function \"" << name << "\" in Module << \"" << this->getModuleName() << "\", but function was not found in list of registered functions."
+                    << "Was a function with this name ever registered before?" );
+                }
+
+                it->second->stop();
+                this->timers.erase(it);
+                
+                delete it->second;
+            }
+
 
 
             template<typename T, typename Class>
@@ -114,6 +149,7 @@ namespace portaible
             
                        
             virtual void initialize() = 0;
+            virtual void terminate() = 0;
 
             PropertyReflector propertyReflector;
 
@@ -125,6 +161,11 @@ namespace portaible
                     PORTAIBLE_THROW(Exception, "Error! Constructor of BaseModule called, but RunnableDispatcherThread is not null!")
                 }
                 this->runnableDispatcherThread = std::shared_ptr<RunnableDispatcherThread>(new RunnableDispatcherThread());
+            }
+
+            virtual ~BaseModule()
+            {
+                Logger::printfln("Module %s destructor", this->getModuleName().c_str());
             }
         
             template<typename T>
@@ -209,20 +250,36 @@ namespace portaible
 
             }
 
-            void stopModule()
+            void stopModule(bool isForkedSubModule = false)
             {
-                if(!this->isRunning)
+                if(!this->isRunning || this->terminated)
                 {
                     return;
                 }
 
-                this->runnableDispatcherThread->stop();
-                this->runnableDispatcherThread->join();
+                std::function<void ()> terminateFunc = std::bind(&BaseModule::terminateInternal, this);
+                FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(terminateFunc);
+                functionRunnable->deleteAfterRun = true;
+                this->runnableDispatcherThread->addRunnable(functionRunnable);
+
+                // Wait for termination
+                while(!this->terminated)
+                {
+
+                }
+
+                if(!isForkedSubModule)
+                {
+                    this->runnableDispatcherThread->stop();
+                    this->runnableDispatcherThread->join();
+                }
                 
-                for(DispatcherThreadTimer* timer : this->timers)
+                
+                for(auto it : this->timers)
                 {
                     // Will block until the timer is stopped.
-                    timer->stop();
+                    it.second->stop();
+                    delete it.second;
                 }
 
                 // Should we ? That means when restarting the module,
@@ -230,10 +287,12 @@ namespace portaible
                 this->timers.clear();
 
                 this->isRunning = false;
+                Logger::printfln("Module %s has been terminated.", this->getModuleName().c_str());
             }
 
             // UNIQUE IN THE CURRENT RUNTIME!
             // NOT unique if module RunTimes are connected. In that case, the identifier might not be unique between RunTimes.
+            // If a SubModule is *forked* (if forkSubModuleInThisThread is used), that SubModule has THE SAME unique identifier as the forking Module.
             uint64_t getUniqueIdentifier()
             {
                 // Use the ID of the dispatcher thread as unique identifier.
@@ -301,6 +360,11 @@ namespace portaible
 
             }
 
+            virtual void terminate()
+            {
+
+            }
+
         protected: 
             template<typename T>
             Channel<T> subscribeLocal(const std::string& channelID);
@@ -317,12 +381,6 @@ namespace portaible
 
             template<typename T>
             Channel<T> publishLocal(const std::string& channelID);
-
-            template<typename T>
-            void unsubscribe()
-            {
-
-            }
 
                 
     };
@@ -355,8 +413,6 @@ namespace portaible
             {
                 for(SubModule* subModule : this->subModulesInSameThread)
                 {
-                    // Waits for the module to stop.
-                    subModule->stopModule();
                     delete subModule;
                 }
             }
@@ -372,6 +428,11 @@ namespace portaible
 
         protected:
             virtual void initialize()
+            {
+
+            }
+
+            virtual void terminate()
             {
 
             }
@@ -392,11 +453,7 @@ namespace portaible
             template<typename T>
             Channel<T> publish(const std::string& channelID);
 
-            template<typename T>
-            void unsubscribe()
-            {
 
-            }
 
             // Please note: By spawning a submodule in the same thread,
             // the submodule will have the same unique identifier as the original module.
@@ -416,6 +473,25 @@ namespace portaible
                 
                 this->subModulesInSameThread.push_back(static_cast<SubModule*>(subModule));
                 return subModule;
+            }
+
+            void joinAndRemoveSubModule(SubModule* subModule)
+            {
+
+                auto it = std::find(this->subModulesInSameThread.begin(), this->subModulesInSameThread.end(), subModule);
+
+                if(it == this->subModulesInSameThread.end())
+                {
+                    PORTAIBLE_THROW(Exception, "Error! joinAndRemoveSubModule was called with a SubModule pointer that is not known. Either this SubModule has been removed manually, "
+                    "or it was not created by using forkSubModuleInThread in the first place. The function joinAndRemoveSubModule can only be used for forked SubModules!");
+                }
+                else
+                {
+                    subModule->stopModule(true);
+                    delete subModule;
+                    this->subModulesInSameThread.erase(it);
+                }
+
             }
 
     };

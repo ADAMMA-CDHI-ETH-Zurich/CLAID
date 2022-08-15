@@ -5,8 +5,9 @@ namespace portaible
 {
     namespace TypeChecking
     {
+        // Use extern to make sure the adress of this function is always the same no matter where it is used within the code.
         template<typename T>
-        static intptr_t getDataTypeUniqueIdentifier()
+        extern intptr_t getDataTypeUniqueIdentifier()
         {
             // Use the address of this function for the current data type as unique identifier.
             return reinterpret_cast<intptr_t>(&getDataTypeUniqueIdentifier<T>);

@@ -68,6 +68,12 @@ namespace RemoteConnection
         this->remoteObserver = this->forkSubModuleInThread<RemoteObserver>(&PORTAIBLE_RUNTIME->channelManager);
     }
 
+
+    // Why "start" not in initialize? 
+    // Because setSendMessageChannel might not have been called yet.
+    // RemoteModule is used with ConnectionLink and RemoteConnectedEntity,
+    // which make sure to first link the RemoteModule to a ConnectionModule and 
+    // then calling start afterwards.
     void RemoteModule::start()
     {
         if(!this->sendMessageChannelSet)
@@ -76,11 +82,7 @@ namespace RemoteConnection
             "Please provide a channel for sending messages (i.e. Channel<RemoteConnection::Message> and call setSendMessageChannel "
             "prior to calling start");
         }
-        // // Why "start" not in initialize? 
-        // // Because setSendMessageChannel might not have been called yet.
-        // // RemoteModule is used with ConnectionLink and RemoteConnectedEntity,
-        // // which make sure to first link the RemoteModule to a ConnectionModule and 
-        // // then calling start afterwards.
+        
 
 
         // Logger::printfln("Initialize");
@@ -99,6 +101,20 @@ namespace RemoteConnection
 
         this->localObserver->observe(&PORTAIBLE_RUNTIME->channelManager);
         
+    }
+
+    // Get's called when stopModule() was called.
+    void RemoteModule::terminate()
+    {
+        this->unpublishSendMessageChannel();
+        this->unsubscribeReceiveMessageChannel();
+        this->sendMessageChannelSet = false;
+    }
+
+    void RemoteModule::stop()
+    {
+        this->joinAndRemoveSubModule(this->localObserver);
+        this->joinAndRemoveSubModule(this->remoteObserver);
     }
 
     

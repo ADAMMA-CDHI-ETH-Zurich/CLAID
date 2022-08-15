@@ -29,6 +29,7 @@ namespace portaible
                 }
 
                 void initialize();
+                void terminate();
 
             public:
                 SocketReaderModule();

@@ -56,6 +56,8 @@ namespace portaible
 
                 void onChannelDataReceivedFromRemoteRunTime(const std::string& targetChannel, TaggedData<BinaryData>& data);
 
+                void terminate();
+
      
 
                 template<typename Header, typename Data, typename Class, typename... Args>

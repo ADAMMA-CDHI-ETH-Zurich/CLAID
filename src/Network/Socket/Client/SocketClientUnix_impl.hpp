@@ -36,19 +36,19 @@ namespace portaible
 
 		// Set non-blocking 
 		if( (arg = fcntl(sock, F_GETFL, NULL)) < 0) { 
-			fprintf(stderr, "Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
-			exit(0); 
+			Logger::printfln("Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
+			return -1;
 		} 
 		arg |= O_NONBLOCK; 
 		if( fcntl(sock, F_SETFL, arg) < 0) { 
-			fprintf(stderr, "Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
-			exit(0); 
+			Logger::printfln("Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
+			return -1;
 		} 
 		// Trying to connect with timeout 
 		res = connect(sock, (struct sockaddr *)&addr, sizeof(addr)); 
 		if (res < 0) { 
 			if (errno == EINPROGRESS) { 
-				fprintf(stderr, "EINPROGRESS in connect() - selecting\n"); 
+				
 				do { 
 				tv.tv_sec = timeOutInSeconds; 
 				tv.tv_usec = 0; 
@@ -56,43 +56,43 @@ namespace portaible
 				FD_SET(sock, &myset); 
 				res = select(sock+1, NULL, &myset, NULL, &tv); 
 				if (res < 0 && errno != EINTR) { 
-					fprintf(stderr, "Error connecting %d - %s\n", errno, strerror(errno)); 
-					exit(0); 
+					Logger::printfln("Error connecting %d - %s\n", errno, strerror(errno)); 
+					return -1;
 				} 
 				else if (res > 0) { 
 					// Socket selected for write 
 					lon = sizeof(int); 
 					if (getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
-						fprintf(stderr, "Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
-						exit(0); 
+						Logger::printfln("Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
+						return -1;
 					} 
 					// Check the value returned... 
 					if (valopt) { 
-						fprintf(stderr, "Error in delayed connection() %d - %s\n", valopt, strerror(valopt)); 
-						exit(0); 
+						Logger::printfln("Error in delayed connection() %d - %s\n", valopt, strerror(valopt)); 
+						return -1;
 					} 
 					break; 
 				} 
 				else { 
-					fprintf(stderr, "Timeout in select() - Cancelling!\n"); 
-					exit(0); 
+					Logger::printfln("Timeout in select() - Cancelling!\n"); 
+					return -1;
 				} 
 				} while (1); 
 			} 
 			else { 
-				fprintf(stderr, "Error connecting %d - %s\n", errno, strerror(errno)); 
-				exit(0); 
+				Logger::printfln("Error connecting %d - %s\n", errno, strerror(errno)); 
+				return -1;
 			} 
 		} 
 		// Set to blocking mode again... 
 		if( (arg = fcntl(sock, F_GETFL, NULL)) < 0) { 
-			fprintf(stderr, "Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
-			exit(0); 
+			Logger::printfln("Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
+			return -1;
 		} 
 		arg &= (~O_NONBLOCK); 
 		if( fcntl(sock, F_SETFL, arg) < 0) { 
-			fprintf(stderr, "Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
-			exit(0); 
+			Logger::printfln("Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
+			return -1;
 		} 
 		return res;
 	}
@@ -219,8 +219,25 @@ namespace portaible
 
 	void Network::SocketClient::close()
 	{
-		::close(this->sock);
+		//::close(this->sock);
 		this->connected = false;
+
+		long arg; 
+		fd_set myset; 
+		struct timeval tv; 
+		int valopt; 
+		socklen_t lon; 
+
+		// Set non-blocking 
+		if( (arg = fcntl(sock, F_GETFL, NULL)) < 0) { 
+			fprintf(stderr, "Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
+			exit(0); 
+		} 
+		arg |= O_NONBLOCK; 
+		if( fcntl(sock, F_SETFL, arg) < 0) { 
+			fprintf(stderr, "Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
+			exit(0); 
+		} 
 	}
 
 	Network::SocketClient::SocketClientError Network::SocketClient::getLastError()

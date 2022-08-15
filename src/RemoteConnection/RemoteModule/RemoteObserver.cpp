@@ -201,7 +201,7 @@ namespace portaible
             if(it == this->publishedChannels.end())
             {
                 PORTAIBLE_THROW(Exception, "Error, received data from remote RunTime for channel with channelID \"" << targetChannel << "\", "
-                << "but we do not have a publisher for that channel? That should not be possible, because how could the remote RunTime have posted data to the channel "
+                << "but we do not have a publisher for that channel. That should not be possible, because how could the remote RunTime have posted data to the channel "
                 << "in the first place, if no publisher is available ? ");
             }
 
@@ -257,6 +257,28 @@ namespace portaible
         void RemoteObserver::sendMessage(const Message& message)
         {
             this->sendMessageChannel.post(message);
+        }
+
+        void RemoteObserver::terminate()
+        {
+            Logger::printfln("RemoteObserver terminate");
+            for(auto it : this->subscribedChannelsWithCallback)
+            {
+                it.second.unsubscribe();
+            }
+            this->subscribedChannelsWithCallback.clear();
+
+            for(auto it : this->subscribedChannels)
+            {
+                it.second.unsubscribe();
+            }
+            this->subscribedChannels.clear();
+
+            for(auto it : this->publishedChannels)
+            {
+                it.second.unpublish();
+            }
+            this->publishedChannels.clear();                
         }
                 
     }

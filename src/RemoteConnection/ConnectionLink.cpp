@@ -60,6 +60,7 @@ namespace RemoteConnection
             PORTAIBLE_THROW(Exception, "Error: Tried to call ConnectionModule.link with a RemoteModule that is null " << __FILE__ << __LINE__);
         }
 
+        
         this->remoteModule->unsubscribeReceiveMessageChannel();
         this->remoteModule->unpublishSendMessageChannel();
     }

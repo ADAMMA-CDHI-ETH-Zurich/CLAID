@@ -7,6 +7,10 @@ namespace portaible
 {
     namespace RemoteConnection
     {
+        // Can be used for any data types.
+        // Data is set and get by the appropriate functions and de-/serialized automatically.
+        // Theoretically, we could always just use this for any data we sent.
+        // The other data types (e.g. MessageDataString) are just created for convenience.
         struct MessageDataBinary : public MessageData
         {
             DECLARE_SERIALIZATION(MessageDataBinary)

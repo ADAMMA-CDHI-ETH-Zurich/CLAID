@@ -10,7 +10,10 @@ namespace RemoteConnection
         Logger::printfln("RemoteConnectedEntity constructor");
     }
 
-    
+    RemoteConnectedEntity::~RemoteConnectedEntity()
+    {
+        delete this->connectionModule;
+    }
 
     void RemoteConnectedEntity::setup()
     {
@@ -24,8 +27,20 @@ namespace RemoteConnection
         this->link.link(this->connectionModule, &this->remoteModule);
     }
 
+    void RemoteConnectedEntity::disintegrate()
+    {
+        this->link.unlink();
+        this->remoteModule.stopModule();
+        this->connectionModule->stopModule();
+    }
+
     void RemoteConnectedEntity::start()
     {
+        if(started)
+        {
+            PORTAIBLE_THROW(Exception, "Error, RemoteConnectedEntity::start() has been called while it is already running. Was start called multiple times?");
+        }
+
         // Why start not in setup ? 
         // Because, maybe an external module wants to subscribe to the error channel (which is actually the
         // error channel of the ConnectionModule), before tha ConnectionModule starts doing it's job (that's also
@@ -36,15 +51,22 @@ namespace RemoteConnection
         // Thus, after calling startModule(), the external module can subscribe to the error channel and then
         this->connectionModule->start();
         this->remoteModule.start();
+        this->started = true;
     }
 
-    void RemoteConnectedEntity::disintegrate()
+    void RemoteConnectedEntity::stop()
     {
-        this->link.unlink();
-        this->remoteModule.stopModule();
-        // TODO: Implement connection module stop
-        PORTAIBLE_THROW(Exception, "Disintegrate was called but connectionmodule.stop was not implemented yet.");
+        if(!started)
+        {
+            PORTAIBLE_THROW(Exception, "Error, RemoteConnectedEntity::stop() has been called while it is not running. Was start() called before?");
+        }
+        Logger::printfln("Stopping remote module and connection module");
+        this->remoteModule.stop();
+        this->connectionModule->stop();
     }
+
+
+    
 
     Channel<Error> RemoteConnectedEntity::subscribeToErrorChannel(ChannelSubscriber<Error> channelSubscriber)
     {

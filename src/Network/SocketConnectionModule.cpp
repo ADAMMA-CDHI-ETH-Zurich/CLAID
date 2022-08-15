@@ -40,6 +40,27 @@ namespace Network
         this->readerModule.waitForInitialization();
     }
 
+    void SocketConnectionModule::stop()
+    {
+        this->readerModule.stop();
+
+       
+        while(!this->readerModule.isStopped())
+        {
+            // Waiting
+        }
+
+        // Since reader module has stopped reading, we can safely close the socket.
+        this->socketClient.close();
+
+
+        // waits until the module (thread) has been stopped
+        // Unpublishes messageReceive and errorChannel
+        this->readerModule.stopModule();
+
+        
+    }
+
     void SocketConnectionModule::sendMessage(RemoteConnection::Message message)
     {
         Logger::printfln("Send message");

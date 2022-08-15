@@ -2,15 +2,19 @@
 
 namespace portaible
 {
+    const std::string ChannelManager::ON_CHANNEL_SUBSCRIBED_CHANNEL = "ON_CHANNEL_SUBSCRIBED";
+    const std::string ChannelManager::ON_CHANNEL_PUBLISHED_CHANNEL = "ON_CHANNEL_PUBLISHED";
+    const std::string ChannelManager::ON_CHANNEL_UNSUBSCRIBED_CHANNEL = "ON_CHANNEL_UNSUBSCRIBED";
+    const std::string ChannelManager::ON_CHANNEL_UNPUBLISHED_CHANNEL = "ON_CHANNEL_UNPUBLISHED";
 
     ChannelManager::ChannelManager()
     {
         // These are visible by channelID (e.g. in subscribe or publish) to others. 
         // They are not part of the channels that can be accessed using publish and subscribe.
-        this->onChannelSubscribedChannel = std::shared_ptr<TypedChannel<std::string>>(new TypedChannel<std::string>(this, "ON_CHANNEL_SUBSCRIBED"));
-        this->onChannelPublishedChannel = std::shared_ptr<TypedChannel<std::string>>(new TypedChannel<std::string>(this, "ON_CHANNEL_PUBLISHED"));
-        this->onChannelUnsubscribedChannel = std::shared_ptr<TypedChannel<std::string>>(new TypedChannel<std::string>(this, "ON_CHANNEL_UNSUBSCRIBED")); 
-        this->onChannelUnpublishedChannel = std::shared_ptr<TypedChannel<std::string>>(new TypedChannel<std::string>(this, "ON_CHANNEL_UNPUBLISHED"));
+        this->onChannelSubscribedChannel = std::shared_ptr<TypedChannel<std::string>>(new TypedChannel<std::string>(this, ON_CHANNEL_SUBSCRIBED_CHANNEL));
+        this->onChannelPublishedChannel = std::shared_ptr<TypedChannel<std::string>>(new TypedChannel<std::string>(this, ON_CHANNEL_PUBLISHED_CHANNEL));
+        this->onChannelUnsubscribedChannel = std::shared_ptr<TypedChannel<std::string>>(new TypedChannel<std::string>(this, ON_CHANNEL_UNSUBSCRIBED_CHANNEL)); 
+        this->onChannelUnpublishedChannel = std::shared_ptr<TypedChannel<std::string>>(new TypedChannel<std::string>(this, ON_CHANNEL_UNPUBLISHED_CHANNEL));
     }
 
     ChannelManager::~ChannelManager()

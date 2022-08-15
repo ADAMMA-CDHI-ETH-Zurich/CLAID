@@ -13,15 +13,15 @@ namespace portaible
         class NetworkClientModule : public NetworkModule
         {
             PORTAIBLE_MODULE(NetworkClientModule)
-             NetworkClientModule()
-                {
-                //    Channel<int> d  = this->publish<int>("Test");
-                }
+
+            NetworkClientModule()
+            {
+            //    Channel<int> d  = this->publish<int>("Test");
+            }
 
             private:
 
                 RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity;
-
 
                 Channel<RemoteConnection::Error> errorChannel;
                 
@@ -51,10 +51,19 @@ namespace portaible
 
                 void initialize()
                 {
-                  
-
                     
 
+                    if(!connectToServer())
+                    {
+                        this->callError<ErrorConnectToAdressFailed>();
+                        return;
+                    }
+
+
+                }
+
+                bool connectToServer()
+                {
                     std::string ip;
                     int port;
 
@@ -64,12 +73,17 @@ namespace portaible
                     getIPAndPortFromAddress(address, ip, port);
                     Logger::printfln("Trying to connect to %s %d", ip.c_str(), port);
 
-                    if(!socketClient.connectTo(ip, port, this->timeoutInMs))
+                    if(socketClient.connectTo(ip, port, this->timeoutInMs))
                     {
-                        this->callError<ErrorConnectToAdressFailed>();
-                        return;
+                        this->onConnectedSuccessfully(socketClient);
+                        return true;
                     }
 
+                    return false;
+                }
+
+                void onConnectedSuccessfully(SocketClient socketClient)
+                {
                     Logger::printfln("Connected successfully");
 
                     Logger::printfln("Creating RemoteConnected Entity.");
@@ -82,7 +96,6 @@ namespace portaible
                     this->remoteConnectedEntity->setup();
                     this->errorChannel = remoteConnectedEntity->subscribeToErrorChannel(this->makeSubscriber(&NetworkClientModule::onErrorReceived, this));
                     this->remoteConnectedEntity->start();
-
                 }
 
                 void onErrorReceived(ChannelData<RemoteConnection::Error> error)
@@ -108,22 +121,57 @@ namespace portaible
                     if(error.is<ErrorConnectToAdressFailed>())
                     {
                         Logger::printfln("Error connecting to adress failed.");
+                        if(this->tryToReconnectAfterMs > 0)
+                        {
+                            Logger::printfln("Scheduling reconnect");
+                            this->registerPeriodicFunction("PeriodicTryToReconnect", &NetworkClientModule::tryToReconnect, this, this->tryToReconnectAfterMs);
+                        }
                     }
                     else if(error.is<ErrorReadFromSocketFailed>())
                     {
-
+                        Logger::printfln("Error read from socket failed.");
+                        // Read from socket failed. Connection lost.
+                        this->onConnectionLost();
                     }
+                }
+
+                void onConnectionLost()
+                {
+                    Logger::printfln("Client has lost connection. Shutting down.");
+                    this->remoteConnectedEntity->stop();
+                    this->remoteConnectedEntity->disintegrate();
+                    delete this->remoteConnectedEntity;
+
+                    if(this->tryToReconnectAfterMs > 0)
+                    {
+                        this->registerPeriodicFunction("PeriodicTryToReconnect", &NetworkClientModule::tryToReconnect, this, this->tryToReconnectAfterMs);
+                    }
+                }
+
+                void tryToReconnect()
+                {
+                    Logger::printfln("Trying to reconnect");
+                    if(!connectToServer())
+                    {
+                        // Function will be called again after certain period (as it was registered as periodic function).
+                        return;
+                    }
+
+                    // On success, we unregister the function so that it is not called again.                 
+                    this->unregisterPeriodicFunction("PeriodicTryToReconnect");
                 }
 
             public:
                 std::string address;
                 size_t timeoutInMs;
+                size_t tryToReconnectAfterMs = 0;
 
                 template<typename Reflector>
                 void reflect(Reflector& r)
                 {
                     r.member("ConnectTo", this->address, "");
                     r.member("TimeoutMsWhenTryingToConnect", this->timeoutInMs, "How long to wait for a response when (trying to) connect to a server.");
+                    r.member("TryToReconnectAfterMs", this->tryToReconnectAfterMs, "If the connection is lost (or could not be established), after how many ms should we try to reconnect? Set to 0 if reconnect should not happen.");
                 }
         };
 

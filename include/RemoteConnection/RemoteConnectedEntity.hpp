@@ -25,8 +25,11 @@ namespace portaible
 
                 RemoteConnectedEntity(ConnectionModule* connectionModule);
 
+                bool started = false;
+
             public:
                 RemoteConnectedEntity() = delete;
+                ~RemoteConnectedEntity();
 
                 // We use factory function to make sure that the RemoteConnectedEntity uses
                 // a ConnectionModule that was created by itself. I.e.: We make sure we have ownership
@@ -41,8 +44,10 @@ namespace portaible
                 }
 
                 void setup();
-                void start();
                 void disintegrate();
+
+                void start();
+                void stop();
 
                 Channel<Error> subscribeToErrorChannel(ChannelSubscriber<Error> channelSubscriber);
                 Channel<Error> registerToErrorChannel();

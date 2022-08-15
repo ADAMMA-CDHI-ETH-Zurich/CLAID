@@ -36,9 +36,13 @@ namespace portaible
                 void onChannelUnsubscribed(const std::string& channelID);
                 void onChannelUnpublished(const std::string& channelID);
 
+                void terminate();
+
 
 
                 Message createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType type, const std::string& string);
+
+            
 
     
 

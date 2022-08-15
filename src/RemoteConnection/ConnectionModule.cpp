@@ -31,6 +31,13 @@ namespace RemoteConnection
         this->setup();
     }
 
+    void ConnectionModule::terminate()
+    {
+        this->sendChannel.unsubscribe();
+        this->receiveChannel.unpublish();
+        this->errorChannel.unpublish();
+    }
+
     Channel<Message> ConnectionModule::subscribeToReceiveChannel(ChannelSubscriber<Message> channelSubscriber)
     {
         return subscribeLocal<Message>(RECEIVE_CHANNEL, channelSubscriber);

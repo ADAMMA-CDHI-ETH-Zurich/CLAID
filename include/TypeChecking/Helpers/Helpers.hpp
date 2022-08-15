@@ -14,6 +14,16 @@ namespace portaible
             {
                 enum { Length = Len };
             };  
+
+
+            template<typename T>
+            struct getDereferencedType;
+
+            template<typename T>
+            struct getDereferencedType<T*>
+            {
+                typedef T type;
+            };
         }
     }
 }

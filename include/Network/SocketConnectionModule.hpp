@@ -24,6 +24,7 @@ namespace portaible
             public:
                 SocketConnectionModule(SocketClient socketClient);
                 void start();
+                void stop();
 
         };
     }

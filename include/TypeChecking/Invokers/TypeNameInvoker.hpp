@@ -29,23 +29,24 @@ namespace portaible
 {
     namespace TypeChecking
     {
-      
+        // If type is const, we remove constness.
+        template<class T>
+        struct TypeNameInvoker<T, typename std::enable_if<std::is_const<T>::value>::type> 
+        {
+            static std::string call() 
+            {
+                return TypeNameInvoker<typename std::remove_const<T>::type>::call();
+            }
+        };    
 
-        
-    
         template<class T>
         struct TypeNameInvoker<T, typename std::enable_if<compileTimeTypeNameByUsingFunctionName<T>().isInNamespace("std::")>::type> 
         {
             static std::string call() 
             {
-                std::cout << "IsInNamespace\n";
+                std::cout << "IsInNamespace " << typeid(T).name() << "\n";
                 return StdTypeNameInvoker<T>::call();
             }
-        };
-
-  
-
-     
+        };     
     }
-        
 }

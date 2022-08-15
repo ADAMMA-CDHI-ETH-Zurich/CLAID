@@ -216,6 +216,7 @@ namespace portaible
 
             intptr_t getDataTypeIdentifier() const
             {
+                std::string name = typeid(T).name();
                 return TypeChecking::getDataTypeUniqueIdentifier<T>();
             }
 

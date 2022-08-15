@@ -28,6 +28,8 @@ namespace portaible
                 // When someone wants to send a message via the remote connection.
                 void onSendMessage(ChannelData<Message> message);
 
+                void terminate();
+
             protected:
 
                 // Derived module needs to implement how to send the 
@@ -59,6 +61,8 @@ namespace portaible
                 ConnectionModule();
 
                 virtual void start() = 0;
+                virtual void stop() = 0;
+
 
 
                 Channel<Message> subscribeToReceiveChannel(ChannelSubscriber<Message> channelSubscriber);

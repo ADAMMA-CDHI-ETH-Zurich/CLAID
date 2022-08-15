@@ -147,5 +147,14 @@ namespace portaible
                 }
             }       
         }
+
+        void LocalObserver::terminate()
+        {
+            Logger::printfln("LocalObserver terminate");
+            this->subscribedChannel.unsubscribe();
+            this->publishedChannel.unsubscribe();
+            this->unsubscribedChannel.unsubscribe();
+            this->unpublishedChannel.unsubscribe();
+        }
     }
 }

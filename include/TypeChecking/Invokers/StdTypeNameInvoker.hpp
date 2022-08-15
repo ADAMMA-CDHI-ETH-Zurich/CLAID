@@ -38,24 +38,19 @@ namespace portaible
 
         }; 
 
+
+        // Pointer
+
         template<class T>
-        struct StdTypeNameInvoker<T, typename std::enable_if<std::is_same<T, std::string>::value>::type> 
+        struct StdTypeNameInvoker<T, typename std::enable_if<std::is_pointer<T>::value>::type> 
         {
             static std::string call() 
             {
-                return "std::string";
+                return TypeNameInvoker<typename Helpers::getDereferencedType<T>::type>::call() + std::string("*");
             }
         };
 
-        template<class T>
-        struct StdTypeNameInvoker<T, typename std::enable_if<std::is_same<T, std::wstring>::value>::type> 
-        {
-            static std::string call() 
-            {
-                return "std::wstring";
-            }
-        };
-
+        
         // CONTAINERS SINGLE TYPE
         #define STD_TYPENAME_CONTAINER_SINGLE(name)\
         template<class T> \
@@ -118,7 +113,24 @@ namespace portaible
             }
         };
 
-       
+        template<class T>
+        struct StdTypeNameInvoker<T, typename std::enable_if<std::is_same<T, std::string>::value>::type> 
+        {
+            static std::string call() 
+            {
+                return "std::string";
+            }
+        };
+
+        template<class T>
+        struct StdTypeNameInvoker<T, typename std::enable_if<std::is_same<T, std::wstring>::value>::type> 
+        {
+            static std::string call() 
+            {
+                return "std::wstring";
+            }
+        };
+
 
     }
 }

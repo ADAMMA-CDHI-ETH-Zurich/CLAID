@@ -11,6 +11,11 @@ namespace portaible
     class ChannelManager
     {
         private:
+            const static std::string ON_CHANNEL_SUBSCRIBED_CHANNEL;
+            const static std::string ON_CHANNEL_PUBLISHED_CHANNEL;
+            const static std::string ON_CHANNEL_UNSUBSCRIBED_CHANNEL;
+            const static std::string ON_CHANNEL_UNPUBLISHED_CHANNEL;
+
             std::map<std::string, std::shared_ptr<ChannelBase>> typedChannels;
             
             std::mutex channelMutex;
@@ -26,6 +31,10 @@ namespace portaible
             typename std::enable_if<!std::is_same<T, Untyped>::value,bool>::type
             canCastChannel(std::shared_ptr<ChannelBase> channel)
             {              
+                intptr_t a = channel->getChannelDataTypeUniqueIdentifier();
+                intptr_t b = TypeChecking::getDataTypeUniqueIdentifier<T>();
+                std::string name = channel->getChannelDataTypeName();
+                std::string name2 = typeid(T).name();
                 return channel->getChannelDataTypeUniqueIdentifier() == TypeChecking::getDataTypeUniqueIdentifier<T>();
             }
 
@@ -73,6 +82,65 @@ namespace portaible
             // Explicitly forbid copying.
             ChannelManager(const ChannelManager&) = delete;
 
+            template<typename T>
+            bool isObserverChannel(Channel<T>& channel)
+            {
+                const std::vector<std::string> observerChannelIDs = {ON_CHANNEL_SUBSCRIBED_CHANNEL, ON_CHANNEL_PUBLISHED_CHANNEL, ON_CHANNEL_UNSUBSCRIBED_CHANNEL, ON_CHANNEL_UNPUBLISHED_CHANNEL};
+
+                const std::string& channelID = channel.getChannelID();
+
+                auto it = std::find(observerChannelIDs.begin(), observerChannelIDs.end(), channelID);
+
+                return it != observerChannelIDs.end();
+            }
+
+            // Needed because we use stopObserving in function unsubscribe(), which can be evaluated 
+            // for any given type. Therefore, t->unsubcribe(channel) results in an error, if 
+            // T is not std::string (because observer channels just post data of type std::string, i.e. the channel ID).
+            // But for such channels, stopObserving wouldn't be called anyways, because they are not one of the 4 observer channels.
+            // I.e., isObserverChannel(channel is used before calling stopObserving).
+            template<typename T, typename ChannelType>
+            typename std::enable_if<std::is_same<T, std::string>::value>::type stopObservingHelper(Channel<T>& channel, std::shared_ptr<TypedChannel<ChannelType>>& t)
+            {
+                Logger::printfln("Unsubscribing observer %s", channel.getChannelID().c_str());
+
+                t->unsubscribe(channel);
+            }
+
+            template<typename T, typename ChannelType>
+            typename std::enable_if<!std::is_same<T, std::string>::value>::type stopObservingHelper(Channel<T>& channel, std::shared_ptr<TypedChannel<ChannelType>>& t)
+            {
+                // Do nothing, should never get called.
+                // See comment above.
+                PORTAIBLE_THROW(Exception, "Error, stopObservingCalled with a channel that is not one of the 4 observer channels. This should never happen and is a programming error!");
+            }
+
+            template<typename T>
+            void stopObserving(Channel<T>& channel)
+            {
+                const std::string& channelID = channel.getChannelID();
+       
+                if(channelID == ON_CHANNEL_SUBSCRIBED_CHANNEL)
+                {
+                    stopObservingHelper(channel, onChannelSubscribedChannel);
+                }
+                else if(channelID == ON_CHANNEL_PUBLISHED_CHANNEL)
+                {   
+                    stopObservingHelper(channel, onChannelPublishedChannel);
+                }
+                else if(channelID == ON_CHANNEL_UNSUBSCRIBED_CHANNEL)
+                {
+                    stopObservingHelper(channel, onChannelUnsubscribedChannel);
+                }
+                else if(channelID == ON_CHANNEL_UNPUBLISHED_CHANNEL)
+                {
+                    stopObservingHelper(channel, onChannelUnpublishedChannel);
+                }
+                else
+                {
+                    PORTAIBLE_THROW(Exception, "Error, stopObserving() was called with a channel that has channelID \"" << channelID.c_str() << "\", which is not an observer channel.");
+                }
+            }
  
         public:
 
@@ -123,7 +191,7 @@ namespace portaible
                     }
                     else
                     {
-                        PORTAIBLE_THROW(Exception, "Cannot cast channel \"" << channelID << "\"! The channel has type " << channel->getChannelDataTypeName() << ", however an access with type" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << " was inquired!" );
+                        PORTAIBLE_THROW(Exception, "Cannot cast channel \"" << channelID << "\"! The channel has type " << channel->getChannelDataTypeName() << ", however an access with type " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << " was inquired!" );
                     }
                     
                 }
@@ -195,6 +263,7 @@ namespace portaible
                 // Here we dont use getMakeTypedChannel because we use the already created Channel<T> object to unsubscribe.
 
                 const std::string channelID = channelObject.getChannelID();
+                Logger::printfln("Unsubscribing %s", channelID.c_str());
 
                 auto it = typedChannels.find(channelID);
 
@@ -211,6 +280,10 @@ namespace portaible
                         PORTAIBLE_THROW(Exception, "Error, cannot unsubscribe from channel with ID" << channelID << 
                             "The type of the channel (" << channel->getChannelDataTypeName() << ") cannot be cast to " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << ".");
                     }
+                }
+                else if(this->isObserverChannel(channelObject))
+                {
+                    this->stopObserving(channelObject);
                 }
                 else
                 {

@@ -43,6 +43,11 @@ namespace Network
             BinaryData binaryData;
             if(!this->socketClient->read(binaryData))
             {
+                if(!this->active)
+                {
+                    // Module has been stopped, thus we ignore the error.
+                    break;
+                }
                 Logger::printfln("Read failed");
                 postError<ErrorReadFromSocketFailed>();
                 this->active = false;
@@ -80,13 +85,22 @@ namespace Network
 
     void SocketReaderModule::stop()
     {
-        this->stopped = false;
-        this->active = false;
+        if(!this->stopped)
+        {
+            this->stopped = false;
+            this->active = false;
+        }
     }
 
     bool SocketReaderModule::isStopped()
     {
         return this->stopped;
+    }
+
+    void SocketReaderModule::terminate()
+    {
+        this->messageReceivedChannel.unpublish();
+        this->errorChannel.unpublish();
     }
 
     
