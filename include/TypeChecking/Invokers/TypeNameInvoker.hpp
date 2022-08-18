@@ -16,7 +16,6 @@ namespace portaible
                 // We assume, that only standard types are implemented differently across different compilers and platforms,
                 // thus having different. (e.g. std::basic_string<char> in clang, std::__cxx11::basic_string<char> in gcc etc.).
                 // All user defined types "should" be safe.
-                std::cout << compileTimeTypeNameByUsingFunctionName<T>().toStdString() << " " << compileTimeTypeNameByUsingFunctionName<T>().isInNamespace("std::") << "\n";
                 return compileTimeTypeNameByUsingFunctionName<T>().toStdString();
             }
 
@@ -44,7 +43,6 @@ namespace portaible
         {
             static std::string call() 
             {
-                std::cout << "IsInNamespace " << typeid(T).name() << "\n";
                 return StdTypeNameInvoker<T>::call();
             }
         };     

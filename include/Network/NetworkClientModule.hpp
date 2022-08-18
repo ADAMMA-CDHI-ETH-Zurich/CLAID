@@ -58,6 +58,10 @@ namespace portaible
                         this->callError<ErrorConnectToAdressFailed>();
                         return;
                     }
+                    else
+                    {
+                        callError<ErrorConnectToAdressFailed>();
+                    }
 
 
                 }
@@ -78,7 +82,7 @@ namespace portaible
                         this->onConnectedSuccessfully(socketClient);
                         return true;
                     }
-
+                   
                     return false;
                 }
 
@@ -163,8 +167,8 @@ namespace portaible
 
             public:
                 std::string address;
-                size_t timeoutInMs;
-                size_t tryToReconnectAfterMs = 0;
+                size_t timeoutInMs = 3;
+                size_t tryToReconnectAfterMs = 2000;
 
                 template<typename Reflector>
                 void reflect(Reflector& r)

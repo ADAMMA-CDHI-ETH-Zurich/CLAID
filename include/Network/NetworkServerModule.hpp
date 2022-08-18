@@ -18,6 +18,7 @@ namespace portaible
         class NetworkServerModule : public NetworkModule
         {
             PORTAIBLE_MODULE(NetworkServerModule)
+            
             private:
 
 
@@ -32,8 +33,11 @@ namespace portaible
 
                 void onClientAccepted(ChannelData<SocketClient> socketClient);
                 void onClientAcceptError(ChannelData<RemoteConnection::Error> error);
-                void onError(RemoteConnection::RemoteConnectedEntity* entity, ChannelData<RemoteConnection::Error> error);
+                void onErrorReceived(RemoteConnection::RemoteConnectedEntity* entity, ChannelData<RemoteConnection::Error> error);
+                void onError(RemoteConnection::RemoteConnectedEntity* entity, RemoteConnection::Error error);
                 void initialize();
+
+                void onClientLostConnection(RemoteConnection::RemoteConnectedEntity* entity);
 
             public:
                 template<typename Reflector>

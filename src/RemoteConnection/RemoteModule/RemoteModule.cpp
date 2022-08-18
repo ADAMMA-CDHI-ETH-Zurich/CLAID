@@ -113,8 +113,11 @@ namespace RemoteConnection
 
     void RemoteModule::stop()
     {
-        this->joinAndRemoveSubModule(this->localObserver);
-        this->joinAndRemoveSubModule(this->remoteObserver);
+        if(this->isInitialized())
+        {
+            this->joinAndRemoveSubModule(this->localObserver);
+            this->joinAndRemoveSubModule(this->remoteObserver);
+        }
     }
 
     

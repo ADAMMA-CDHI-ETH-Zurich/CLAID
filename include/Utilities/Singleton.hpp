@@ -1,6 +1,8 @@
 // Taken from https://www.theimpossiblecode.com/blog/c11-generic-singleton-pattern/
 
 #pragma once
+#include "Logger/Logger.hpp"
+#include "TypeChecking/TypeCheckingFunctions.hpp"
 
 template <typename T>
 class Singleton
@@ -14,6 +16,12 @@ public:
         {
             mpInstance = new T();
         }
+        if(portaible::TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() == "portaible::RunTime")
+        {
+           // portaible::Logger::printfln("%s", portaible::TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>().c_str());
+        portaible::Logger::printfln("RunTime addr %lu", (intptr_t) mpInstance);
+        }
+        
         return mpInstance;
     }
 

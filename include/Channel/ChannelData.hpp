@@ -21,10 +21,7 @@ namespace portaible
         protected:
             bool valid;
 
-            bool isValid() const
-            {
-                return this->valid;
-            }
+            
 
             ChannelDataBase(bool valid) : valid(valid)
             {
@@ -35,6 +32,11 @@ namespace portaible
             virtual ~ChannelDataBase()
             {
                 
+            }
+
+            bool isValid() const
+            {
+                return this->valid;
             }
 
             virtual TaggedData<BinaryData> getBinaryData() = 0;

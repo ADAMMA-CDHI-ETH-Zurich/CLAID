@@ -230,13 +230,12 @@ namespace portaible
 
 		// Set non-blocking 
 		if( (arg = fcntl(sock, F_GETFL, NULL)) < 0) { 
-			fprintf(stderr, "Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
-			exit(0); 
+			Logger::printfln("Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
 		} 
 		arg |= O_NONBLOCK; 
 		if( fcntl(sock, F_SETFL, arg) < 0) { 
-			fprintf(stderr, "Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
-			exit(0); 
+			Logger::printfln("Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
+	
 		} 
 	}
 
