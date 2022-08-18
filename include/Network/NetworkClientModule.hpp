@@ -58,10 +58,7 @@ namespace portaible
                         this->callError<ErrorConnectToAdressFailed>();
                         return;
                     }
-                    else
-                    {
-                        callError<ErrorConnectToAdressFailed>();
-                    }
+            
 
 
                 }
@@ -127,7 +124,6 @@ namespace portaible
                         Logger::printfln("Error connecting to adress failed.");
                         if(this->tryToReconnectAfterMs > 0)
                         {
-                            Logger::printfln("Scheduling reconnect");
                             this->registerPeriodicFunction("PeriodicTryToReconnect", &NetworkClientModule::tryToReconnect, this, this->tryToReconnectAfterMs);
                         }
                     }

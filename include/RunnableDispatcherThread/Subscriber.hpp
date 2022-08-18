@@ -7,7 +7,7 @@ namespace portaible
             std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread;
 
         public:
-            void signalNewDataIsAvailable()
+            virtual void signalNewDataIsAvailable()
             {
                 runnableDispatcherThread->addRunnable(this->asRunnable());
             }
