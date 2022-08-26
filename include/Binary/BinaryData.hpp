@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "Reflection/SplitReflectInType.hpp"
-
+#include <iostream>
 namespace portaible
 {
     class BinaryData
@@ -121,5 +121,6 @@ namespace portaible
             
     };
 }
+
 
 
