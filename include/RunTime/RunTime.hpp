@@ -19,6 +19,7 @@ namespace portaible
     {
         private:
             std::vector<Module*> modules;
+            bool started = false;
 
 
         public:
@@ -32,7 +33,12 @@ namespace portaible
 
         void start()
         {
+            if(this->started)
+            {
+                PORTAIBLE_THROW(Exception, "Error in RunTime::start(), start was called twice !");
+            }
             this->startModules();
+            this->started = true;
         }
 
 
@@ -44,6 +50,8 @@ namespace portaible
             size_t getNumModules();
             size_t getNumChannels();
             const std::string& getChannelNameByIndex(size_t id);
+
+            bool isStarted() const;
     };
 }
 

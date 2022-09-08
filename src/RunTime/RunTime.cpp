@@ -35,4 +35,10 @@ namespace portaible
         return this->channelManager.getChannelNameByIndex(id);
     }
 
+    bool RunTime::isStarted() const
+    {
+        return this->started;
+    }
+
+
 }
