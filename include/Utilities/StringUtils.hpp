@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <vector>
+#include <regex>
 
 namespace portaible
 {
@@ -12,5 +14,13 @@ namespace portaible
             str.replace(start_pos, from.length(), to);
             start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
         }
+    }
+
+    static void splitStringToVector(const std::string& str, const std::string delimiterRegex, std::vector<std::string>& output)
+    {
+        output.clear();
+        std::regex regexz(delimiterRegex);
+        std::vector<std::string> list(std::sregex_token_iterator(str.begin(), str.end(), regexz, -1),
+                                    std::sregex_token_iterator());
     }
 }
