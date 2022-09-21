@@ -262,7 +262,6 @@ namespace portaible
                         {
                             if(ctr >= this->idInSequence)
                             {
-                                this->idInSequence++;
                                 return child;
                             }
                             ctr++;
@@ -294,6 +293,21 @@ namespace portaible
             {
                 this->isSequence = true;
                 this->idInSequence = 0;
+            }
+
+            void itemIndex(const size_t index)
+            {
+                this->idInSequence = index;
+
+                // If you have a nested container, e.g. vector<vector<int>>, then 
+                // isSequence would be set to false when endSequence of the inner vector is called.
+                // But, as we call itemIndex for each item, we can just set it back to true, if we're still in a sequence.
+                this->isSequence = true;
+            }
+
+            void endItem()
+            {
+                
             }
 
             void endSequence()

@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "Logger/Logger.hpp"
 
 // Only difference between the two is, basically, that reflectWrite needs to resize the vector.
 template<typename Reflector, typename T>
@@ -14,7 +15,11 @@ void reflectRead(Reflector& r, std::vector<T>& vector)
 
     for(size_t i = 0; i < count; i++)
     {
+        portaible::Logger::printfln("Accessing item index %d", i);
+        r.itemIndex(i);
+        portaible::Logger::printfln("Got item index, vector size is %d %d", vector.size(), i);
         r.member("item", vector[i], "");
+        portaible::Logger::printfln("Member");
     }
 
     r.endSequence();
@@ -27,8 +32,10 @@ void reflectWrite(Reflector& r, std::vector<T>& vector)
     size_t count = vector.size();
     r.count("item", count);
 
-    for(T& val : vector)
+    for(size_t i = 0; i < vector.size(); i++)
     {
+        T& val = vector[i];
+        r.itemIndex(i);
         r.member("item", val, "");
     }
     r.endSequence();

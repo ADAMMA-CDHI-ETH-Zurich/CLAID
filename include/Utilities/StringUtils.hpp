@@ -16,11 +16,16 @@ namespace portaible
         }
     }
 
-    static void splitStringToVector(const std::string& str, const std::string delimiterRegex, std::vector<std::string>& output)
+    static void splitStringToVector(const std::string& str, const std::string delimiter, std::vector<std::string>& output)
     {
         output.clear();
-        std::regex regexz(delimiterRegex);
-        std::vector<std::string> list(std::sregex_token_iterator(str.begin(), str.end(), regexz, -1),
-                                    std::sregex_token_iterator());
+        size_t last = 0; 
+        size_t next = 0; 
+        while ((next = str.find(delimiter, last)) != std::string::npos) 
+        {   
+            output.push_back(str.substr(last, next-last));   
+            last = next + 1;
+        } 
+        output.push_back(str.substr(last));
     }
 }

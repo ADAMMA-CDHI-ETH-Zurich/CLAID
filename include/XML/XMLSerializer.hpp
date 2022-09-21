@@ -166,6 +166,11 @@ namespace portaible
                 // Do nothing
             }
 
+            void itemIndex(const size_t index)
+            {
+                // Do nothing
+            }
+
             void endSequence()
             {
                 // Do nothing

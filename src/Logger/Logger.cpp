@@ -39,7 +39,8 @@ void portaible::Logger::printfln(const char *format, ...)
 	va_start(vargs, format);
 
 
-    char buffer[500] = "";
+	// Size 500 was too little.
+    char buffer[1024] = "";
 	std::vsprintf(buffer, format, vargs);
 
 

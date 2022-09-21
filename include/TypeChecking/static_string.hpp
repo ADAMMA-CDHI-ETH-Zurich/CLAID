@@ -11,11 +11,12 @@ namespace portaible
         
         // Compile time recursion to get length of a const c-string (char*) 
         // at compile time.
-        int constexpr constexpr_length_of_c_string(const char* str)
+     
+        template< size_t N >
+        constexpr int constexpr_length_of_c_string( const char  (&var)[N] )
         {
-            return *str ? 1 + constexpr_length_of_c_string(str + 1) : 0;
+        return N-1;
         }
-
         
        
         // Taken from https://stackoverflow.com/questions/81870/is-it-possible-to-print-a-variables-type-in-standard-c/56766138#56766138
@@ -45,8 +46,8 @@ namespace portaible
             constexpr const_iterator end()   const noexcept {return p_ + sz_;}
 
             
-        
-            constexpr bool isInNamespace(const char* ns) noexcept
+            template< size_t N >
+            constexpr bool isInNamespace( const char  (&ns)[N] ) noexcept
             {   
                 for (int i = 0; i < constexpr_length_of_c_string(ns); ++i)
                 {

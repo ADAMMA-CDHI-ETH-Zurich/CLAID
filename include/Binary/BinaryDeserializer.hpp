@@ -107,7 +107,6 @@ namespace portaible
 
             void count(const std::string& name, size_t& count)
             {
-                // TODO: IMPLEMENT IN ORDER TO SUPPORT VECTOR, MAP ETC.
                 this->binaryDataReader.read(count);
             }
 
@@ -117,6 +116,11 @@ namespace portaible
             }
 
             void beginSequence()
+            {
+                // Do nothing
+            }
+
+            void itemIndex(const size_t index)
             {
                 // Do nothing
             }
