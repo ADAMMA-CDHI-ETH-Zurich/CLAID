@@ -39,7 +39,9 @@ namespace portaible
                 this->binaryData->store(member);
             }
 
-            void callChar(const char* property, char& member)
+            // Why template? Because we can have signed and unsigned char.
+            template<typename T>
+            void callChar(const char* property, T& member)
             {
                 this->binaryData->store(member);
             }

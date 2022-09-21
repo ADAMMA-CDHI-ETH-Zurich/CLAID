@@ -46,7 +46,9 @@ namespace portaible
                             new  XMLVal(this->currentNode, property, member ? "true" : "false"))));
             }
 
-            void callChar(const char* property, char& member)
+            // Why template? Because we can have signed and unsigned char.
+            template<typename T>
+            void callChar(const char* property, T& member)
             {
                 std::string str = "";
                 str += member;

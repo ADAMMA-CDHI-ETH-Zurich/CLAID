@@ -42,7 +42,9 @@ namespace portaible
                 this->binaryDataReader.read(member);
             }
 
-            void callChar(const char* property, char& member)
+            // Why template? Because we can have signed and unsigned char.
+            template<typename T>
+            void callChar(const char* property, T& member)
             {
                 this->binaryDataReader.read(member);
             }

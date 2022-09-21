@@ -4,7 +4,6 @@
 #include <type_traits>
 #include "ClassInvoker.hpp"
 #include "Traits/is_integer_no_bool.hpp"
-
 namespace portaible
 {
 
@@ -77,8 +76,19 @@ namespace portaible
                 }
             };
 
+            // Why do we explicitly need to distinguish between signed and unsigned char?
+            // Read the following: https://stackoverflow.com/questions/16503373/difference-between-char-and-signed-char-in-c
             template<class T>
-            struct ReflectorType<T, typename std::enable_if<std::is_same<T, char>::value>::type> 
+            struct ReflectorType<T, typename std::enable_if<std::is_same<T, unsigned char>::value>::type> 
+            {
+                static void call(const char* property, Derived& r, T& member) 
+                {
+                    r.callChar(property, member);
+                }
+            };
+
+            template<class T>
+            struct ReflectorType<T, typename std::enable_if<std::is_same<T, signed char>::value>::type> 
             {
                 static void call(const char* property, Derived& r, T& member) 
                 {
@@ -110,8 +120,9 @@ namespace portaible
 
         // ENUM TYPES
 
+            // as byte is defined as enum, we exclude it from the case here.
             template<class T>
-            struct ReflectorType<T, typename std::enable_if<std::is_enum<T>::value>::type>
+            struct ReflectorType<T, typename std::enable_if<std::is_enum<T>::value && !std::is_same<T, byte>::value>::type>
             {
                 static void call(const char* property, Derived& r, T& member)
                 {
