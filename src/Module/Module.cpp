@@ -11,5 +11,5 @@ namespace portaible
         this->channelManager = &PORTAIBLE_RUNTIME->channelManager;
     }
 }
-
-REGISTER_MODULE(portaible::Module)
+// Yes, we do not use the REGISTER_MODULE macro here, because class "Module" should not be loadable by itself (it's just a base class!).
+REGISTER_SERIALIZATION(portaible::Module)

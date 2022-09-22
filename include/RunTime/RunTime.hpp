@@ -55,6 +55,17 @@ namespace portaible
     };
 }
 
+// Yes, sadly, we need to define this here.
+// In Module.hpp would be a cyclic dependency.
+#include "Module/ModuleFactory/ModuleFactory.hpp"
+#define DECLARE_MODULE(className)\
+    DECLARE_SERIALIZATION(className)\
+    DECLARE_MODULE_FACTORY(className)\
+
+#define REGISTER_MODULE(className)\
+    static_assert(std::is_base_of<portaible::BaseModule, className>::value, "Tried to register a Module (see above), however it seems you forgot to inherit from Module or BaseModule. "  ); \
+    REGISTER_SERIALIZATION(className)\
+    REGISTER_MODULE_FACTORY(className)\
 
 #include "Module/Module_impl.hpp"
 #include "XMLLoader/XMLLoader_impl.hpp"

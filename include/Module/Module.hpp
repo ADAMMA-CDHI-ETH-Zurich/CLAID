@@ -18,12 +18,7 @@
 #include "Serialization/Serialization.hpp"
 
 
-#define DECLARE_MODULE(className)\
-    DECLARE_SERIALIZATION(className)\
 
-#define REGISTER_MODULE(className)\
-    static_assert(std::is_base_of<portaible::BaseModule, className>::value, "Tried to register a Module (see above), however it seems you forgot to inherit from Module or BaseModule. "  ); \
-    REGISTER_SERIALIZATION(className)\
 
 #include "Channel/ChannelManager.hpp"
 namespace portaible
@@ -405,7 +400,7 @@ namespace portaible
     // remote) via ChannelIDs, in contrast to a SubModule.
     class Module : public BaseModule
     {   
-        DECLARE_MODULE(Module)
+        DECLARE_SERIALIZATION(Module)
 
         public:
             Module();
@@ -501,5 +496,4 @@ namespace portaible
     
 
 }
-
 
