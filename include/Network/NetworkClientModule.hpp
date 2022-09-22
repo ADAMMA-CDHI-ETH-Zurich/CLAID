@@ -12,7 +12,7 @@ namespace portaible
     {
         class NetworkClientModule : public NetworkModule
         {
-            PORTAIBLE_MODULE(NetworkClientModule)
+            DECLARE_MODULE(NetworkClientModule)
 
             NetworkClientModule()
             {

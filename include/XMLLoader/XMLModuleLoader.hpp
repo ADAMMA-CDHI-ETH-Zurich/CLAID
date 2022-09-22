@@ -32,6 +32,13 @@ namespace portaible
 							}
 
 							Module* module = static_cast<Module*>(ClassFactory::ClassFactory::getInstance()->getFactoryForClassByName(className)->getInstanceUntyped());
+
+							if(module == nullptr)
+							{
+								// The class is not a module.
+								PORTAIBLE_THROW(portaible::Exception, "ModuleLoader failed to load Module from XML. Class \"" << className << "\" is not a Module. Did you forget inheriting from BaseModule?");
+							}
+
 							XMLDeserializer deserializer(node);
 							deserializer.deserializeFromNode("Module", module);
 

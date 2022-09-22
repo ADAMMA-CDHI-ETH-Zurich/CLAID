@@ -1,3 +1,3 @@
 #include "RemoteConnection/Message/MessageHeader/MessageHeaderInitialListOfPublishedAndSubscribedChannels.hpp"
 
-SERIALIZATION(portaible::RemoteConnection::MessageHeaderInitialListOfPublishedAndSubscribedChannels)
+REGISTER_SERIALIZATION(portaible::RemoteConnection::MessageHeaderInitialListOfPublishedAndSubscribedChannels)

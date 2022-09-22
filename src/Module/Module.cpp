@@ -12,4 +12,4 @@ namespace portaible
     }
 }
 
-PORTAIBLE_SERIALIZATION(portaible::Module)
+REGISTER_MODULE(portaible::Module)

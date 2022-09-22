@@ -98,4 +98,4 @@ namespace portaible
     }
 }
 
-PORTAIBLE_SERIALIZATION(portaible::Network::NetworkServerModule)
+REGISTER_MODULE(portaible::Network::NetworkServerModule)

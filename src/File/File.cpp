@@ -66,4 +66,4 @@ namespace portaible
     }
 }
 
-SERIALIZATION(portaible::File)
+REGISTER_SERIALIZATION(portaible::File)

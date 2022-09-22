@@ -18,11 +18,12 @@
 #include "Serialization/Serialization.hpp"
 
 
-#define PORTAIBLE_MODULE(className)\
+#define DECLARE_MODULE(className)\
     DECLARE_SERIALIZATION(className)\
 
-#define PORTAIBLE_SERIALIZATION(className)\
-    SERIALIZATION(className)\
+#define REGISTER_MODULE(className)\
+    static_assert(std::is_base_of<portaible::BaseModule, className>::value, "Tried to register a Module (see above), however it seems you forgot to inherit from Module or BaseModule. "  ); \
+    REGISTER_SERIALIZATION(className)\
 
 #include "Channel/ChannelManager.hpp"
 namespace portaible
@@ -223,7 +224,7 @@ namespace portaible
             {
                 if(this->runnableDispatcherThread.get() == nullptr)
                 {
-                    PORTAIBLE_THROW(Exception, "Error! startMoudle was called while with RunnableDispatcherThread not set!");
+                    PORTAIBLE_THROW(Exception, "Error! startModule was called while with RunnableDispatcherThread not set!");
                 }
 
                 // PropertyReflector will initialize all members and properties to their default values,
@@ -404,7 +405,7 @@ namespace portaible
     // remote) via ChannelIDs, in contrast to a SubModule.
     class Module : public BaseModule
     {   
-        PORTAIBLE_MODULE(Module)
+        DECLARE_MODULE(Module)
 
         public:
             Module();

@@ -79,7 +79,7 @@ namespace portaible
             // Why do we explicitly need to distinguish between signed and unsigned char?
             // Read the following: https://stackoverflow.com/questions/16503373/difference-between-char-and-signed-char-in-c
             template<class T>
-            struct ReflectorType<T, typename std::enable_if<std::is_same<T, unsigned char>::value>::type> 
+            struct ReflectorType<T, typename std::enable_if<std::is_same<T, signed char>::value || std::is_same<T, unsigned char>::value || std::is_same<T, char>::value>::type> 
             {
                 static void call(const char* property, Derived& r, T& member) 
                 {
@@ -87,14 +87,6 @@ namespace portaible
                 }
             };
 
-            template<class T>
-            struct ReflectorType<T, typename std::enable_if<std::is_same<T, signed char>::value>::type> 
-            {
-                static void call(const char* property, Derived& r, T& member) 
-                {
-                    r.callChar(property, member);
-                }
-            };
         // CLASS TYPES
 
             template<class T>

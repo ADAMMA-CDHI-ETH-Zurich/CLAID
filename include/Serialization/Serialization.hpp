@@ -13,7 +13,7 @@
     DECLARE_POLYMORPHIC_REFLECTOR(className, portaible::BinarySerializer, BinarySerializer)\
     DECLARE_POLYMORPHIC_REFLECTOR(className, portaible::BinaryDeserializer, BinaryDeserializer)
 
-#define SERIALIZATION(className)\
+#define REGISTER_SERIALIZATION(className)\
     REGISTER_TO_CLASS_FACTORY(className) \
     REGISTER_POLYMORPHIC_REFLECTOR(className, portaible::XMLDeserializer, XMLDeserializer) \
     REGISTER_POLYMORPHIC_REFLECTOR(className, portaible::XMLSerializer, XMLSerializer) \

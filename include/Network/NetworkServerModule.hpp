@@ -17,7 +17,7 @@ namespace portaible
     {
         class NetworkServerModule : public NetworkModule
         {
-            PORTAIBLE_MODULE(NetworkServerModule)
+            DECLARE_MODULE(NetworkServerModule)
             
             private:
 

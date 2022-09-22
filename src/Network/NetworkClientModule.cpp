@@ -1,3 +1,3 @@
 #include "Network/NetworkClientModule.hpp"
 
-PORTAIBLE_SERIALIZATION(portaible::Network::NetworkClientModule)
+REGISTER_MODULE(portaible::Network::NetworkClientModule)
