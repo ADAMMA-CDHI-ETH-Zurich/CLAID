@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <unistd.h>
+#include <stdint.h>
 
 #include "ChannelBufferBase.hpp"
 namespace portaible

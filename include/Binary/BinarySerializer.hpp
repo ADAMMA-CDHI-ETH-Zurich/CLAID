@@ -168,6 +168,7 @@ namespace portaible
             }
 
 
+
             template<typename T> 
             void serialize(T& obj, BinaryData* targetContainer)
             {

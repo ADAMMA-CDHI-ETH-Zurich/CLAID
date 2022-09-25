@@ -6,9 +6,17 @@
 // However, we want to be able to distinguish them both, as serializers might treat a byte (i.e., 8 bit value) differently from a character.
 // For example, take the JavaNativeGetter and JavaNativeSetter. They would map byte to java.lang.Byte class and char to java.lang.Character class.
 // Also, java.lang.Character is 16 bits in Java, while a character in C++ is always 8 bit.
-#ifndef byte
-enum class byte : unsigned char
-{
 
-};
+// Sadly, this is necessary to do.. We need to make sure byte is enum class
+#undef byte
+
+#ifndef byte
+namespace CLAID
+{
+	enum class byte : unsigned char
+	{
+
+	};
+}
+
 #endif

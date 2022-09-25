@@ -114,7 +114,7 @@ namespace portaible
 
             // as byte is defined as enum, we exclude it from the case here.
             template<class T>
-            struct ReflectorType<T, typename std::enable_if<std::is_enum<T>::value && !std::is_same<T, byte>::value>::type>
+            struct ReflectorType<T, typename std::enable_if<std::is_enum<T>::value && !std::is_same<T, CLAID::byte>::value>::type>
             {
                 static void call(const char* property, Derived& r, T& member)
                 {

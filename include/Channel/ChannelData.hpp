@@ -13,7 +13,7 @@ namespace portaible
 {
     // Forward declaration
  
-    class ChannelBufferElement;
+    struct ChannelBufferElement;
 
     // Not a DataBase, its just the base class for ChannelData ;)
     class ChannelDataBase

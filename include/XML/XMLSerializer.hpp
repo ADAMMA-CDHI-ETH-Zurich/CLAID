@@ -183,11 +183,6 @@ namespace portaible
 
             }
 
-            void read(char*& data, size_t size)
-            {
-                
-            }
-
             template<typename T> 
             void serialize(T& obj)
             {

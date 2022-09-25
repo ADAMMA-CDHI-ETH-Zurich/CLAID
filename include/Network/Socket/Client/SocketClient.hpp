@@ -1,19 +1,5 @@
 #pragma once
 
-#ifdef _WIN32
-
-#include <Ws2tcpip.h>
-#include <winsock2.h>
-
-#include <windows.h>
-// Need to link with Ws2_32.lib
-#pragma comment (lib, "Ws2_32.lib")
-#pragma comment (lib, "Mswsock.lib")
-#pragma comment (lib, "AdvApi32.lib")
-#else
-#endif
-
-#pragma once
 
 #include "Logger/Logger.hpp"
 #include "Binary/BinaryData.hpp"
@@ -44,6 +30,7 @@ namespace portaible
 					ERROR_SOCKET_CREATION_FAILED, // If socket() function fails
 					ERROR_WRITE_FAILED,
 					ERROR_READ_FAILED,
+					ERROR_READ_NUM_BYTES_ZERO, // if SocketClient::readyBytes was called with numBytes = 0
 				};
 
 				struct SocketClientError
@@ -74,6 +61,7 @@ namespace portaible
 				bool write(BinaryData& data);
 				bool read(BinaryData& data);
 
+				// Implemented in platform specific parts
 				bool writeBytes(std::vector<char>& byteBuffer);
 				bool readBytes(std::vector<char>& byteBuffer, size_t numBytes);
 

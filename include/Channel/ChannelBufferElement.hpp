@@ -3,6 +3,10 @@
 #include "ChannelData.hpp"
 #include "Binary/BinaryData.hpp"
 #include "Exception/Exception.hpp"
+
+#include <mutex>
+
+
 namespace portaible
 {
    

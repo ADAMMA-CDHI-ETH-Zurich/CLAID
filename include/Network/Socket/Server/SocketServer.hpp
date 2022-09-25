@@ -6,11 +6,11 @@
 #include <string.h>
 #include <iostream>
 #include <vector>
-#include <unistd.h> 
+#include <stdint.h> 
 #include <stdio.h> 
-#include <sys/socket.h> 
+
 #include <stdlib.h> 
-#include <netinet/in.h> 
+
 #include <string.h> 
 #include <functional>
 
@@ -23,7 +23,9 @@ namespace portaible
 	{
 		class SocketServer
 		{
+
 			public:
+			
 				enum SocketServerErrorType
 				{
 					SOCKET_CREATION_FAILED, // socket(...) failed
@@ -31,13 +33,15 @@ namespace portaible
 					BIND_FAILED, // bind(...) failed
 					LISTEN_FAILED, // listen(...) failed
 					ACCEPT_FAILED, // accept(...) failed
+					ERROR_WSASTARTUP_FAILED,
+					GET_ADDRESS_INFO_FAILED, // getaddrinfo(...) failed
 				};
 
 				struct SocketServerError
 				{
-					SocketServerErrorType errorType;
-					int additionalErrorID; // Error ID of the function that throws the error, e.g. WSAStartup fails with WSA_INVALID_PARAMETER
-					std::string errorString;
+					SocketServerErrorType errorType = SOCKET_CREATION_FAILED;
+					int additionalErrorID = 0; // Error ID of the function that throws the error, e.g. WSAStartup fails with WSA_INVALID_PARAMETER
+					std::string errorString = "";
 				
 					SocketServerError()
 					{
@@ -72,8 +76,6 @@ namespace portaible
 				
 				bool connected = false;
 				int port;
-
-				struct sockaddr_in address; 
 
 				SocketServerError lastError;
 

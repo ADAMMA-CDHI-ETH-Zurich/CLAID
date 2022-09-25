@@ -10,7 +10,11 @@ namespace portaible
         extern intptr_t getDataTypeUniqueIdentifier()
         {
             // Use the address of this function for the current data type as unique identifier.
-            return reinterpret_cast<intptr_t>(&getDataTypeUniqueIdentifier<T>);
+			// Windows is a bitch. 
+			// On Linux/Unix, can just do return reinterpret_cast<intptr_t>(&getDataTypeUniqueIdentifier<T>)
+			auto fptr = &getDataTypeUniqueIdentifier<T>;
+			void* tmp = reinterpret_cast<void *&>(fptr);
+            return reinterpret_cast<intptr_t>(tmp);
         }
 
     

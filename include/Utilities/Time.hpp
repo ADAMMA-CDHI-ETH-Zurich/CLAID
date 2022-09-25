@@ -1,5 +1,4 @@
 #pragma once
-
 #include <chrono>
 #include <stdio.h>
 #include <cstdint>
@@ -35,23 +34,23 @@ struct Duration
 		return false;
 	}
 
-	uint32_t getNanoSeconds() const
+	uint64_t getNanoSeconds() const
 	{
 		return std::chrono::duration_cast<std::chrono::nanoseconds>(this->val).count();
 	}
 
 
-	uint32_t getMicroSeconds() const
+	uint64_t getMicroSeconds() const
 	{
 		return val.count();
 	}
 
-	uint32_t getMilliSeconds() const
+	uint64_t getMilliSeconds() const
 	{
 		return std::chrono::duration_cast<std::chrono::milliseconds>(this->val).count();
 	}
 
-	uint32_t getSeconds() const
+	uint64_t getSeconds() const
 	{
 		return std::chrono::duration_cast<std::chrono::seconds>(this->val).count();
 	}
@@ -173,12 +172,12 @@ public:
 	}
 
 
-	uint32_t toUnixTimestamp() const
+	uint64_t toUnixTimestamp() const
 	{
 		return std::chrono::duration_cast<std::chrono::seconds>(*this - Time::unixEpoch()).count();
 	}
 
-	uint32_t toUnixTimestampMilliseconds() const
+	uint64_t toUnixTimestampMilliseconds() const
 	{
 		return std::chrono::duration_cast<std::chrono::milliseconds>(*this - Time::unixEpoch()).count();
 	}

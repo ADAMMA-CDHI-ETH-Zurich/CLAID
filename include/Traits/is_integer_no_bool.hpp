@@ -9,7 +9,7 @@ struct is_integer_no_bool<type> : public std::true_type {};
 
 #ifndef byte
     #include "Utilities/byte.hpp"
-    ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(byte)
+    ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(CLAID::byte)
 #endif
 
 ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(short)

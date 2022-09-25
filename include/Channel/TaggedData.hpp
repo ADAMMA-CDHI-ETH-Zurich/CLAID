@@ -3,7 +3,7 @@
 #include <memory>
 #include "TaggedDataBase.hpp"
 #include "Serialization/Serialization.hpp"
-#include <unistd.h>
+#include <stdint.h>
 #include <iostream>
 namespace portaible
 {
