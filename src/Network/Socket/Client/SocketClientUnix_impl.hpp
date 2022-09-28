@@ -10,7 +10,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
-
+#include <sys/select.h>
 
 namespace portaible
 {

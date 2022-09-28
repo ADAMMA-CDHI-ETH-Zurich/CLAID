@@ -90,6 +90,14 @@ namespace portaible
 					T* obj = static_cast<T*>(getFactoryForClassByName(className)->getInstanceUntyped());
 					return obj;
 				}
+
+				void getRegisteredClasses(std::vector<std::string>& registeredClasses)
+				{
+					for(auto it : classFactories)
+					{
+						registeredClasses.push_back(it.first);
+					}
+				}
 		};
 
 		template<typename T>

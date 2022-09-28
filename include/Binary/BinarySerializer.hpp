@@ -2,7 +2,7 @@
 #include "BinaryData.hpp"
 #include "ClassFactory/ClassFactory.hpp"
 
-#include "Reflection/Serializer.hpp"
+#include "Serialization/Serializer.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 #include "PolymorphicReflector/PolymorphicReflector.hpp"
 

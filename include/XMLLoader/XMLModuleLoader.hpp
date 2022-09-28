@@ -1,7 +1,6 @@
 #pragma once
 
 
-#include "ClassFactory/ClassFactory.hpp"
 #include "RunTime/RunTime.hpp"
 #include "XML/XMLDeserializer.hpp"
 
@@ -26,17 +25,17 @@ namespace portaible
 						std::string className;
 						if (node->getAttribute("class", className))
 						{
-							if (!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForClass(className))
+							if (!ModuleFactory::ModuleFactory::getInstance()->isFactoryRegisteredForModule(className))
 							{
-								PORTAIBLE_THROW(portaible::Exception, "ModuleLoader failed to load Modules from XML. Class \"" << className << "\" was not registered and is unknown.");
+								PORTAIBLE_THROW(portaible::Exception, "ModuleLoader failed to load Module from XML. Class \"" << className << "\" was not registered and is unknown.");
 							}
 
-							Module* module = static_cast<Module*>(ClassFactory::ClassFactory::getInstance()->getFactoryForClassByName(className)->getInstanceUntyped());
+							Module* module = dynamic_cast<Module*>(ModuleFactory::ModuleFactory::getInstance()->getFactoryForModuleByName(className)->getInstanceUntyped());
 
 							if(module == nullptr)
 							{
-								// The class is not a module.
-								PORTAIBLE_THROW(portaible::Exception, "ModuleLoader failed to load Module from XML. Class \"" << className << "\" is not a Module. Did you forget inheriting from BaseModule?");
+								// The class is not a Module.
+								PORTAIBLE_THROW(portaible::Exception, "ModuleLoader failed to load Module from XML. Class \"" << className << "\" is not a Module. Did you forget inheriting from portaible::Module?");
 							}
 
 							XMLDeserializer deserializer(node);
@@ -47,7 +46,6 @@ namespace portaible
 							{
 								module->setID(id);
 							}
-
 
 							PORTAIBLE_RUNTIME->addModule(module);
 						}

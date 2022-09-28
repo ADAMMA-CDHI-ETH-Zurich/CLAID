@@ -41,7 +41,6 @@ namespace portaible
             r.callBeginClass(property, member);
             r.callSharedPointer(property, member);
             r.callEndClass(property, member);
-
         }
 
     };

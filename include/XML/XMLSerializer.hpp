@@ -2,7 +2,7 @@
 #include "XMLNode.hpp"
 #include "XMLNumericVal.hpp"
 
-#include "Reflection/Serializer.hpp"
+#include "Serialization/Serializer.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 
 namespace portaible

@@ -14,7 +14,7 @@ struct ClassReflectReadWriteInvoker
 		// However, if we put reflectRead here, MSCV would still evaluate it..
 		// clang and gcc, as usual, do not complain.
 		// obj.reflectRead<Reflector>(r);
-		obj.reflectRead<Reflector>(r);
+		obj.template reflectRead<Reflector>(r);
 	}
 }; 
 
@@ -24,19 +24,19 @@ struct ClassReflectReadWriteInvoker<Reflector, Type, typename std::enable_if<Ref
 {
 	static void call(Reflector& r, Type& obj) 
 	{
-		obj.reflectWrite<Reflector>(r);
+		obj.template reflectWrite<Reflector>(r);
 	}
 };
 
-// Invoke reflectRead
-template<typename Reflector, typename Type>
-struct ClassReflectReadWriteInvoker<Reflector, Type, typename std::enable_if<!Reflector::isReadOnly>::type> 
-{
-	static void call(Reflector& r, Type& obj) 
-	{
-		obj.reflectRead<Reflector>(r);
-	}
-};
+// // Invoke reflectRead
+// template<typename Reflector, typename Type>
+// struct ClassReflectReadWriteInvoker<Reflector, Type, typename std::enable_if<!Reflector::isReadOnly>::type> 
+// {
+// 	static void call(Reflector& r, Type& obj) 
+// 	{
+// 		obj.template reflectRead<Reflector>(r);
+// 	}
+// };
 
 
 template<typename Reflector, typename Type>

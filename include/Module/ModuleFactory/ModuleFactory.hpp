@@ -118,5 +118,5 @@ namespace portaible
 	const std::string& getModuleName() {return className::__MODULE_NAME__;}
 
 #define REGISTER_MODULE_FACTORY(className) \
-	volatile portaible::ModuleFactory::RegisterHelper<className> className::moduleFactoryRegistrar (portaible::ModuleFactory::RegisterHelper<className>::getModuleNameFromClassName(#className));\
-	const std::string className::__MODULE_NAME__ = portaible::ModuleFactory::RegisterHelper<className>::getModuleNameFromClassName(#className);
+	volatile portaible::ModuleFactory::RegisterHelper<className> className::moduleFactoryRegistrar (#className);\
+	const std::string className::__MODULE_NAME__ = #className;

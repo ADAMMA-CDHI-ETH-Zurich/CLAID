@@ -2,7 +2,7 @@
 #include "XMLNode.hpp"
 #include "XMLNumericVal.hpp"
 
-#include "Reflection/Deserializer.hpp"
+#include "Serialization/Deserializer.hpp"
 
 #include "XML/XMLParser.hpp"
 #include "ClassFactory/ClassFactory.hpp"
@@ -165,10 +165,10 @@ namespace portaible
             template<typename T>
             void callBeginClass(const char* property, T& member)
             {
-                std::shared_ptr<XMLNode> node = this->currentXMLNode->findChild(property);
+                std::shared_ptr<XMLNode> node = getChildNode(property);
                 if(node.get() == nullptr)
                 {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
+                    PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                 }
 
                 this->currentXMLNode = node;

@@ -25,14 +25,15 @@ namespace Network
             return false;
         } 
         
-        addr_info address;
+        struct sockaddr_in address;         
+        
         address.sin_family = AF_INET; 
         address.sin_addr.s_addr = INADDR_ANY; 
         address.sin_port = htons(port); 
         
         // Forcefully attaching socket to the port 
-        if (bind(this->serverSocket, (struct sockaddr *)&this->address,  
-                                    sizeof(this->address))<0) 
+        if (bind(this->serverSocket, (struct sockaddr *)&address,  
+                                    sizeof(address))<0) 
         { 
             this->lastError.errorType = SocketServerErrorType::BIND_FAILED;
             this->lastError.errorString = strerror(errno);

@@ -12,4 +12,8 @@ namespace portaible
     }
 }
 // Yes, we do not use the REGISTER_MODULE macro here, because class "Module" should not be loadable by itself (it's just a base class!).
-REGISTER_SERIALIZATION(portaible::Module)
+REGISTER_TO_CLASS_FACTORY(portaible::Module) 
+REGISTER_POLYMORPHIC_REFLECTOR(portaible::Module, portaible::XMLDeserializer, XMLDeserializer) 
+REGISTER_POLYMORPHIC_REFLECTOR(portaible::Module, portaible::XMLSerializer, XMLSerializer) 
+REGISTER_POLYMORPHIC_REFLECTOR(portaible::Module, portaible::BinarySerializer, BinarySerializer)
+REGISTER_POLYMORPHIC_REFLECTOR(portaible::Module, portaible::BinaryDeserializer, BinaryDeserializer)

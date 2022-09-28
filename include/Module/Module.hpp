@@ -15,7 +15,13 @@
 #include "ClassFactory/ClassFactory.hpp"
 #include "PolymorphicReflector/PolymorphicReflector.hpp"
 #include "Reflection/PropertyReflector.hpp"
-#include "Serialization/Serialization.hpp"
+
+
+#include "ClassFactory/ClassFactory.hpp"
+#include "XML/XMLSerializer.hpp"
+#include "XML/XMLDeserializer.hpp"
+#include "Binary/BinarySerializer.hpp"
+#include "Binary/BinaryDeserializer.hpp"
 
 
 
@@ -42,9 +48,6 @@ namespace portaible
                 // is triggered).
                 return this->runnableDispatcherThread.get() != nullptr && this->baseModuleInitialized;
             } 
-
-        
-            
 
         protected:
             ChannelManager* channelManager;
@@ -400,7 +403,11 @@ namespace portaible
     // remote) via ChannelIDs, in contrast to a SubModule.
     class Module : public BaseModule
     {   
-        DECLARE_SERIALIZATION(Module)
+        DECLARE_CLASS_FACTORY(Module)
+        DECLARE_POLYMORPHIC_REFLECTOR(Module, portaible::XMLSerializer, XMLSerializer)
+        DECLARE_POLYMORPHIC_REFLECTOR(Module, portaible::XMLDeserializer, XMLDeserializer)
+        DECLARE_POLYMORPHIC_REFLECTOR(Module, portaible::BinarySerializer, BinarySerializer)
+        DECLARE_POLYMORPHIC_REFLECTOR(Module, portaible::BinaryDeserializer, BinaryDeserializer)
 
         public:
             Module();
