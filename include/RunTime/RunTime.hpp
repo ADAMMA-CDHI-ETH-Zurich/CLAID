@@ -73,3 +73,6 @@ namespace portaible
 
 #include "Module/Module_impl.hpp"
 #include "XMLLoader/XMLLoader_impl.hpp"
+
+
+#include "Reflection/Reflect.hpp"

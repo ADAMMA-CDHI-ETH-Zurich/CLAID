@@ -298,6 +298,8 @@ namespace portaible
                 // That mans that submodules spawned by spawnSubModuleInSameThread also have the same identifier!
                 // See comment above: only unique in the local RunTime.
                 
+                // This probably is only false on 128bit systems or what? lol 
+                // Or in weird compilers... Looking at you MSVC
                 static_assert(sizeof(uint64_t) >= sizeof(intptr_t), "Error, type uint64_t is smaller than type intptr_t."
                 "Can not store pointers/adresses in objects of type uint64_t with the current compiler, settings or target architecture.");
 

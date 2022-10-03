@@ -104,7 +104,6 @@ namespace portaible
 
 					// Return everything after the last occurence of ::
 					return className.substr(index + 1, className.size());
-
 				}
 		};
 

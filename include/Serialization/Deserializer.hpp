@@ -17,5 +17,10 @@ namespace portaible
                
             }
 
+            template<typename Class, typename ReturnType, typename... Args>
+            void pointer_to_function(std::string name, ReturnType (Class::*function)(Args...))
+            {
+                
+            }
     };
 }
