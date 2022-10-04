@@ -34,7 +34,9 @@ namespace portaible
 
 					if (it != moduleFactories.end())
 					{
-						PORTAIBLE_THROW(portaible::Exception, "Error, class \"" << className << "\" was registered to ModuleFactory more than once");
+						// Not an error. This might happen when importing shared libraries that also were build with CLAID (e.g., importing PyCLAID from a PythonModule).
+						return;
+						//PORTAIBLE_THROW(portaible::Exception, "Error, class \"" << className << "\" was registered to ModuleFactory more than once");
 					}
 					moduleFactories.insert(std::make_pair(className, moduleFactory));
 				}

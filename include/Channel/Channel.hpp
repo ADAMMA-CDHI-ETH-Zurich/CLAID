@@ -21,6 +21,7 @@ namespace portaible
 
 namespace portaible
 {
+    
 
     template<typename T>
     class Channel
@@ -48,7 +49,7 @@ namespace portaible
             {
                 if(*this->channelAccessRights.get() != ChannelAccessRights::WRITE && *this->channelAccessRights.get() != ChannelAccessRights::READ_WRITE)
                 {
-                    PORTAIBLE_THROW(Exception, "Cannot post to channel with ID " << typedChannel->getChannelID() << " as it was either only subscribed or has been unpublished.");
+                    PORTAIBLE_THROW(Exception, "Cannot post to channel with ID " << typedChannel->getChannelID() << " as it was either only subscribed to or has been unpublished.");
                 }
             }
         public:
@@ -74,6 +75,10 @@ namespace portaible
                 subscriberPtr(subscriberPtr), publisherSubscriberUniqueIdentifier(publisherSubscriberUniqueIdentifier)
             {
 
+            }
+
+            ~Channel()
+            {
             }
 
             ChannelData<T> read()
@@ -407,6 +412,7 @@ namespace portaible
             Channel<T> subscribe(size_t publisherSubscriberUniqueIdentifier)
             {
                 this->numSubscribers++;
+                printf("subscribing to channel %s subscribers %d publishers %d %u", this->channelID.c_str(), this->numSubscribers, this->numPublishers, this);
                 return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::READ)), publisherSubscriberUniqueIdentifier);
             }
 
@@ -419,12 +425,17 @@ namespace portaible
                 this->channelSubscribers.push_back(static_cast<ChannelSubscriberBase*>(typedSubscriber));
                 
                 this->numSubscribers++;
+                printf("subscribing to channel %s subscribers %d publishers %d %u", this->channelID.c_str(), this->numSubscribers, this->numPublishers, this);
+
                 return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::READ)), untypedSubscriber, publisherSubscriberUniqueIdentifier);
             }
 
             Channel<T> publish(size_t publisherSubscriberUniqueIdentifier)
             {
                 this->numPublishers++;
+                printf("publishing channel %s subscribers %d publishers %d %u", this->channelID.c_str(), this->numSubscribers, this->numPublishers, this);
+
+
                 return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::WRITE)), publisherSubscriberUniqueIdentifier);
             }
 

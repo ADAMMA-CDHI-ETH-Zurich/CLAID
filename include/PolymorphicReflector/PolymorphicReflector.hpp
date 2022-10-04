@@ -25,7 +25,8 @@ namespace portaible
 
 					if (it != reflectors.end())
 					{
-						PORTAIBLE_THROW(portaible::Exception, "Error, PolymorhpReflector for class \"" << className << "\" was registered multiple times.");
+						return;
+						//PORTAIBLE_THROW(portaible::Exception, "Error, PolymorhpReflector for class \"" << className << "\" was registered multiple times.");
 					}
 
 

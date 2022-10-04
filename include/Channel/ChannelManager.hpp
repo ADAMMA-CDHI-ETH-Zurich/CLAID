@@ -65,6 +65,7 @@ namespace portaible
             template<typename T>
             std::shared_ptr<TypedChannel<T>> registerNewChannel(const std::string& channelID)
             {
+                printf("Registering channels %d\n", this->typedChannels.size());
                 std::shared_ptr<TypedChannel<T>> newChannel = std::shared_ptr<TypedChannel<T>>(new TypedChannel<T>(this, channelID));
 
                 // Dont lock the mutex here, as it already get's locked in publish or subscribe functions.

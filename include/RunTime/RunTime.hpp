@@ -20,7 +20,8 @@ namespace portaible
         private:
             std::vector<Module*> modules;
             bool started = false;
-
+            
+            void startModules();
 
         public:
             ChannelManager channelManager;
@@ -43,7 +44,7 @@ namespace portaible
 
 
         public:
-            void startModules();
+          
 
             void addModule(Module* module);
 
@@ -60,7 +61,7 @@ namespace portaible
 #include "Module/ModuleFactory/ModuleFactory.hpp"
 #include "Serialization/Serialization.hpp"
 #define DECLARE_MODULE(className)\
-    DECLARE_CLASS_FACTORY(className) \
+    DECLARE_CLASS_FACTORY(className)\
     DECLARE_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className)\
     DECLARE_MODULE_FACTORY(className)\
 

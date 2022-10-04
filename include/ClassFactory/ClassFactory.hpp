@@ -34,7 +34,9 @@ namespace portaible
 
 					if (it != classFactories.end())
 					{
-						PORTAIBLE_THROW(portaible::Exception, "Error, class \"" << className << "\" was registered to ClassFactory more than once");
+						// Not an error. This might happen when importing shared libraries that also were build with CLAID (e.g., importing PyCLAID from a PythonModule).
+						return;
+						//PORTAIBLE_THROW(portaible::Exception, "Error, class \"" << className << "\" was registered to ClassFactory more than once");
 					}
 
 					classFactories.insert(std::make_pair(className, static_cast<ClassFactoryBase*>(new ClassFactoryTyped<T>)));
@@ -87,6 +89,14 @@ namespace portaible
 						return nullptr;
 					}
 					
+					// ClassFactoryTyped<T>* factory = dynamic_cast<ClassFactoryTyped<T>*>(getFactoryForClassByName(className));
+
+					// if(factory == nullptr)
+					// {
+					// 	PORTAIBLE_THROW(Exception, "Error in ClassFactory. Tried to create a new object of class \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\" from "
+					// 	<< "factory associated with type \"" << className << "\". The types are incompatible, the latter cannot be cast to the former.");
+					// }
+
 					T* obj = static_cast<T*>(getFactoryForClassByName(className)->getInstanceUntyped());
 					return obj;
 				}

@@ -26,7 +26,7 @@ namespace portaible
 
     }; 
 
-
+    // TODO fix for standard types
     template<typename Reflector, typename T>
     struct ReflectorInvoker<Reflector, T, typename std::enable_if<has_mem_reflect<T>::value>::type>
     {
