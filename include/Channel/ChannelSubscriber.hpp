@@ -63,6 +63,7 @@ namespace portaible
             {
                 this->lockMutex();
                 Logger::printfln("Pop %s %d\n", channel->getChannelID().c_str(), this->channelDataQueue.size());
+                Logger::printfln("1");
                 ChannelData<T> channelData = this->channelDataQueue.front();
                 size_t sizeBeforePop = this->channelDataQueue.size();
                 this->channelDataQueue.pop_front();

@@ -412,7 +412,6 @@ namespace portaible
             Channel<T> subscribe(size_t publisherSubscriberUniqueIdentifier)
             {
                 this->numSubscribers++;
-                printf("subscribing to channel %s subscribers %d publishers %d %u", this->channelID.c_str(), this->numSubscribers, this->numPublishers, this);
                 return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::READ)), publisherSubscriberUniqueIdentifier);
             }
 
@@ -425,7 +424,6 @@ namespace portaible
                 this->channelSubscribers.push_back(static_cast<ChannelSubscriberBase*>(typedSubscriber));
                 
                 this->numSubscribers++;
-                printf("subscribing to channel %s subscribers %d publishers %d %u", this->channelID.c_str(), this->numSubscribers, this->numPublishers, this);
 
                 return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::READ)), untypedSubscriber, publisherSubscriberUniqueIdentifier);
             }
@@ -433,8 +431,6 @@ namespace portaible
             Channel<T> publish(size_t publisherSubscriberUniqueIdentifier)
             {
                 this->numPublishers++;
-                printf("publishing channel %s subscribers %d publishers %d %u", this->channelID.c_str(), this->numSubscribers, this->numPublishers, this);
-
 
                 return Channel<T>(this, std::shared_ptr<ChannelAccessRights>(new ChannelAccessRights(ChannelAccessRights::WRITE)), publisherSubscriberUniqueIdentifier);
             }

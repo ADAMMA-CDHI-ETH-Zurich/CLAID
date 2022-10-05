@@ -1,7 +1,7 @@
 #pragma once
 
 #include "XMLVal.hpp"
-
+#include "Utilities/byte.hpp"
 namespace portaible
 {
 
@@ -18,6 +18,13 @@ namespace portaible
         static std::string toString(T& val)
         {
             return std::to_string(val);
+        }
+
+        template<>
+        std::string toString<CLAID::byte>(CLAID::byte& val)
+        {
+            unsigned char tmp = *reinterpret_cast<unsigned char*>(&val);
+            return std::to_string(tmp);
         }
 
         virtual void toString(std::string& string)
@@ -45,7 +52,14 @@ namespace portaible
             member = func(string); \
         } \
 
- 
+
+        static CLAID::byte strToByte(const std::string& string)
+        {
+            unsigned char tmp = std::stoi(string);
+            CLAID::byte byte = *reinterpret_cast<CLAID::byte*>(&tmp);
+            return byte;
+        }
+    
 
         // template <typename T = int, only_if <eq <NumericType, long>{}, T> = 0>
         // void parseFromString(long& value, const std::string& string) 
@@ -62,6 +76,7 @@ namespace portaible
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(float, std::stof)
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(double, std::stod)
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(long double, std::stold)
+        XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(CLAID::byte, strToByte)
 
     
 

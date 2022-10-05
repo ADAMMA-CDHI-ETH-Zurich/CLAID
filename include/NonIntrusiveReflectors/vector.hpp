@@ -13,15 +13,13 @@ void reflectRead(Reflector& r, std::vector<T>& vector)
 
     vector = std::vector<T>(count);
 
+    printf("vector start\n");
     for(size_t i = 0; i < count; i++)
     {
-        portaible::Logger::printfln("Accessing item index %d", i);
         r.itemIndex(i);
-        portaible::Logger::printfln("Got item index, vector size is %d %d", vector.size(), i);
         r.member("item", vector[i], "");
-        portaible::Logger::printfln("Member");
     }
-
+    printf("vector end");
     r.endSequence();
 }
 
