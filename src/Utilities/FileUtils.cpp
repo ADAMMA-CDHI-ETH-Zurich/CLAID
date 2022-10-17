@@ -16,8 +16,9 @@
 #include <windows.h>
 #include <stdio.h>
 #include <tchar.h>
-#elif __linux__
+#else
 #include <dirent.h>
+
 // <sys/types.h> and <sys/stat.h> needed, but also needed
 // for some of the windows functions. So no additional linux includes.
 #endif
@@ -87,29 +88,35 @@ namespace portaible
 
 	bool FileUtils::getAllDirectoriesInDirectory(std::string path, std::vector<std::string>& output)
 	{
-		output.clear();
-		DIR *dir;
-		struct dirent *ent;
-		if ((dir = opendir (path.c_str())) != NULL) 
-		{
-			while ((ent = readdir (dir)) != NULL) 
-			{
-				std::string directory = std::string(ent->d_name);
-
-				if(directory == "." || directory == "..")
-					continue;
-
-				if(FileUtils::dirExists(path + std::string("/") + directory))
-				{
-					output.push_back(directory);
-				}
-			}
-			closedir (dir);
-			return true;
-		} 
-		else 
-		{
+		#ifdef _WIN32
+			// TODO: IMPLEMENT THIS!
 			return false;
+
+		#endif
+			output.clear();
+			DIR *dir;
+			struct dirent *ent;
+			if ((dir = opendir (path.c_str())) != NULL) 
+			{
+				while ((ent = readdir (dir)) != NULL) 
+				{
+					std::string directory = std::string(ent->d_name);
+
+					if(directory == "." || directory == "..")
+						continue;
+
+					if(FileUtils::dirExists(path + std::string("/") + directory))
+					{
+						output.push_back(directory);
+					}
+				}
+				closedir (dir);
+				return true;
+			} 
+			else 
+			{
+				return false;
+			}
 		}
 	}
 	
