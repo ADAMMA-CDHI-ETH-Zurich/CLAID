@@ -13,13 +13,11 @@ void reflectRead(Reflector& r, std::vector<T>& vector)
 
     vector = std::vector<T>(count);
 
-    printf("vector start\n");
     for(size_t i = 0; i < count; i++)
     {
         r.itemIndex(i);
         r.member("item", vector[i], "");
     }
-    printf("vector end");
     r.endSequence();
 }
 

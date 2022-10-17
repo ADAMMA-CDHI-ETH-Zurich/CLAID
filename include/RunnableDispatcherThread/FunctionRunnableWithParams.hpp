@@ -47,6 +47,12 @@ namespace portaible
             {
                 this->stack = {params...};
             }
+            template<class Class, class... Args>
+            void bindWithParams(void (Class::*p)(Args...), Class* obj, Args... args)
+            {
+                this->bind(p, obj);
+                this->setParams(args...);
+            }
 
         
     };

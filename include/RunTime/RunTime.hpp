@@ -9,6 +9,7 @@
 
 #include "Module/Module.hpp"
 #include "XMLLoader/XMLLoaderManager.hpp"
+#include "RunnableDispatcherThread/Runnable.hpp"
 
 #define PORTAIBLE_RUNTIME portaible::RunTime::getInstance()
 
@@ -19,32 +20,27 @@ namespace portaible
     {
         private:
             std::vector<Module*> modules;
-            bool started = false;
+            bool running = false;
             
             void startModules();
+
+            // Used to run runnables on the frameworks main thread (i.e., thread the framework was started from).
+            // Generally, is not required. It can be benefical, however, if the thread that started the RunTime is the main
+            // thread, and some operations shall specifically be performed in that thread. E.g., this sometimes might be necessary
+            // for some GUI operations. For example, if a PythonModule wants to use OpenCV, this only works if the PythonInterpreter
+            // can execute that function on the main thread.
+            ITCChannel<Runnable*> runnablesChannel;
 
         public:
             ChannelManager channelManager;
             XMLLoader::XMLLoaderManager loader;
 
    
-        void test()
-        {
-        }
-
-        void start()
-        {
-            if(this->started)
+            void test()
             {
-                PORTAIBLE_THROW(Exception, "Error in RunTime::start(), start was called twice !");
             }
-            this->startModules();
-            this->started = true;
-        }
 
-
-        public:
-          
+            void start();
 
             void addModule(Module* module);
 
@@ -52,7 +48,10 @@ namespace portaible
             size_t getNumChannels();
             const std::string& getChannelNameByIndex(size_t id);
 
-            bool isStarted() const;
+            bool isRunning() const;
+
+            void executeRunnableInRunTimeThread(Runnable* runnable);
+            ITCChannel<Runnable*>* getMainRunnablesChannel();
     };
 }
 

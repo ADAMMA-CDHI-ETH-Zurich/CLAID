@@ -24,8 +24,6 @@
 #include "Binary/BinaryDeserializer.hpp"
 
 
-
-
 #include "Channel/ChannelManager.hpp"
 namespace portaible
 {
