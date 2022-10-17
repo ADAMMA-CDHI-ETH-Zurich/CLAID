@@ -19,6 +19,12 @@ namespace portaible
 
 		}
 
+		SocketClient::SocketClient(int sock) : sock(sock), connected(true)
+		{
+
+		}
+
+
 		bool SocketClient::connectTo(std::string address, int port, size_t timeoutInMs)
 		{
 			this->sock = INVALID_SOCKET;
