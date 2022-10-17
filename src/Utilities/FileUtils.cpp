@@ -92,7 +92,7 @@ namespace portaible
 			// TODO: IMPLEMENT THIS!
 			return false;
 
-		#endif
+		#else
 			output.clear();
 			DIR *dir;
 			struct dirent *ent;
@@ -117,7 +117,7 @@ namespace portaible
 			{
 				return false;
 			}
-		}
+		#endif
 	}
 	
 
