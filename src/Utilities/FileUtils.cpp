@@ -11,13 +11,13 @@
 
 
 #include <assert.h>  
-#include <dirent.h>
 
 #ifdef _WIN32
 #include <windows.h>
 #include <stdio.h>
 #include <tchar.h>
 #elif __linux__
+#include <dirent.h>
 // <sys/types.h> and <sys/stat.h> needed, but also needed
 // for some of the windows functions. So no additional linux includes.
 #endif
