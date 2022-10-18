@@ -1,0 +1,24 @@
+if(NOT DEFINED ENV{CLAID_PATH}) 
+  message(FATAL_ERROR "Environment variable CLAID_PATH not set. Did you properly install CLAID using one of the installer scripts?")
+endif()
+
+
+macro(CLAID_Include claid_package)
+  # if(NOT DEFINED ${claid_package})
+  #   message(FATAL_ERROR "Error, CLAID_Include called without providing argument specifying which package to include.")
+  # endif()
+  set(CLAID_PACKAGE_PATH $ENV{CLAID_PATH}/packages/${claid_package})
+  if(NOT EXISTS "${CLAID_PACKAGE_PATH}")
+    message(FATAL_ERROR "CLAID_Include: cannot include package ${claid_package}, it does not exist under $ENV{CLAID_PATH}/packages/\n Did you install the package?")
+  endif()
+
+  include_directories(${CLAID_PACKAGE_PATH}/include)
+
+  file(GLOB_RECURSE CURRENT_SOURCES
+          "${CLAID_PACKAGE_PATH}/src/*.cpp"
+          ) 
+
+  set(CLAID_SOURCES ${CLAID_SOURCES} ${CURRENT_SOURCES})
+  message("Included package ${claid_package}.")
+
+  endmacro()
