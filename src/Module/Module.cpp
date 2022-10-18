@@ -8,7 +8,7 @@ namespace claid
     // Somehow compiler does not like the constructor in the Module_imp .. soooo
     Module::Module()
     {
-        this->channelManager = &PORTAIBLE_RUNTIME->channelManager;
+        this->channelManager = &CLAID_RUNTIME->channelManager;
     }
 }
 // Yes, we do not use the REGISTER_MODULE macro here, because class "Module" should not be loadable by itself (it's just a base class!).

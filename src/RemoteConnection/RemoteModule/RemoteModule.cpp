@@ -65,7 +65,7 @@ namespace RemoteConnection
     {
         // By using forkSubModuleInThread, the LocalObserver will run on the same thread as the RemoteModule (no extra overhead).
         this->localObserver = this->forkSubModuleInThread<LocalObserver>();
-        this->remoteObserver = this->forkSubModuleInThread<RemoteObserver>(&PORTAIBLE_RUNTIME->channelManager);
+        this->remoteObserver = this->forkSubModuleInThread<RemoteObserver>(&CLAID_RUNTIME->channelManager);
     }
 
 
@@ -86,7 +86,7 @@ namespace RemoteConnection
 
 
         // Logger::printfln("Initialize");
-        // size_t numChannels = PORTAIBLE_RUNTIME->getNumChannels();
+        // size_t numChannels = CLAID_RUNTIME->getNumChannels();
         // std::vector<std::string> channelNames = {"IntChannel", "CoughChannel", "TestChannel"};
         // Message message = Message::CreateMessage<MessageHeaderChannelUpdate, MessageDataBinary>();
         // message.data->as<MessageDataBinary>()->set<std::vector<std::string>>(channelNames);
@@ -94,12 +94,12 @@ namespace RemoteConnection
 
         //  for(size_t i = 0; i < numChannels; i++)
         // {
-        //     channelNames.push_back(PORTAIBLE_RUNTIME->getChannelNameByIndex(i));
+        //     channelNames.push_back(CLAID_RUNTIME->getChannelNameByIndex(i));
         // }
 
         // Logger::printfln("RemoteModule cal sending.");
 
-        this->localObserver->observe(&PORTAIBLE_RUNTIME->channelManager);
+        this->localObserver->observe(&CLAID_RUNTIME->channelManager);
         
     }
 

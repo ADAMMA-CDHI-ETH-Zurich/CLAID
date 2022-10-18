@@ -1,7 +1,7 @@
 #pragma once
 
 
-#ifndef _PORTAIBLE_RUNTIME_H_
+#ifndef _CLAID_RUNTIME_H_
 #  error "Module.h must be included via the RunTime.h. You must not include it directly. Use #include <fw/RunTime.h> instead"
 #endif
 

@@ -47,7 +47,7 @@ namespace claid
 								module->setID(id);
 							}
 
-							PORTAIBLE_RUNTIME->addModule(module);
+							CLAID_RUNTIME->addModule(module);
 						}
 					}
 					return true;

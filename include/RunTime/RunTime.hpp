@@ -1,5 +1,5 @@
 #pragma once
-#define _PORTAIBLE_RUNTIME_H_
+#define _CLAID_RUNTIME_H_
 
 #include <iostream>
 
@@ -11,7 +11,7 @@
 #include "XMLLoader/XMLLoaderManager.hpp"
 #include "RunnableDispatcherThread/Runnable.hpp"
 
-#define PORTAIBLE_RUNTIME claid::RunTime::getInstance()
+#define CLAID_RUNTIME claid::RunTime::getInstance()
 
 namespace claid
 {
