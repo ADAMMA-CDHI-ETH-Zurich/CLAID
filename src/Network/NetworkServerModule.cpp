@@ -1,6 +1,6 @@
 #include "Network/NetworkServerModule.hpp"
 
-namespace portaible
+namespace claid
 {
     namespace Network
     {
@@ -98,4 +98,4 @@ namespace portaible
     }
 }
 
-REGISTER_MODULE(portaible::Network::NetworkServerModule)
+REGISTER_MODULE(claid::Network::NetworkServerModule)

@@ -3,7 +3,7 @@
 #include "Binary/BinarySerializer.hpp"
 
 
-namespace portaible
+namespace claid
 {
     template<typename T>
     class ChannelBufferElementTyped : public ChannelBufferElement

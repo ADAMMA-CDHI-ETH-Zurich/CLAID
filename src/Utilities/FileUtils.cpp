@@ -23,7 +23,7 @@
 // for some of the windows functions. So no additional linux includes.
 #endif
 
-namespace portaible
+namespace claid
 {
 	bool FileUtils::createDirectory(std::string path)
 	{

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace portaible
+namespace claid
 {
     namespace TypeChecking
     {

@@ -6,7 +6,7 @@
 #include <map>
 
 
-namespace portaible
+namespace claid
 {
 	namespace XMLLoader
 	{
@@ -42,7 +42,7 @@ namespace portaible
 						{
 							if(!this->doesLoaderExistForTag(child->name))
 							{
-								PORTAIBLE_THROW(portaible::Exception, "Error! No loader is able to handle tag \"" << child->name << "\" in XML file.");
+								PORTAIBLE_THROW(claid::Exception, "Error! No loader is able to handle tag \"" << child->name << "\" in XML file.");
 							}
 						}
 					} 
@@ -82,6 +82,6 @@ namespace portaible
 	static volatile RegisterHelper<className> registerHelper;
 
 #define REGISTER_XML_LOADER(className) \
-	volatile portaible::XMLLoader::RegisterHelper<className> className::registerHelper(#className);\
+	volatile claid::XMLLoader::RegisterHelper<className> className::registerHelper(#className);\
 
 

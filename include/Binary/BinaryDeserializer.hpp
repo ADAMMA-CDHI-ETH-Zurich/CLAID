@@ -5,7 +5,7 @@
 #include "Serialization/Deserializer.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 
-namespace portaible
+namespace claid
 {
     class BinaryDeserializer : public Deserializer<BinaryDeserializer>
     {
@@ -75,7 +75,7 @@ namespace portaible
                 // Check if ClassFactory is registered for className.
                 if (!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForClass(className))
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "BinaryDeserializer failed to deserialize object from binary data. Class \"" << className << "\" was not registered to ClassFactory and is unknown.");
+                    PORTAIBLE_THROW(claid::Exception, "BinaryDeserializer failed to deserialize object from binary data. Class \"" << className << "\" was not registered to ClassFactory and is unknown.");
                 } 
 
                 member = ClassFactory::ClassFactory::getInstance()->getNewInstanceAndCast<T>(className);
@@ -83,7 +83,7 @@ namespace portaible
                 PolymorphicReflector::WrappedReflectorBase<BinaryDeserializer>* polymorphicReflector;
                 if (!PolymorphicReflector::PolymorphicReflector<BinaryDeserializer>::getInstance()->getReflector(className, polymorphicReflector))
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "BinaryDeserializer failed to deserialize object from binary. Member \"" << property << "\" is a pointer type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                    PORTAIBLE_THROW(claid::Exception, "BinaryDeserializer failed to deserialize object from binary. Member \"" << property << "\" is a pointer type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
                 polymorphicReflector->invoke(*this, static_cast<void*>(member));               

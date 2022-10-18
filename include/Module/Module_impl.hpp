@@ -1,6 +1,6 @@
 #include "RunTime/RunTime.hpp"
 
-namespace portaible
+namespace claid
 {
     template<typename T>
     Channel<T> SubModule::subscribeLocal(const std::string& channelID)
@@ -43,7 +43,7 @@ namespace portaible
 }
 
 
-namespace portaible
+namespace claid
 {
 
 

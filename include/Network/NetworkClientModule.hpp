@@ -6,7 +6,7 @@
 #include "Network/SocketConnectionModule.hpp"
 #include "Network/NetworkModule.hpp"
 
-namespace portaible
+namespace claid
 {
     namespace Network
     {

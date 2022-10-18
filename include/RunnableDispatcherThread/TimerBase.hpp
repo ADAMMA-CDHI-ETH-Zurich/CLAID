@@ -6,7 +6,7 @@
 #include <thread>
 #include <mutex>
 
-namespace portaible
+namespace claid
 {
     // Class that calls the run function after a period defined by periodInMs.
     // Can be interrupted any time, even within the period (i.e., while the timer thread is waiting).

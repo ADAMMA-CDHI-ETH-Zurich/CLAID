@@ -1,3 +1,3 @@
 #include "XMLLoader/XMLModuleLoader.hpp"
 
-REGISTER_XML_LOADER(portaible::XMLLoader::XMLModuleLoader)
+REGISTER_XML_LOADER(claid::XMLLoader::XMLModuleLoader)

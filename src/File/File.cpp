@@ -1,7 +1,7 @@
 #include "File/File.hpp"
 
 
-namespace portaible
+namespace claid
 {
     File::File()
     {
@@ -66,4 +66,4 @@ namespace portaible
     }
 }
 
-REGISTER_SERIALIZATION(portaible::File)
+REGISTER_SERIALIZATION(claid::File)

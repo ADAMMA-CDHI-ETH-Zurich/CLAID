@@ -2,7 +2,7 @@
 
 #include "Reflection/RecursiveReflector.hpp"
 
-namespace portaible
+namespace claid
 {
     template<typename Derived>
     class Serializer : public RecursiveReflector<Derived>

@@ -2,7 +2,7 @@
 #include <type_traits>
 #include <memory.h>
 #include <iostream>
-namespace portaible
+namespace claid
 {
     // For any other class 
     template<typename Reflector, typename T, class Enable = void>

@@ -1,7 +1,7 @@
 #include "Network/SocketConnectionModule.hpp"
 #include "Binary/BinarySerializer.hpp"
 
-namespace portaible
+namespace claid
 {
 namespace Network
 {

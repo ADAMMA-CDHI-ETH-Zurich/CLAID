@@ -4,7 +4,7 @@
 #include "RunTime/RunTime.hpp"
 #include "XML/XMLDeserializer.hpp"
 
-namespace portaible
+namespace claid
 {
 	namespace XMLLoader
 	{
@@ -27,7 +27,7 @@ namespace portaible
 						{
 							if (!ModuleFactory::ModuleFactory::getInstance()->isFactoryRegisteredForModule(className))
 							{
-								PORTAIBLE_THROW(portaible::Exception, "ModuleLoader failed to load Module from XML. Class \"" << className << "\" was not registered and is unknown.");
+								PORTAIBLE_THROW(claid::Exception, "ModuleLoader failed to load Module from XML. Class \"" << className << "\" was not registered and is unknown.");
 							}
 
 							Module* module = dynamic_cast<Module*>(ModuleFactory::ModuleFactory::getInstance()->getFactoryForModuleByName(className)->getInstanceUntyped());
@@ -35,7 +35,7 @@ namespace portaible
 							if(module == nullptr)
 							{
 								// The class is not a Module.
-								PORTAIBLE_THROW(portaible::Exception, "ModuleLoader failed to load Module from XML. Class \"" << className << "\" is not a Module. Did you forget inheriting from portaible::Module?");
+								PORTAIBLE_THROW(claid::Exception, "ModuleLoader failed to load Module from XML. Class \"" << className << "\" is not a Module. Did you forget inheriting from claid::Module?");
 							}
 
 							XMLDeserializer deserializer(node);

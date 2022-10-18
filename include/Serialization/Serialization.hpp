@@ -11,16 +11,16 @@
 // Only use the 4 serializers that come with the ModuleAPI (XMLSerializer, XMLDeserializer, BinarySerializer, BinaryDeserializer).
 // Necessary for Modules, for example, which should only use the standard de-/serializers.
 #define DECLARE_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className) \
-    DECLARE_POLYMORPHIC_REFLECTOR(className, portaible::XMLSerializer, XMLSerializer)\
-    DECLARE_POLYMORPHIC_REFLECTOR(className, portaible::XMLDeserializer, XMLDeserializer)\
-    DECLARE_POLYMORPHIC_REFLECTOR(className, portaible::BinarySerializer, BinarySerializer)\
-    DECLARE_POLYMORPHIC_REFLECTOR(className, portaible::BinaryDeserializer, BinaryDeserializer)\
+    DECLARE_POLYMORPHIC_REFLECTOR(className, claid::XMLSerializer, XMLSerializer)\
+    DECLARE_POLYMORPHIC_REFLECTOR(className, claid::XMLDeserializer, XMLDeserializer)\
+    DECLARE_POLYMORPHIC_REFLECTOR(className, claid::BinarySerializer, BinarySerializer)\
+    DECLARE_POLYMORPHIC_REFLECTOR(className, claid::BinaryDeserializer, BinaryDeserializer)\
 
 #define REGISTER_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className)\
-    REGISTER_POLYMORPHIC_REFLECTOR(className, portaible::XMLSerializer, XMLSerializer)\
-    REGISTER_POLYMORPHIC_REFLECTOR(className, portaible::XMLDeserializer, XMLDeserializer)\
-    REGISTER_POLYMORPHIC_REFLECTOR(className, portaible::BinarySerializer, BinarySerializer)\
-    REGISTER_POLYMORPHIC_REFLECTOR(className, portaible::BinaryDeserializer, BinaryDeserializer)\
+    REGISTER_POLYMORPHIC_REFLECTOR(className, claid::XMLSerializer, XMLSerializer)\
+    REGISTER_POLYMORPHIC_REFLECTOR(className, claid::XMLDeserializer, XMLDeserializer)\
+    REGISTER_POLYMORPHIC_REFLECTOR(className, claid::BinarySerializer, BinarySerializer)\
+    REGISTER_POLYMORPHIC_REFLECTOR(className, claid::BinaryDeserializer, BinaryDeserializer)\
 
 
 

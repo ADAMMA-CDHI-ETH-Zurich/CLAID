@@ -8,7 +8,7 @@
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 #include "Exception/Exception.hpp"
 #include <algorithm>
-namespace portaible
+namespace claid
 {
     template<typename T>
     class Channel;
@@ -19,7 +19,7 @@ namespace portaible
 
 #include <vector>
 
-namespace portaible
+namespace claid
 {
     
 

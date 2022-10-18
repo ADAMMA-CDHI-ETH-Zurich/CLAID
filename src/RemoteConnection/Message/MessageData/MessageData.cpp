@@ -1,3 +1,3 @@
 #include "RemoteConnection/Message/MessageData/MessageData.hpp"
 
-REGISTER_SERIALIZATION(portaible::RemoteConnection::MessageData)
+REGISTER_SERIALIZATION(claid::RemoteConnection::MessageData)

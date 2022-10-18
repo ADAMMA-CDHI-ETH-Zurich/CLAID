@@ -3,7 +3,7 @@
 
 #include "Reflection/RecursiveReflector.hpp"
 
-namespace portaible
+namespace claid
 {
     class PropertyReflector : public RecursiveReflector<PropertyReflector>
     {

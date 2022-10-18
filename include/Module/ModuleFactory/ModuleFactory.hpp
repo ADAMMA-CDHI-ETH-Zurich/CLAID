@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace portaible
+namespace claid
 {
 	namespace ModuleFactory
 	{
@@ -36,7 +36,7 @@ namespace portaible
 					{
 						// Not an error. This might happen when importing shared libraries that also were build with CLAID (e.g., importing PyCLAID from a PythonModule).
 						return;
-						//PORTAIBLE_THROW(portaible::Exception, "Error, class \"" << className << "\" was registered to ModuleFactory more than once");
+						//PORTAIBLE_THROW(claid::Exception, "Error, class \"" << className << "\" was registered to ModuleFactory more than once");
 					}
 					moduleFactories.insert(std::make_pair(className, moduleFactory));
 				}
@@ -114,10 +114,10 @@ namespace portaible
 
 
 #define DECLARE_MODULE_FACTORY(className) \
-	static volatile portaible::ModuleFactory::RegisterHelper<className> moduleFactoryRegistrar;\
+	static volatile claid::ModuleFactory::RegisterHelper<className> moduleFactoryRegistrar;\
 	static const std::string __MODULE_NAME__;\
 	const std::string& getModuleName() {return className::__MODULE_NAME__;}
 
 #define REGISTER_MODULE_FACTORY(className) \
-	volatile portaible::ModuleFactory::RegisterHelper<className> className::moduleFactoryRegistrar (#className);\
+	volatile claid::ModuleFactory::RegisterHelper<className> className::moduleFactoryRegistrar (#className);\
 	const std::string className::__MODULE_NAME__ = #className;

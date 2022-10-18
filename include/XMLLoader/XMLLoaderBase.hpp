@@ -3,7 +3,7 @@
 #include "XML/XMLNode.hpp"
 #include <string>
 
-namespace portaible
+namespace claid
 {
 	namespace XMLLoader
 	{

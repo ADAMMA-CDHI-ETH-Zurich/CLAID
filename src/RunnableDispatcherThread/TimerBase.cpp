@@ -1,6 +1,6 @@
 #include "RunnableDispatcherThread/TimerBase.hpp"
 
-namespace portaible
+namespace claid
 {
     TimerBase::TimerBase()
     {

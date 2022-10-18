@@ -5,7 +5,7 @@
 #include "RemoteConnection/Error/Error.hpp"
 #include "Network/Socket/Client/SocketClient.hpp"
 #include "Network/Error/NetworkErrors.hpp"
-namespace portaible
+namespace claid
 {
     namespace Network
     {

@@ -8,7 +8,7 @@
 
 #include <deque>
 
-namespace portaible
+namespace claid
 {
     class XMLParser
     {
@@ -69,7 +69,7 @@ namespace portaible
 
                 if(stack[0].element != "root")
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "Expected first element in XML to be <root>. Root node missing!");
+                    PORTAIBLE_THROW(claid::Exception, "Expected first element in XML to be <root>. Root node missing!");
                 }
 
                 rootNode = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
@@ -128,7 +128,7 @@ namespace portaible
                     }
                     else
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Invalid XML! Found a value where a tag (opening or closing) was expected.");
+                        PORTAIBLE_THROW(claid::Exception, "Invalid XML! Found a value where a tag (opening or closing) was expected.");
                     }
                 }
 
@@ -153,7 +153,7 @@ namespace portaible
                     {   
                         if(!(index + 1 < xml.size()))
                         {
-                            PORTAIBLE_THROW(portaible::Exception, "Error while parsing XML, unexpected < at end of file.");
+                            PORTAIBLE_THROW(claid::Exception, "Error while parsing XML, unexpected < at end of file.");
                         }
 
                         size_t indexTmp = xml.find(">", index);

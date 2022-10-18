@@ -1,6 +1,6 @@
 #include "RunnableDispatcherThread/RunnableDispatcherThread.hpp"
 
-namespace portaible
+namespace claid
 {
     class Subscriber
     {   public:

@@ -6,7 +6,7 @@
 
 #include "RemoteConnection/Error/Error.hpp"
 
-namespace portaible
+namespace claid
 {
     namespace Network
     {

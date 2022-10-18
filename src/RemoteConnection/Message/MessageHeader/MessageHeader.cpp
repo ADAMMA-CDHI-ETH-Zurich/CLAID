@@ -1,3 +1,3 @@
 #include "RemoteConnection/Message/MessageHeader/MessageHeader.hpp"
 
-REGISTER_SERIALIZATION(portaible::RemoteConnection::MessageHeader)
+REGISTER_SERIALIZATION(claid::RemoteConnection::MessageHeader)

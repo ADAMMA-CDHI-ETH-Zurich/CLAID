@@ -1,3 +1,3 @@
 #include "Network/NetworkClientModule.hpp"
 
-REGISTER_MODULE(portaible::Network::NetworkClientModule)
+REGISTER_MODULE(claid::Network::NetworkClientModule)

@@ -1,7 +1,7 @@
 #include "RemoteConnection/RemoteModule/RemoteModule.hpp"
 #include "RemoteConnection/Message/MessageData/MessageDataBinary.hpp"
 
-namespace portaible
+namespace claid
 {
 namespace RemoteConnection
 {

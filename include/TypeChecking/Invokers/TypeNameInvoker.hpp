@@ -3,7 +3,7 @@
 #include "Traits/is_specialization_of.hpp"
 #include "TypeChecking/CompileTimeTypeNameDemangling.hpp"
 
-namespace portaible
+namespace claid
 {
     namespace TypeChecking
     {
@@ -24,7 +24,7 @@ namespace portaible
 }
 
 #include "TypeChecking/Invokers/StdTypeNameInvoker.hpp"
-namespace portaible
+namespace claid
 {
     namespace TypeChecking
     {

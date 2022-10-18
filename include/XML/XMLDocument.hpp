@@ -4,7 +4,7 @@
 #include "XMLNode.hpp"
 #include "File/File.hpp"
 
-namespace portaible
+namespace claid
 {
 	class XMLDocument
 	{

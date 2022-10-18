@@ -12,7 +12,7 @@
 #include <fcntl.h>
 #include <sys/select.h>
 
-namespace portaible
+namespace claid
 {
 
 	Network::SocketClient::SocketClient() : sock(-1), connected(false)

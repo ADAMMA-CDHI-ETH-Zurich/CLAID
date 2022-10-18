@@ -11,9 +11,9 @@
 #include "XMLLoader/XMLLoaderManager.hpp"
 #include "RunnableDispatcherThread/Runnable.hpp"
 
-#define PORTAIBLE_RUNTIME portaible::RunTime::getInstance()
+#define PORTAIBLE_RUNTIME claid::RunTime::getInstance()
 
-namespace portaible
+namespace claid
 {
 
     class RunTime : public Singleton<RunTime> 
@@ -65,7 +65,7 @@ namespace portaible
     DECLARE_MODULE_FACTORY(className)\
 
 #define REGISTER_MODULE(className)\
-    static_assert(std::is_base_of<portaible::BaseModule, className>::value, "Tried to register a class as Module (see above), which did not inherit from BaseModule. Did you forget to inherit from Module or BaseModule. "  ); \
+    static_assert(std::is_base_of<claid::BaseModule, className>::value, "Tried to register a class as Module (see above), which did not inherit from BaseModule. Did you forget to inherit from Module or BaseModule. "  ); \
     REGISTER_TO_CLASS_FACTORY(className) \
     REGISTER_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className)\
     REGISTER_MODULE_FACTORY(className)

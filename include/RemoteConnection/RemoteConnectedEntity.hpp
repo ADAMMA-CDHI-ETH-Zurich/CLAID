@@ -5,7 +5,7 @@
 #include "RemoteConnection/ConnectionLink.hpp"
 #include "RemoteConnection/Error/Error.hpp"
 
-namespace portaible
+namespace claid
 {
     namespace RemoteConnection
     {

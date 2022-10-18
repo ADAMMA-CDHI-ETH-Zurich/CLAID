@@ -25,7 +25,7 @@
 
 
 #include "Channel/ChannelManager.hpp"
-namespace portaible
+namespace claid
 {
     // Base class for any type of module.
     class BaseModule
@@ -404,10 +404,10 @@ namespace portaible
     class Module : public BaseModule
     {   
         DECLARE_CLASS_FACTORY(Module)
-        DECLARE_POLYMORPHIC_REFLECTOR(Module, portaible::XMLSerializer, XMLSerializer)
-        DECLARE_POLYMORPHIC_REFLECTOR(Module, portaible::XMLDeserializer, XMLDeserializer)
-        DECLARE_POLYMORPHIC_REFLECTOR(Module, portaible::BinarySerializer, BinarySerializer)
-        DECLARE_POLYMORPHIC_REFLECTOR(Module, portaible::BinaryDeserializer, BinaryDeserializer)
+        DECLARE_POLYMORPHIC_REFLECTOR(Module, claid::XMLSerializer, XMLSerializer)
+        DECLARE_POLYMORPHIC_REFLECTOR(Module, claid::XMLDeserializer, XMLDeserializer)
+        DECLARE_POLYMORPHIC_REFLECTOR(Module, claid::BinarySerializer, BinarySerializer)
+        DECLARE_POLYMORPHIC_REFLECTOR(Module, claid::BinaryDeserializer, BinaryDeserializer)
 
         public:
             Module();

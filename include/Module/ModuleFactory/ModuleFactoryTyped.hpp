@@ -2,7 +2,7 @@
 
 #include "ModuleFactoryBase.hpp"
 
-namespace portaible
+namespace claid
 {
 	namespace ModuleFactory
 	{

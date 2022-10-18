@@ -3,7 +3,7 @@
 #include <string>
 #include <memory.h>
 
-namespace portaible
+namespace claid
 {
     class XMLVal : public XMLNode
     {

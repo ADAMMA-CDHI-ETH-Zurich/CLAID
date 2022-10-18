@@ -2,7 +2,7 @@
 
 #include "Runnable.hpp"
 
-namespace portaible
+namespace claid
 {
     class FunctionRunnableBase : public Runnable
     {

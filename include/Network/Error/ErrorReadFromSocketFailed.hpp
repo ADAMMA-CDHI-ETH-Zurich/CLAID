@@ -2,7 +2,7 @@
 
 #include "RemoteConnection/Error/ErrorType.hpp"
 
-namespace portaible
+namespace claid
 {
     namespace Network
     {

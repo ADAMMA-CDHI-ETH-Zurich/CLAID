@@ -13,8 +13,8 @@
 #ifdef __ANDROID__ 
     #define DECLARE_JAVA_DE_SERIALIZERS(className) \
         DECLARE_JAVA_WRAPPER(className) \
-        DECLARE_POLYMORPHIC_REFLECTOR(className, portaible::JavaWrapper::JavaNativeSetter, JavaNativeSetter)\
-        DECLARE_POLYMORPHIC_REFLECTOR(className, portaible::JavaWrapper::JavaNativeGetter, JavaNativeGetter)
+        DECLARE_POLYMORPHIC_REFLECTOR(className, claid::JavaWrapper::JavaNativeSetter, JavaNativeSetter)\
+        DECLARE_POLYMORPHIC_REFLECTOR(className, claid::JavaWrapper::JavaNativeGetter, JavaNativeGetter)
 #else
     #define DECLARE_JAVA_DE_SERIALIZERS(className) 
 #endif 
@@ -23,8 +23,8 @@
 #ifdef __ANDROID__ 
     #define REGISTER_JAVA_DE_SERIALIZERS(className) \
         REGISTER_JAVA_WRAPPER(className) \
-        REGISTER_POLYMORPHIC_REFLECTOR(className, portaible::JavaWrapper::JavaNativeSetter, JavaNativeSetter)\
-        REGISTER_POLYMORPHIC_REFLECTOR(className, portaible::JavaWrapper::JavaNativeGetter, JavaNativeGetter)
+        REGISTER_POLYMORPHIC_REFLECTOR(className, claid::JavaWrapper::JavaNativeSetter, JavaNativeSetter)\
+        REGISTER_POLYMORPHIC_REFLECTOR(className, claid::JavaWrapper::JavaNativeGetter, JavaNativeGetter)
 #else
     #define REGISTER_JAVA_DE_SERIALIZERS(className) 
 #endif 

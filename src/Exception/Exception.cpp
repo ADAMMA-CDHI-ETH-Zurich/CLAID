@@ -1,7 +1,7 @@
 
 #include "Exception/Exception.hpp"
 
-namespace portaible {
+namespace claid {
 
 
 const char* Exception::what() const noexcept
@@ -11,7 +11,6 @@ const char* Exception::what() const noexcept
 
 	mMessage = "";
 
-	// obtain max width
 	std::size_t maxMessageSize = 0;
 	for(std::list<Info>::const_iterator i = mInfos.begin();
 		i!=mInfos.end(); ++i)
@@ -25,7 +24,6 @@ const char* Exception::what() const noexcept
 			maxMessageSize = msgSize;
 	}
 
-	// append all informations with correct indentation
 	for(std::list<Info>::const_iterator i = mInfos.begin();
 		i!=mInfos.end(); ++i)
 	{
@@ -43,7 +41,6 @@ const char* Exception::what() const noexcept
 std::string Exception::message() const noexcept
 {
 	std::string s;
-	// append all informations with correct indentation
 	for(std::list<Info>::const_iterator i = mInfos.begin(); i!=mInfos.end(); ++i)
 	{
 		if(i!=mInfos.begin())
@@ -60,7 +57,6 @@ std::string Exception::Info::what(std::size_t messageWidth) const
 {
 	std::string s = message;
 
-	// fill with spaces
 	for(std::size_t i=message.size(); i<messageWidth; ++i)
 		s += " ";
 

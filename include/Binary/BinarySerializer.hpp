@@ -6,7 +6,7 @@
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 #include "PolymorphicReflector/PolymorphicReflector.hpp"
 
-namespace portaible
+namespace claid
 {
     class BinarySerializer : public Serializer<BinarySerializer>
     {
@@ -94,7 +94,7 @@ namespace portaible
                 std::string rttiTypeString = TypeChecking::getCompilerSpecificRunTimeNameOfObject(*member);
                 if(!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForRTTITypeName(rttiTypeString))
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "BinarySerializer failed to serialize object to binary. Member \"" << property << "\" is a pointer/polymorphic object of type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                    PORTAIBLE_THROW(claid::Exception, "BinarySerializer failed to serialize object to binary. Member \"" << property << "\" is a pointer/polymorphic object of type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
                 // If there is a factory available for data type with given RTTI string (see above), then the className will
@@ -104,7 +104,7 @@ namespace portaible
                 PolymorphicReflector::WrappedReflectorBase<BinarySerializer>* polymorphicReflector;
                 if (!PolymorphicReflector::PolymorphicReflector<BinarySerializer>::getInstance()->getReflector(className, polymorphicReflector))
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "BinarySerializer failed to serialize object to binary. Member \"" << property << "\" is a pointer/polymorphic type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                    PORTAIBLE_THROW(claid::Exception, "BinarySerializer failed to serialize object to binary. Member \"" << property << "\" is a pointer/polymorphic type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
                 // Store class name

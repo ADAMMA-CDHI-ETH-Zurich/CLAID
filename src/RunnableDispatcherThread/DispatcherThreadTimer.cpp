@@ -1,6 +1,6 @@
 #include "RunnableDispatcherThread/DispatcherThreadTimer.hpp"
 
-namespace portaible
+namespace claid
 {
     DispatcherThreadTimer::DispatcherThreadTimer()
     {

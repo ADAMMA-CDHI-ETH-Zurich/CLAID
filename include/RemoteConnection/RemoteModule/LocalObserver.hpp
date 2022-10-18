@@ -8,7 +8,7 @@
 #include "RemoteConnection/RemoteModule/Observer.hpp"
 
 
-namespace portaible
+namespace claid
 {
     namespace RemoteConnection
     {

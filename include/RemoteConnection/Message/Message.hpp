@@ -6,7 +6,7 @@
 #include "Serialization/Serialization.hpp"
 #include "Binary/BinaryData.hpp"
 
-namespace portaible
+namespace claid
 {
     namespace RemoteConnection
     {

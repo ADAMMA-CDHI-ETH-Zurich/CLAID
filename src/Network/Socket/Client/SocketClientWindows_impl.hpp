@@ -10,7 +10,7 @@
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
-namespace portaible
+namespace claid
 {
 	namespace Network
 	{

@@ -2,7 +2,7 @@
 
 #include "RunTime/RunTime.hpp"
 
-namespace portaible
+namespace claid
 {
 	namespace ModuleFactory
 	{

@@ -1,7 +1,7 @@
 
 #include "RemoteConnection/ConnectionModule.hpp"
 
-namespace portaible
+namespace claid
 {
 namespace RemoteConnection
 {

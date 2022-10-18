@@ -7,7 +7,7 @@
     #include "SocketClientUnix_impl.hpp"
 #endif
 
-namespace portaible
+namespace claid
 {
     bool Network::SocketClient::write(BinaryData& data)
     {

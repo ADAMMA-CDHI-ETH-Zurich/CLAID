@@ -2,7 +2,7 @@
 
 #include "XMLVal.hpp"
 #include "Utilities/byte.hpp"
-namespace portaible
+namespace claid
 {
 
     struct XMLNumericVal : public XMLVal

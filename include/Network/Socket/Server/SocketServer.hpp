@@ -17,7 +17,7 @@
 #include "Network/Socket/Client/SocketClient.hpp"
 
 //#include <thread.h>
-namespace portaible
+namespace claid
 {
 	namespace Network
 	{

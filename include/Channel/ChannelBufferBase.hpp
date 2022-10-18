@@ -12,7 +12,7 @@
 #include <iostream>
 #define MAX_CHANNEL_BUFFER_SIZE 20
 
-namespace portaible
+namespace claid
 {
     class ChannelBufferBase
     {

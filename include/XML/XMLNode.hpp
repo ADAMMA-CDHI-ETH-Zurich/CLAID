@@ -5,7 +5,7 @@
 #include <memory>
 #include <algorithm>
 
-namespace portaible
+namespace claid
 {
     class XMLNode 
     {

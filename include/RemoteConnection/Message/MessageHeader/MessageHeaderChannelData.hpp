@@ -1,7 +1,7 @@
 #pragma once
 #include "RemoteConnection/Message/MessageHeader/MessageHeader.hpp"
 #include "Channel/ChannelData.hpp"
-namespace portaible
+namespace claid
 {
     namespace RemoteConnection
     {

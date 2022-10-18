@@ -3,7 +3,7 @@
 #include "FunctionRunnableBase.hpp"
 #include <functional>
 
-namespace portaible
+namespace claid
 {
     // A Runnable that does nothing.
     // Can be used to wake up a RunnableDispatcher thread, by inserting

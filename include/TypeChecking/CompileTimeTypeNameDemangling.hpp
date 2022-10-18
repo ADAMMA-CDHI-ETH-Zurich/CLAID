@@ -14,7 +14,7 @@
 
 
 
-namespace portaible
+namespace claid
 {
 
 
@@ -81,23 +81,23 @@ namespace portaible
                 static_string p = __PRETTY_FUNCTION__;
 
                 // __PRETTY_FUNCTION__ is going to be sth like
-                // auto portaible::TypeChecking::compileTimeTypeNameByUsingFunctionName() [T = std::string]
+                // auto claid::TypeChecking::compileTimeTypeNameByUsingFunctionName() [T = std::string]
                 // What we are interested in is only std::string, thus we remove the prefix and suffix.
 
                 const int totalLength = constexpr_length_of_c_string(__PRETTY_FUNCTION__);
-                const int prefixLength = constexpr_length_of_c_string("auto portaible::TypeChecking::compileTimeTypeNameByUsingFunctionName() [T = "); 
+                const int prefixLength = constexpr_length_of_c_string("auto claid::TypeChecking::compileTimeTypeNameByUsingFunctionName() [T = "); 
                 const int suffixLength = constexpr_length_of_c_string("]");
             #elif defined(__GNUC__)
                 static_string p = __PRETTY_FUNCTION__;
                 const int totalLength = constexpr_length_of_c_string(__PRETTY_FUNCTION__);
-                const int prefixLength = constexpr_length_of_c_string("auto portaible::TypeChecking::compileTimeTypeNameByUsingFunctionName() [T = "); 
+                const int prefixLength = constexpr_length_of_c_string("auto claid::TypeChecking::compileTimeTypeNameByUsingFunctionName() [T = "); 
                 const int suffixLength = constexpr_length_of_c_string("]");
                 
             #elif defined(_MSC_VER)
                 static_string p = __FUNCSIG__;
 
                 const int totalLength = constexpr_length_of_c_string(__FUNCSIG__);
-                const int prefixLength = constexpr_length_of_c_string("auto __cdecl portaible::TypeChecking::compileTimeTypeNameByUsingFunctionName<"); 
+                const int prefixLength = constexpr_length_of_c_string("auto __cdecl claid::TypeChecking::compileTimeTypeNameByUsingFunctionName<"); 
                 const int suffixLength = constexpr_length_of_c_string(">(void)");
             #else
                 static_assert(false, "Unsupported compiler in function compileTimeTypeNameByUsingFunctionName. Retrieving compile time name of a class by using a function name (i.e., automatic demangling),"

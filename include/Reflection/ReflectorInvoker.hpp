@@ -3,7 +3,7 @@
 #include "AbstractReflector.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 
-namespace portaible
+namespace claid
 {
 
     template<typename Type>

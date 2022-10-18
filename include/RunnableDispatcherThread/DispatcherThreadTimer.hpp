@@ -3,7 +3,7 @@
 
 #include "RunnableDispatcherThread.hpp"
 
-namespace portaible
+namespace claid
 {
     class DispatcherThreadTimer : public TimerBase
     {

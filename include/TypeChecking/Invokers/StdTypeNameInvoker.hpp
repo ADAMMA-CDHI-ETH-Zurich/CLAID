@@ -11,7 +11,7 @@
 #include <list>
 #include <stack>
 #include <bitset>
-namespace portaible
+namespace claid
 {
     namespace TypeChecking
     {

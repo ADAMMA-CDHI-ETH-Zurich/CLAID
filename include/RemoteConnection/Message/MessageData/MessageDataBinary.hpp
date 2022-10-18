@@ -3,7 +3,7 @@
 #include "Binary/BinaryData.hpp"
 #include "RemoteConnection/Message/MessageData/MessageData.hpp"
 
-namespace portaible
+namespace claid
 {
     namespace RemoteConnection
     {

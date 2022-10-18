@@ -2,7 +2,7 @@
 #include "Binary/BinaryData.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 #include "Exception/Exception.hpp"
-namespace portaible
+namespace claid
 {
     class BinaryDataReader
     {   

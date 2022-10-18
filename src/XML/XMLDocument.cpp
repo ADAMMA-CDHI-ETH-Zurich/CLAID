@@ -1,7 +1,7 @@
 #include "XML/XMLDocument.hpp"
 #include <fstream>
 
-namespace portaible
+namespace claid
 {
 	bool XMLDocument::loadFromFile(const File& file)
 	{

@@ -6,7 +6,7 @@
 #include <map>
 #include <string>
 
-namespace portaible
+namespace claid
 {
 	namespace PolymorphicReflector
 	{
@@ -26,7 +26,7 @@ namespace portaible
 					if (it != reflectors.end())
 					{
 						return;
-						//PORTAIBLE_THROW(portaible::Exception, "Error, PolymorhpReflector for class \"" << className << "\" was registered multiple times.");
+						//PORTAIBLE_THROW(claid::Exception, "Error, PolymorhpReflector for class \"" << className << "\" was registered multiple times.");
 					}
 
 
@@ -63,10 +63,10 @@ namespace portaible
 }
 
 #define REGISTER_POLYMORPHIC_REFLECTOR(className, Reflector, ReflectorName) \
-	portaible::PolymorphicReflector::RegisterHelper<className, Reflector> className::polymorphicReflectorRegistrar##ReflectorName (#className);\
+	claid::PolymorphicReflector::RegisterHelper<className, Reflector> className::polymorphicReflectorRegistrar##ReflectorName (#className);\
 
 #define DECLARE_POLYMORPHIC_REFLECTOR(className, Reflector, ReflectorName) \
-     static portaible::PolymorphicReflector::RegisterHelper<className, Reflector> polymorphicReflectorRegistrar##ReflectorName;
+     static claid::PolymorphicReflector::RegisterHelper<className, Reflector> polymorphicReflectorRegistrar##ReflectorName;
 
 
 	 

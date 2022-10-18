@@ -1,6 +1,6 @@
 #include "PropertyNode.hpp"
 
-namespace portaible
+namespace claid
 {
     template<typename T>
     class TypedPropertyNode : public PropertyNode

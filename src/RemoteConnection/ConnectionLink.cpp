@@ -1,6 +1,6 @@
 #include "RemoteConnection/ConnectionLink.hpp"
 
-namespace portaible
+namespace claid
 {
 namespace RemoteConnection
 {

@@ -33,7 +33,7 @@ struct generateIntegerSequence<0, S...> {
 typedef sequence<S...> type;
 };
 
-namespace portaible
+namespace claid
 {
     struct VariadicTemplateHelpers
     {

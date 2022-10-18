@@ -2,7 +2,7 @@
 #include "WrappedReflectorBase.hpp"
 
 
-namespace portaible
+namespace claid
 {
 	namespace PolymorphicReflector
 	{

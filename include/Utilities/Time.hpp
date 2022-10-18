@@ -5,7 +5,7 @@
 #include <limits>
 #include <sstream>
 
-namespace portaible
+namespace claid
 {
 struct Duration 
 {

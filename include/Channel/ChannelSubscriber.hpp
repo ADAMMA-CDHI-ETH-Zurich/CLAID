@@ -7,7 +7,7 @@
 #include <iostream>
 #include <deque>
 
-namespace portaible
+namespace claid
 {
     // forward declaration
     template<typename T>

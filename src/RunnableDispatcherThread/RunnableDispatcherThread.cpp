@@ -2,7 +2,7 @@
 #include "RunnableDispatcherThread/DummyRunnable.hpp"
 
 
-namespace portaible
+namespace claid
 {
     void RunnableDispatcherThread::start()
     {

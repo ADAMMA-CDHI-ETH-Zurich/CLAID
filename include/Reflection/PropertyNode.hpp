@@ -1,4 +1,4 @@
-namespace portaible
+namespace claid
 {
     class PropertyNode
     {

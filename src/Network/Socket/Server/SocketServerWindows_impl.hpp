@@ -6,7 +6,7 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
-namespace portaible
+namespace claid
 {
 	namespace Network
 	{

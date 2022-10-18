@@ -1,6 +1,6 @@
 #include "Channel/ChannelManager.hpp"
 
-namespace portaible
+namespace claid
 {
     const std::string ChannelManager::ON_CHANNEL_SUBSCRIBED_CHANNEL = "ON_CHANNEL_SUBSCRIBED";
     const std::string ChannelManager::ON_CHANNEL_PUBLISHED_CHANNEL = "ON_CHANNEL_PUBLISHED";

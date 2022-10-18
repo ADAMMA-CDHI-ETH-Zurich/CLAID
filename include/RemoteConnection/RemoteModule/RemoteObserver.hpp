@@ -10,7 +10,7 @@
 #include "RemoteConnection/RemoteModule/Observer.hpp"
 #include <map>
 
-namespace portaible
+namespace claid
 {
     namespace RemoteConnection
     {

@@ -12,7 +12,7 @@
 #include <map>
 #include <string>
 
-namespace portaible
+namespace claid
 {
 	namespace ClassFactory
 	{
@@ -36,7 +36,7 @@ namespace portaible
 					{
 						// Not an error. This might happen when importing shared libraries that also were build with CLAID (e.g., importing PyCLAID from a PythonModule).
 						return;
-						//PORTAIBLE_THROW(portaible::Exception, "Error, class \"" << className << "\" was registered to ClassFactory more than once");
+						//PORTAIBLE_THROW(claid::Exception, "Error, class \"" << className << "\" was registered to ClassFactory more than once");
 					}
 
 					classFactories.insert(std::make_pair(className, static_cast<ClassFactoryBase*>(new ClassFactoryTyped<T>)));
@@ -49,7 +49,7 @@ namespace portaible
 
 					if (it2 != rttiToRegisteredClassNameMap.end())
 					{
-						PORTAIBLE_THROW(portaible::Exception, "Error, class with className \"" << className << "\" was registered to the ClassFactory for the first time and it's compiler specific RTTI name is \"" << rttiString << "\".\n" <<
+						PORTAIBLE_THROW(claid::Exception, "Error, class with className \"" << className << "\" was registered to the ClassFactory for the first time and it's compiler specific RTTI name is \"" << rttiString << "\".\n" <<
 						"But this compiler specific RTTI name was already memorized when registering another class, \"" << it->second << "\"." 
 						"This should never happen and is either a serious programming mistake OR some compiler weirdness, which leads to mapping two different data types to the same RTTI string.");
 					}
@@ -129,12 +129,12 @@ namespace portaible
 
 #define DECLARE_CLASS_FACTORY(className) \
 	private:\
-	static volatile portaible::ClassFactory::RegisterHelper<className> classFactoryRegistrar;\
+	static volatile claid::ClassFactory::RegisterHelper<className> classFactoryRegistrar;\
 	static const std::string __CLASS_NAME__;\
 	public:\
 	const virtual std::string& getClassName() const {return className::__CLASS_NAME__;}\
 	static std::string staticGetClassName() {return className::__CLASS_NAME__;}
 
 #define REGISTER_TO_CLASS_FACTORY(className) \
-	volatile portaible::ClassFactory::RegisterHelper<className> className::classFactoryRegistrar (#className);\
+	volatile claid::ClassFactory::RegisterHelper<className> className::classFactoryRegistrar (#className);\
 	const std::string className::__CLASS_NAME__ = #className;

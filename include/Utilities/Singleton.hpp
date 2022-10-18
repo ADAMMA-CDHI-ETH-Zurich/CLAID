@@ -16,10 +16,10 @@ public:
         {
             mpInstance = new T();
         }
-        if(portaible::TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() == "portaible::RunTime")
+        if(claid::TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() == "claid::RunTime")
         {
-           // portaible::Logger::printfln("%s", portaible::TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>().c_str());
-        portaible::Logger::printfln("RunTime addr %lu", (intptr_t) mpInstance);
+           // claid::Logger::printfln("%s", claid::TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>().c_str());
+        claid::Logger::printfln("RunTime addr %lu", (intptr_t) mpInstance);
         }
         
         return mpInstance;

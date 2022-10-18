@@ -3,7 +3,7 @@
 #include "RunTime/RunTime.hpp"
 #include "RemoteConnection/Message/Message.hpp"
 
-namespace portaible
+namespace claid
 {
     namespace RemoteConnection
     {

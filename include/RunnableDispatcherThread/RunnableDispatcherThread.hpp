@@ -7,7 +7,7 @@
 #include <memory.h>
 #include <functional>
 
-namespace portaible
+namespace claid
 {
     class RunnableDispatcherThread
     {

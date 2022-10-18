@@ -5,7 +5,7 @@
 #include "Serialization/Serializer.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 
-namespace portaible
+namespace claid
 {
     class XMLSerializer : public Serializer<XMLSerializer>
     {
@@ -113,7 +113,7 @@ namespace portaible
                 std::string rttiTypeString = TypeChecking::getCompilerSpecificRunTimeNameOfObject(*member);
                 if(!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForRTTITypeName(rttiTypeString))
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "XMLSerializer failed to serialize object to XML. Member \"" << property << "\" is a pointer/polymorphic object of type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                    PORTAIBLE_THROW(claid::Exception, "XMLSerializer failed to serialize object to XML. Member \"" << property << "\" is a pointer/polymorphic object of type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
                 std::string className = member->getClassName();
@@ -121,7 +121,7 @@ namespace portaible
                 PolymorphicReflector::WrappedReflectorBase<XMLSerializer>* polymorphicReflector;
                 if (!PolymorphicReflector::PolymorphicReflector<XMLSerializer>::getInstance()->getReflector(className, polymorphicReflector))
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "XMLSerializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                    PORTAIBLE_THROW(claid::Exception, "XMLSerializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
                 polymorphicReflector->invoke(*this, static_cast<void*>(member));

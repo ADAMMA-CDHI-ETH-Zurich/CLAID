@@ -9,7 +9,7 @@
 
 #include "Binary/BinarySerializer.hpp"
 
-namespace portaible
+namespace claid
 {
     // Forward declaration
  

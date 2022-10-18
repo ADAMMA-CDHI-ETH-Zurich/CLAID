@@ -22,7 +22,7 @@
 	throw ex(ex_str.str(), __FILE__, __LINE__); \
 }
 
-namespace portaible
+namespace claid
 {
 	class Exception : public std::exception
 	{

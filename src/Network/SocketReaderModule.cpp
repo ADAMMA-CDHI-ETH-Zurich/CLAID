@@ -1,6 +1,6 @@
 #include "Network/SocketReaderModule.hpp"
 #include "Binary/BinaryDeserializer.hpp"
-namespace portaible
+namespace claid
 {
 namespace Network
 {

@@ -1,7 +1,7 @@
 #pragma once
 #include "CompileTimeTypeNameDemangling.hpp"
 #include "TypeChecking/Invokers/TypeNameInvoker.hpp"
-namespace portaible
+namespace claid
 {
     namespace TypeChecking
     {

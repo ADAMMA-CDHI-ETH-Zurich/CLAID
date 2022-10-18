@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "ChannelBufferBase.hpp"
-namespace portaible
+namespace claid
 {
     class ChannelBase
     {
