@@ -19,7 +19,6 @@ public:
         if(claid::TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() == "claid::RunTime")
         {
            // claid::Logger::printfln("%s", claid::TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>().c_str());
-        claid::Logger::printfln("RunTime addr %lu", (intptr_t) mpInstance);
         }
         
         return mpInstance;

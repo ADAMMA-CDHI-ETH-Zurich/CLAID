@@ -8,34 +8,34 @@ namespace RemoteConnection
     {
         if(connection == nullptr)
         {
-            PORTAIBLE_THROW(Exception, "Error, tried to link ConnectionModule and RemoteModule, but ConnectionModule is null.");
+            CLAID_THROW(Exception, "Error, tried to link ConnectionModule and RemoteModule, but ConnectionModule is null.");
         }
 
         if(module == nullptr)
         {
-            PORTAIBLE_THROW(Exception, "Error, tried to link ConnectionModule and RemoteModule, but RemoteModule is null.");
+            CLAID_THROW(Exception, "Error, tried to link ConnectionModule and RemoteModule, but RemoteModule is null.");
         }
 
         if(!connection->isInitialized())
         {
-            PORTAIBLE_THROW(Exception, "Error, tried to link ConnectionModule of type " << connection->getModuleName() << " to RemoteModule"
+            CLAID_THROW(Exception, "Error, tried to link ConnectionModule of type " << connection->getModuleName() << " to RemoteModule"
             << " without ConnectionModule being initialized. Please call startModule before linkage");
         }
 
         if(!module->isInitialized())
         {
-            PORTAIBLE_THROW(Exception, "Error, tried to link RemoteModule to ConnectionModule of type " << connection->getModuleName() 
+            CLAID_THROW(Exception, "Error, tried to link RemoteModule to ConnectionModule of type " << connection->getModuleName() 
             << " without RemoteModule being initialized. Please call startModule before linkage");
         }
 
         if(connection == nullptr)
         {
-            PORTAIBLE_THROW(Exception, "Error: Tried to call ConnectionModule.link with a ConnectionModule that is null " << __FILE__ << __LINE__);
+            CLAID_THROW(Exception, "Error: Tried to call ConnectionModule.link with a ConnectionModule that is null " << __FILE__ << __LINE__);
         }
 
         if(module == nullptr)
         {
-            PORTAIBLE_THROW(Exception, "Error: Tried to call ConnectionModule.link with a RemoteModule that is null " << __FILE__ << __LINE__);
+            CLAID_THROW(Exception, "Error: Tried to call ConnectionModule.link with a RemoteModule that is null " << __FILE__ << __LINE__);
         }
 
         this->connection = connection;
@@ -52,12 +52,12 @@ namespace RemoteConnection
     {
         if(this->connection == nullptr)
         {
-            PORTAIBLE_THROW(Exception, "Error: Tried to call ConnectionModule.link with a ConnectionModule that is null " << __FILE__ << __LINE__);
+            CLAID_THROW(Exception, "Error: Tried to call ConnectionModule.link with a ConnectionModule that is null " << __FILE__ << __LINE__);
         }
 
         if(this->remoteModule == nullptr)
         {
-            PORTAIBLE_THROW(Exception, "Error: Tried to call ConnectionModule.link with a RemoteModule that is null " << __FILE__ << __LINE__);
+            CLAID_THROW(Exception, "Error: Tried to call ConnectionModule.link with a RemoteModule that is null " << __FILE__ << __LINE__);
         }
 
         

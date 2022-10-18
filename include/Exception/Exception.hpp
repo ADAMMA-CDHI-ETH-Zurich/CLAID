@@ -13,7 +13,7 @@
 #include "Logger/Logger.hpp"
 
 
-#define PORTAIBLE_THROW(ex, msg)\
+#define CLAID_THROW(ex, msg)\
 {\
 	std::ostringstream ex_str;\
 	ex_str << msg;\

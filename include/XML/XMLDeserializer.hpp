@@ -46,7 +46,7 @@ namespace claid
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
-                        PORTAIBLE_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
                     member = this->getCurrentDefaultValue<T>();
@@ -57,7 +57,7 @@ namespace claid
 
                     if (value.get() == nullptr)
                     {
-                        PORTAIBLE_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
                     XMLNumericVal::parseFromString(member, value->getValue());
                 }
@@ -72,7 +72,7 @@ namespace claid
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
-                        PORTAIBLE_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << getDebugNodeName(this->currentXMLNode) << "\" is missing!");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
                     member = this->getCurrentDefaultValue<T>();
@@ -83,7 +83,7 @@ namespace claid
 
                     if (value.get() == nullptr)
                     {
-                        PORTAIBLE_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
                     XMLNumericVal::parseFromString(member, value->getValue());
                 }
@@ -96,7 +96,7 @@ namespace claid
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
-                        PORTAIBLE_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
                     member = this->getCurrentDefaultValue<bool>();
@@ -107,7 +107,7 @@ namespace claid
 
                     if (value.get() == nullptr)
                     {
-                        PORTAIBLE_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
                     
                     std::string boolStr = value->getValue();
@@ -126,7 +126,7 @@ namespace claid
                     }
                     else
                     {
-                        PORTAIBLE_THROW(claid::Exception, "Error during deserialization from XML. Cannot deserialize xml value to member/property \"" << property << "\" of type bool. Expected \"true\" or \"false\" in XML, got " << boolStr << ".");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. Cannot deserialize xml value to member/property \"" << property << "\" of type bool. Expected \"true\" or \"false\" in XML, got " << boolStr << ".");
                     }
                 }
             }
@@ -138,7 +138,7 @@ namespace claid
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
-                        PORTAIBLE_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
                     member = this->getCurrentDefaultValue<char>();
@@ -149,13 +149,13 @@ namespace claid
 
                     if (value.get() == nullptr)
                     {
-                        PORTAIBLE_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
                    
                     const std::string& str = value->getValue();
                     if(str.size() != 1)
                     {
-                        PORTAIBLE_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" is a character, however in the XML file either an empty string or a string with more than one character was specified. Got " << str << ".");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" is a character, however in the XML file either an empty string or a string with more than one character was specified. Got " << str << ".");
                     }
 
                     member = str[0];
@@ -168,10 +168,11 @@ namespace claid
                 std::shared_ptr<XMLNode> node = getChildNode(property);
                 if(node.get() == nullptr)
                 {
-                    PORTAIBLE_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
+                    CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                 }
 
                 this->currentXMLNode = node;
+                this->isSequence = false;
             }
 
             template<typename T>
@@ -186,12 +187,12 @@ namespace claid
                 std::string className;
                 if (!this->getCurrentNodeClassName(className))
                 {
-                    PORTAIBLE_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type. However, attribute \"class\" was not specified for the XML node. We don't know which class you want!");
+                    CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type. However, attribute \"class\" was not specified for the XML node. We don't know which class you want!");
                 }
 
                 if (!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForClass(className))
                 {
-                    PORTAIBLE_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Class \"" << className << "\" was not registered to ClassFactory and is unknown.");
+                    CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Class \"" << className << "\" was not registered to ClassFactory and is unknown.");
                 }
 
                 member = ClassFactory::ClassFactory::getInstance()->getNewInstanceAndCast<T>(className);
@@ -199,7 +200,7 @@ namespace claid
                 PolymorphicReflector::WrappedReflectorBase<XMLDeserializer>* polymorphicReflector;
                 if (!PolymorphicReflector::PolymorphicReflector<XMLDeserializer>::getInstance()->getReflector(className, polymorphicReflector))
                 {
-                    PORTAIBLE_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type. However, attribute \"class\" was does not have a PolymorphicReflector registered. Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                    CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type. However, attribute \"class\" was does not have a PolymorphicReflector registered. Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
                 polymorphicReflector->invoke(*this, static_cast<void*>(member));
@@ -230,7 +231,7 @@ namespace claid
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
-                        PORTAIBLE_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
                     member = this->getCurrentDefaultValue<T>();
@@ -241,7 +242,7 @@ namespace claid
 
                     if (value.get() == nullptr)
                     {
-                        PORTAIBLE_THROW(claid::Exception, "Error during deserialization from XML. XMLNode was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XMLNode was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
                     member = value->getValue();
                 }
@@ -334,7 +335,7 @@ namespace claid
 
                 if (this->currentXMLNode == nullptr)
                 {
-                    PORTAIBLE_THROW(claid::Exception, "Error in deserialization of object of type " << name << " from XML. No XML node corresponding to the object was found (<" << name << "> missing).");
+                    CLAID_THROW(claid::Exception, "Error in deserialization of object of type " << name << " from XML. No XML node corresponding to the object was found (<" << name << "> missing).");
                 }
                
                invokeReflectOnObject(obj);
@@ -361,11 +362,11 @@ namespace claid
 
                 if(idInSequence < 0 )
                 {
-                    PORTAIBLE_THROW(Exception, "Error! During Deserialization, enforceName was called with an invalid idInSequence (must be >= 0).");
+                    CLAID_THROW(Exception, "Error! During Deserialization, enforceName was called with an invalid idInSequence (must be >= 0).");
                 }
                 else if(idInSequence >= this->currentXMLNode->children.size())
                 {
-                    PORTAIBLE_THROW(Exception, "Error! During Deserialization, enforceName was called with idInSequence, " 
+                    CLAID_THROW(Exception, "Error! During Deserialization, enforceName was called with idInSequence, " 
                     << "which is greater than the number of items in the current sequence (" << idInSequence << " vs. " << this->currentXMLNode->children.size());
                 }
 

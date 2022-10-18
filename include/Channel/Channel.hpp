@@ -41,7 +41,7 @@ namespace claid
             {
                 if(*this->channelAccessRights.get() != ChannelAccessRights::READ && *this->channelAccessRights.get() != ChannelAccessRights::READ_WRITE)
                 {
-                    PORTAIBLE_THROW(Exception, "Cannot read from channel with ID " << typedChannel->getChannelID() << " as it was either only published or has been unsubscribed.");
+                    CLAID_THROW(Exception, "Cannot read from channel with ID " << typedChannel->getChannelID() << " as it was either only published or has been unsubscribed.");
                 }
             }
 
@@ -49,7 +49,7 @@ namespace claid
             {
                 if(*this->channelAccessRights.get() != ChannelAccessRights::WRITE && *this->channelAccessRights.get() != ChannelAccessRights::READ_WRITE)
                 {
-                    PORTAIBLE_THROW(Exception, "Cannot post to channel with ID " << typedChannel->getChannelID() << " as it was either only subscribed to or has been unpublished.");
+                    CLAID_THROW(Exception, "Cannot post to channel with ID " << typedChannel->getChannelID() << " as it was either only subscribed to or has been unpublished.");
                 }
             }
         public:
@@ -332,7 +332,7 @@ namespace claid
 
                     if(!std::is_same<T, Untyped>::value)
                     {
-                        PORTAIBLE_THROW(Exception, "Error, ChannelBuffer is untyped, however we got a typed Channel object"
+                        CLAID_THROW(Exception, "Error, ChannelBuffer is untyped, however we got a typed Channel object"
                         "that tried to acess data. This should not happen, as normally when we get the typed Channel, the ChannelBuffer should have been converted"
                         "to a typed one. MakeTyped Channel was not executed on Channel?");
                     }
@@ -488,7 +488,7 @@ namespace claid
 
                 if(this->numSubscribers == 0)
                 {
-                    PORTAIBLE_THROW(Exception, "Error! Unsubscribe was called for channel with id " << this->channelID << ". However, it's number of subscribers is already 0."
+                    CLAID_THROW(Exception, "Error! Unsubscribe was called for channel with id " << this->channelID << ". However, it's number of subscribers is already 0."
                     "There must be a bug somewhere that allows to unsubscribe a channel multiple times.");
                 }
 
@@ -520,7 +520,7 @@ namespace claid
 
                 if(this->numPublishers == 0)
                 {
-                    PORTAIBLE_THROW(Exception, "Error! Unpublish was called for channel with id " << this->channelID << ". However, it's number of publishers is already 0."
+                    CLAID_THROW(Exception, "Error! Unpublish was called for channel with id " << this->channelID << ". However, it's number of publishers is already 0."
                     "There must be a bug somewhere that allows to unpublish a channel multiple times.");
                 }
 
@@ -549,7 +549,7 @@ namespace claid
             {   
                 if(this->channelBuffer->isTyped())
                 {
-                    PORTAIBLE_THROW(Exception, "Error, tried to type a channel to type " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<NewType>() << ", but the channel has already been typed "
+                    CLAID_THROW(Exception, "Error, tried to type a channel to type " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<NewType>() << ", but the channel has already been typed "
                     << " to type " << this->channelBuffer->getDataTypeName());
                 }
                 ChannelBuffer<Untyped>* untypedBuffer = static_cast<ChannelBuffer<Untyped>*>(this->channelBuffer);

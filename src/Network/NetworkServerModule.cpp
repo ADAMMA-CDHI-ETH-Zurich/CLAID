@@ -51,7 +51,7 @@ namespace claid
             if(!server.bindTo(port))
             {
                 Logger::printfln("SocketServer error: %s (%s)", this->server.getLastError().errorTypeAsString().c_str(), this->server.getLastError().errorString.c_str());
-                PORTAIBLE_THROW(Exception, "Failed to start server on port " << this->port);
+                CLAID_THROW(Exception, "Failed to start server on port " << this->port);
             }
 
             this->clientAcceptModule.startModule();
@@ -72,7 +72,7 @@ namespace claid
 
             if(it == this->remoteConnectedEntities.end())
             {
-                PORTAIBLE_THROW(Exception, "Error in NetworkServerModule: A client lost connection, so we wanted to shut it down safely. "
+                CLAID_THROW(Exception, "Error in NetworkServerModule: A client lost connection, so we wanted to shut it down safely. "
                 "However, the client was not found in the list of known clients. This should not happen..");
             }
 
@@ -83,7 +83,7 @@ namespace claid
 
             if(it2 == this->errorChannels.end())
             {
-                PORTAIBLE_THROW(Exception, "Error in NetworkServerModule: A client lost connection, so we wanted to shut it down safely. "
+                CLAID_THROW(Exception, "Error in NetworkServerModule: A client lost connection, so we wanted to shut it down safely. "
                 "However, the error channel for the client was not found in the list of known clients. This should not happen..");
                 it2->second.unsubscribe();
             }

@@ -36,7 +36,7 @@ namespace claid
 					{
 						// Not an error. This might happen when importing shared libraries that also were build with CLAID (e.g., importing PyCLAID from a PythonModule).
 						return;
-						//PORTAIBLE_THROW(claid::Exception, "Error, class \"" << className << "\" was registered to ModuleFactory more than once");
+						//CLAID_THROW(claid::Exception, "Error, class \"" << className << "\" was registered to ModuleFactory more than once");
 					}
 					moduleFactories.insert(std::make_pair(className, moduleFactory));
 				}

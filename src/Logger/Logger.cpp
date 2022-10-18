@@ -8,12 +8,12 @@
 
 #include <string>
 #include <stdexcept>
-std::string claid::Logger::logTag = "portaible";
+std::string claid::Logger::logTag = "claid";
 std::string claid::Logger::lastLogMessage = "";
 
 #ifdef __ANDROID__
 	#include <android/log.h>
-	#define  LOG_TAG    "portaible"
+	#define  LOG_TAG    "claid"
 	#define  LOGCAT(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 
 #endif

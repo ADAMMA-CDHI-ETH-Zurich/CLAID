@@ -36,7 +36,7 @@ namespace claid
 					{
 						// Not an error. This might happen when importing shared libraries that also were build with CLAID (e.g., importing PyCLAID from a PythonModule).
 						return;
-						//PORTAIBLE_THROW(claid::Exception, "Error, class \"" << className << "\" was registered to ClassFactory more than once");
+						//CLAID_THROW(claid::Exception, "Error, class \"" << className << "\" was registered to ClassFactory more than once");
 					}
 
 					classFactories.insert(std::make_pair(className, static_cast<ClassFactoryBase*>(new ClassFactoryTyped<T>)));
@@ -49,7 +49,7 @@ namespace claid
 
 					if (it2 != rttiToRegisteredClassNameMap.end())
 					{
-						PORTAIBLE_THROW(claid::Exception, "Error, class with className \"" << className << "\" was registered to the ClassFactory for the first time and it's compiler specific RTTI name is \"" << rttiString << "\".\n" <<
+						CLAID_THROW(claid::Exception, "Error, class with className \"" << className << "\" was registered to the ClassFactory for the first time and it's compiler specific RTTI name is \"" << rttiString << "\".\n" <<
 						"But this compiler specific RTTI name was already memorized when registering another class, \"" << it->second << "\"." 
 						"This should never happen and is either a serious programming mistake OR some compiler weirdness, which leads to mapping two different data types to the same RTTI string.");
 					}
@@ -93,7 +93,7 @@ namespace claid
 
 					// if(factory == nullptr)
 					// {
-					// 	PORTAIBLE_THROW(Exception, "Error in ClassFactory. Tried to create a new object of class \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\" from "
+					// 	CLAID_THROW(Exception, "Error in ClassFactory. Tried to create a new object of class \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\" from "
 					// 	<< "factory associated with type \"" << className << "\". The types are incompatible, the latter cannot be cast to the former.");
 					// }
 

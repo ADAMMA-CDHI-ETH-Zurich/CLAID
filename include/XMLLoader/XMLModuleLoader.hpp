@@ -27,7 +27,7 @@ namespace claid
 						{
 							if (!ModuleFactory::ModuleFactory::getInstance()->isFactoryRegisteredForModule(className))
 							{
-								PORTAIBLE_THROW(claid::Exception, "ModuleLoader failed to load Module from XML. Class \"" << className << "\" was not registered and is unknown.");
+								CLAID_THROW(claid::Exception, "ModuleLoader failed to load Module from XML. Class \"" << className << "\" was not registered and is unknown.");
 							}
 
 							Module* module = dynamic_cast<Module*>(ModuleFactory::ModuleFactory::getInstance()->getFactoryForModuleByName(className)->getInstanceUntyped());
@@ -35,7 +35,7 @@ namespace claid
 							if(module == nullptr)
 							{
 								// The class is not a Module.
-								PORTAIBLE_THROW(claid::Exception, "ModuleLoader failed to load Module from XML. Class \"" << className << "\" is not a Module. Did you forget inheriting from claid::Module?");
+								CLAID_THROW(claid::Exception, "ModuleLoader failed to load Module from XML. Class \"" << className << "\" is not a Module. Did you forget inheriting from claid::Module?");
 							}
 
 							XMLDeserializer deserializer(node);

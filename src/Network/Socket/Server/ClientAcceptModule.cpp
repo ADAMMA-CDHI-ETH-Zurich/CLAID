@@ -42,7 +42,7 @@ namespace claid
                 if(!this->server->accept(client))
                 {
                     // TODO: POST ERROR ACCEPT FAILED
-                    PORTAIBLE_THROW(Exception, "Failed to accept client");
+                    CLAID_THROW(Exception, "Failed to accept client");
                 }
                 Logger::printfln("Post");
                 this->clientAcceptChannel.post(client);

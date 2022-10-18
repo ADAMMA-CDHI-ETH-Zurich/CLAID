@@ -1,5 +1,5 @@
 #include "RunTime/RunTime.hpp"
-
+#include "XML/XMLDocument.hpp"
 namespace claid
 {
     void RunTime::startModules()
@@ -19,7 +19,7 @@ namespace claid
     {
         if(this->running)
         {
-            PORTAIBLE_THROW(Exception, "Error in RunTime::start(), start was called twice !");
+            CLAID_THROW(Exception, "Error in RunTime::start(), start was called twice !");
         }
         this->startModules();
         this->running = true;
@@ -83,5 +83,13 @@ namespace claid
         return &this->runnablesChannel;
     }
 
-
+    void RunTime::loadFromXML(std::string path)
+    {
+        claid::XMLDocument xmlDocument;
+        if(!xmlDocument.loadFromFile(path))
+        {
+            CLAID_THROW(Exception, "CLAID::RunTime failed to load from XML file \"" << path << "\".");
+        }
+        this->loader.executeAppropriateLoaders(xmlDocument.getXMLNode());
+    }
 }

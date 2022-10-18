@@ -102,7 +102,7 @@ namespace claid
                         }
                         else
                         {
-                            PORTAIBLE_THROW(Exception, "Error! Received Message with header type \"" << messageHeader.getClassName() << "\" and expected data "
+                            CLAID_THROW(Exception, "Error! Received Message with header type \"" << messageHeader.getClassName() << "\" and expected data "
                             << "to be of type \"" << Data::staticGetClassName() << "\", but got data with type \"" << messageData.getClassName() << "\".");
                         }
                     }

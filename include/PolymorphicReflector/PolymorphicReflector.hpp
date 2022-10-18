@@ -26,7 +26,7 @@ namespace claid
 					if (it != reflectors.end())
 					{
 						return;
-						//PORTAIBLE_THROW(claid::Exception, "Error, PolymorhpReflector for class \"" << className << "\" was registered multiple times.");
+						//CLAID_THROW(claid::Exception, "Error, PolymorhpReflector for class \"" << className << "\" was registered multiple times.");
 					}
 
 

@@ -112,7 +112,7 @@ namespace claid
             {
                 // Do nothing, should never get called.
                 // See comment above.
-                PORTAIBLE_THROW(Exception, "Error, stopObservingCalled with a channel that is not one of the 4 observer channels. This should never happen and is a programming error!");
+                CLAID_THROW(Exception, "Error, stopObservingCalled with a channel that is not one of the 4 observer channels. This should never happen and is a programming error!");
             }
 
             template<typename T>
@@ -138,7 +138,7 @@ namespace claid
                 }
                 else
                 {
-                    PORTAIBLE_THROW(Exception, "Error, stopObserving() was called with a channel that has channelID \"" << channelID.c_str() << "\", which is not an observer channel.");
+                    CLAID_THROW(Exception, "Error, stopObserving() was called with a channel that has channelID \"" << channelID.c_str() << "\", which is not an observer channel.");
                 }
             }
  
@@ -191,7 +191,7 @@ namespace claid
                     }
                     else
                     {
-                        PORTAIBLE_THROW(Exception, "Cannot cast channel \"" << channelID << "\"! The channel has type " << channel->getChannelDataTypeName() << ", however an access with type " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << " was inquired!" );
+                        CLAID_THROW(Exception, "Cannot cast channel \"" << channelID << "\"! The channel has type " << channel->getChannelDataTypeName() << ", however an access with type " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << " was inquired!" );
                     }
                     
                 }
@@ -277,7 +277,7 @@ namespace claid
                     }
                     else
                     {
-                        PORTAIBLE_THROW(Exception, "Error, cannot unsubscribe from channel with ID" << channelID << 
+                        CLAID_THROW(Exception, "Error, cannot unsubscribe from channel with ID" << channelID << 
                             "The type of the channel (" << channel->getChannelDataTypeName() << ") cannot be cast to " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << ".");
                     }
                 }
@@ -287,7 +287,7 @@ namespace claid
                 }
                 else
                 {
-                    PORTAIBLE_THROW(Exception, "Error, unsubscribe was called on a channel with channel ID " << channelID << ", which does not exist. This should never happen and most likely is a programming mistake");
+                    CLAID_THROW(Exception, "Error, unsubscribe was called on a channel with channel ID " << channelID << ", which does not exist. This should never happen and most likely is a programming mistake");
                 }
 
                 this->onChannelUnsubscribed(channelID, channelObject.getPublisherSubscriberUniqueIdentifier());
@@ -315,13 +315,13 @@ namespace claid
                     }
                     else
                     {
-                        PORTAIBLE_THROW(Exception, "Error, cannot unpublish channel with ID" << channelID << 
+                        CLAID_THROW(Exception, "Error, cannot unpublish channel with ID" << channelID << 
                             "The type of the channel (" << channel->getChannelDataTypeName() << ") cannot be cast to " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << ".");
                     }
                 }
                 else
                 {
-                    PORTAIBLE_THROW(Exception, "Error, unpublish was called on a channel with channel ID " << channelID << ", which does not exist. This should never happen and most likely is a programming mistake");
+                    CLAID_THROW(Exception, "Error, unpublish was called on a channel with channel ID " << channelID << ", which does not exist. This should never happen and most likely is a programming mistake");
                 }
 
                 this->onChannelUnpublished(channelID, channelObject.getPublisherSubscriberUniqueIdentifier());

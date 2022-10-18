@@ -10,7 +10,7 @@ namespace RemoteConnection
     {
         if(this->remoteObserver == nullptr)
         {
-            PORTAIBLE_THROW(Exception, "Error in RemoteModule: getSubscriberForReceptionOfMessages() was called before "
+            CLAID_THROW(Exception, "Error in RemoteModule: getSubscriberForReceptionOfMessages() was called before "
             "the RemoteModule has been initialized. Please call startModule() first");
         }
 
@@ -21,7 +21,7 @@ namespace RemoteConnection
     {
         if(!this->sendMessageChannelSet)
         {
-            PORTAIBLE_THROW(Exception, "Error! RemoteModule tried to send a message, however a channel to send messages was never set."
+            CLAID_THROW(Exception, "Error! RemoteModule tried to send a message, however a channel to send messages was never set."
             "Please make sure to call setSendMessageChannel of RemoteModule " << __FILE__ << " " << __LINE__);
         }
         Logger::printfln("SendMessageChannel post");
@@ -32,7 +32,7 @@ namespace RemoteConnection
     {
         if(this->localObserver == nullptr || this->remoteObserver == nullptr)
         {
-            PORTAIBLE_THROW(Exception, "Error, RemoteModule::setSendMessageChannel called before RemoteModule has been initialized. "
+            CLAID_THROW(Exception, "Error, RemoteModule::setSendMessageChannel called before RemoteModule has been initialized. "
             << "Please initialize RemoteModule before setting the channel used to send messages");
         }
 
@@ -78,7 +78,7 @@ namespace RemoteConnection
     {
         if(!this->sendMessageChannelSet)
         {
-            PORTAIBLE_THROW(Exception, "Error! RemoteModule started without calling setSendMessageChannel before!"
+            CLAID_THROW(Exception, "Error! RemoteModule started without calling setSendMessageChannel before!"
             "Please provide a channel for sending messages (i.e. Channel<RemoteConnection::Message> and call setSendMessageChannel "
             "prior to calling start");
         }

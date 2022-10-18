@@ -77,7 +77,7 @@ namespace claid
                     if(binaryDataTypeName != this->getDataTypeName())
                     {
                         // ERROR!
-                        PORTAIBLE_THROW(Exception, "Error, tried to insert binary data to channel buffer. Previously, data of type \"" <<
+                        CLAID_THROW(Exception, "Error, tried to insert binary data to channel buffer. Previously, data of type \"" <<
                         this->getDataTypeName() << "\" has been inserted into the buffer, but now it was tried to insert data of type \"" << binaryDataTypeName << "\"."
                         << "Only binary data of ONE type should ever be added to the buffer.")
                     }
@@ -185,7 +185,7 @@ namespace claid
             {
                 if(index < 0 || index >= MAX_CHANNEL_BUFFER_SIZE)
                 {
-                    PORTAIBLE_THROW(Exception, "Error, tried to get element from channel with index " << index << " which is out of bounds [0, " << MAX_CHANNEL_BUFFER_SIZE << ").");
+                    CLAID_THROW(Exception, "Error, tried to get element from channel with index " << index << " which is out of bounds [0, " << MAX_CHANNEL_BUFFER_SIZE << ").");
                 }    
 
                 return this->channelBufferElements[index];

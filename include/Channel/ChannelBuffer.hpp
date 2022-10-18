@@ -161,7 +161,7 @@ namespace claid
             {
                 if(!this->getElement(index)->isDataAvailable())
                 {
-                    PORTAIBLE_THROW(Exception, "Error! Tried to access channel data at index " << index << " in ChannelBuffer (data type \""
+                    CLAID_THROW(Exception, "Error! Tried to access channel data at index " << index << " in ChannelBuffer (data type \""
                     << this->getDataTypeName() << "\", but data was not available.");
                 }
 

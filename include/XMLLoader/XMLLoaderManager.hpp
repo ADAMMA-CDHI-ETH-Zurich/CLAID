@@ -42,7 +42,7 @@ namespace claid
 						{
 							if(!this->doesLoaderExistForTag(child->name))
 							{
-								PORTAIBLE_THROW(claid::Exception, "Error! No loader is able to handle tag \"" << child->name << "\" in XML file.");
+								CLAID_THROW(claid::Exception, "Error! No loader is able to handle tag \"" << child->name << "\" in XML file.");
 							}
 						}
 					} 

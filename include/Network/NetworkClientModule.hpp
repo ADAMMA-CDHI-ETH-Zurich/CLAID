@@ -31,7 +31,7 @@ namespace claid
 
                     if(characterIndex == std::string::npos)
                     {
-                        PORTAIBLE_THROW(Exception, "Error! Cannot get ip and port from address " << address << ". Address string is invalid.");
+                        CLAID_THROW(Exception, "Error! Cannot get ip and port from address " << address << ". Address string is invalid.");
                     }
 
                     ip = address.substr(0, characterIndex);
@@ -41,7 +41,7 @@ namespace claid
 
                     if(port < 0)
                     {
-                        PORTAIBLE_THROW(Exception, "Error! Port " << port << " is invalid.");
+                        CLAID_THROW(Exception, "Error! Port " << port << " is invalid.");
                     }
                     Logger::printfln("atoi done");
 

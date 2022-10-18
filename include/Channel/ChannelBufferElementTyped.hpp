@@ -22,7 +22,7 @@ namespace claid
 
                 if(!this->dataAvailable)
                 {
-                    PORTAIBLE_THROW(Exception, "Tried to deserialize binary data of ChannelBufferElement to type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\", however no binary data was set.");
+                    CLAID_THROW(Exception, "Tried to deserialize binary data of ChannelBufferElement to type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\", however no binary data was set.");
                 }
 
                 BinaryDeserializer deserializer;
@@ -46,7 +46,7 @@ namespace claid
             typename std::enable_if<!has_mem_reflect<U>::value && !has_non_member_function_reflect<BinaryDeserializer&, U&>::value>::type
             deserializeBinaryDataToTypedData()
             {
-                PORTAIBLE_THROW(Exception, "Error! Cannot deserialize untyped binary data posted to a channel with data type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\"" <<
+                CLAID_THROW(Exception, "Error! Cannot deserialize untyped binary data posted to a channel with data type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\"" <<
                 " as no reflect function is available for the mentioned data type. Please add a reflect function to the datatype.");
             }
 
@@ -84,7 +84,7 @@ namespace claid
             typename std::enable_if<!has_mem_reflect<U>::value && !has_non_member_function_reflect<BinaryDeserializer&, U&>::value>::type
             serializeTypedDataToBinaryData()
             {
-                PORTAIBLE_THROW(Exception, "Error! Cannot serialize typed data to binary data. A subscriber tried to get binary data from a channel of type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\", " <<
+                CLAID_THROW(Exception, "Error! Cannot serialize typed data to binary data. A subscriber tried to get binary data from a channel of type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\", " <<
                 "but typed data could not be serialized, as no reflect function is available for the mentioned data type. Please add a reflect function to the datatype.");
             }
 
@@ -119,7 +119,7 @@ namespace claid
             {
                 if(!this->dataAvailable)
                 {
-                    PORTAIBLE_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement<T> (type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\"), but no data was never set (no data available).");
+                    CLAID_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement<T> (type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\"), but no data was never set (no data available).");
                 }
 
                 if(!this->binaryDataAvailable)

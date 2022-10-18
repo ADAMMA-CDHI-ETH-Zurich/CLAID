@@ -31,7 +31,7 @@ namespace claid
            // if(callFunctionIfSignatureMatchesThrowExceptionIfWrongData<MessageHeaderChannelData, MessageDataBinary>(messageRef, &RemoteObserver::onChannelData, this)) return;
 
 
-            PORTAIBLE_THROW(Exception, "Error! RemoteObserver received message with unexpected header \"" << messageRef.header->getClassName() << "\".");
+            CLAID_THROW(Exception, "Error! RemoteObserver received message with unexpected header \"" << messageRef.header->getClassName() << "\".");
 
         }    
 
@@ -71,7 +71,7 @@ namespace claid
 
                 default:
                 {
-                    PORTAIBLE_THROW(Exception, "Error, received message of type MessageHeaderChannelUpdate with unsupported Update type " << __FILE__ << " " << __LINE__ << "\n");
+                    CLAID_THROW(Exception, "Error, received message of type MessageHeaderChannelUpdate with unsupported Update type " << __FILE__ << " " << __LINE__ << "\n");
                 }
                 break;
             }
@@ -157,7 +157,7 @@ namespace claid
                 {
                     // ERROR! No subscriber left, we unsubscribed more than we have subscribed.
                     // Local and remote RunTime out of sync? Severe error.
-                    PORTAIBLE_THROW(Exception, "Error in RemoteObserver: Received message that indicates we shall unsubscribe from channel with ID \"" << channelID << "\", "
+                    CLAID_THROW(Exception, "Error in RemoteObserver: Received message that indicates we shall unsubscribe from channel with ID \"" << channelID << "\", "
                     << "however we have no subscriber left for that channel. Therefore, we unsubscribed more than we subscribed. Somehow, we have to have missed a subscription in " 
                     << "the remotely running RunTime, therefore the local and remote RunTime probably are out of sync.");
                 }
@@ -183,7 +183,7 @@ namespace claid
 
                 // ERROR! No publisher left, we unpublished more than we have published.
                 // Local and remote RunTime out of sync? Severe error.
-                PORTAIBLE_THROW(Exception, "Error in RemoteObserver: Received message that indicates we shall unpublish channel with ID \"" << channelID << "\", "
+                CLAID_THROW(Exception, "Error in RemoteObserver: Received message that indicates we shall unpublish channel with ID \"" << channelID << "\", "
                 << "however we have no publisher left for that channel. Therefore, we unpublished more than we published. Somehow, we have to have missed a publish in " 
                 << "the remotely running RunTime, therefore the local and remote RunTime probably are out of sync.");
             }
@@ -200,7 +200,7 @@ namespace claid
 
             if(it == this->publishedChannels.end())
             {
-                PORTAIBLE_THROW(Exception, "Error, received data from remote RunTime for channel with channelID \"" << targetChannel << "\", "
+                CLAID_THROW(Exception, "Error, received data from remote RunTime for channel with channelID \"" << targetChannel << "\", "
                 << "but we do not have a publisher for that channel. That should not be possible, because how could the remote RunTime have posted data to the channel "
                 << "in the first place, if no publisher is available ? ");
             }
@@ -248,7 +248,7 @@ namespace claid
 
             //     // ERROR! No publisher left, we unpublished more than we have published.
             //     // Local and remote RunTime out of sync? Severe error.
-            //     PORTAIBLE_THROW(Exception, "Error in RemoteObserver: Received message that indicates we shall unpublish channel with ID \"" << channelID << "\", "
+            //     CLAID_THROW(Exception, "Error in RemoteObserver: Received message that indicates we shall unpublish channel with ID \"" << channelID << "\", "
             //     << "however we have no publisher left for that channel. Therefore, we unpublished more than we published. Somehow, we have to have missed a publish in " 
             //     << "the remotely running RunTime, therefore the local and remote RunTime probably are out of sync.");
             // }

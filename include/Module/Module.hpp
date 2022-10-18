@@ -58,12 +58,11 @@ namespace claid
 
             void initializeInternal()
             {
-                Logger::printfln("Starting module %s", this->getModuleName().c_str());
+                //Logger::printfln("Starting module %s", this->getModuleName().c_str());
                 this->baseModuleInitialized = true;
                 this->terminated = false;
                 this->initialize();
                 this->initialized = true;
-                Logger::printfln("Module %s unique id: %ul", this->getModuleName().c_str(), this->getUniqueIdentifier());
             }
 
             void terminateInternal()
@@ -85,7 +84,7 @@ namespace claid
 
                 if(it != this->timers.end())
                 {
-                    PORTAIBLE_THROW(Exception, "Error in Module " << this->getModuleName() << ". Tried to register function with name \"" << name << "\", but a periodic function with the same name was already registered before.");
+                    CLAID_THROW(Exception, "Error in Module " << this->getModuleName() << ". Tried to register function with name \"" << name << "\", but a periodic function with the same name was already registered before.");
                 }
 
                 FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(function);
@@ -107,7 +106,7 @@ namespace claid
 
                 if(it == this->timers.end())
                 {
-                    PORTAIBLE_THROW(Exception, "Error, tried to unregister periodic function \"" << name << "\" in Module << \"" << this->getModuleName() << "\", but function was not found in list of registered functions."
+                    CLAID_THROW(Exception, "Error, tried to unregister periodic function \"" << name << "\" in Module << \"" << this->getModuleName() << "\", but function was not found in list of registered functions."
                     << "Was a function with this name ever registered before?" );
                 }
 
@@ -138,7 +137,7 @@ namespace claid
             {
                 if(!this->isSafeToAccessChannels())
                 {
-                    PORTAIBLE_THROW(Exception, "Error, Module of Class " << this->getModuleName() << " tried to publish or subscribe to channel with ID \"" << channelID << "\", while the Module has not yet been initialized."
+                    CLAID_THROW(Exception, "Error, Module of Class " << this->getModuleName() << " tried to publish or subscribe to channel with ID \"" << channelID << "\", while the Module has not yet been initialized."
                     "Please only use publish and subscribe in the initialize function, or anytime after initialization was finished successfully (i.e. Module has been started and initialized).");
                 }
             }
@@ -155,7 +154,7 @@ namespace claid
             {
                 if(this->runnableDispatcherThread.get() != nullptr)
                 {   
-                    PORTAIBLE_THROW(Exception, "Error! Constructor of BaseModule called, but RunnableDispatcherThread is not null!")
+                    CLAID_THROW(Exception, "Error! Constructor of BaseModule called, but RunnableDispatcherThread is not null!")
                 }
                 this->runnableDispatcherThread = std::shared_ptr<RunnableDispatcherThread>(new RunnableDispatcherThread());
             }
@@ -176,7 +175,7 @@ namespace claid
             {
                 if(this->runnableDispatcherThread.get() == nullptr)
                 {
-                    PORTAIBLE_THROW(Exception, "Error! callLater was called while module is stopped."
+                    CLAID_THROW(Exception, "Error! callLater was called while module is stopped."
                     "Please only use callLater while the Module is running.");
                 }
                 //std::function<void(Ts...)> function = std::bind(f, obj, std::placeholders::_1, std::placeholders::_2);
@@ -203,7 +202,7 @@ namespace claid
                 // If this thread is runnable dispatcher thread, waiting would result in a deadlock.
                 if(std::this_thread::get_id() == this->runnableDispatcherThread->getThreadID())
                 {
-                    PORTAIBLE_THROW(Exception, "Error! Function waitForInitialization() of Module " << this->getModuleName() << "\n"
+                    CLAID_THROW(Exception, "Error! Function waitForInitialization() of Module " << this->getModuleName() << "\n"
                     << " was called from the same thread the Module runs in. This results in an unresolvable deadlock."
                     << "This might happen if you call waitForInitializiation() in any of the Modules functions, or "
                     << "if you use forkSubModuleInThread to create a local SubModule and then call waitForInitialization() on that SubModule "
@@ -220,7 +219,7 @@ namespace claid
             {
                 if(this->runnableDispatcherThread.get() == nullptr)
                 {
-                    PORTAIBLE_THROW(Exception, "Error! startModule was called while with RunnableDispatcherThread not set!");
+                    CLAID_THROW(Exception, "Error! startModule was called while with RunnableDispatcherThread not set!");
                 }
 
                 // PropertyReflector will initialize all members and properties to their default values,
@@ -485,7 +484,7 @@ namespace claid
 
                 if(it == this->subModulesInSameThread.end())
                 {
-                    PORTAIBLE_THROW(Exception, "Error! joinAndRemoveSubModule was called with a SubModule pointer that is not known. Either this SubModule has been removed manually, "
+                    CLAID_THROW(Exception, "Error! joinAndRemoveSubModule was called with a SubModule pointer that is not known. Either this SubModule has been removed manually, "
                     "or it was not created by using forkSubModuleInThread in the first place. The function joinAndRemoveSubModule can only be used for forked SubModules!");
                 }
                 else

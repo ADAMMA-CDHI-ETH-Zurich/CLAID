@@ -32,7 +32,7 @@ namespace Network
     {
         if(this->socketClient == nullptr)
         {
-            PORTAIBLE_THROW(Exception, "Failed to start SocketReaderModule: SocketClient is nullptr " << __FILE__ << " line " << __LINE__);
+            CLAID_THROW(Exception, "Failed to start SocketReaderModule: SocketClient is nullptr " << __FILE__ << " line " << __LINE__);
         }
 
         while(this->active)
@@ -66,7 +66,7 @@ namespace Network
             catch (const Exception& e)
             {
                 // TODO: IMPLEMENT PROPER ERROR HANDLING !!
-                PORTAIBLE_THROW(Exception, "Caught exception in SocketReaderModule "  << e.what());
+                CLAID_THROW(Exception, "Caught exception in SocketReaderModule "  << e.what());
             }
         }
         this->stopped = true;

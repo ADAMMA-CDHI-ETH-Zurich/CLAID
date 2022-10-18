@@ -38,7 +38,7 @@ namespace RemoteConnection
     {
         if(started)
         {
-            PORTAIBLE_THROW(Exception, "Error, RemoteConnectedEntity::start() has been called while it is already running. Was start called multiple times?");
+            CLAID_THROW(Exception, "Error, RemoteConnectedEntity::start() has been called while it is already running. Was start called multiple times?");
         }
 
         // Why start not in setup ? 
@@ -58,7 +58,7 @@ namespace RemoteConnection
     {
         if(!started)
         {
-            PORTAIBLE_THROW(Exception, "Error, RemoteConnectedEntity::stop() has been called while it is not running. Was start() called before?");
+            CLAID_THROW(Exception, "Error, RemoteConnectedEntity::stop() has been called while it is not running. Was start() called before?");
         }
         Logger::printfln("Stopping remote module and connection module");
         this->remoteModule.stop();

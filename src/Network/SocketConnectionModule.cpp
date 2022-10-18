@@ -16,7 +16,7 @@ namespace Network
         Logger::printfln("SocketConnectionModule setup");
         if(this->started)
         {
-            PORTAIBLE_THROW(Exception, "Error! Start was called twice on SocketConnectionModule.");
+            CLAID_THROW(Exception, "Error! Start was called twice on SocketConnectionModule.");
         }
         this->started = true;
 

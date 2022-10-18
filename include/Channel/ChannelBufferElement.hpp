@@ -76,7 +76,7 @@ namespace claid
             {
                 if(!this->dataAvailable)
                 {
-                    PORTAIBLE_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement (untyped), but no data was never set (no data available).");
+                    CLAID_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement (untyped), but no data was never set (no data available).");
                 }
 
                 return this->binaryData;

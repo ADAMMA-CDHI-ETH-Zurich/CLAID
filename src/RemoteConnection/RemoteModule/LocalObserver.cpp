@@ -112,7 +112,7 @@ namespace claid
         {
             if(this->observedChannelManager != nullptr)
             {
-                PORTAIBLE_THROW(Exception, "Error in LocalObserver. Observe was called although the LocalObserver already had a ChannelManager set."
+                CLAID_THROW(Exception, "Error in LocalObserver. Observe was called although the LocalObserver already had a ChannelManager set."
                 "Was observe called multiple times ? ");
             }
             

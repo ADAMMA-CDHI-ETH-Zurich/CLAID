@@ -52,6 +52,8 @@ namespace claid
 
             void executeRunnableInRunTimeThread(Runnable* runnable);
             ITCChannel<Runnable*>* getMainRunnablesChannel();
+
+            void loadFromXML(std::string path);
     };
 }
 
