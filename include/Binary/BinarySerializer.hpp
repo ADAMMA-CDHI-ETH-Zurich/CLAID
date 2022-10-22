@@ -169,8 +169,9 @@ namespace claid
 
 
 
-            template<typename T> 
-            void serialize(T& obj, BinaryData* targetContainer)
+            template <typename T>
+            typename std::enable_if<!(std::is_arithmetic<T>::value || std::is_same<T, CLAID::byte>::value)>::type
+            serialize(T& obj, BinaryData* targetContainer)
             {
                 this->binaryData = targetContainer;
                 this->binaryData->clear();
@@ -182,6 +183,22 @@ namespace claid
 
 
                 invokeReflectOnObject(obj);
+            }
+
+            template <typename T>
+            typename std::enable_if<std::is_arithmetic<T>::value || std::is_same<T, CLAID::byte>::value>::type
+            serialize(T& obj, BinaryData* targetContainer)
+            {
+                this->binaryData = targetContainer;
+                this->binaryData->clear();
+
+                // Store data type string in order to check it during deserialization.
+                // This is crucial and needs to platform independent.
+                std::string name = TypeChecking::getCompilerIndependentTypeNameOfClass<T>();
+                this->binaryData->storeString(name);
+
+
+                this->binaryData->store(obj);
             }
 
             void enforceName(std::string& name, int idInSequence = 0)
