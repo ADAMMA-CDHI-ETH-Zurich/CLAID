@@ -62,8 +62,6 @@ namespace claid
             void run()
             {
                 this->lockMutex();
-                Logger::printfln("Pop %s %d\n", channel->getChannelID().c_str(), this->channelDataQueue.size());
-                Logger::printfln("1");
                 ChannelData<T> channelData = this->channelDataQueue.front();
                 size_t sizeBeforePop = this->channelDataQueue.size();
                 this->channelDataQueue.pop_front();
@@ -90,14 +88,11 @@ namespace claid
                 ChannelData<T> data = channel->read();
                 if(data.isValid())
                 {
-                    Logger::printfln("Queue push back %s %d\n", this->channel->getChannelID().c_str(), this->channelDataQueue.size());
                     this->channelDataQueue.push_back(data);
                     Subscriber::signalNewDataIsAvailable();
                 }
                 else
                 {
-                    size_t nddot = 0;
-                    std::cout << "not valid\n";
                 }
                 this->unlockMutex();
             }

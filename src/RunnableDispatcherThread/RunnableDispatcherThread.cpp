@@ -48,6 +48,7 @@ namespace claid
             if(runnable->isValid())
                 runnable->run();
 
+            runnable->wasExecuted = true;
             if(runnable->deleteAfterRun)
             {
                 delete runnable;

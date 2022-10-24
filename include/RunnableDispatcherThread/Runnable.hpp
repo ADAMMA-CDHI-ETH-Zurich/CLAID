@@ -11,6 +11,8 @@ namespace claid
 
             virtual void run() = 0;
             bool deleteAfterRun = false;
+            bool wasExecuted = false;
+            
             bool isValid()
             {
                 return this->valid;

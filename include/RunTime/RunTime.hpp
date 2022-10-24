@@ -21,8 +21,13 @@ namespace claid
         private:
             std::vector<Module*> modules;
             bool running = false;
-            
+        
+            // Specified XML configurations that shall be loaded.
+            std::vector<std::string> xmlConfigs;
+
+            void loadConfigs();
             void startModules();
+            void loadAndStart();
 
             // Used to run runnables on the frameworks main thread (i.e., thread the framework was started from).
             // Generally, is not required. It can be benefical, however, if the thread that started the RunTime is the main
