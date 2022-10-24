@@ -3,11 +3,11 @@
 #include <type_traits>
 
 
-#define HAS_MEM_DETECTOR(mem)                                                                                     \
+#define HAS_MEM_DETECTOR(mem)                                                                        \
                                                                                                      \
-template < typename T >                                                                               \
-struct has_mem_##mem                                                                                  \
-{                                                                                                     \
+template < typename T, class Enable = void >                                                         \
+struct has_mem_##mem                                                                                 \
+{                                                                                                    \
   struct yes {};                                                                                     \
   struct no  {};                                                                                     \
                                                                                                      \
@@ -19,7 +19,12 @@ struct has_mem_##mem                                                            
                                                                                                      \
   static bool constexpr value = std::is_same<decltype(test< ambiguate<T> >(0)),yes>::value ;         \
   typedef std::integral_constant<bool,value>    type;                                                \
-};
-
-
+};                                                                                                   \
+                                                                                                     \
+template < typename T >                                                                              \
+struct has_mem_##mem<T, typename std::enable_if<std::is_arithmetic<T>::value                         \
+    || std::is_same<T, CLAID::byte>::value>::type>                                                   \
+{                                                                                                    \
+    static bool constexpr value = false;                                                             \
+};                                                                                                   \
 
