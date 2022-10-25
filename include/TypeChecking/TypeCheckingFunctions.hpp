@@ -64,10 +64,15 @@ namespace claid
         static std::string getCompilerSpecificCompileTypeNameOfClass()
         {
             #ifdef __PORTAIBLE_USE_TYPEID_FOR_COMPILE_TIME_TYPE_NAME__
-                return compileTimeTypeNameByTypeid<T>();
+                std::string name = compileTimeTypeNameByTypeid<T>();
             #else
-                return compileTimeTypeNameByUsingFunctionName<T>().toStdString();
+                std::string name = compileTimeTypeNameByUsingFunctionName<T>().toStdString();
             #endif
+            if (name.find("struct") != std::string::npos)
+            {
+                name = name.substr(strlen("struct "), name.size() - strlen("struct "));
+            }
+            return name;
         }
 
         template<typename T>

@@ -92,9 +92,10 @@ namespace claid
                 // getClassName returns the className of the base type, which would lead into storing the wrong
                 // class identifier in the binary data.
                 std::string rttiTypeString = TypeChecking::getCompilerSpecificRunTimeNameOfObject(*member);
+
                 if(!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForRTTITypeName(rttiTypeString))
                 {
-                    CLAID_THROW(claid::Exception, "BinarySerializer failed to serialize object to binary. Member \"" << property << "\" is a pointer/polymorphic object of type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                    CLAID_THROW(claid::Exception, "BinarySerializer failed to serialize object to binary. Member \"" << property << "\" is a pointer/polymorphic object of RTTI type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
                 // If there is a factory available for data type with given RTTI string (see above), then the className will

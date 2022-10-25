@@ -107,7 +107,7 @@ namespace claid
             #endif
 
            
-            static_assert(prefixLength + suffixLength < totalLength, "Error in function compileTimeTypeNameByUsingFunctionName. Cannot get substring of functio name, as length of prefix + length of suffix is greater than length of function name itself." 
+            static_assert(prefixLength + suffixLength < totalLength, "Error in function compileTimeTypeNameByUsingFunctionName. Cannot get substring of function name, as length of prefix + length of suffix is greater than length of function name itself." 
             "Very likely, an outdated or unsupported compiler is used." );
             
             return static_string(p.data() + prefixLength, p.size() - prefixLength - suffixLength);
