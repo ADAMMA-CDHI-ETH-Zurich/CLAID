@@ -79,7 +79,7 @@ namespace claid
 }
 
 #define DECLARE_XML_LOADER(className) \
-	static volatile RegisterHelper<className> registerHelper;
+	static volatile claid::XMLLoader::RegisterHelper<className> registerHelper;
 
 #define REGISTER_XML_LOADER(className) \
 	volatile claid::XMLLoader::RegisterHelper<className> className::registerHelper(#className);\

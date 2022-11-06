@@ -1,5 +1,13 @@
 #pragma once
 
+
+#define EmptyReflect(Class)\
+    template<typename Reflector>\
+    void reflect(Reflector& reflector)\
+    {\
+        typedef Class THIS_CLASS;\
+    }\
+
 #define Reflect(Class, code)\
     template<typename Reflector>\
     void reflect(Reflector& reflector)\

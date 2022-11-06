@@ -168,7 +168,9 @@ namespace claid
                 std::shared_ptr<XMLNode> node = getChildNode(property);
                 if(node.get() == nullptr)
                 {
-                    CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
+                    std::string className = TypeChecking::getCompilerSpecificRunTimeNameOfObject(member);
+                    CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!"
+                    "We tried to deserialize an object of class \"" << className << "\", which has a member \"" << property << "\". This member was not specified in the corresponding XML node.");
                 }
 
                 this->currentXMLNode = node;
@@ -200,7 +202,7 @@ namespace claid
                 PolymorphicReflector::WrappedReflectorBase<XMLDeserializer>* polymorphicReflector;
                 if (!PolymorphicReflector::PolymorphicReflector<XMLDeserializer>::getInstance()->getReflector(className, polymorphicReflector))
                 {
-                    CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type. However, attribute \"class\" was does not have a PolymorphicReflector registered. Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                    CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a polymorphic pointer type of class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
                 polymorphicReflector->invoke(*this, static_cast<void*>(member));
@@ -345,8 +347,33 @@ namespace claid
             template<typename T>
             void deserializeFromNode(std::string name, T& obj)
             {
-                this->callAppropriateFunctionBasedOnType(name.c_str(), obj);
+                this->invokeReflectOnObject(obj);
             }
+
+            template<typename T>
+            void deserializeExistingPolymorphicObject(std::string className, T* obj)
+            {
+                // Assumes T is a polymorphic type (e.g., any class inheriting from claid::Module) and
+                // calls the corresponding PolymorphicReflector on that object.
+                // The object needs to exist already! deserializeExistingPolymorphicObject will NOT create the object using the ClassFactory!
+           
+                if(obj == nullptr)
+                {
+                    CLAID_THROW(claid::Exception, "Error in deserialization from XML. It was tried to deserialize a polymorphic object with specified class \"" << className << "\", however the "
+                    "object is null. The object needs to have been created before being able to deserialize it's members from XML."
+                    "If you want the deserializer to automatically create a corresponding object using the ClassFactory, use the deserialize function instead.");
+                }
+
+                PolymorphicReflector::WrappedReflectorBase<XMLDeserializer>* polymorphicReflector;
+                if (!PolymorphicReflector::PolymorphicReflector<XMLDeserializer>::getInstance()->getReflector(className, polymorphicReflector))
+                {
+                    CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. No PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                }
+
+                polymorphicReflector->invoke(*this, static_cast<void*>(obj));
+            }
+
+
 
             void enforceName(std::string& name, int idInSequence = 0)
             {
@@ -379,7 +406,7 @@ namespace claid
                 {
                     std::string className;
                     node->getAttribute("class", className);
-                    return node->name + std::string(" (") + className + std::string(")");
+                    return node->name + std::string(" (class: ") + className + std::string(")");
                 }
                 else
                 {

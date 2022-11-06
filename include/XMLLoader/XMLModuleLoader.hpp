@@ -20,6 +20,7 @@ namespace claid
 
 				bool execute(std::vector<std::shared_ptr<XMLNode>> xmlNodes) 
 				{
+					// xmlNodes already only contain nodes of type <Module>
 					for (std::shared_ptr<XMLNode> node : xmlNodes)
 					{
 						std::string className;
@@ -39,7 +40,7 @@ namespace claid
 							}
 
 							XMLDeserializer deserializer(node);
-							deserializer.deserializeFromNode("Module", module);
+							deserializer.deserializeExistingPolymorphicObject(className, module);
 
 							std::string id;
 							if (node->getAttribute("id", id))
@@ -48,6 +49,15 @@ namespace claid
 							}
 
 							CLAID_RUNTIME->addModule(module);
+						}
+						else
+						{
+							CLAID_THROW(claid::Exception, "Error, failed to load (C++) Module when parsing XML configuration. The \"class\" attribute is missing for the <Module> tag."
+							"Make sure to specify Modules as follows:\n"
+							"<Module class=\"namespace.class\">\n"
+							"\t...\n"
+							"</Module>");
+							return false;
 						}
 					}
 					return true;
