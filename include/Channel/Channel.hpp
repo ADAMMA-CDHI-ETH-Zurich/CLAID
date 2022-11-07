@@ -118,7 +118,7 @@ namespace claid
 
             template <typename U = T>
             typename std::enable_if<!std::is_same<U, Untyped>::value>::type
-            post(const U& data, const Time timestamp = Time::now(), uint64_t sequenceID = 0)
+            post(const T& data, const Time timestamp = Time::now(), uint64_t sequenceID = 0)
             {
                 TaggedData<U> taggedData(data, timestamp, sequenceID);
                 this->post<U>(taggedData);
@@ -126,7 +126,7 @@ namespace claid
 
             template <typename U = T>
             typename std::enable_if<!std::is_same<U, Untyped>::value>::type
-            post(std::shared_ptr<U> data, const Time timestamp = Time::now(), uint64_t sequenceID = 0)
+            post(std::shared_ptr<T> data, const Time timestamp = Time::now(), uint64_t sequenceID = 0)
             {
                 TaggedData<U> taggedData(data, timestamp, sequenceID);
                 this->post<U>(taggedData);

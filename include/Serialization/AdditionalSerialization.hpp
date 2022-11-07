@@ -4,13 +4,13 @@
 // that you need here.
 
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__JAVA_WRAPPERS__)
     #include "JavaWrapper/JavaNativeSetter.hpp"
     #include "JavaWrapper/JavaNativeGetter.hpp"
     #include "JavaWrapper/WrapperMaster.hpp"
 #endif
 
-#ifdef __ANDROID__ 
+#if defined(__ANDROID__) || defined(__JAVA_WRAPPERS__)
     #define DECLARE_JAVA_DE_SERIALIZERS(className) \
         DECLARE_JAVA_WRAPPER(className) \
         DECLARE_POLYMORPHIC_REFLECTOR(className, claid::JavaWrapper::JavaNativeSetter, JavaNativeSetter)\
@@ -20,7 +20,7 @@
 #endif 
 
 
-#ifdef __ANDROID__ 
+#if defined(__ANDROID__) || defined(__JAVA_WRAPPERS__)
     #define REGISTER_JAVA_DE_SERIALIZERS(className) \
         REGISTER_JAVA_WRAPPER(className) \
         REGISTER_POLYMORPHIC_REFLECTOR(className, claid::JavaWrapper::JavaNativeSetter, JavaNativeSetter)\

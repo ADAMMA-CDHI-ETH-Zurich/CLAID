@@ -1,17 +1,15 @@
 #include "RunTime/RunTime.hpp"
+
 #include "XML/XMLDocument.hpp"
+
+
 namespace claid
 {
     void RunTime::loadConfigs()
     {
-        for(const std::string& path : this->xmlConfigs)
+        for(XMLDocument*& xmlDocument : this->xmlConfigs)
         {
-            claid::XMLDocument xmlDocument;
-            if(!xmlDocument.loadFromFile(path))
-            {
-                CLAID_THROW(Exception, "CLAID::RunTime failed to load from XML file \"" << path << "\".");
-            }
-            this->loader.executeAppropriateLoaders(xmlDocument.getXMLNode());
+            this->loader.executeAppropriateLoaders(xmlDocument->getXMLNode());
         }
     }
     void RunTime::startModules()
@@ -112,6 +110,11 @@ namespace claid
 
     void RunTime::loadFromXML(std::string path)
     {
-        this->xmlConfigs.push_back(path);
+        claid::XMLDocument* xmlDocument = new claid::XMLDocument;
+        if(!xmlDocument->loadFromFile(path))
+        {
+            CLAID_THROW(Exception, "CLAID::RunTime failed to load from XML file \"" << path << "\".");
+        }
+        this->xmlConfigs.push_back(xmlDocument);
     }
 }

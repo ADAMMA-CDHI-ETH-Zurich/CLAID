@@ -9,13 +9,19 @@
 
 #include "Module/Module.hpp"
 #include "XMLLoader/XMLLoaderManager.hpp"
+
 #include "RunnableDispatcherThread/Runnable.hpp"
 
 #define CLAID_RUNTIME claid::RunTime::getInstance()
 
 namespace claid
 {
+    // Forward declaration for class XMLDocument
+    class XMLDocument;
+}
 
+namespace claid
+{
     class RunTime : public Singleton<RunTime> 
     {
         private:
@@ -23,7 +29,7 @@ namespace claid
             bool running = false;
         
             // Specified XML configurations that shall be loaded.
-            std::vector<std::string> xmlConfigs;
+            std::vector<XMLDocument*> xmlConfigs;
 
             void loadConfigs();
             void startModules();
