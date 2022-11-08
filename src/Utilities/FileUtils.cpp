@@ -31,7 +31,7 @@ namespace claid
 
 		#ifdef _WIN32
 		return CreateDirectory(path.c_str(), NULL);
-		#elif __linux__
+		#else
 		return mkdir(path.c_str(), 0744) == -1;
 		#endif
 	}
