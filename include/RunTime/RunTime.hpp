@@ -31,6 +31,8 @@ namespace claid
             // Specified XML configurations that shall be loaded.
             std::vector<XMLDocument*> xmlConfigs;
 
+            std::thread* startThread;
+
             void loadConfigs();
             void startModules();
             void loadAndStart();
@@ -42,6 +44,9 @@ namespace claid
             // can execute that function on the main thread.
             ITCChannel<Runnable*> runnablesChannel;
 
+            void checkAndStartLoadingThread();
+            void processRunnablesBlocking();
+
         public:
             ChannelManager channelManager;
             XMLLoader::XMLLoaderManager loader;
@@ -52,8 +57,13 @@ namespace claid
             }
 
             void start();
+            void startNonBlocking();
+
+            // Only required if CLAID was startet non blocking.
+            void process();
 
             void addModule(Module* module);
+            void connectTo(std::string ip, int port);
 
             size_t getNumModules();
             size_t getNumChannels();

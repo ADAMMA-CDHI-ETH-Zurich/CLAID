@@ -217,6 +217,13 @@ namespace claid
 
             void startModule()
             {
+                
+                if(this->isRunning)
+                {
+                    CLAID_THROW(Exception, "Error, startModule was called twice on Module \"" << this->getModuleName() << "\".");
+                }
+
+
                 if(this->runnableDispatcherThread.get() == nullptr)
                 {
                     CLAID_THROW(Exception, "Error! startModule was called while with RunnableDispatcherThread not set!");
@@ -224,9 +231,7 @@ namespace claid
 
                 // PropertyReflector will initialize all members and properties to their default values,
                 // if any have been specified.
-                this->propertyReflector.reflect(this->id, *this);
-
-             
+                this->propertyReflector.reflect(this->id, *this);             
 
                 // If we are a SubModule that was spawned by a Module,
                 // we might use the same runnableDispatcherThread.

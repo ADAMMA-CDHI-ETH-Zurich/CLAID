@@ -131,7 +131,10 @@ namespace claid
                 }
             }
 
-            void callChar(const char* property, char& member)
+            // char, signed char, unsigned char (char can either be defined as signed char or as unsigned char)
+            // See: https://stackoverflow.com/questions/16503373/difference-between-char-and-signed-char-in-c   
+            template<typename T>
+            void callChar(const char* property, T& member)
             {
                 std::shared_ptr<XMLNode> node = this->getChildNode(property);
                 if(node.get() == nullptr)

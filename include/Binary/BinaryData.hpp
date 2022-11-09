@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include "Reflection/SplitReflectInType.hpp"
-#include "Utilities/byte.hpp"
 #include <iostream>
 namespace claid
 {
@@ -39,7 +38,7 @@ namespace claid
 
             // Should only be enabled for primitive types and byte (which we defined ourselves).
             template <typename T>
-            typename std::enable_if<std::is_arithmetic<T>::value || std::is_same<T, CLAID::byte>::value>::type // type of enable_if is void, if value is true, if not specified otherwise. If false, then type does not exist (see implementation of enable_if).
+            typename std::enable_if<std::is_arithmetic<T>::value>::type // type of enable_if is void, if value is true, if not specified otherwise. If false, then type does not exist (see implementation of enable_if).
             store(const T& value)
             {
                 size_t size;

@@ -22,8 +22,7 @@ struct has_mem_##mem                                                            
 };                                                                                                   \
                                                                                                      \
 template < typename T >                                                                              \
-struct has_mem_##mem<T, typename std::enable_if<std::is_arithmetic<T>::value                         \
-    || std::is_same<T, CLAID::byte>::value>::type>                                                   \
+struct has_mem_##mem<T, typename std::enable_if<std::is_arithmetic<T>::value>::type>                 \
 {                                                                                                    \
     static bool constexpr value = false;                                                             \
 };                                                                                                   \

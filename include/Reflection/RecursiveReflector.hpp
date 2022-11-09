@@ -6,10 +6,6 @@
 #include "Traits/is_integer_no_bool.hpp"
 namespace claid
 {
-
-  
-  
-
     template<typename Derived>
     class RecursiveReflector : public AbstractReflector
     {
@@ -79,7 +75,8 @@ namespace claid
             // Why do we explicitly need to distinguish between signed and unsigned char?
             // Read the following: https://stackoverflow.com/questions/16503373/difference-between-char-and-signed-char-in-c
             template<class T>
-            struct ReflectorType<T, typename std::enable_if<std::is_same<T, signed char>::value || std::is_same<T, unsigned char>::value || std::is_same<T, char>::value>::type> 
+            struct ReflectorType<T, typename std::enable_if<std::is_same<T, signed char>::value || std::is_same<T, unsigned char>::value || 
+                            std::is_same<T, char>::value || std::is_same<T, char16_t>::value || std::is_same<T, char32_t>::value >::type> 
             {
                 static void call(const char* property, Derived& r, T& member) 
                 {
@@ -112,9 +109,8 @@ namespace claid
 
         // ENUM TYPES
 
-            // as byte is defined as enum, we exclude it from the case here.
             template<class T>
-            struct ReflectorType<T, typename std::enable_if<std::is_enum<T>::value && !std::is_same<T, CLAID::byte>::value>::type>
+            struct ReflectorType<T, typename std::enable_if<std::is_enum<T>::value>::type>
             {
                 static void call(const char* property, Derived& r, T& member)
                 {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "XMLVal.hpp"
-#include "Utilities/byte.hpp"
 #include "Exception/Exception.hpp"
 namespace claid
 {
@@ -21,12 +20,7 @@ namespace claid
             return std::to_string(val);
         }
 
-        template<>
-        std::string toString<CLAID::byte>(CLAID::byte& val)
-        {
-            unsigned char tmp = *reinterpret_cast<unsigned char*>(&val);
-            return std::to_string(tmp);
-        }
+
 
         virtual void toString(std::string& string)
         {
@@ -63,12 +57,7 @@ namespace claid
         } \
 
 
-        static CLAID::byte strToByte(const std::string& string)
-        {
-            unsigned char tmp = std::stoi(string);
-            CLAID::byte byte = *reinterpret_cast<CLAID::byte*>(&tmp);
-            return byte;
-        }
+
     
 
         // template <typename T = int, only_if <eq <NumericType, long>{}, T> = 0>
@@ -86,7 +75,6 @@ namespace claid
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(float, std::stof)
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(double, std::stod)
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(long double, std::stold)
-        XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(CLAID::byte, strToByte)
 
     
 

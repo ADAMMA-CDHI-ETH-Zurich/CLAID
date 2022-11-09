@@ -171,7 +171,7 @@ namespace claid
 
 
             template <typename T>
-            typename std::enable_if<!(std::is_arithmetic<T>::value || std::is_same<T, CLAID::byte>::value)>::type
+            typename std::enable_if<!std::is_arithmetic<T>::value>::type
             serialize(T& obj, BinaryData* targetContainer)
             {
                 this->binaryData = targetContainer;
@@ -187,7 +187,7 @@ namespace claid
             }
 
             template <typename T>
-            typename std::enable_if<std::is_arithmetic<T>::value || std::is_same<T, CLAID::byte>::value>::type
+            typename std::enable_if<std::is_arithmetic<T>::value>::type
             serialize(T& obj, BinaryData* targetContainer)
             {
                 this->binaryData = targetContainer;

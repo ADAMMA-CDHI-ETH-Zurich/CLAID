@@ -1,6 +1,7 @@
 #include "RunTime/RunTime.hpp"
 
 #include "XML/XMLDocument.hpp"
+#include "Network/NetworkClientModule.hpp"
 
 
 namespace claid
@@ -31,7 +32,7 @@ namespace claid
         this->startModules();
     }
 
-    void RunTime::start()
+    void RunTime::checkAndStartLoadingThread()
     {
         if(this->running)
         {
@@ -43,10 +44,14 @@ namespace claid
         // Therefore, a deadlock would occur, if we call startModules from this thread, and the Modules would need to call functions
         // on the main thread during loading (e.g., creating a new instance of a PythonModule object from a python file) or in their initialize function.
         // Therefore, we call loadAndStart in a separate thread.
-        std::thread startThread(&RunTime::loadAndStart, this);
+        this->startThread = new std::thread(&RunTime::loadAndStart, this);
         this->running = true;
 
+        // Do NOT join thread here! Some Modules might require to execute code on the main thread before being able to finish the serialization (e.g., PythonModules).
+    }
 
+    void RunTime::processRunnablesBlocking()
+    {
         // Blocking the thread the RunTime was started in.
         // If necessary, it is possible to call functions on the
         // RunTime thread by adding a runnable to the runnablesChannel (note: ITCChannel, not CLAID::Channel).
@@ -70,12 +75,48 @@ namespace claid
                 delete runnable;
             }
         }     
-        startThread.join();  
+        startThread->join();        
+    }
+
+    void RunTime::start()
+    {
+        checkAndStartLoadingThread();
+        processRunnablesBlocking();          
+    }
+
+    // If you use this, you need to call process regularly (i.e., polling).
+    void RunTime::startNonBlocking()
+    {
+        checkAndStartLoadingThread();
+    }
+
+    void RunTime::process()
+    {
+        Runnable* runnable;
+
+        if(runnablesChannel.get(runnable, false))
+        {
+            if(runnable->isValid())
+            runnable->run();
+
+            runnable->wasExecuted = true;
+            if(runnable->deleteAfterRun)
+            {
+                delete runnable;
+            }
+        }           
     }
 
     void RunTime::addModule(Module* module)
     {
         return this->modules.push_back(module);
+    }
+
+    void RunTime::connectTo(std::string ip, int port)
+    {
+        claid::Network::NetworkClientModule* clientModule = new claid::Network::NetworkClientModule();
+        clientModule->address = ip + std::string(":") + std::to_string(port);
+        CLAID_RUNTIME->addModule(clientModule);
     }
 
     size_t RunTime::getNumModules()
