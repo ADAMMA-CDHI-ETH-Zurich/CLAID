@@ -11,20 +11,34 @@
 
 
 #include <assert.h>  
-
 #ifdef _WIN32
 #include <windows.h>
 #include <stdio.h>
 #include <tchar.h>
 #else
 #include <dirent.h>
-
+#include <ftw.h>
+int directoryDeleterHelper(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
+{
+	return remove(fpath);
+}
 // <sys/types.h> and <sys/stat.h> needed, but also needed
 // for some of the windows functions. So no additional linux includes.
 #endif
 
+
+
 namespace claid
 {
+	bool FileUtils::deleteDirectory(std::string path)
+	{
+		#ifdef _WIN32
+			return false;
+		#else
+			return nftw(path.c_str(), directoryDeleterHelper, 64, FTW_DEPTH | FTW_PHYS) == 0;
+		#endif
+	}
+
 	bool FileUtils::createDirectory(std::string path)
 	{
 		// Platform dependent code

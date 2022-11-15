@@ -28,13 +28,13 @@ namespace claid
             std::vector<Module*> modules;
             bool running = false;
         
-            // Specified XML configurations that shall be loaded.
-            std::vector<XMLDocument*> xmlConfigs;
+        
+            std::thread* loadingThread = nullptr;
+            std::thread* separateProcessThread = nullptr;
 
-            std::thread* startThread;
-
-            void loadConfigs();
-            void startModules();
+            std::vector<Module*> instantiateModulesFromRootXMLNode(std::shared_ptr<XMLNode> node);
+            void addModules(std::vector<Module*> modules);
+            void startModules(std::vector<Module*> modules);
             void loadAndStart();
 
             // Used to run runnables on the frameworks main thread (i.e., thread the framework was started from).
@@ -44,22 +44,44 @@ namespace claid
             // can execute that function on the main thread.
             ITCChannel<Runnable*> runnablesChannel;
 
-            void checkAndStartLoadingThread();
+            // Can be used to instantiate modules from configs using a designated thread.
+            // Why do we have a separate thread to instantiate modules from configs? 
+            // See comment in startLoadingThread ! 
+            ITCChannel<std::shared_ptr<XMLNode>> loadedXMLConfigsChannel;
+
+            // See comment in cpp for more details about why we use separate thread here.
+            void startLoadingThread();
             void processRunnablesBlocking();
+
+            XMLLoader::XMLLoaderManager loader;
+
 
         public:
             ChannelManager channelManager;
-            XMLLoader::XMLLoaderManager loader;
 
-   
+            template<typename T>
+            void registerLoader(std::string name)
+            {
+                this->loader.registerLoader<T>(name);
+            }
+
             void test()
             {
             }
 
+            // This is blocking
             void start();
-            void startNonBlocking();
 
-            // Only required if CLAID was startet non blocking.
+            // This non blocking, as it starts CLAID in a separate thread.
+            void startInSeparateThread();
+
+            // This is non blocking, but will not allow other Modules to run 
+            // Runnables on the framework thread. This is fine, if the functionality of
+            // running Runnables on the framework thread is not required. 
+            // Otherwise, process needs to be called manually.
+            void startNonBlockingWithoutUpdates();
+
+            // Only required if CLAID was started non blocking.
             void process();
 
             void addModule(Module* module);

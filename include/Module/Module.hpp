@@ -145,6 +145,9 @@ namespace claid
             
                        
             virtual void initialize() = 0;
+
+            // This function will be called after all Modules have been initialized.
+            virtual void postInitialize() = 0;
             virtual void terminate() = 0;
 
             PropertyReflector propertyReflector;
@@ -312,6 +315,11 @@ namespace claid
             {
                 return TypeChecking::getCompilerSpecificRunTimeNameOfObject(*this);   
             }
+
+            void onAllModulesHaveBeenInitialized()
+            {
+                this->postInitialize();
+            }
     };
 
     // A SubModule can only communicate via local channels (between any two Modules or SubModules) and 
@@ -363,9 +371,20 @@ namespace claid
 
             }
 
+            virtual void postInitialize()
+            {
+
+            }
+
             virtual void terminate()
             {
 
+            }
+
+            template<typename T>
+            void reflect(T& r)
+            {
+              
             }
 
         protected: 
@@ -424,6 +443,13 @@ namespace claid
                 }
             }
 
+
+            template<typename T>
+            void reflect(T& r)
+            {
+              
+            }
+
         private: 
             // SubModules that were created by the Module using spawnSubModule.
             // Those subModules run in the same thread as Module.
@@ -431,12 +457,16 @@ namespace claid
             // and running startModule manually), however then they run in their own separate thread.
             std::vector<SubModule*> subModulesInSameThread;
 
-            
-
         protected:
             virtual void initialize()
             {
 
+            }
+
+            // This function will be called after all Modules have been initialized.
+            virtual void postInitialize()
+            {
+                
             }
 
             virtual void terminate()
@@ -500,6 +530,8 @@ namespace claid
                 }
 
             }
+
+            
 
     };
 

@@ -6,16 +6,27 @@
 
 namespace claid
 {
-    void RunTime::loadConfigs()
+    std::vector<Module*> RunTime::instantiateModulesFromRootXMLNode(std::shared_ptr<XMLNode> xmlNode)
     {
-        for(XMLDocument*& xmlDocument : this->xmlConfigs)
+        printf("Instantiatemodules\n");
+        std::vector<Module*> loadedModules;
+    
+        loadedModules = this->loader.executeAppropriateLoaders(xmlNode);
+        
+        return loadedModules;
+    }
+
+    void RunTime::addModules(std::vector<claid::Module*> modulesToAdd)
+    {
+        for(Module*& module : modulesToAdd)
         {
-            this->loader.executeAppropriateLoaders(xmlDocument->getXMLNode());
+            this->addModule(module);
         }
     }
-    void RunTime::startModules()
+
+    void RunTime::startModules(std::vector<claid::Module*> modules)
     {
-        for(Module*& module : this->modules)
+        for(Module*& module : modules)
         {
             module->startModule();
 
@@ -24,28 +35,41 @@ namespace claid
 
             }
         }
+
+        // Call postInitialize.
+        for(Module*& module : modules)
+        {
+            module->onAllModulesHaveBeenInitialized();
+        }
     }
 
     void RunTime::loadAndStart()
     {
-        this->loadConfigs();
-        this->startModules();
+        while(this->running)
+        {
+            std::shared_ptr<XMLNode> xmlNode;
+            
+            loadedXMLConfigsChannel.get(xmlNode);
+            std::vector<Module*> loadedModules = this->instantiateModulesFromRootXMLNode(xmlNode);
+            this->addModules(loadedModules);
+            this->startModules(loadedModules);
+        }
     }
 
-    void RunTime::checkAndStartLoadingThread()
+    void RunTime::startLoadingThread()
     {
         if(this->running)
         {
             CLAID_THROW(Exception, "Error in RunTime::start(), start was called twice !");
         }
-
+        printf("Starting loading thread\n");
         // Some Modules, such as PythonModules, need to execute functions on the main thread of the RunTime during loading and initialization.
         // To do so, they insert Runnables to the runnablesChannel of the RunTime, which is processed below (see while loop).
         // Therefore, a deadlock would occur, if we call startModules from this thread, and the Modules would need to call functions
         // on the main thread during loading (e.g., creating a new instance of a PythonModule object from a python file) or in their initialize function.
         // Therefore, we call loadAndStart in a separate thread.
-        this->startThread = new std::thread(&RunTime::loadAndStart, this);
         this->running = true;
+        this->loadingThread = new std::thread(&RunTime::loadAndStart, this);
 
         // Do NOT join thread here! Some Modules might require to execute code on the main thread before being able to finish the serialization (e.g., PythonModules).
     }
@@ -75,19 +99,26 @@ namespace claid
                 delete runnable;
             }
         }     
-        startThread->join();        
+        printf("join\n");
+        this->loadingThread->join();        
     }
 
     void RunTime::start()
     {
-        checkAndStartLoadingThread();
+        startLoadingThread();
         processRunnablesBlocking();          
     }
 
     // If you use this, you need to call process regularly (i.e., polling).
-    void RunTime::startNonBlocking()
+    void RunTime::startNonBlockingWithoutUpdates()
     {
-        checkAndStartLoadingThread();
+        startLoadingThread();
+    }
+
+    void RunTime::startInSeparateThread()
+    {
+        startLoadingThread();
+        this->separateProcessThread = new std::thread(&RunTime::process, this);
     }
 
     void RunTime::process()
@@ -151,11 +182,13 @@ namespace claid
 
     void RunTime::loadFromXML(std::string path)
     {
-        claid::XMLDocument* xmlDocument = new claid::XMLDocument;
-        if(!xmlDocument->loadFromFile(path))
+        claid::XMLDocument xmlDocument;
+        if(!xmlDocument.loadFromFile(path))
         {
             CLAID_THROW(Exception, "CLAID::RunTime failed to load from XML file \"" << path << "\".");
         }
-        this->xmlConfigs.push_back(xmlDocument);
-    }
+        printf("tryput\n");
+        this->loadedXMLConfigsChannel.put(xmlDocument.getXMLNode());
+        printf("Have put\n");
+  }
 }

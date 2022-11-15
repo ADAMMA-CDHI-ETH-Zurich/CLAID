@@ -24,9 +24,10 @@ namespace claid
 				this->xmlLoaders.insert(std::make_pair(name, base));
 			}
 
-			void executeAppropriateLoaders(std::shared_ptr<XMLNode> xmlNode)
+			std::vector<claid::Module*> executeAppropriateLoaders(std::shared_ptr<XMLNode> xmlNode)
 			{
 				//std::cout << "EXECUTE LOADER " << loaders.size() << "\n";
+				std::vector<claid::Module*> loadedModules;
 				for (auto it : xmlLoaders)
 				{
 					XMLLoaderBase* loader = it.second;
@@ -36,7 +37,13 @@ namespace claid
 					{
 						if (child->name == loader->getDesiredTag())
 						{
-							desiredNodes.push_back(child);
+							claid::Module* loadedModule = loader->instantiateModuleFromNode(child);
+
+							if(loadedModule == nullptr)
+							{
+								CLAID_THROW(claid::Exception, "Error in loading Module from XML. Cannot load Module from XML Node " << child->name);
+							}
+							loadedModules.push_back(loadedModule);							
 						}
 						else
 						{
@@ -46,10 +53,9 @@ namespace claid
 							}
 						}
 					} 
-
-
-					loader->execute(desiredNodes);
 				}
+				return loadedModules;
+				
 			}
 
 			bool doesLoaderExistForTag(const std::string& tag)

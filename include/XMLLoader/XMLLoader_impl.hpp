@@ -8,7 +8,7 @@ namespace claid
 		public:
 			RegisterHelper(std::string name)
 			{
-				CLAID_RUNTIME->loader.registerLoader<T>(name);
+				CLAID_RUNTIME->registerLoader<T>(name);
 			}
 		};
 	}

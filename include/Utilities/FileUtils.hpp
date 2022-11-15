@@ -8,6 +8,8 @@ namespace claid
     class FileUtils
     {
         public:
+
+            static bool deleteDirectory(std::string path);
             static bool dirExists(std::string path);
             static bool fileExists(std::string path);
 
