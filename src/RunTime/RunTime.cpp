@@ -45,11 +45,16 @@ namespace claid
 
     void RunTime::loadAndStart()
     {
+        // Start all modules that have been added manually before loading XMLs.
+        this->startModules(this->modules);
         while(this->running)
         {
             std::shared_ptr<XMLNode> xmlNode;
             
+            // Blocking
             loadedXMLConfigsChannel.get(xmlNode);
+
+
             std::vector<Module*> loadedModules = this->instantiateModulesFromRootXMLNode(xmlNode);
             this->addModules(loadedModules);
             this->startModules(loadedModules);
@@ -58,6 +63,8 @@ namespace claid
 
     void RunTime::startLoadingThread()
     {
+
+        
         if(this->running)
         {
             CLAID_THROW(Exception, "Error in RunTime::start(), start was called twice !");
