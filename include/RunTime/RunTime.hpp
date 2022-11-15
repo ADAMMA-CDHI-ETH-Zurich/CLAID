@@ -33,7 +33,7 @@ namespace claid
             std::thread* separateProcessThread = nullptr;
 
             std::vector<Module*> instantiateModulesFromRootXMLNode(std::shared_ptr<XMLNode> node);
-            void addModules(std::vector<Module*> modules);
+            void insertModules(std::vector<Module*> modules);
             void startModules(std::vector<Module*> modules);
             void loadAndStart();
 
@@ -87,6 +87,9 @@ namespace claid
             void addModule(Module* module);
             void connectTo(std::string ip, int port);
 
+            void addXMLReceiverOnChannel(std::string channelName, bool throwExceptionWhenInvalidConfigIsReceived);
+
+
             size_t getNumModules();
             size_t getNumChannels();
             const std::string& getChannelNameByIndex(size_t id);
@@ -97,6 +100,7 @@ namespace claid
             ITCChannel<Runnable*>* getMainRunnablesChannel();
 
             void loadFromXML(std::string path);
+            void loadFromXML(XMLDocument& xmlDocument);
     };
 }
 

@@ -12,10 +12,14 @@ namespace claid
 			std::shared_ptr<XMLNode> xmlNode;
 
 		public:
-			bool loadFromFile(const File& file);
 
+			bool loadFromFile(const File& file);
 			bool loadFromFile(const std::string& file);
 			bool saveToFile(const std::string& file);
+
+			// Can be used to load an XML from a raw string.
+			bool loadFromString(const std::string& string);
+
 			void setXMLNode(std::shared_ptr<XMLNode> xmlNode);
 
 			std::shared_ptr<XMLNode> getXMLNode();

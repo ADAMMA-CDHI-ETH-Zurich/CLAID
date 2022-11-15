@@ -7,7 +7,7 @@ namespace claid
 	{
 		XMLParser xmlParser;
 
-		return (!xmlParser.parseFromString(file.getContent(), this->xmlNode));
+		return (xmlParser.parseFromString(file.getContent(), this->xmlNode));
 	}
 
 	bool XMLDocument::loadFromFile(const std::string& filePath)
@@ -56,6 +56,13 @@ namespace claid
 
 		return true;
 
+	}
+
+	bool XMLDocument::loadFromString(const std::string& string)
+	{
+		XMLParser xmlParser;
+
+		return (xmlParser.parseFromString(string, this->xmlNode));
 	}
 
 	void XMLDocument::setXMLNode(std::shared_ptr<XMLNode> xmlNode)

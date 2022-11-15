@@ -1,6 +1,7 @@
 #include "RunTime/RunTime.hpp"
 
 #include "XML/XMLDocument.hpp"
+#include "XMLModules/XMLReceiverModule.hpp"
 #include "Network/NetworkClientModule.hpp"
 
 
@@ -8,7 +9,6 @@ namespace claid
 {
     std::vector<Module*> RunTime::instantiateModulesFromRootXMLNode(std::shared_ptr<XMLNode> xmlNode)
     {
-        printf("Instantiatemodules\n");
         std::vector<Module*> loadedModules;
     
         loadedModules = this->loader.executeAppropriateLoaders(xmlNode);
@@ -16,11 +16,11 @@ namespace claid
         return loadedModules;
     }
 
-    void RunTime::addModules(std::vector<claid::Module*> modulesToAdd)
+    void RunTime::insertModules(std::vector<claid::Module*> modulesToAdd)
     {
         for(Module*& module : modulesToAdd)
         {
-            this->addModule(module);
+            this->modules.push_back(module);
         }
     }
 
@@ -45,8 +45,12 @@ namespace claid
 
     void RunTime::loadAndStart()
     {
-        // Start all modules that have been added manually before loading XMLs.
+        // Start all modules that have been added manually usingAddModule before loading XMLs.
+        // If a module is added using addModule after CLAID has started, that module will also be
+        // started automatically.
         this->startModules(this->modules);
+        
+        
         while(this->running)
         {
             std::shared_ptr<XMLNode> xmlNode;
@@ -56,15 +60,13 @@ namespace claid
 
 
             std::vector<Module*> loadedModules = this->instantiateModulesFromRootXMLNode(xmlNode);
-            this->addModules(loadedModules);
+            this->insertModules(loadedModules);
             this->startModules(loadedModules);
         }
     }
 
     void RunTime::startLoadingThread()
     {
-
-        
         if(this->running)
         {
             CLAID_THROW(Exception, "Error in RunTime::start(), start was called twice !");
@@ -147,6 +149,11 @@ namespace claid
 
     void RunTime::addModule(Module* module)
     {
+        if(this->isRunning() && !module->isModuleRunning())
+        {
+            // Call initialize and postInitialize.
+            this->startModules({module});
+        }
         return this->modules.push_back(module);
     }
 
@@ -155,6 +162,14 @@ namespace claid
         claid::Network::NetworkClientModule* clientModule = new claid::Network::NetworkClientModule();
         clientModule->address = ip + std::string(":") + std::to_string(port);
         CLAID_RUNTIME->addModule(clientModule);
+    }
+
+    // Adds an XMLReceiverModule, which allows to receive XML configs from the specified channel.
+    // Whenever there is a configuration received on that channel, it will be added to CLAID (using CLAID->loadFromXML).
+    void addXMLReceiverOnChannel(std::string channelName, bool throwExceptionWhenInvalidConfigIsReceived)
+    {   
+        claid::XMLReceiverModule* xmlReceiverModule = new claid::XMLReceiverModule(channelName, throwExceptionWhenInvalidConfigIsReceived);
+        CLAID_RUNTIME->addModule(xmlReceiverModule);
     }
 
     size_t RunTime::getNumModules()
@@ -194,8 +209,11 @@ namespace claid
         {
             CLAID_THROW(Exception, "CLAID::RunTime failed to load from XML file \"" << path << "\".");
         }
-        printf("tryput\n");
+        this->loadFromXML(xmlDocument);
+    }
+
+    void RunTime::loadFromXML(XMLDocument& xmlDocument)
+    {
         this->loadedXMLConfigsChannel.put(xmlDocument.getXMLNode());
-        printf("Have put\n");
-  }
+    }
 }

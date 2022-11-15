@@ -144,11 +144,15 @@ namespace claid
 
             
                        
+            // This function will be called when Module is started.
             virtual void initialize() = 0;
 
             // This function will be called after all Modules have been initialized.
             virtual void postInitialize() = 0;
+
+            // This function will be called when module is shut down.
             virtual void terminate() = 0;
+
 
             PropertyReflector propertyReflector;
 
@@ -195,9 +199,14 @@ namespace claid
                 this->id = id;
             }
 
-            bool isInitialized()
+            bool isInitialized() const
             {
                 return this->initialized;
+            }
+
+            bool isModuleRunning() const
+            {
+                return this->isRunning;
             }
             
             void waitForInitialization()
@@ -320,6 +329,8 @@ namespace claid
             {
                 this->postInitialize();
             }
+
+            
     };
 
     // A SubModule can only communicate via local channels (between any two Modules or SubModules) and 
