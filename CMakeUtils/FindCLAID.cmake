@@ -3,19 +3,6 @@
 # cross compiling environments such as in android studio). In that case, this path needs
 # to be added to CMAKE_MODULE_PATH manually.
 message("FoundCLAID")
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}\\cmake\\Modules\\")
 
-
-if(UNIX)
-    # for Linux, BSD, Solaris, Minix, Apple
-    set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/")
-    include(${CMAKE_CURRENT_LIST_DIR}${OS_SLASH}CLAID_Include.cmake)
-endif()
-
-if(WIN32)
-    # for Windows operating system in general
-    set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}\\cmake\\Modules\\")
-    include(${CMAKE_CURRENT_LIST_DIR}${OS_SLASH}CLAID_Include.cmake)
-endif()
-
-
-
+include(${CMAKE_CURRENT_LIST_DIR}\\CLAID_Include.cmake)
