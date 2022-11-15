@@ -1,7 +1,7 @@
 #pragma once
 #include "Utilities/Time.hpp"
 #include <string>
-namespace portaible 
+namespace claid 
 {
 
     class TaggedDataBase
@@ -11,11 +11,10 @@ namespace portaible
         TaggedDataBase() : sequenceID(0), timestamp(Time::min()) {}
 
 
-        TaggedDataBase(const Time& timestamp, uint32_t sequenceID = 0) :
+        TaggedDataBase(const Time& timestamp, uint64_t sequenceID = 0) :
             timestamp(timestamp),
             sequenceID(sequenceID) 
         {
-                
         }
 
 
@@ -25,12 +24,12 @@ namespace portaible
         void reflect(Reflector& r)
         {
             r.member("Timestamp",  timestamp, "The timestamp", Time::now());
-            r.member("SequenceID", sequenceID, "A user defined sequence ID", 0);
+            r.template member<uint64_t>("SequenceID", sequenceID, "A user defined sequence ID", 0);
         }
 
     public:
 
         Time timestamp;
-        uint32_t sequenceID;
+        uint64_t sequenceID;
     };
 }

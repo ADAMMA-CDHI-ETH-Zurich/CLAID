@@ -2,7 +2,7 @@
 #include "XMLNode.hpp"
 #include "XMLNumericVal.hpp"
 
-#include "Reflection/Deserializer.hpp"
+#include "Serialization/Deserializer.hpp"
 
 #include "XML/XMLParser.hpp"
 #include "ClassFactory/ClassFactory.hpp"
@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <memory.h>
 
-namespace portaible
+namespace claid
 {
     class XMLDeserializer : public Deserializer<XMLDeserializer>
     {
@@ -46,7 +46,7 @@ namespace portaible
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" is missing!");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
                     member = this->getCurrentDefaultValue<T>();
@@ -57,7 +57,7 @@ namespace portaible
 
                     if (value.get() == nullptr)
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
                     XMLNumericVal::parseFromString(member, value->getValue());
                 }
@@ -72,7 +72,7 @@ namespace portaible
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" is missing!");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
                     member = this->getCurrentDefaultValue<T>();
@@ -83,7 +83,7 @@ namespace portaible
 
                     if (value.get() == nullptr)
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
                     XMLNumericVal::parseFromString(member, value->getValue());
                 }
@@ -96,7 +96,7 @@ namespace portaible
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" is missing!");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
                     member = this->getCurrentDefaultValue<bool>();
@@ -107,7 +107,7 @@ namespace portaible
 
                     if (value.get() == nullptr)
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
                     
                     std::string boolStr = value->getValue();
@@ -126,21 +126,58 @@ namespace portaible
                     }
                     else
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. Cannot deserialize xml value to member/property \"" << property << "\" of type bool. Expected \"true\" or \"false\" in XML, got " << boolStr << ".");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. Cannot deserialize xml value to member/property \"" << property << "\" of type bool. Expected \"true\" or \"false\" in XML, got " << boolStr << ".");
                     }
+                }
+            }
+
+            // char, signed char, unsigned char (char can either be defined as signed char or as unsigned char)
+            // See: https://stackoverflow.com/questions/16503373/difference-between-char-and-signed-char-in-c   
+            template<typename T>
+            void callChar(const char* property, T& member)
+            {
+                std::shared_ptr<XMLNode> node = this->getChildNode(property);
+                if(node.get() == nullptr)
+                {
+                    if (!this->defaultValueCurrentlySet())
+                    {
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
+                    }
+
+                    member = this->getCurrentDefaultValue<char>();
+                }
+                else
+                {
+                    std::shared_ptr<XMLVal> value = std::static_pointer_cast<XMLVal>(node);
+
+                    if (value.get() == nullptr)
+                    {
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
+                    }
+                   
+                    const std::string& str = value->getValue();
+                    if(str.size() != 1)
+                    {
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" is a character, however in the XML file either an empty string or a string with more than one character was specified. Got " << str << ".");
+                    }
+
+                    member = str[0];
                 }
             }
 
             template<typename T>
             void callBeginClass(const char* property, T& member)
             {
-                std::shared_ptr<XMLNode> node = this->currentXMLNode->findChild(property);
+                std::shared_ptr<XMLNode> node = getChildNode(property);
                 if(node.get() == nullptr)
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node " << property << " is missing!");
+                    std::string className = TypeChecking::getCompilerSpecificRunTimeNameOfObject(member);
+                    CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!"
+                    "We tried to deserialize an object of class \"" << className << "\", which has a member \"" << property << "\". This member was not specified in the corresponding XML node.");
                 }
 
                 this->currentXMLNode = node;
+                this->isSequence = false;
             }
 
             template<typename T>
@@ -155,12 +192,12 @@ namespace portaible
                 std::string className;
                 if (!this->getCurrentNodeClassName(className))
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type. However, attribute \"class\" was not specified for the XML node. We don't know which class you want!");
+                    CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type. However, attribute \"class\" was not specified for the XML node. We don't know which class you want!");
                 }
 
                 if (!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForClass(className))
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "XMLDeserializer failed to deserialize object from XML. Class \"" << className << "\" was not registered and is unknown.");
+                    CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Class \"" << className << "\" was not registered to ClassFactory and is unknown.");
                 }
 
                 member = ClassFactory::ClassFactory::getInstance()->getNewInstanceAndCast<T>(className);
@@ -168,7 +205,7 @@ namespace portaible
                 PolymorphicReflector::WrappedReflectorBase<XMLDeserializer>* polymorphicReflector;
                 if (!PolymorphicReflector::PolymorphicReflector<XMLDeserializer>::getInstance()->getReflector(className, polymorphicReflector))
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type. However, attribute \"class\" was does not have a PolymorphicReflector registered. Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                    CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a polymorphic pointer type of class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
                 polymorphicReflector->invoke(*this, static_cast<void*>(member));
@@ -184,6 +221,14 @@ namespace portaible
             }
 
             template<typename T>
+            void callEnum(const char* property, T& member)
+            {
+                size_t m;
+                this->callInt(property, m);
+                member = static_cast<T>(m);
+            }
+
+            template<typename T>
             void callString(const char* property, T& member)
             {
                 std::shared_ptr<XMLNode> node = this->getChildNode(property);
@@ -191,7 +236,7 @@ namespace portaible
                 {
                     if (!this->defaultValueCurrentlySet())
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" is missing!");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
                     member = this->getCurrentDefaultValue<T>();
@@ -202,7 +247,7 @@ namespace portaible
 
                     if (value.get() == nullptr)
                     {
-                        PORTAIBLE_THROW(portaible::Exception, "Error during deserialization from XML. XMLNode was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XMLNode was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
                     member = value->getValue();
                 }
@@ -223,7 +268,6 @@ namespace portaible
                         {
                             if(ctr >= this->idInSequence)
                             {
-                                this->idInSequence++;
                                 return child;
                             }
                             ctr++;
@@ -257,9 +301,34 @@ namespace portaible
                 this->idInSequence = 0;
             }
 
+            void itemIndex(const size_t index)
+            {
+                this->idInSequence = index;
+
+                // If you have a nested container, e.g. vector<vector<int>>, then 
+                // isSequence would be set to false when endSequence of the inner vector is called.
+                // But, as we call itemIndex for each item, we can just set it back to true, if we're still in a sequence.
+                this->isSequence = true;
+            }
+
+            void endItem()
+            {
+                
+            }
+
             void endSequence()
             {
                 this->isSequence = false;
+            }
+
+            void write(const char* data, size_t size)
+            {
+
+            }
+
+            void read(char*& data, size_t size)
+            {
+                
             }
 
             template<typename T> 
@@ -271,17 +340,42 @@ namespace portaible
 
                 if (this->currentXMLNode == nullptr)
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "Error in deserialization of object of type " << name << " from XML. No XML node corresponding to the object was found (<" << name << "> missing).");
+                    CLAID_THROW(claid::Exception, "Error in deserialization of object of type " << name << " from XML. No XML node corresponding to the object was found (<" << name << "> missing).");
                 }
                
+               invokeReflectOnObject(obj);
 
-                obj.reflect(*this);
             }
+
             template<typename T>
             void deserializeFromNode(std::string name, T& obj)
             {
-                this->callOnObject(name.c_str(), obj);
+                this->invokeReflectOnObject(obj);
             }
+
+            template<typename T>
+            void deserializeExistingPolymorphicObject(std::string className, T* obj)
+            {
+                // Assumes T is a polymorphic type (e.g., any class inheriting from claid::Module) and
+                // calls the corresponding PolymorphicReflector on that object.
+                // The object needs to exist already! deserializeExistingPolymorphicObject will NOT create the object using the ClassFactory!
+           
+                if(obj == nullptr)
+                {
+                    CLAID_THROW(claid::Exception, "Error in deserialization from XML. It was tried to deserialize a polymorphic object with specified class \"" << className << "\", however the "
+                    "object is null. The object needs to have been created before being able to deserialize it's members from XML."
+                    "If you want the deserializer to automatically create a corresponding object using the ClassFactory, use the deserialize function instead.");
+                }
+
+                PolymorphicReflector::WrappedReflectorBase<XMLDeserializer>* polymorphicReflector;
+                if (!PolymorphicReflector::PolymorphicReflector<XMLDeserializer>::getInstance()->getReflector(className, polymorphicReflector))
+                {
+                    CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. No PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                }
+
+                polymorphicReflector->invoke(*this, static_cast<void*>(obj));
+            }
+
 
 
             void enforceName(std::string& name, int idInSequence = 0)
@@ -298,18 +392,30 @@ namespace portaible
 
                 if(idInSequence < 0 )
                 {
-                    PORTAIBLE_THROW(Exception, "Error! During Deserialization, enforceName was called with an invalid idInSequence (must be >= 0).");
+                    CLAID_THROW(Exception, "Error! During Deserialization, enforceName was called with an invalid idInSequence (must be >= 0).");
                 }
                 else if(idInSequence >= this->currentXMLNode->children.size())
                 {
-                    PORTAIBLE_THROW(Exception, "Error! During Deserialization, enforceName was called with idInSequence, " 
+                    CLAID_THROW(Exception, "Error! During Deserialization, enforceName was called with idInSequence, " 
                     << "which is greater than the number of items in the current sequence (" << idInSequence << " vs. " << this->currentXMLNode->children.size());
                 }
 
                 name = this->currentXMLNode->children[idInSequence]->name;
             }
 
-            
+            std::string getDebugNodeName(std::shared_ptr<XMLNode> node)
+            {
+                if(node->hasAttribute("class"))
+                {
+                    std::string className;
+                    node->getAttribute("class", className);
+                    return node->name + std::string(" (class: ") + className + std::string(")");
+                }
+                else
+                {
+                    return node->name;
+                }
+            }
 
         
     };

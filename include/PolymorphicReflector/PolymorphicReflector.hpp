@@ -6,7 +6,7 @@
 #include <map>
 #include <string>
 
-namespace portaible
+namespace claid
 {
 	namespace PolymorphicReflector
 	{
@@ -16,10 +16,20 @@ namespace portaible
 			private:
 				std::map<std::string, WrappedReflectorBase<Reflector>*> reflectors;
 
+
 			public:
 				template<typename ObjectType>
 				void registerReflector(std::string className)
 				{
+					auto it = reflectors.find(className);
+
+					if (it != reflectors.end())
+					{
+						return;
+						//CLAID_THROW(claid::Exception, "Error, PolymorhpReflector for class \"" << className << "\" was registered multiple times.");
+					}
+
+
 					WrappedReflectorTyped<ObjectType, Reflector>* reflector = new WrappedReflectorTyped<ObjectType, Reflector>;
 					reflectors.insert(std::make_pair(className, static_cast<WrappedReflectorBase<Reflector>*>(reflector)));
 				}
@@ -52,8 +62,11 @@ namespace portaible
 	
 }
 
-#define REGISTER_POLYMORPHIC_REFLECTOR(className, Reflector) \
-	portaible::PolymorphicReflector::RegisterHelper<className, Reflector> className::polymorphicReflectorRegistrar (#className);\
+#define REGISTER_POLYMORPHIC_REFLECTOR(className, Reflector, ReflectorName) \
+	claid::PolymorphicReflector::RegisterHelper<className, Reflector> className::polymorphicReflectorRegistrar##ReflectorName (#className);\
 
-#define DECLARE_POLYMORPHIC_REFLECTOR(className, Reflector) \
-     static portaible::PolymorphicReflector::RegisterHelper<className, Reflector> polymorphicReflectorRegistrar;
+#define DECLARE_POLYMORPHIC_REFLECTOR(className, Reflector, ReflectorName) \
+     static claid::PolymorphicReflector::RegisterHelper<className, Reflector> polymorphicReflectorRegistrar##ReflectorName;
+
+
+	 

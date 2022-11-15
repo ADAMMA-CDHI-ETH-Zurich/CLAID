@@ -2,9 +2,10 @@
 
 #include <memory>
 #include "TaggedDataBase.hpp"
-#include <unistd.h>
+#include "Reflection/ReflectBase.hpp"
+#include <stdint.h>
 #include <iostream>
-namespace portaible
+namespace claid
 {
     template<typename T>
     class TaggedData : public TaggedDataBase
@@ -16,15 +17,21 @@ namespace portaible
 
         public:
 
+            template<typename Reflector>
+            void reflect(Reflector& r)
+            {
+                REFLECT_BASE(r, TaggedDataBase);
+                r.member("Data", this->data, "");
+            }
+
             TaggedData() {}
 
             TaggedData(const T& data) : TaggedDataBase(Time::now(), 0)
             {
-
                 this->data = std::shared_ptr<T>(new T(data));
             }
     
-            TaggedData(const T& data, const Time& timestamp, uint32_t sequenceID = 0) : TaggedDataBase(timestamp, sequenceID)
+            TaggedData(const T& data, const Time& timestamp, uint64_t sequenceID = 0) : TaggedDataBase(timestamp, sequenceID)
             {
                 // Copy is necessary.
                 this->data = std::shared_ptr<T>(new T(data));
@@ -35,7 +42,7 @@ namespace portaible
                 this->data = data;
             }
 
-            TaggedData(std::shared_ptr<T>& data, const Time& timestamp, uint32_t sequenceID = 0) : TaggedDataBase(timestamp, sequenceID)
+            TaggedData(std::shared_ptr<T>& data, const Time& timestamp, uint64_t sequenceID = 0) : TaggedDataBase(timestamp, sequenceID)
             {
                 this->data = data;
             }
@@ -53,6 +60,11 @@ namespace portaible
             void toBinary()
             {
 
+            }
+
+            TaggedDataBase getHeader()
+            {
+                return *static_cast<TaggedDataBase*>(this);
             }
     };
 }

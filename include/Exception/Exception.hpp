@@ -8,18 +8,21 @@
 #include <iostream>
 
 #include <list>
+#include <chrono>
+#include <thread>
 #include "Logger/Logger.hpp"
 
 
-#define PORTAIBLE_THROW(ex, msg)\
+#define CLAID_THROW(ex, msg)\
 {\
 	std::ostringstream ex_str;\
 	ex_str << msg;\
-	Logger::printfln("%s", ex_str.str().c_str());\
+    claid::Logger::printfln("%s", ex_str.str().c_str());\
+	std::this_thread::sleep_for(std::chrono::milliseconds(5000));\
 	throw ex(ex_str.str(), __FILE__, __LINE__); \
 }
 
-namespace portaible
+namespace claid
 {
 	class Exception : public std::exception
 	{
@@ -60,9 +63,9 @@ namespace portaible
 
 
 		struct Info {
-			std::string message;	/// The exception message
-			std::string file;		/// The file the exception occurred
-			int         line;		/// The line the exception occurred
+			std::string message;	
+			std::string file;		
+			int         line;		
 
 		public:
 			Info(const std::string& iMessage, const std::string& iFile, int iLine) :
@@ -81,7 +84,7 @@ namespace portaible
 	protected:
 		std::list<Info> mInfos;
 
-		mutable std::string mMessage; ///< as cache for what()
+		mutable std::string mMessage; 
 	};
 
 }

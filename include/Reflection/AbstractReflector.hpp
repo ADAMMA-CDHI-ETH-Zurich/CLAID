@@ -10,7 +10,7 @@ HAS_NON_MEMBER_FUNCTION_WITH_TWO_ARGUMENTS_DETECTOR(void, reflect)
 
 #include "ReflectorInvoker.hpp"
 
-namespace portaible
+namespace claid
 {
     class AbstractReflector
     {

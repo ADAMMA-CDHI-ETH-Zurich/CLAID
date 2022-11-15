@@ -1,0 +1,3 @@
+#include "RemoteConnection/Message/MessageHeader/MessageHeaderInitialListOfPublishedAndSubscribedChannels.hpp"
+
+REGISTER_SERIALIZATION(claid::RemoteConnection::MessageHeaderInitialListOfPublishedAndSubscribedChannels)

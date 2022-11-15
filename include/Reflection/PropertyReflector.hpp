@@ -3,7 +3,7 @@
 
 #include "Reflection/RecursiveReflector.hpp"
 
-namespace portaible
+namespace claid
 {
     class PropertyReflector : public RecursiveReflector<PropertyReflector>
     {
@@ -73,7 +73,7 @@ namespace portaible
         template<typename T>
         void reflect(std::string name, T& obj)
         {
-            this->callOnObject(name.c_str(), obj);
+            this->callAppropriateFunctionBasedOnType(name.c_str(), obj);
         }
       
     };

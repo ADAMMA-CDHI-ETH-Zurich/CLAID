@@ -1,6 +1,6 @@
 #include "RecursiveReflector.hpp"
 #include "RunTime/RunTime.hpp"
-namespace portaible
+namespace claid
 {
     class SimpleReflector : public RecursiveReflector<SimpleReflector>
     {
@@ -11,7 +11,7 @@ namespace portaible
                 printf("I am float, val is %f\n", member);
 
                 RunTime runtime;
-                printf("And runtime val is %d\n",     portaible::RunTime::getInstance()->getVal());
+                printf("And runtime val is %d\n",     claid::RunTime::getInstance()->getVal());
             }   
 
             // Also includes any variants of signed, unsigned, short, long, long long, ...

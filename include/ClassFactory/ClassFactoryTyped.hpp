@@ -2,7 +2,7 @@
 
 #include "ClassFactoryBase.hpp"
 
-namespace portaible
+namespace claid
 {
 	namespace ClassFactory
 	{
@@ -19,6 +19,7 @@ namespace portaible
 				{
 					return new T;
 				}
+
 		};
 	}
 }

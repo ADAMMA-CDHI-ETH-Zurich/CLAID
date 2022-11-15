@@ -3,25 +3,9 @@
 #include <string>
 #include <type_traits>
 #include "ClassInvoker.hpp"
-
-namespace portaible
+#include "Traits/is_integer_no_bool.hpp"
+namespace claid
 {
-    template<typename T> struct is_integer_no_bool : public std::false_type {};
-
-    #define ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(type) \
-    template<>\
-    struct is_integer_no_bool<type> : public std::true_type {};
-
-    ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(short)
-    ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(int)
-    ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(long)
-    ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(long long)
-    ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(unsigned int)
-    ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(unsigned long)
-    ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(unsigned long long)
-  
-  
-
     template<typename Derived>
     class RecursiveReflector : public AbstractReflector
     {
@@ -87,6 +71,19 @@ namespace portaible
                     r.callBool(property, member);
                 }
             };
+
+            // Why do we explicitly need to distinguish between signed and unsigned char?
+            // Read the following: https://stackoverflow.com/questions/16503373/difference-between-char-and-signed-char-in-c
+            template<class T>
+            struct ReflectorType<T, typename std::enable_if<std::is_same<T, signed char>::value || std::is_same<T, unsigned char>::value || 
+                            std::is_same<T, char>::value || std::is_same<T, char16_t>::value || std::is_same<T, char32_t>::value >::type> 
+            {
+                static void call(const char* property, Derived& r, T& member) 
+                {
+                    r.callChar(property, member);
+                }
+            };
+
         // CLASS TYPES
 
             template<class T>
@@ -110,6 +107,16 @@ namespace portaible
                 }
             };
 
+        // ENUM TYPES
+
+            template<class T>
+            struct ReflectorType<T, typename std::enable_if<std::is_enum<T>::value>::type>
+            {
+                static void call(const char* property, Derived& r, T& member)
+                {
+                    r.callEnum(property, member);
+                }
+            };
             
 
         public:
@@ -123,6 +130,7 @@ namespace portaible
                 
             }
 
+            // Calls the reflect function of the given object.
             template<typename T>
             void invokeReflectOnObject(T& obj)
             {
@@ -157,8 +165,10 @@ namespace portaible
                 ReflectorType<T>::call(property, *this->This(), member);
             }
 
+            // Determines the type of the object (can be anything, primitive or class),
+            // and decies which function to call in the reflector (e.g. callInt, callFloat, ...)
             template<typename T>
-            void callOnObject(const char* name, T& obj)
+            void callAppropriateFunctionBasedOnType(const char* name, T& obj)
             {
                 ReflectorType<T>::call(name, *this->This(), obj);
             }
@@ -170,3 +180,4 @@ namespace portaible
 
     };  
 }
+

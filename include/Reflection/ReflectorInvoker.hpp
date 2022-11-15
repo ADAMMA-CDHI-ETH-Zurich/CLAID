@@ -3,7 +3,7 @@
 #include "AbstractReflector.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 
-namespace portaible
+namespace claid
 {
 
     template<typename Type>
@@ -26,7 +26,7 @@ namespace portaible
 
     }; 
 
-
+    // TODO fix for standard types
     template<typename Reflector, typename T>
     struct ReflectorInvoker<Reflector, T, typename std::enable_if<has_mem_reflect<T>::value>::type>
     {

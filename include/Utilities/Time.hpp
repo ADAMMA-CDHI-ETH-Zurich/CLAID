@@ -1,12 +1,11 @@
 #pragma once
-
 #include <chrono>
 #include <stdio.h>
 #include <cstdint>
 #include <limits>
 #include <sstream>
 
-namespace portaible
+namespace claid
 {
 struct Duration 
 {
@@ -35,23 +34,23 @@ struct Duration
 		return false;
 	}
 
-	uint32_t getNanoSeconds() const
+	uint64_t getNanoSeconds() const
 	{
 		return std::chrono::duration_cast<std::chrono::nanoseconds>(this->val).count();
 	}
 
 
-	uint32_t getMicroSeconds() const
+	uint64_t getMicroSeconds() const
 	{
 		return val.count();
 	}
 
-	uint32_t getMilliSeconds() const
+	uint64_t getMilliSeconds() const
 	{
 		return std::chrono::duration_cast<std::chrono::milliseconds>(this->val).count();
 	}
 
-	uint32_t getSeconds() const
+	uint64_t getSeconds() const
 	{
 		return std::chrono::duration_cast<std::chrono::seconds>(this->val).count();
 	}
@@ -90,6 +89,9 @@ struct Duration
 	}
 };
 
+#include "Reflection/SplitReflectInType.hpp"
+
+
 class Time : public std::chrono::time_point<std::chrono::system_clock>
 {
 
@@ -107,7 +109,7 @@ public:
 
     Time(std::chrono::time_point<std::chrono::system_clock> timePoint) : Base(timePoint), timePoint(timePoint)
     {
-
+		
     }
 
 
@@ -162,56 +164,52 @@ public:
 		return today() + std::chrono::milliseconds(amount);
 	}
 
-	/**
-	 * Returns the unix epoch 1.1.1970 0:0:0.000
-	 * @return Unix epoch time.
-	 */
+
 	static Time unixEpoch()
 	{
 		const auto p0 = std::chrono::time_point<std::chrono::system_clock>();
 		return p0;
 	}
 
-	/**
-	 * Converts the current time to a unix timestamp in seconds
-	 * @return timestamp in seconds.
-	 */
-	uint32_t toUnixTimestamp() const
+
+	uint64_t toUnixTimestamp() const
 	{
 		return std::chrono::duration_cast<std::chrono::seconds>(*this - Time::unixEpoch()).count();
 	}
 
-	/**
-	 * Creates a time representation out of a unix timestamp
-	 * @param[in] seconds The unix timestamp in seconds.
-	 */
-	static Time fromUnixTimestamp(uint32_t seconds)
+	uint64_t toUnixTimestampMilliseconds() const
 	{
-		return Time::unixEpoch() + std::chrono::seconds(seconds);
+		return std::chrono::duration_cast<std::chrono::milliseconds>(*this - Time::unixEpoch()).count();
 	}
 
-	/**
-	 * Creates a time representation out of a unix timestamp
-	 * @param[in] seconds The unix timestamp in seconds.
-	 */
-	static Time fromUnixTimestampMilliseconds(uint32_t milliSeconds)
-	{
-		return Time::unixEpoch() + std::chrono::milliseconds(milliSeconds);
-	}
 
-	/**
-	 * Converts the current time to a unix timestamp in nanoseconds
-	 * @return timestamp in nanoseconds.
-	 */
 	uint64_t toUnixNS() const
 	{
 		return std::chrono::duration_cast<std::chrono::nanoseconds>(*this - Time::unixEpoch()).count();
 	}
 
-	static void getCurrentDateTime(int& year, int& month, int& day, int& hour, int& minute, int& second)
+	
+	static Time fromUnixTimestamp(uint32_t seconds)
 	{
-		std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-		time_t tt = std::chrono::system_clock::to_time_t(now);
+		return Time::unixEpoch() + std::chrono::seconds(seconds);
+	}
+
+
+	static Time fromUnixTimestampMilliseconds(uint32_t milliSeconds)
+	{
+		return Time::unixEpoch() + std::chrono::milliseconds(milliSeconds);
+	}
+
+
+
+	void toDateTime(int& year, int& month, int& day, int& hour, int& minute, int& second)
+	{
+		Time::toDateTime(*this, year, month, day, hour, minute, second);
+	}
+
+	static void toDateTime(Time& time, int& year, int& month, int& day, int& hour, int& minute, int& second)
+	{
+		time_t tt = std::chrono::system_clock::to_time_t(time);
 		tm local_tm = *localtime(&tt);
 
 		year = local_tm.tm_year + 1900;
@@ -222,6 +220,12 @@ public:
 		second = local_tm.tm_sec;
 	}
 
+	static void getCurrentDateTime(int& year, int& month, int& day, int& hour, int& minute, int& second)
+	{
+		Time now = Time::now();
+		Time::toDateTime(now, year, month, day, hour, minute, second);
+	}
+
 	static void timeString(std::string& timeString)
 	{
 
@@ -230,31 +234,54 @@ public:
 
 public:
 
-	/** @name Operators */
-	//@{
-	std::chrono::duration<int64_t, std::nano> operator-(const Time& t) const
-	{
-		return this->timePoint - t.timePoint;
-	}
+		/** @name Operators */
+		//@{
+		std::chrono::duration<int64_t, std::nano> operator-(const Time& t) const
+		{
+			return this->timePoint - t.timePoint;
+		}
 
-	Time operator+(const Duration& d) const
-	{
-		return this->timePoint + d.val;
-	}
-	
-	Time operator-(const Duration& d) const
-	{
-		return this->timePoint - d.val;
-	}
+		Time operator+(const Duration& d) const
+		{
+			return this->timePoint + d.val;
+		}
+		
+		Time operator-(const Duration& d) const
+		{
+			return this->timePoint - d.val;
+		}
 
-	bool operator==(const Time& d) const
-	{
-		printf("operator\n");
-		return this->toUnixNS() == d.toUnixNS();
-	}
+		bool operator==(const Time& d) const
+		{
+			return this->toUnixNS() == d.toUnixNS();
+		}
 
+		template<typename Reflector>
+		void reflect(Reflector& r)
+		{
+			splitReflectInType(r, *this);
+		}
 
+		template<typename Reflector>
+		void reflectRead(Reflector& r)
+		{
+			uint32_t unixMs;
+			r.member("UnixTimestamp", unixMs, "");
+
+			*this = Time::fromUnixTimestampMilliseconds(unixMs);
+		}
+
+		template<typename Reflector>
+		void reflectWrite(Reflector& r)
+		{
+			uint32_t unixMs = this->toUnixTimestampMilliseconds();
+			r.member("UnixTimestamp", unixMs, "");
+		}
 
 
 	};
 }
+
+
+
+

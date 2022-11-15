@@ -1,6 +1,6 @@
 #include "PropertyNode.hpp"
 
-namespace portaible
+namespace claid
 {
     class PropertyTree
     {

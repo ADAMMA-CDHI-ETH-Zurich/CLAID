@@ -1,8 +1,8 @@
 #pragma once
 
 #include "XMLVal.hpp"
-
-namespace portaible
+#include "Exception/Exception.hpp"
+namespace claid
 {
 
     struct XMLNumericVal : public XMLVal
@@ -19,6 +19,8 @@ namespace portaible
         {
             return std::to_string(val);
         }
+
+
 
         virtual void toString(std::string& string)
         {
@@ -42,10 +44,21 @@ namespace portaible
         #define XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(type, func) \
         static void parseFromString(type& member, const std::string& string) \
         { \
-            member = func(string); \
+            try\
+            {\
+                member = func(string); \
+            }\
+            catch(const std::exception& e) \
+            {\
+                CLAID_THROW(claid::Exception, "Failed to parse value from XML node. Cannot convert " << string << " to variable of type " << std::string(#type) << ". " \
+                << "Possibly, the specified string is invalid or the value is too big for the specified data type.\n" \
+                << "Original exception was: " << e.what()); \
+            }\
         } \
 
- 
+
+
+    
 
         // template <typename T = int, only_if <eq <NumericType, long>{}, T> = 0>
         // void parseFromString(long& value, const std::string& string) 

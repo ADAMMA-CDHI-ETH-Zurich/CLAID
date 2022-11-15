@@ -8,12 +8,12 @@
 
 #include <string>
 #include <stdexcept>
-std::string portaible::Logger::logTag = "portaible";
-std::string portaible::Logger::lastLogMessage = "";
+std::string claid::Logger::logTag = "claid";
+std::string claid::Logger::lastLogMessage = "";
 
 #ifdef __ANDROID__
 	#include <android/log.h>
-	#define  LOG_TAG    "portaible"
+	#define  LOG_TAG    "claid"
 	#define  LOGCAT(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 
 #endif
@@ -32,31 +32,32 @@ std::string portaible::Logger::lastLogMessage = "";
  * @param ... variable of amount of parameters used to format the
  * conversion specifiers.
  */
-void portaible::Logger::printfln(const char *format, ...)
+void claid::Logger::printfln(const char *format, ...)
 {
 	va_list vargs;
 
 	va_start(vargs, format);
 
 
-    char buffer[500] = "";
+	// Size 500 was too little.
+    char buffer[1024] = "";
 	std::vsprintf(buffer, format, vargs);
 
 
 	va_end(vargs);
 	std::stringstream ss;
 	std::string timeString;
-	portaible::Logger::getTimeString(&timeString);
+	claid::Logger::getTimeString(&timeString);
 
-	ss << "[" << portaible::Logger::logTag << " | "
+	ss << "[" << claid::Logger::logTag << " | "
 			<< timeString << "] " << buffer;
 
-	portaible::Logger::lastLogMessage = ss.str().c_str();
+	claid::Logger::lastLogMessage = ss.str().c_str();
 	#ifdef __ANDROID__
 
 		LOGCAT(ss.str().c_str(), __LINE__);
 	#else
-		std::cout << ss.str().c_str() << "\n";
+		std::cout << ss.str().c_str() << "\n" << std::flush;
 	#endif
 
 }
@@ -75,7 +76,7 @@ void portaible::Logger::printfln(const char *format, ...)
  *
  * @return void.
  */
-void portaible::Logger::getTimeString(std::string *timeStr)
+void claid::Logger::getTimeString(std::string *timeStr)
 {
 	time_t t = time(0);
 	struct tm * now = localtime(&t);
@@ -110,9 +111,9 @@ void portaible::Logger::getTimeString(std::string *timeStr)
  *
  * @return void
  */
-void portaible::Logger::setLogTag(std::string logTag)
+void claid::Logger::setLogTag(std::string logTag)
 {
-	portaible::Logger::logTag = logTag;
+	claid::Logger::logTag = logTag;
 }
 
 /**
@@ -122,7 +123,7 @@ void portaible::Logger::setLogTag(std::string logTag)
  * 
  * @return std::string Last log message that was printed.
  */
-std::string portaible::Logger::getLastLogMessage()
+std::string claid::Logger::getLastLogMessage()
 {
-	return portaible::Logger::lastLogMessage;
+	return claid::Logger::lastLogMessage;
 }

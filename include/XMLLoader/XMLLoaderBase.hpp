@@ -3,7 +3,7 @@
 #include "XML/XMLNode.hpp"
 #include <string>
 
-namespace portaible
+namespace claid
 {
 	namespace XMLLoader
 	{
@@ -19,7 +19,7 @@ namespace portaible
 
 			}
 
-			virtual bool execute(std::vector<std::shared_ptr<XMLNode>> xmlNodes) = 0;
+			virtual claid::Module* instantiateModuleFromNode(std::shared_ptr<XMLNode> xmlNodes) = 0;
 
 			const std::string& getDesiredTag()
 			{

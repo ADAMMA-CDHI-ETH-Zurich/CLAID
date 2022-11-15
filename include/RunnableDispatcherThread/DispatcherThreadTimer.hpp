@@ -3,19 +3,19 @@
 
 #include "RunnableDispatcherThread.hpp"
 
-namespace portaible
+namespace claid
 {
     class DispatcherThreadTimer : public TimerBase
     {
         private: 
-            RunnableDispatcherThread* runnableDispatcherThread;
+            std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread;
             Runnable* runnable;
        
        
         public:
             DispatcherThreadTimer();
 
-            DispatcherThreadTimer(RunnableDispatcherThread* runnableDispatcherThread, Runnable* runnable, size_t periodInMs);
+            DispatcherThreadTimer(std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread, Runnable* runnable, size_t periodInMs);
 
             void run();
     };  

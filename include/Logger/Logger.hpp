@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace portaible
+namespace claid
 {
 	/**
 	 * @brief  Logger providing Desktop Linux <-> Android platform independent logging

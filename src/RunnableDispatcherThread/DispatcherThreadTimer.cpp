@@ -1,13 +1,13 @@
 #include "RunnableDispatcherThread/DispatcherThreadTimer.hpp"
 
-namespace portaible
+namespace claid
 {
     DispatcherThreadTimer::DispatcherThreadTimer()
     {
         
     }
 
-    DispatcherThreadTimer::DispatcherThreadTimer(RunnableDispatcherThread* runnableDispatcherThread, Runnable* runnable, size_t periodInMs) : runnableDispatcherThread(runnableDispatcherThread), runnable(runnable), TimerBase(periodInMs)
+    DispatcherThreadTimer::DispatcherThreadTimer(std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread, Runnable* runnable, size_t periodInMs) : runnableDispatcherThread(runnableDispatcherThread), runnable(runnable), TimerBase(periodInMs)
     {
 
     }

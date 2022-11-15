@@ -4,13 +4,13 @@
 // #include <functional>
 
 // #include "SubscriberBase.hpp"
-// #include "ChannelRead.hpp"
+// #include "ChannelData.hpp"
 // #include "mutex"
 // #include <iostream>
 
 
 
-// namespace portaible
+// namespace claid
 // {
 //     // forward declaration
 //     template<typename T>

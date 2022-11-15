@@ -1,13 +1,13 @@
 #include "XML/XMLDocument.hpp"
 #include <fstream>
 
-namespace portaible
+namespace claid
 {
 	bool XMLDocument::loadFromFile(const File& file)
 	{
 		XMLParser xmlParser;
 
-		return (!xmlParser.parseFromString(file.getContent(), this->xmlNode));
+		return (xmlParser.parseFromString(file.getContent(), this->xmlNode));
 	}
 
 	bool XMLDocument::loadFromFile(const std::string& filePath)
@@ -17,7 +17,7 @@ namespace portaible
 
 		if (!file.is_open())
 		{
-			printf("Error! Could not open file \"%s\".", filePath.c_str());
+			Logger::printfln("Error! Could not open file \"%s\".", filePath.c_str());
 			return false;
 		}
 
@@ -30,7 +30,7 @@ namespace portaible
 
 		XMLParser xmlParser;
 
-		return (!xmlParser.parseFromString(fileContent, this->xmlNode));
+		return (xmlParser.parseFromString(fileContent, this->xmlNode));
 		
 	}
 
@@ -48,7 +48,7 @@ namespace portaible
 
 		if (!file.is_open())
 		{
-			printf("Error! Could not open file \"%s\".", filePath.c_str());
+			Logger::printfln("Error! Could not open file \"%s\".", filePath.c_str());
 			return false;
 		}
 
@@ -56,6 +56,13 @@ namespace portaible
 
 		return true;
 
+	}
+
+	bool XMLDocument::loadFromString(const std::string& string)
+	{
+		XMLParser xmlParser;
+
+		return (xmlParser.parseFromString(string, this->xmlNode));
 	}
 
 	void XMLDocument::setXMLNode(std::shared_ptr<XMLNode> xmlNode)

@@ -1,13 +1,13 @@
 #include "RunnableDispatcherThread/RunnableDispatcherThread.hpp"
 
-namespace portaible
+namespace claid
 {
     class Subscriber
     {   public:
-            RunnableDispatcherThread* runnableDispatcherThread;
+            std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread;
 
         public:
-            void signalNewDataIsAvailable()
+            virtual void signalNewDataIsAvailable()
             {
                 runnableDispatcherThread->addRunnable(this->asRunnable());
             }
@@ -19,7 +19,7 @@ namespace portaible
 
             }
 
-            Subscriber(RunnableDispatcherThread* runnableDispatcherThread) : runnableDispatcherThread(runnableDispatcherThread)
+            Subscriber(std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread) : runnableDispatcherThread(runnableDispatcherThread)
             {
                 
             }

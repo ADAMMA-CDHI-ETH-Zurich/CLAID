@@ -1,4 +1,4 @@
-namespace portaible
+namespace claid
 {
 	namespace XMLLoader
 	{
@@ -8,7 +8,7 @@ namespace portaible
 		public:
 			RegisterHelper(std::string name)
 			{
-				PORTAIBLE_RUNTIME->loader.registerLoader<T>(name);
+				CLAID_RUNTIME->registerLoader<T>(name);
 			}
 		};
 	}

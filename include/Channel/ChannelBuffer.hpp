@@ -1,224 +1,225 @@
 #pragma once
 
+#include "Untyped.hpp"
 #include "TaggedData.hpp"
+#include "ChannelData.hpp"
+#include "ChannelBufferBase.hpp"
+#include "Channel/ChannelBufferElementTyped.hpp"
+#include "Binary/BinaryData.hpp"
+#include "TypeChecking/TypeCheckingFunctions.hpp"
 #include <vector>
 #include <mutex>
 #include <thread>
 #include <iostream>
 #define MAX_CHANNEL_BUFFER_SIZE 20
 
-namespace portaible
+namespace claid
 {
+    
     template<typename T>
-    class ChannelBuffer
-    {
-        TaggedData<T> channelData[MAX_CHANNEL_BUFFER_SIZE];
-        
-        size_t currentIndex = 0;
-        size_t numElements = 0;
+    class ChannelBuffer;
 
-        // GlobalIndex means index 0 is oldest element, MAX_CHANNEL_BUFFER_SIZE - 1 is highest element.
-        int relativeIndex(int globalIndex)
-        {
-            // Oldest index is at currentIndex + 1 or 0, if numElements < MAX_CHANNEL_BUFFER_SIZE
+    template<>
+    class ChannelBuffer<Untyped> : public ChannelBufferBase
+    {    
 
-            int relative;
-
-            if(numElements < MAX_CHANNEL_BUFFER_SIZE)
-            {
-                relative = 0;
-            }
-            else
-            {
-                relative = currentIndex + 1;
-            }
-
-            if(relative >= MAX_CHANNEL_BUFFER_SIZE)
-            {
-                relative -= MAX_CHANNEL_BUFFER_SIZE;
-            }
-
-            relative +=  globalIndex;
-
-            if(relative >= MAX_CHANNEL_BUFFER_SIZE)
-            {
-                relative -= MAX_CHANNEL_BUFFER_SIZE;
-            }
-
-            return relative;
-        }
-
-        std::mutex mutex;
-
-            void lockMutex()
-            {
-                this->mutex.lock();
-            }   
-
-            void unlockMutex()
-            {
-                this->mutex.unlock();
-            }
         public:
-            ChannelBuffer()
+            ChannelBuffer() : ChannelBufferBase()
             {
-                this->currentIndex = 0;
-                this->numElements = 0;
+                this->dataTypeName = "Untyped";
             }
+
+
+            ChannelData<Untyped> getDataByIndex(size_t index)
+            {
+                std::shared_ptr<ChannelBufferElement>& element = this->getElement(index);
+                ChannelData<Untyped> data(element->getHeader(), element);
+                return data;
+            }
+            
+            bool getLatest(ChannelData<Untyped>& latest)
+            {
+                return ChannelBufferBase::getLatest<Untyped>(this, latest);
+            }
+            // TODO Very likely this contains a bug
+            bool getClosest(const Time& timestamp, ChannelData<Untyped>& closest)
+            {
+                return ChannelBufferBase::getClosest<Untyped>(this, timestamp, closest);
+                
+            }
+
+            void getDataInterval(const Time& min, const Time& max, std::vector<ChannelData<Untyped> >& channelDataInterval)
+            {
+                ChannelBufferBase::getDataInterval<Untyped>(this, min, max, channelDataInterval);
+            }
+
+            virtual bool isTyped() const
+            {
+                return false;
+            }
+
+            
+            
+            template<typename NewType>
+            ChannelBuffer<NewType>* type()
+            {
+                this->lockMutex();
+
+                std::shared_ptr<ChannelBufferElement> newElements[MAX_CHANNEL_BUFFER_SIZE];
+
+                for(size_t i = 0; i < MAX_CHANNEL_BUFFER_SIZE; i++)
+                {
+                    // In constructor, the binary data automatically gets deserialized.
+                    // Note, that binary data is not copied, as TaggedData<BinaryData> uses a shared_ptr internally.
+                    std::shared_ptr<ChannelBufferElementTyped<NewType>> 
+                        typedElement;
+                    
+                    if(this->channelBufferElements[i]->isDataAvailable())
+                    {   
+                        typedElement = 
+                        std::shared_ptr<ChannelBufferElementTyped<NewType>>(
+                            new ChannelBufferElementTyped<NewType>(this->channelBufferElements[i]->getBinaryData()));
+                    }
+                    else
+                    {
+                        typedElement = 
+                        std::shared_ptr<ChannelBufferElementTyped<NewType>>(
+                            new ChannelBufferElementTyped<NewType>());
+                    }
+                     
+                    newElements[i] = std::static_pointer_cast<ChannelBufferElement>(typedElement);
+                }
+
+
+
+                ChannelBuffer<NewType>* newBuffer = new ChannelBuffer<NewType>(newElements, this->currentIndex, this->numElements, this->dataTypeName);
+
+
+                this->unlockMutex();
+
+                return newBuffer;
+            }          
+
+            intptr_t getDataTypeIdentifier() const
+            {
+                return TypeChecking::getDataTypeUniqueIdentifier<Untyped>();
+            }  
+    };  
+
+    template<typename T>
+    class ChannelBuffer : public ChannelBufferBase
+    {
+        private:
+            
+            
+            // Overriden from ChannelBufferBase
+            std::shared_ptr<ChannelBufferElement> newChannelBufferElementFromBinaryData(TaggedData<BinaryData>& binaryData)
+            {
+                // Constructor automatically deserializes the data if possible.
+                std::shared_ptr<ChannelBufferElementTyped<T>> typedElement(new ChannelBufferElementTyped<T>(binaryData));
+              
+                return std::static_pointer_cast<ChannelBufferElementTyped<T>>(typedElement);
+            }
+
+            std::shared_ptr<ChannelBufferElement> newChannelBufferElementFromTypedData(TaggedData<T>& data)
+            {
+                // Constructor automatically deserializes the data if possible.
+                std::shared_ptr<ChannelBufferElementTyped<T>> typedElement(new ChannelBufferElementTyped<T>(data));
+              
+                return std::static_pointer_cast<ChannelBufferElementTyped<T>>(typedElement);
+            }
+
+        public:
+
+         
+
+            ChannelBuffer() : ChannelBufferBase()
+            {
+                this->dataTypeName = TypeChecking::getCompilerIndependentTypeNameOfClass<T>();
+            }
+
+            // Used by type function of ChannelBuffer<Untyped>
+            ChannelBuffer(std::shared_ptr<ChannelBufferElement> channelBufferElements[MAX_CHANNEL_BUFFER_SIZE],
+            size_t currentIndex,
+            size_t numElements, std::string dataTypeName) 
+            {
+
+                for(size_t i = 0; i < MAX_CHANNEL_BUFFER_SIZE; i++)
+                {
+                    this->channelBufferElements[i] = channelBufferElements[i];
+                }
+
+                this->currentIndex = currentIndex;
+                this->numElements = numElements;
+                this->dataTypeName = dataTypeName;
+            }  
+
+            
+
+
+            ChannelData<T> getDataByIndex(size_t index)
+            {
+                if(!this->getElement(index)->isDataAvailable())
+                {
+                    CLAID_THROW(Exception, "Error! Tried to access channel data at index " << index << " in ChannelBuffer (data type \""
+                    << this->getDataTypeName() << "\", but data was not available.");
+                }
+
+                // Elements are typed.
+                std::shared_ptr<ChannelBufferElementTyped<T>> 
+                    typedElement = std::static_pointer_cast<ChannelBufferElementTyped<T>>(this->getElement(index));
+
+                return ChannelData<T>(typedElement->getTypedData(), this->getElement(index));
+            }
+            
 
             void insert(TaggedData<T>& data)
             {
 
                 this->lockMutex();
 
+                // Is this thread safe?
+                // Yes.. as long as we create copies in getLatest, getClosest and getDataInterval.
+                std::shared_ptr<ChannelBufferElement>& element = this->getElement(this->currentIndex);
+                element = newChannelBufferElementFromTypedData(data);
 
+        
+                // Do not convert to binary data / serialize. It might not be needed.
 
-                this->channelData[this->currentIndex] = data;
-
-                this->currentIndex++;
-
-                if(this->currentIndex == MAX_CHANNEL_BUFFER_SIZE)
-                {
-                    this->currentIndex = 0;
-                }
-
-                if(numElements < MAX_CHANNEL_BUFFER_SIZE)
-                {
-                    numElements++;
-                }
+                increaseIndex();
                 this->unlockMutex();
 
             }
 
-            bool getLatest(TaggedData<T>& latest)
+         
+
+            bool getLatest(ChannelData<T>& latest)
             {
-
-               
-                this->lockMutex();
-               
-
-                if(numElements == 0)
-                {
-
-                    // No data available yet
-                    this->unlockMutex();
-                    return false;
-                }
-                else
-                {
-
-                    size_t tmpIndex;
-                    if(currentIndex == 0)
-                    {
-                        tmpIndex = MAX_CHANNEL_BUFFER_SIZE - 1;
-                    }
-                    else
-                    {
-                        tmpIndex = currentIndex - 1;
-                    }
-
-
-                    latest = this->channelData[tmpIndex];
-                    this->unlockMutex();
-                    return true;
-                }
+                return ChannelBufferBase::getLatest<T>(this, latest);
             }
             // TODO Very likely this contains a bug
-            bool getClosest(const Time& timestamp, TaggedData<T>& closest)
+            bool getClosest(const Time& timestamp, ChannelData<T>& closest)
             {
-                this->lockMutex();
+                return ChannelBufferBase::getClosest<T>(this, timestamp, closest);
+            }
 
-                if(this->numElements == 0)
-                {
-                    this->unlockMutex();
-                    return false;
-                }
+            void getDataInterval(const Time& min, const Time& max, std::vector<ChannelData<T> >& channelDataInterval)
+            {
+                ChannelBufferBase::getDataInterval<T>(this, min, max, channelDataInterval);
+            }
 
-                int64_t minimalDifference = std::numeric_limits<int64_t>::max();
-                int index = -1;
-                for(int i = 0; i < this->numElements; i++)
-                {
-                    TaggedData<T>& TaggedData = this->channelData[i];
-                                        // std::cout << "Time stamps " << TaggedData.timestamp.toString() << " " << timestamp.toString() << "\n";
-
-                 
-
-                    // uint64_t a = x.count();
-                    // uint64_t = minimalDifference.getNanoSeconds();
-
-                    if(TaggedData.timestamp.toUnixNS() > timestamp.toUnixNS())
-                    {
-                        continue;
-                    }
-
-                    int64_t diff = abs(static_cast<long>(TaggedData.timestamp.toUnixNS() - timestamp.toUnixNS()));
-                    if(diff <= minimalDifference)
-                    {
-                        minimalDifference = diff;
-                        index = i;
-                    }
-                    // else
-                    // {
-                    //     // If the difference is greater then our previous difference, this means
-                    //     // we are iterating away from the closest object, as the objects are sorted in ascending order (oldest time stamp to newest).
-                    //     // Thus, we can abort and return the closest object, if we found any.
-
-                    //     if(index != -1)
-                    //     {
-                    //         closest = this->channelData[index];
-                    //         this->unlockMutex();
-                    //         return true;
-                    //     }
-                    //     else
-                    //     {
-                    //         this->unlockMutex();
-                    //         return false;
-                    //     }
-
-                    // }
-                }
-
-                if(index != -1)
-                {
-                    closest = this->channelData[index];
-                    this->unlockMutex();
-                    return true;
-                }
-                this->unlockMutex();
-
-                return false;
-
+            virtual bool isTyped() const
+            {
+                return true;
             }
 
 
-
-            void getDataIntervall(const Time& min, const Time& max, std::vector<TaggedData<T> >& TaggedDataIntervall)
+            intptr_t getDataTypeIdentifier() const
             {
-                TaggedDataIntervall.clear();
-                this->lockMutex(); 
-                // Iterate from oldest to newest.
-                for(int i = 0; i < this->numElements; i++)
-                {
-                    TaggedData<T>& TaggedData = this->channelData[relativeIndex(i)];
-                    // if(TaggedData.timestamp < min)
-                    // {
-                    //     continue;
-                    // }
-
-                    // if(TaggedData.timestamp > max)
-                    // {
-                    //     // As the data is sorted from oldest to newest, if our timestamp is higher then max,
-                    //     // this means that timestamps of all following data will be higher then max.
-                    //     break;
-                    // }
-                  
-                    TaggedDataIntervall.push_back(TaggedData);
-                   
-                }
-
-                this->unlockMutex(); 
+                std::string name = typeid(T).name();
+                return TypeChecking::getDataTypeUniqueIdentifier<T>();
             }
-        
+
     };
 }
 

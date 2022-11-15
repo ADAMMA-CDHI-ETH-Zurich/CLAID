@@ -1,24 +1,24 @@
 #pragma once
 
 #include <type_traits>
-// Invoke reflectWrite
+// Invoke reflectRead
 template<typename Reflector, typename Type, class Enable = void>
 struct ReflectReadWriteInvoker 
 {
 	static void call(Reflector& r, Type& member) 
 	{
-		reflectWrite(r, member);
+		reflectRead(r, member);
 	}
 
 }; 
 
-// Invoke reflectRead
+// Invoke reflectWrite
 template<typename Reflector, typename Type>
 struct ReflectReadWriteInvoker<Reflector, Type, typename std::enable_if<Reflector::isReadOnly>::type> 
 {
 	static void call(Reflector& r, Type& member) 
 	{
-		reflectRead(r, member);
+		reflectWrite(r, member);
 	}
 };
 
@@ -28,3 +28,4 @@ inline void splitReflect(Reflector& r, Type& member)
 {
 	ReflectReadWriteInvoker<Reflector, Type>::call(r, member);
 }
+

@@ -6,7 +6,7 @@
 #include <map>
 
 
-namespace portaible
+namespace claid
 {
 	namespace XMLLoader
 	{
@@ -24,9 +24,10 @@ namespace portaible
 				this->xmlLoaders.insert(std::make_pair(name, base));
 			}
 
-			void executeAppropriateLoaders(std::shared_ptr<XMLNode> xmlNode)
+			std::vector<claid::Module*> executeAppropriateLoaders(std::shared_ptr<XMLNode> xmlNode)
 			{
 				//std::cout << "EXECUTE LOADER " << loaders.size() << "\n";
+				std::vector<claid::Module*> loadedModules;
 				for (auto it : xmlLoaders)
 				{
 					XMLLoaderBase* loader = it.second;
@@ -36,20 +37,25 @@ namespace portaible
 					{
 						if (child->name == loader->getDesiredTag())
 						{
-							desiredNodes.push_back(child);
+							claid::Module* loadedModule = loader->instantiateModuleFromNode(child);
+
+							if(loadedModule == nullptr)
+							{
+								CLAID_THROW(claid::Exception, "Error in loading Module from XML. Cannot load Module from XML Node " << child->name);
+							}
+							loadedModules.push_back(loadedModule);							
 						}
 						else
 						{
 							if(!this->doesLoaderExistForTag(child->name))
 							{
-								PORTAIBLE_THROW(portaible::Exception, "Error! No loader is able to handle tag \"" << child->name << "\" in XML file.");
+								CLAID_THROW(claid::Exception, "Error! No loader is able to handle tag \"" << child->name << "\" in XML file.");
 							}
 						}
 					} 
-
-
-					loader->execute(desiredNodes);
 				}
+				return loadedModules;
+				
 			}
 
 			bool doesLoaderExistForTag(const std::string& tag)
@@ -79,9 +85,9 @@ namespace portaible
 }
 
 #define DECLARE_XML_LOADER(className) \
-	static volatile RegisterHelper<className> registerHelper;
+	static volatile claid::XMLLoader::RegisterHelper<className> registerHelper;
 
 #define REGISTER_XML_LOADER(className) \
-	volatile portaible::XMLLoader::RegisterHelper<className> className::registerHelper(#className);\
+	volatile claid::XMLLoader::RegisterHelper<className> className::registerHelper(#className);\
 
 

@@ -2,11 +2,10 @@
 #include "XMLNode.hpp"
 #include "XMLNumericVal.hpp"
 
-#include "Reflection/Serializer.hpp"
-#include "RunTime/RunTime.hpp"
+#include "Serialization/Serializer.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 
-namespace portaible
+namespace claid
 {
     class XMLSerializer : public Serializer<XMLSerializer>
     {
@@ -47,6 +46,19 @@ namespace portaible
                             new  XMLVal(this->currentNode, property, member ? "true" : "false"))));
             }
 
+            // Why template? Because we can have signed and unsigned char.
+            template<typename T>
+            void callChar(const char* property, T& member)
+            {
+                std::string str = "";
+                str += member;
+
+                this->currentNode->addChild(
+                    std::static_pointer_cast<XMLNode>(
+                        std::shared_ptr<XMLVal>(
+                            new XMLVal(this->currentNode, property, str))));
+            }
+
             template<typename T>
             void callString(const char* property, T& member)
             {
@@ -74,13 +86,45 @@ namespace portaible
             template<typename T>
             void callPointer(const char* property, T*& member)
             {
-                static_assert(has_mem_classFactoryRegistrar<T>::value,
-                  "Data type (see above) was reflected as pointer and might get invoked by a Serializer, however"
-                  "the data type is not de-/serializable, as it was not registered to ClassFactory. Use DECLARE_SERIALIZATION(DataType)"
-                  "and PORTABLE_SERIALIZATION(DataType) accordingly.");
+                if(member == nullptr)
+                {
+                    // What to do with nullptrs? Do not serialize?
+                    CLAID_THROW(Exception, "Error, XMLSerializer can not serialize member " << property << "."
+                    << "The member is a pointer of type " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << ", but the value of the pointer is null.");
+                    return;
+                }
 
-                this->invokeReflectOnObject(*member);
+                // In the following, we check whether serialization is implemented for member.
+                // Note, that T might not match the members real type, as member might be polymorphic.
+                // Thus, we can not use className to check whether a PolymorphicReflector was registered (see below).
+
+                // Note, that this check is only necessary for SERIALIZERS.
+                // The serializer needs to make sure it stores the exact className.
+                // The deserializer deserializes the data for the object (member) based on this className.
+                // Thus, the deserializer relies on the serializer to store the correct className.
+
+                // We only need the rttiType for checking whether the type of member has implemented serialization.
+                // Cannot use className to check whether the type is registered to ClassFactory and PolymorphicReflector,
+                // because getClassName is a virtual function. If a type is derived from a base class AND 
+                // implements serialization (registered to ClassFactory and PolymorphicReflector), then getClassName()
+                // provides the correct type. However, if the derived type does NOT implement serialization,
+                // getClassName returns the className of the base type, which would lead into storing the wrong
+                // class identifier in the binary data.
+                std::string rttiTypeString = TypeChecking::getCompilerSpecificRunTimeNameOfObject(*member);
+                if(!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForRTTITypeName(rttiTypeString))
+                {
+                    CLAID_THROW(claid::Exception, "XMLSerializer failed to serialize object to XML. Member \"" << property << "\" is a pointer/polymorphic object of type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                }
+
                 std::string className = member->getClassName();
+
+                PolymorphicReflector::WrappedReflectorBase<XMLSerializer>* polymorphicReflector;
+                if (!PolymorphicReflector::PolymorphicReflector<XMLSerializer>::getInstance()->getReflector(className, polymorphicReflector))
+                {
+                    CLAID_THROW(claid::Exception, "XMLSerializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                }
+
+                polymorphicReflector->invoke(*this, static_cast<void*>(member));
                 this->currentNode->setAttribute("class", className);
             }
             
@@ -94,10 +138,19 @@ namespace portaible
                 if(ptr == nullptr)
                 {
                     // What to do with nullptrs? Do not serialize?
+                    CLAID_THROW(Exception, "Error, XMLSerializer can not serialize member " << property << "."
+                    << "The member is a shared_ptr of type " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << ", but the value of the pointer is null");
                     return;
                 }
 
                 this->callPointer<BaseTypeT>(property, ptr);
+            }
+
+            template<typename T>
+            void callEnum(const char* property, T& member)
+            {
+                size_t m = static_cast<size_t>(member);
+                this->callInt(property, m);
             }
 
             void count(const std::string& name, size_t& count)
@@ -115,16 +168,25 @@ namespace portaible
                 // Do nothing
             }
 
+            void itemIndex(const size_t index)
+            {
+                // Do nothing
+            }
+
             void endSequence()
             {
                 // Do nothing
             }
             
+            void write(const char* data, size_t size)
+            {
+
+            }
 
             template<typename T> 
             void serialize(T& obj)
             {
-                std::string name = portaible::getDataTypeRTTIString<T>();
+                std::string name = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
                 std::shared_ptr<XMLNode> node = std::shared_ptr<XMLNode>(new XMLNode(currentNode, name));
                 this->currentNode->addChild(node);
                 this->currentNode = node;

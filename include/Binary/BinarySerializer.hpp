@@ -6,7 +6,7 @@
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 #include "PolymorphicReflector/PolymorphicReflector.hpp"
 
-namespace portaible
+namespace claid
 {
     class BinarySerializer : public Serializer<BinarySerializer>
     {
@@ -70,7 +70,8 @@ namespace portaible
                 if(member == nullptr)
                 {
                     // What to do with nullptrs? Do not serialize?
-                    PORTAIBLE_THROW(Exception, "Error, BinarySerializer can not serialize member " << property << "."
+                    CLAID_THROW(Exception, "Error, BinarySerializer can not serialize member " << property << "."
+
                     << "The member is a pointer of type " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << ", but the value of the pointer is null.");
                     return;
                 }
@@ -92,9 +93,10 @@ namespace portaible
                 // getClassName returns the className of the base type, which would lead into storing the wrong
                 // class identifier in the binary data.
                 std::string rttiTypeString = TypeChecking::getCompilerSpecificRunTimeNameOfObject(*member);
+
                 if(!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForRTTITypeName(rttiTypeString))
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "BinarySerializer failed to serialize object to binary. Member \"" << property << "\" is a pointer/polymorphic object of type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                    CLAID_THROW(claid::Exception, "BinarySerializer failed to serialize object to binary. Member \"" << property << "\" is a pointer/polymorphic object of RTTI type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
                 // If there is a factory available for data type with given RTTI string (see above), then the className will
@@ -104,7 +106,7 @@ namespace portaible
                 PolymorphicReflector::WrappedReflectorBase<BinarySerializer>* polymorphicReflector;
                 if (!PolymorphicReflector::PolymorphicReflector<BinarySerializer>::getInstance()->getReflector(className, polymorphicReflector))
                 {
-                    PORTAIBLE_THROW(portaible::Exception, "BinarySerializer failed to serialize object to binary. Member \"" << property << "\" is a pointer/polymorphic type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                    CLAID_THROW(claid::Exception, "BinarySerializer failed to serialize object to binary. Member \"" << property << "\" is a pointer/polymorphic type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
                 // Store class name
@@ -122,7 +124,7 @@ namespace portaible
                 if(ptr == nullptr)
                 {
                     // What to do with nullptrs? Do not serialize?
-                    PORTAIBLE_THROW(Exception, "Error, BinarySerializer can not serialize member " << property << "."
+                    CLAID_THROW(Exception, "Error, BinarySerializer can not serialize member " << property << "."
                     << "The member is a shared_ptr of type " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << ", but the value of the pointer is null");
                     return;
                 }
@@ -168,8 +170,10 @@ namespace portaible
             }
 
 
+
             template <typename T>
-            typename std::enable_if<!(std::is_arithmetic<T>::value || std::is_same<T, CLAID::byte>::value)>::type
+            typename std::enable_if<!std::is_arithmetic<T>::value>::type
+
             serialize(T& obj, BinaryData* targetContainer)
             {
                 this->binaryData = targetContainer;
@@ -185,7 +189,7 @@ namespace portaible
             }
 
             template <typename T>
-            typename std::enable_if<std::is_arithmetic<T>::value || std::is_same<T, CLAID::byte>::value>::type
+            typename std::enable_if<std::is_arithmetic<T>::value>::type
             serialize(T& obj, BinaryData* targetContainer)
             {
                 this->binaryData = targetContainer;

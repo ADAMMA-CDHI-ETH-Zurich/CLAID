@@ -2,8 +2,10 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <memory>
+#include <algorithm>
 
-namespace portaible
+namespace claid
 {
     class XMLNode 
     {

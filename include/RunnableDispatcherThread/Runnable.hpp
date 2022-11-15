@@ -1,6 +1,6 @@
 #pragma once
 
-namespace portaible
+namespace claid
 {
     class Runnable
     {
@@ -11,6 +11,8 @@ namespace portaible
 
             virtual void run() = 0;
             bool deleteAfterRun = false;
+            bool wasExecuted = false;
+            
             bool isValid()
             {
                 return this->valid;
