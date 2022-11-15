@@ -71,6 +71,7 @@ namespace claid
                 {
                     // What to do with nullptrs? Do not serialize?
                     CLAID_THROW(Exception, "Error, BinarySerializer can not serialize member " << property << "."
+
                     << "The member is a pointer of type " << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << ", but the value of the pointer is null.");
                     return;
                 }
@@ -172,6 +173,7 @@ namespace claid
 
             template <typename T>
             typename std::enable_if<!std::is_arithmetic<T>::value>::type
+
             serialize(T& obj, BinaryData* targetContainer)
             {
                 this->binaryData = targetContainer;
@@ -201,6 +203,7 @@ namespace claid
 
                 this->binaryData->store(obj);
             }
+
 
             void enforceName(std::string& name, int idInSequence = 0)
             {
