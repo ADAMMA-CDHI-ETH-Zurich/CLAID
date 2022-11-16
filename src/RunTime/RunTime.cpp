@@ -149,11 +149,11 @@ namespace claid
 
     void RunTime::addModule(Module* module)
     {
-        if(this->isRunning() && !module->isModuleRunning())
-        {
-            // Call initialize and postInitialize.
-            this->startModules({module});
-        }
+        // if(this->isRunning() && !module->isModuleRunning())
+        // {
+        //     // Call initialize and postInitialize.
+        //     this->startModules({module});
+        // }
         return this->modules.push_back(module);
     }
 
