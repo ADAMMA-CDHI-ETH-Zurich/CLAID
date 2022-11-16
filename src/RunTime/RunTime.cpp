@@ -24,9 +24,9 @@ namespace claid
         }
     }
 
-    void RunTime::startModules(std::vector<claid::Module*> modules)
+    void RunTime::startModules(std::vector<claid::Module*> modulesToStart)
     {
-        for(Module*& module : modules)
+        for(Module*& module : modulesToStart)
         {
             module->startModule();
 
@@ -37,7 +37,7 @@ namespace claid
         }
 
         // Call postInitialize.
-        for(Module*& module : modules)
+        for(Module*& module : modulesToStart)
         {
             module->onAllModulesHaveBeenInitialized();
         }

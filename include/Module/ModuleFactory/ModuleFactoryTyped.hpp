@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ModuleFactoryBase.hpp"
+#include "Module/ModuleFactory/ModuleFactoryBase.hpp"
 
 namespace claid
 {

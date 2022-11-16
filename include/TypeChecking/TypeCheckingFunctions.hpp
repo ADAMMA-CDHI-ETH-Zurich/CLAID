@@ -78,7 +78,17 @@ namespace claid
         template<typename T>
         static std::string getCompilerIndependentTypeNameOfClass()
         {
-            return TypeNameInvoker<T>::call();
+            std::string name = TypeNameInvoker<T>::call();
+            if (name.find("struct") != std::string::npos)
+            {
+                name = name.substr(strlen("struct "), name.size() - strlen("struct "));
+            }
+
+            if (name.find("class") != std::string::npos)
+            {
+                name = name.substr(strlen("class "), name.size() - strlen("class "));
+            }
+            return name;
         }
     }
 }

@@ -72,7 +72,7 @@ namespace claid
                     Logger::printfln("Trying to connect");
 
                     getIPAndPortFromAddress(address, ip, port);
-                    Logger::printfln("Trying to connect to %s %d", ip.c_str(), port);
+                    Logger::printfln("Trying to connect to %s:%d", ip.c_str(), port);
 
                     if(socketClient.connectTo(ip, port, this->timeoutInMs))
                     {
