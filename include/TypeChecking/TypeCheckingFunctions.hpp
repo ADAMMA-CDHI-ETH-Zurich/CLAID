@@ -83,11 +83,14 @@ namespace claid
             {
                 name = name.substr(strlen("struct "), name.size() - strlen("struct "));
             }
+<<<<<<< HEAD
 
             if (name.find("class") != std::string::npos)
             {
                 name = name.substr(strlen("class "), name.size() - strlen("class "));
             }
+=======
+>>>>>>> 5194346cb72968819155c158cdb133520d655119
             return name;
         }
     }
