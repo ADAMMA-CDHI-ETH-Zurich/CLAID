@@ -1,5 +1,5 @@
 #include "Channel/ChannelManager.hpp"
-
+#include "RunTime/RunTime.hpp"
 namespace claid
 {
     const std::string ChannelManager::ON_CHANNEL_SUBSCRIBED_CHANNEL = "ON_CHANNEL_SUBSCRIBED";
@@ -109,6 +109,11 @@ namespace claid
     void ChannelManager::onChannelUnpublished(const std::string& channelID, uint64_t uniqueModuleID)
     {
         this->onChannelUnpublishedChannel->post(channelID, Time::now(), uniqueModuleID);
+    }
+
+    bool ChannelManager::isInHiddenNamespace(const std::string& channelID) const
+    {
+        return CLAID_RUNTIME->isInHiddenNamespace(channelID);
     }
 
 

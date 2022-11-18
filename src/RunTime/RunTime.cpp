@@ -3,10 +3,16 @@
 #include "XML/XMLDocument.hpp"
 #include "XMLModules/XMLReceiverModule.hpp"
 #include "Network/NetworkClientModule.hpp"
+#include "Network/NetworkServerModule.hpp"
 
 
 namespace claid
 {
+    RunTime::RunTime()
+    {
+        this->addHiddenNamespace("CLAID/LOCAL/");
+    }
+
     std::vector<Module*> RunTime::instantiateModulesFromRootXMLNode(std::shared_ptr<XMLNode> xmlNode)
     {
         std::vector<Module*> loadedModules;
@@ -146,30 +152,29 @@ namespace claid
             }
         }           
     }
-
-    void RunTime::addModule(Module* module)
-    {
-        // if(this->isRunning() && !module->isModuleRunning())
-        // {
-        //     // Call initialize and postInitialize.
-        //     this->startModules({module});
-        // }
-        return this->modules.push_back(module);
-    }
-
     void RunTime::connectTo(std::string ip, int port)
     {
-        claid::Network::NetworkClientModule* clientModule = new claid::Network::NetworkClientModule();
-        clientModule->address = ip + std::string(":") + std::to_string(port);
+        claid::Network::NetworkClientModule* clientModule = new claid::Network::NetworkClientModule(ip, port);
         CLAID_RUNTIME->addModule(clientModule);
+    }
+
+    void RunTime::listenOnPort(int port)
+    {
+        claid::Network::NetworkServerModule* serverModule = new claid::Network::NetworkServerModule(port);
+        CLAID_RUNTIME->addModule(serverModule);
     }
 
     // Adds an XMLReceiverModule, which allows to receive XML configs from the specified channel.
     // Whenever there is a configuration received on that channel, it will be added to CLAID (using CLAID->loadFromXML).
-    void addXMLReceiverOnChannel(std::string channelName, bool throwExceptionWhenInvalidConfigIsReceived)
+    void RunTime::addXMLReceiverOnChannel(std::string channelName, bool throwExceptionWhenInvalidConfigIsReceived)
     {   
         claid::XMLReceiverModule* xmlReceiverModule = new claid::XMLReceiverModule(channelName, throwExceptionWhenInvalidConfigIsReceived);
         CLAID_RUNTIME->addModule(xmlReceiverModule);
+    }
+
+    void RunTime::addHiddenNamespace(const std::string& ns)
+    {
+        this->hiddenNamespaces.push_back(ns);   
     }
 
     size_t RunTime::getNumModules()
@@ -190,6 +195,18 @@ namespace claid
     bool RunTime::isRunning() const
     {
         return this->running;
+    }
+
+    bool RunTime::isInHiddenNamespace(const std::string& channelID) const
+    {
+        for(const std::string& ns : this->hiddenNamespaces)
+        {
+            if(channelID.compare(0, ns.size(), ns) == 0)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     void RunTime::executeRunnableInRunTimeThread(Runnable* runnable)

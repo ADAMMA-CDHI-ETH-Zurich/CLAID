@@ -70,7 +70,6 @@ namespace claid
         STD_TYPENAME_CONTAINER_SINGLE(std::list)
         STD_TYPENAME_CONTAINER_SINGLE(std::stack)
 
-
         // CONTAINERS MULTIPLE TYPE
 
         template<class T>

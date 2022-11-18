@@ -141,7 +141,9 @@ namespace claid
                     CLAID_THROW(Exception, "Error, stopObserving() was called with a channel that has channelID \"" << channelID.c_str() << "\", which is not an observer channel.");
                 }
             }
- 
+    
+            bool isInHiddenNamespace(const std::string& channelID) const;
+
         public:
 
             ChannelManager();
@@ -234,8 +236,11 @@ namespace claid
                 std::shared_ptr<TypedChannel<T>> channel = getMakeTypedChannel<T>(channelID);
 
                 returnChannel = channel->subscribe(channelSubscriber, uniqueModuleID);
-                               
-                this->onChannelSubscribed(channelID, uniqueModuleID);
+
+                if(!this->isInHiddenNamespace(channelID))
+                {
+                    this->onChannelSubscribed(channelID, uniqueModuleID);
+                }             
                 return returnChannel;
             }
 
@@ -250,8 +255,10 @@ namespace claid
                 returnChannel = channel->publish(uniqueModuleID);
            
 
-
-                this->onChannelPublished(channelID, uniqueModuleID);
+                if(!this->isInHiddenNamespace(channelID))
+                {
+                    this->onChannelPublished(channelID, uniqueModuleID);
+                }
                 return returnChannel;
             }
 
@@ -289,8 +296,10 @@ namespace claid
                 {
                     CLAID_THROW(Exception, "Error, unsubscribe was called on a channel with channel ID " << channelID << ", which does not exist. This should never happen and most likely is a programming mistake");
                 }
-
-                this->onChannelUnsubscribed(channelID, channelObject.getPublisherSubscriberUniqueIdentifier());
+                if(!this->isInHiddenNamespace(channelID))
+                {
+                    this->onChannelUnsubscribed(channelID, channelObject.getPublisherSubscriberUniqueIdentifier());
+                }
             }
 
             template<typename T>
@@ -324,7 +333,10 @@ namespace claid
                     CLAID_THROW(Exception, "Error, unpublish was called on a channel with channel ID " << channelID << ", which does not exist. This should never happen and most likely is a programming mistake");
                 }
 
-                this->onChannelUnpublished(channelID, channelObject.getPublisherSubscriberUniqueIdentifier());
+                if(!this->isInHiddenNamespace(channelID))  
+                {
+                    this->onChannelUnpublished(channelID, channelObject.getPublisherSubscriberUniqueIdentifier());
+                }
             }
 
             size_t getNumChannels();

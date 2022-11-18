@@ -24,6 +24,8 @@ namespace claid
 
             this->remoteConnectedEntities.push_back(remoteConnectedEntity);
             this->errorChannels.insert(std::make_pair(remoteConnectedEntity, errorChannel));
+
+            this->onClientConnectedChannel.post(remoteConnectedEntity->getUniqueIdentifier());
         }
 
         void NetworkServerModule::onErrorReceived(RemoteConnection::RemoteConnectedEntity* entity, ChannelData<RemoteConnection::Error> error)
@@ -60,7 +62,10 @@ namespace claid
             this->clientAcceptChannel = this->clientAcceptModule.subscribeToClientAcceptChannel(this->makeSubscriber(&NetworkServerModule::onClientAccepted, this));
             this->clientAcceptErrorChannel = this->clientAcceptModule.subscribeToErrorChannel(this->makeSubscriber(&NetworkServerModule::onClientAcceptError, this));
 
-            
+
+            this->onClientConnectedChannel = this->publish<RemoteConnection::RemoteConnectedEntityUniqueIdentifier>("/CLAID/LOCAL/OnNetworkClientConnected");
+            this->onClientDisconnectedChannel = this->publish<RemoteConnection::RemoteConnectedEntityUniqueIdentifier>("/CLAID/LOCAL/OnNetworkClientDisconnected");
+             
 
             this->clientAcceptModule.start(&this->server);
         }
@@ -68,6 +73,9 @@ namespace claid
         void NetworkServerModule::onClientLostConnection(RemoteConnection::RemoteConnectedEntity* entity)
         {
             Logger::printfln("A client lost connection, shutting it down now.");
+      
+            onClientDisconnectedChannel.post(entity->getUniqueIdentifier());
+            
             auto it = std::find(this->remoteConnectedEntities.begin(), this->remoteConnectedEntities.end(), entity);
 
             if(it == this->remoteConnectedEntities.end())
@@ -94,6 +102,8 @@ namespace claid
             entity->stop();
             entity->disintegrate();
             delete entity;
+
+            
         }
     }
 }

@@ -14,12 +14,29 @@ namespace claid
         {
             DECLARE_MODULE(NetworkClientModule)
 
-            NetworkClientModule()
+            public:
+                NetworkClientModule()
+                {
+                }
+
+                NetworkClientModule(std::string ip, int port)
+                {
+                    this->address = ip + std::string(":") + std::to_string(port);
+                }
+
+
+            template<typename Reflector>
+            void reflect(Reflector& r)
             {
-            //    Channel<int> d  = this->publish<int>("Test");
+                r.member("ConnectTo", this->address, "");
+                r.member("TimeoutMsWhenTryingToConnect", this->timeoutInMs, "How long to wait for a response when (trying to) connect to a server.", static_cast<size_t>(3));
+                r.member("TryToReconnectAfterMs", this->tryToReconnectAfterMs, "If the connection is lost (or could not be established), after how many ms should we try to reconnect? Set to 0 if reconnect should not happen.", static_cast<size_t>(1500));
             }
 
             private:
+                std::string address;
+                size_t timeoutInMs = 3;
+                size_t tryToReconnectAfterMs = 2000;
 
                 RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity;
 
@@ -161,18 +178,7 @@ namespace claid
                     this->unregisterPeriodicFunction("PeriodicTryToReconnect");
                 }
 
-            public:
-                std::string address;
-                size_t timeoutInMs = 3;
-                size_t tryToReconnectAfterMs = 2000;
-
-                template<typename Reflector>
-                void reflect(Reflector& r)
-                {
-                    r.member("ConnectTo", this->address, "");
-                    r.member("TimeoutMsWhenTryingToConnect", this->timeoutInMs, "How long to wait for a response when (trying to) connect to a server.", static_cast<size_t>(3));
-                    r.member("TryToReconnectAfterMs", this->tryToReconnectAfterMs, "If the connection is lost (or could not be established), after how many ms should we try to reconnect? Set to 0 if reconnect should not happen.", static_cast<size_t>(1500));
-                }
+                
         };
 
     }
