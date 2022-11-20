@@ -192,8 +192,6 @@ namespace claid
 
         void RemoteObserver::onChannelDataReceivedFromRemoteRunTime(const std::string& targetChannel, TaggedData<BinaryData>& data)
         {
-            
-
             Logger::printfln("OnChannelDataReceivedFromRemuteRunTIme %s", targetChannel.c_str());
             // Check if we have publisher for channel (we SHOULD! otherwise RunTimes out of sync,
             // because how could the remote RunTime have posted that data we just received in the first place?).
@@ -227,6 +225,7 @@ namespace claid
             TaggedData<BinaryData> taggedData = data.getBinaryData();
             if(this->isDataReceivedFromRemoteRunTime(taggedData))
             {
+                this->forgetDataReceivedFromRemoteRunTime(taggedData);
                 Logger::printfln("Is data we received from remote run time, hence skipping");
                 return;
             }
