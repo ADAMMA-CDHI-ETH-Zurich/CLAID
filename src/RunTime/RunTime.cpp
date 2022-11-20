@@ -30,6 +30,14 @@ namespace claid
         }
     }
 
+    void RunTime::insertModulesLoadedFromXMLConfigs(std::vector<claid::Module*> modulesToAdd)
+    {
+        for(Module*& module : modulesToAdd)
+        {
+            this->modulesAddedFromConfigs.push_back(module);
+        }
+    }
+
     void RunTime::startModules(std::vector<claid::Module*> modulesToStart)
     {
         for(Module*& module : modulesToStart)
@@ -64,11 +72,17 @@ namespace claid
             // Blocking
             loadedXMLConfigsChannel.get(xmlNode);
 
+            parseXMLAndStartModules(xmlNode);
 
-            std::vector<Module*> loadedModules = this->instantiateModulesFromRootXMLNode(xmlNode);
-            this->insertModules(loadedModules);
-            this->startModules(loadedModules);
         }
+    }
+
+    void RunTime::parseXMLAndStartModules(std::shared_ptr<XMLNode> xmlNode)
+    {
+        std::vector<Module*> loadedModules = this->instantiateModulesFromRootXMLNode(xmlNode);
+        this->insertModules(loadedModules);
+        this->insertModulesLoadedFromXMLConfigs(loadedModules);
+        this->startModules(loadedModules);
     }
 
     void RunTime::startLoadingThread()

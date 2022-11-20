@@ -4,6 +4,6 @@ namespace claid
 {
     namespace RemoteConnection
     {
-        typedef intptr_t RemoteConnectedEntityUniqueIdentifier;
+        typedef uint64_t RemoteConnectedEntityUniqueIdentifier;
     }
 }

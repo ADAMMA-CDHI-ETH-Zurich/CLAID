@@ -26,6 +26,10 @@ namespace claid
     {
         private:
             std::vector<Module*> modules;
+
+            // Stores a subset of modules, namely only modules that were instantiated
+            // from configs and not added manually.
+            std::vector<Module*> modulesAddedFromConfigs;
             bool running = false;
         
         
@@ -34,8 +38,10 @@ namespace claid
 
             std::vector<Module*> instantiateModulesFromRootXMLNode(std::shared_ptr<XMLNode> node);
             void insertModules(std::vector<Module*> modules);
+            void insertModulesLoadedFromXMLConfigs(std::vector<Module*> modules);
             void startModules(std::vector<Module*> modules);
             void loadAndStart();
+
 
             // Used to run runnables on the frameworks main thread (i.e., thread the framework was started from).
             // Generally, is not required. It can be benefical, however, if the thread that started the RunTime is the main
@@ -136,6 +142,10 @@ namespace claid
 
             void loadFromXML(std::string path);
             void loadFromXML(XMLDocument& xmlDocument);
+
+            // Don't use this from main thread!
+            void parseXMLAndStartModules(std::shared_ptr<XMLNode> xmlNode);
+
     };
 }
 
