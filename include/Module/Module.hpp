@@ -320,7 +320,7 @@ namespace claid
                 return reinterpret_cast<uint64_t>(this->runnableDispatcherThread.get());
             }
 
-            std::string getModuleName()
+            virtual const std::string getModuleName()
             {
                 return TypeChecking::getCompilerSpecificRunTimeNameOfObject(*this);   
             }

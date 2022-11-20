@@ -116,7 +116,7 @@ namespace claid
 #define DECLARE_MODULE_FACTORY(className) \
 	static volatile claid::ModuleFactory::RegisterHelper<className> moduleFactoryRegistrar;\
 	static const std::string __MODULE_NAME__;\
-	const std::string& getModuleName() {return className::__MODULE_NAME__;}
+	const std::string getModuleName() {return className::__MODULE_NAME__;}
 
 #define REGISTER_MODULE_FACTORY(className) \
 	volatile claid::ModuleFactory::RegisterHelper<className> className::moduleFactoryRegistrar (#className);\
