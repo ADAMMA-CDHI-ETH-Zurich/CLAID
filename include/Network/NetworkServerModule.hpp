@@ -28,7 +28,7 @@ namespace claid
                 
                 NetworkServerModule(int port) : port(port)
                 {
-
+         
                 }
 
                 template<typename Reflector>

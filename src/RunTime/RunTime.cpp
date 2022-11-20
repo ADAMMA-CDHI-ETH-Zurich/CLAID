@@ -59,15 +59,29 @@ namespace claid
 
     void RunTime::loadAndStart()
     {
-        // Start all modules that have been added manually usingAddModule before loading XMLs.
-        // If a module is added using addModule after CLAID has started, that module will also be
-        // started automatically.
+
+        // First, we parse all configs that already have been added.
+        // These are configs that were registered before CLAID->start(); was called
+        // Hence, we assume that the user wants to start all those modules (+ the ones added using addModule) simultaneously.
+        // Therefore, at startup we process all configs already pushed to the channel and only switch to blocking mode after we are done.
+        std::shared_ptr<XMLNode> xmlNode;
+
+        // Returns false when no more data on the channel.
+        while(loadedXMLConfigsChannel.get(xmlNode, false))
+        {
+            std::vector<Module*> loadedModules = this->instantiateModulesFromRootXMLNode(xmlNode);
+            this->insertModules(loadedModules);
+            this->insertModulesLoadedFromXMLConfigs(loadedModules);
+            
+        }
         this->startModules(this->modules);
-        
+
+
+        // From here on, we wait for new configs and parse them as they come in.
+        // The modules loaded from the config will be started immediately.
         
         while(this->running)
         {
-            std::shared_ptr<XMLNode> xmlNode;
             
             // Blocking
             loadedXMLConfigsChannel.get(xmlNode);
@@ -77,12 +91,14 @@ namespace claid
         }
     }
 
-    void RunTime::parseXMLAndStartModules(std::shared_ptr<XMLNode> xmlNode)
+    std::vector<Module*> RunTime::parseXMLAndStartModules(std::shared_ptr<XMLNode> xmlNode)
     {
         std::vector<Module*> loadedModules = this->instantiateModulesFromRootXMLNode(xmlNode);
         this->insertModules(loadedModules);
         this->insertModulesLoadedFromXMLConfigs(loadedModules);
         this->startModules(loadedModules);
+
+        return loadedModules;
     }
 
     void RunTime::startLoadingThread()
@@ -118,17 +134,9 @@ namespace claid
             Runnable* runnable;
 
             runnablesChannel.get(runnable);
-
-            if(runnable->isValid())
-                runnable->run();
-
-            runnable->wasExecuted = true;
-            if(runnable->deleteAfterRun)
-            {
-                delete runnable;
-            }
+            
+            processRunnable(runnable);
         }     
-        printf("join\n");
         this->loadingThread->join();        
     }
 
@@ -156,16 +164,39 @@ namespace claid
 
         if(runnablesChannel.get(runnable, false))
         {
-            if(runnable->isValid())
-            runnable->run();
-
-            runnable->wasExecuted = true;
-            if(runnable->deleteAfterRun)
-            {
-                delete runnable;
-            }
+            processRunnable(runnable);
         }           
     }
+
+    void RunTime::processRunnable(Runnable* runnable)
+    {
+        if(runnable->isValid())
+        {
+            Logger::printfln("Exceuting runnable in RunTimeThread %d", runnable->catchExceptions);
+            if(runnable->catchExceptions)
+            {
+                try
+                {
+                    runnable->run();
+                }
+                catch(std::exception& e)
+                {
+                    runnable->setException(e.what());
+                }
+            }
+            else
+            {
+                runnable->run(); 
+            }
+        }
+
+        runnable->wasExecuted = true;
+        if(runnable->deleteAfterRun)
+        {
+            delete runnable;
+        }
+    }
+
     void RunTime::connectTo(std::string ip, int port)
     {
         claid::Network::NetworkClientModule* clientModule = new claid::Network::NetworkClientModule(ip, port);

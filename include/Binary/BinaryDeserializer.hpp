@@ -138,8 +138,9 @@ namespace claid
 
             
 
-            template<typename T> 
-            void deserialize(T& obj, BinaryDataReader& binaryDataReader)
+            template <typename T>
+            typename std::enable_if<!std::is_arithmetic<T>::value>::type
+            deserialize(T& obj, BinaryDataReader& binaryDataReader)
             {
                 this->binaryDataReader = binaryDataReader;
 
@@ -157,6 +158,28 @@ namespace claid
                 }
 
                 invokeReflectOnObject(obj);
+            }
+
+            template <typename T>
+            typename std::enable_if<std::is_arithmetic<T>::value>::type
+            deserialize(T& obj, BinaryDataReader& binaryDataReader)
+            {
+                this->binaryDataReader = binaryDataReader;
+
+                // Read data type string and check if it matches the data type of obj.
+                std::string name = TypeChecking::getCompilerIndependentTypeNameOfClass<T>();
+                std::string storedName;
+
+
+                this->binaryDataReader.readString(storedName);
+
+                if(name != storedName)
+                {
+                    CLAID_THROW(Exception, "Error, failed to deserialize object from binary data because of mismatching types."
+                                                "The data type of the object is " << name << " but the serialized data is of type " << storedName);
+                }
+
+                this->binaryDataReader.read(obj);
             }
 
             void enforceName(std::string& name, int idInSequence = 0)

@@ -173,7 +173,6 @@ namespace claid
 
             template <typename T>
             typename std::enable_if<!std::is_arithmetic<T>::value>::type
-
             serialize(T& obj, BinaryData* targetContainer)
             {
                 this->binaryData = targetContainer;

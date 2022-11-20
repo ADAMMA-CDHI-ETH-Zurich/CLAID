@@ -41,6 +41,7 @@ namespace claid
             void insertModulesLoadedFromXMLConfigs(std::vector<Module*> modules);
             void startModules(std::vector<Module*> modules);
             void loadAndStart();
+            void callPostInitialize(std::vector<Module*> modules);
 
 
             // Used to run runnables on the frameworks main thread (i.e., thread the framework was started from).
@@ -65,6 +66,7 @@ namespace claid
             // See comment in cpp for more details about why we use separate thread here.
             void startLoadingThread();
             void processRunnablesBlocking();
+            void processRunnable(Runnable* runnable);
 
             XMLLoader::XMLLoaderManager loader;
 
@@ -144,7 +146,7 @@ namespace claid
             void loadFromXML(XMLDocument& xmlDocument);
 
             // Don't use this from main thread!
-            void parseXMLAndStartModules(std::shared_ptr<XMLNode> xmlNode);
+            std::vector<Module*> parseXMLAndStartModules(std::shared_ptr<XMLNode> xmlNode);
 
     };
 }

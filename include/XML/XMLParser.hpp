@@ -45,6 +45,13 @@ namespace claid
                 removeWhiteSpacesAtBeginning(filtered);
 
 
+                if(filtered.size() == 0)
+                {
+                    CLAID_THROW(Exception, "Cannot parse XML config, config is empty or only contains whitespaces!");
+                    return false;
+                }
+
+
                 if(!this->parseNode(filtered, rootNode))
                 {
                     return false;
