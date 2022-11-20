@@ -192,6 +192,8 @@ namespace claid
 
         void RemoteObserver::onChannelDataReceivedFromRemoteRunTime(const std::string& targetChannel, TaggedData<BinaryData>& data)
         {
+            
+
             Logger::printfln("OnChannelDataReceivedFromRemuteRunTIme %s", targetChannel.c_str());
             // Check if we have publisher for channel (we SHOULD! otherwise RunTimes out of sync,
             // because how could the remote RunTime have posted that data we just received in the first place?).
@@ -205,11 +207,30 @@ namespace claid
                 << "in the first place, if no publisher is available ? ");
             }
 
+            this->setIsDataReceivedFromRemoteRunTime(data);
             it->second.postBinaryData(data);
         }
 
         void RemoteObserver::onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo(std::string channelID, ChannelData<Untyped> data)
         {
+            // When there is a channel, that was subscribed to in the local RunTime AND the remote RunTime,
+            // then it can happen that data get's send back and forth and a loop happens.
+            // E.g.: 
+            // 1st The local RunTime posts data to the channel.
+            // 2nd Since there is a Module in the remote RunTime, that subscribed to that Channel, the data is send to the remote RunTime.
+            // 3rd In the remote RunTime, the data is posted to the Channel in onChannelDataReceivedFromRemoteRunTime function of the RemoteObserver.
+            // 4th This means, data is posted into the local channel in the remote RunTime. As the local RunTime (us) has subscribed to that Channel aswell,
+            // onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo is called in RemoteObserver of remote RunTime.
+            // 5th The data is sent back to us again and posted to our local channel.
+            // --> Go back to 1
+            // To solve this, we need to make sure that we do not react in this function to data that was posted in onChannelDataReceivedFromRemoteRunTime.
+            TaggedData<BinaryData> taggedData = data.getBinaryData();
+            if(this->isDataReceivedFromRemoteRunTime(taggedData))
+            {
+                Logger::printfln("Is data we received from remote run time, hence skipping");
+                return;
+            }
+
             Logger::printfln("RemoteModule:: onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo");
 
             // Need to send to the remote RunTime
@@ -224,9 +245,7 @@ namespace claid
             // Set will serialize TaggedData<BinaryData>.
             // TaggedData holds the header (timestamp, sequenceID) and the binary data.
             // Thus, timestamp and sequenceID will be serialized, the binary data will be copied into a bigger
-            // binary data buffer that contains timestamp, sequenceID and the binary data itself.
-            TaggedData<BinaryData> taggedData = data.getBinaryData();
-
+            // binary data buffer that contains timestamp, sequenceID and the binary data itself.       
             BinaryData binaryData = taggedData.value();
             message.data->as<MessageDataBinary>()->setBinaryData(binaryData);
             this->sendMessage(message);
@@ -280,7 +299,30 @@ namespace claid
             }
             this->publishedChannels.clear();                
         }
-                
+
+        void RemoteObserver::setIsDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data)
+        {
+            this->identifiersOfDataReceivedFromRemoteRunTime.push_back(data.getUniqueIdentifier());
+        }
+            
+        void RemoteObserver::forgetDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data)
+        {
+            auto it = std::find(this->identifiersOfDataReceivedFromRemoteRunTime.begin(), 
+                this->identifiersOfDataReceivedFromRemoteRunTime.end(), data.getUniqueIdentifier());
+
+            if(it != this->identifiersOfDataReceivedFromRemoteRunTime.end())
+            {
+                this->identifiersOfDataReceivedFromRemoteRunTime.erase(it);
+            }
+        }
+
+        bool RemoteObserver::isDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data) const
+        {
+            auto it = std::find(this->identifiersOfDataReceivedFromRemoteRunTime.begin(), 
+                this->identifiersOfDataReceivedFromRemoteRunTime.end(), data.getUniqueIdentifier());
+
+            return it != this->identifiersOfDataReceivedFromRemoteRunTime.end();
+        }
     }
 }
 

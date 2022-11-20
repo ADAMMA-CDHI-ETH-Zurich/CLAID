@@ -58,6 +58,11 @@ namespace claid
 
                 void terminate();
 
+                std::vector<uint64_t> identifiersOfDataReceivedFromRemoteRunTime;
+                void setIsDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data);
+                void forgetDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data);
+                bool isDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data) const;
+
      
 
                 template<typename Header, typename Data, typename Class, typename... Args>

@@ -62,6 +62,11 @@ namespace claid
 
             }
 
+            uint64_t getUniqueIdentifier() const
+            {
+                return reinterpret_cast<uint64_t>(data.get());
+            }
+
             TaggedDataBase getHeader()
             {
                 return *static_cast<TaggedDataBase*>(this);
