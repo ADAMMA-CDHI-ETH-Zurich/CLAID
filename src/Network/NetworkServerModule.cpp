@@ -35,6 +35,8 @@ namespace claid
 
         void NetworkServerModule::onError(RemoteConnection::RemoteConnectedEntity* entity, RemoteConnection::Error error)
         {
+            Logger::printfln("NetworkServer moduel received error!!");
+
             if(error.is<ErrorReadFromSocketFailed>())
             {
                 Logger::printfln("Error read from socket failed.");

@@ -2,10 +2,10 @@
 #include "RunTime/RunTime.hpp"
 namespace claid
 {
-    const std::string ChannelManager::ON_CHANNEL_SUBSCRIBED_CHANNEL = "ON_CHANNEL_SUBSCRIBED";
-    const std::string ChannelManager::ON_CHANNEL_PUBLISHED_CHANNEL = "ON_CHANNEL_PUBLISHED";
-    const std::string ChannelManager::ON_CHANNEL_UNSUBSCRIBED_CHANNEL = "ON_CHANNEL_UNSUBSCRIBED";
-    const std::string ChannelManager::ON_CHANNEL_UNPUBLISHED_CHANNEL = "ON_CHANNEL_UNPUBLISHED";
+    const std::string ChannelManager::ON_CHANNEL_SUBSCRIBED_CHANNEL = "CLAID/LOCAL/ON_CHANNEL_SUBSCRIBED";
+    const std::string ChannelManager::ON_CHANNEL_PUBLISHED_CHANNEL = "CLAID/LOCAL/ON_CHANNEL_PUBLISHED";
+    const std::string ChannelManager::ON_CHANNEL_UNSUBSCRIBED_CHANNEL = "CLAID/LOCAL/ON_CHANNEL_UNSUBSCRIBED";
+    const std::string ChannelManager::ON_CHANNEL_UNPUBLISHED_CHANNEL = "CLAID/LOCAL/ON_CHANNEL_UNPUBLISHED";
 
     ChannelManager::ChannelManager()
     {

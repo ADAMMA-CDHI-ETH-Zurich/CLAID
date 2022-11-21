@@ -44,13 +44,14 @@ namespace Network
     {
         this->readerModule.stop();
 
-       
         while(!this->readerModule.isStopped())
         {
             // Waiting
+            Logger::printfln("Stopping reader module");
         }
 
         // Since reader module has stopped reading, we can safely close the socket.
+        Logger::printfln("Closing socket");
         this->socketClient.close();
 
 

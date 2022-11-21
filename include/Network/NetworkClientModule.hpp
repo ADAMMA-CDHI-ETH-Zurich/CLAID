@@ -36,7 +36,7 @@ namespace claid
             private:
                 std::string address;
                 size_t timeoutInMs = 3;
-                size_t tryToReconnectAfterMs = 2000;
+                size_t tryToReconnectAfterMs = 200;
 
                 RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity;
 
@@ -96,6 +96,10 @@ namespace claid
                         this->onConnectedSuccessfully(socketClient);
                         return true;
                     }
+                    
+                    // Failed to connect, close socket.
+                    Logger::printfln("Closing socket");
+                    socketClient.close();
                    
                     return false;
                 }
@@ -154,6 +158,11 @@ namespace claid
 
                 void onConnectionLost()
                 {
+                    std::string ip;
+                    int port;
+                    this->getIPAndPortFromAddress(this->address, ip, port);
+                    port++;
+                    this->address = ip + std::string(":") + std::to_string(port);
                     Logger::printfln("Client has lost connection. Shutting down.");
                     this->remoteConnectedEntity->stop();
                     this->remoteConnectedEntity->disintegrate();
