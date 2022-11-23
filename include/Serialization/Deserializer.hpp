@@ -22,5 +22,11 @@ namespace claid
             {
                 
             }
+
+            template<typename ReturnType, typename ClassType, typename... Args>
+            void pointer_to_function(std::string name, ReturnType (ClassType::*ptr)(Args...) const)
+            {
+
+            }
     };
 }

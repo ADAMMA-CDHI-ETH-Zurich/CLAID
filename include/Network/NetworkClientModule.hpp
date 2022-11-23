@@ -158,11 +158,7 @@ namespace claid
 
                 void onConnectionLost()
                 {
-                    std::string ip;
-                    int port;
-                    this->getIPAndPortFromAddress(this->address, ip, port);
-                    port++;
-                    this->address = ip + std::string(":") + std::to_string(port);
+                    
                     Logger::printfln("Client has lost connection. Shutting down.");
                     this->remoteConnectedEntity->stop();
                     this->remoteConnectedEntity->disintegrate();
