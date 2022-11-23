@@ -158,7 +158,6 @@ namespace claid
 
                 void onConnectionLost()
                 {
-                    
                     Logger::printfln("Client has lost connection. Shutting down.");
                     this->remoteConnectedEntity->stop();
                     this->remoteConnectedEntity->disintegrate();
