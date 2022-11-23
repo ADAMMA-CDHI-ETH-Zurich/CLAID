@@ -65,6 +65,11 @@ namespace claid
                 this->initialized = true;
             }
 
+            void postInitializeInternal()
+            {
+                this->postInitialize();
+            }
+
             void terminateInternal()
             {
                 this->terminate();
@@ -327,7 +332,14 @@ namespace claid
 
             void onAllModulesHaveBeenInitialized()
             {
-                this->postInitialize();
+                std::function<void ()> postInitFunc = std::bind(&BaseModule::postInitializeInternal, this);
+                FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(postInitFunc);
+
+                functionRunnable->deleteAfterRun = true;
+
+                this->isRunning = true;
+
+                this->runnableDispatcherThread->addRunnable(functionRunnable);
             }
 
             
