@@ -14,13 +14,7 @@ macro(CLAID_Include claid_package)
     message(FATAL_ERROR "CLAID_Include: cannot include package ${claid_package}, it does not exist under $ENV{CLAID_PATH}/packages/\n Did you install the package?")
   endif()
 
-  include_directories(${CLAID_PACKAGE_PATH}/include)
-
-  file(GLOB_RECURSE CURRENT_SOURCES
-          "${CLAID_PACKAGE_PATH}/src/*.cpp"
-          ) 
-
-  set(CLAID_SOURCES ${CLAID_SOURCES} ${CURRENT_SOURCES})
+  include(${CLAID_PACKAGE_PATH}/Require.cmake)
   message("Included package ${claid_package}.")
 
   endmacro()
