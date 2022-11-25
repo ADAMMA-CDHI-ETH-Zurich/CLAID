@@ -135,8 +135,7 @@ namespace claid
             void postBinaryData(TaggedData<BinaryData>& binaryData)
             {
                 this->verifyWriteAccess();
-                this->typedChannel->postBinaryData(binaryData);
-            
+                this->typedChannel->postBinaryData(binaryData);         
             }
 
             void getChannelDataIntervall(const Time& min, const Time& max, std::vector<ChannelData<T>>& channelDataIntervall)

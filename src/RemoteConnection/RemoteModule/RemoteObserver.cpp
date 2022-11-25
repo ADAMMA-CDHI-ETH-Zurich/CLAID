@@ -5,6 +5,8 @@ namespace claid
 {
     namespace RemoteConnection
     {
+        const std::string RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG = "REMOTE_OBSERVER_IS_DATA_RECEIVED_FROM_REMOTE";
+
         RemoteObserver::RemoteObserver(ChannelManager* globalChannelManager) : globalChannelManager(globalChannelManager)
         {
 
@@ -116,8 +118,7 @@ namespace claid
             }
             else
             {
-                                Logger::printfln("Subscribing without callback");
-
+                Logger::printfln("Subscribing without callback");
                 Channel<Untyped> channel = this->subscribe<Untyped>(channelID);
                 this->subscribedChannels.insert(std::make_pair(channelID, channel));
             }
@@ -126,12 +127,14 @@ namespace claid
 
         void RemoteObserver::onChannelPublished(const std::string& channelID)
         {
+            Logger::printfln("RemoteObserver: onChannelPublished %s", channelID.c_str());
             Channel<Untyped> channel = this->publish<Untyped>(channelID);
             this->publishedChannels.insert(std::make_pair(channelID, channel));
         }
 
         void RemoteObserver::onChannelUnsubscribed(const std::string& channelID)
         {
+            Logger::printfln("RemoteObserver: onChannelUnsubscribed %s", channelID.c_str());
             // First, check if we have subscribed to that channel without callback.
             auto it = this->subscribedChannels.find(channelID);
 
@@ -166,6 +169,7 @@ namespace claid
 
         void RemoteObserver::onChannelUnpublished(const std::string& channelID)
         {
+            Logger::printfln("RemoteObserver: onChannelUnpublished %s", channelID.c_str());
             // Check if we have published that channel.
             auto it = this->publishedChannels.find(channelID);
 
@@ -192,7 +196,7 @@ namespace claid
 
         void RemoteObserver::onChannelDataReceivedFromRemoteRunTime(const std::string& targetChannel, TaggedData<BinaryData>& data)
         {
-            Logger::printfln("OnChannelDataReceivedFromRemuteRunTIme %s", targetChannel.c_str());
+            Logger::printfln("RemoteObserver: onChannelDataReceivedFromRemoteRunTime %s", targetChannel.c_str());
             // Check if we have publisher for channel (we SHOULD! otherwise RunTimes out of sync,
             // because how could the remote RunTime have posted that data we just received in the first place?).
             
@@ -209,8 +213,10 @@ namespace claid
             it->second.postBinaryData(data);
         }
 
+        // Called, if a local Module (of this process) posted data to a channel, that has a subscriber in a remote run time.
         void RemoteObserver::onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo(std::string channelID, ChannelData<Untyped> data)
         {
+            Logger::printfln("RemoteObserver: onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo %s", channelID.c_str());
             // When there is a channel, that was subscribed to in the local RunTime AND the remote RunTime,
             // then it can happen that data get's send back and forth and a loop happens.
             // E.g.: 
@@ -225,12 +231,11 @@ namespace claid
             TaggedData<BinaryData> taggedData = data.getBinaryData();
             if(this->isDataReceivedFromRemoteRunTime(taggedData))
             {
-                this->forgetDataReceivedFromRemoteRunTime(taggedData);
                 Logger::printfln("Is data we received from remote run time, hence skipping");
+                // TODO: HOW CAN I FIX THIS
                 return;
             }
 
-            Logger::printfln("RemoteModule:: onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo");
 
             // Need to send to the remote RunTime
             // Get tagged binary data
@@ -301,26 +306,13 @@ namespace claid
 
         void RemoteObserver::setIsDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data)
         {
-            this->identifiersOfDataReceivedFromRemoteRunTime.push_back(data.getUniqueIdentifier());
+            data.addTag(RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG);
         }
             
-        void RemoteObserver::forgetDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data)
-        {
-            auto it = std::find(this->identifiersOfDataReceivedFromRemoteRunTime.begin(), 
-                this->identifiersOfDataReceivedFromRemoteRunTime.end(), data.getUniqueIdentifier());
-
-            if(it != this->identifiersOfDataReceivedFromRemoteRunTime.end())
-            {
-                this->identifiersOfDataReceivedFromRemoteRunTime.erase(it);
-            }
-        }
 
         bool RemoteObserver::isDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data) const
         {
-            auto it = std::find(this->identifiersOfDataReceivedFromRemoteRunTime.begin(), 
-                this->identifiersOfDataReceivedFromRemoteRunTime.end(), data.getUniqueIdentifier());
-
-            return it != this->identifiersOfDataReceivedFromRemoteRunTime.end();
+            return data.hasTag(RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG);
         }
     }
 }

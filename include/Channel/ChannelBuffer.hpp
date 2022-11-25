@@ -45,7 +45,6 @@ namespace claid
             bool getClosest(const Time& timestamp, ChannelData<Untyped>& closest)
             {
                 return ChannelBufferBase::getClosest<Untyped>(this, timestamp, closest);
-                
             }
 
             void getDataInterval(const Time& min, const Time& max, std::vector<ChannelData<Untyped> >& channelDataInterval)

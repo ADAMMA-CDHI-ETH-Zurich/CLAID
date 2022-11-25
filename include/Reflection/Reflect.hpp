@@ -16,6 +16,14 @@
         code\
     }\
 
+#define CustomReflectForReflector(Class, Reflector, code)\
+    template<>\
+    void reflect<Reflector>(Reflector& reflector)\
+    {\
+        typedef Class THIS_CLASS;\
+        code\
+    }
+
 #define SplitReflect(code)\
     template<typename Reflector>\
     void reflect(Reflector& reflector)\
