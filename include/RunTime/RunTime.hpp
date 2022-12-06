@@ -148,6 +148,9 @@ namespace claid
             // Don't use this from main thread!
             std::vector<Module*> parseXMLAndStartModules(std::shared_ptr<XMLNode> xmlNode);
 
+            void enableLoggingToFile(const std::string& path);
+            void disableLoggingToFile();
+
     };
 }
 

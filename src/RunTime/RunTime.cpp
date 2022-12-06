@@ -5,12 +5,12 @@
 #include "Network/NetworkClientModule.hpp"
 #include "Network/NetworkServerModule.hpp"
 
-
+#include "Logger/Logger.hpp"
 namespace claid
 {
     RunTime::RunTime()
     {
-        this->addHiddenNamespace("CLAID/LOCAL/");
+        this->addHiddenNamespace("/CLAID/LOCAL/");
     }
 
     std::vector<Module*> RunTime::instantiateModulesFromRootXMLNode(std::shared_ptr<XMLNode> xmlNode)
@@ -277,5 +277,19 @@ namespace claid
     void RunTime::loadFromXML(XMLDocument& xmlDocument)
     {
         this->loadedXMLConfigsChannel.put(xmlDocument.getXMLNode());
+    }
+
+    void RunTime::enableLoggingToFile(const std::string& path)
+    {
+        if(!Logger::enableLoggingToFile(path))
+        {
+            CLAID_THROW(Exception, "Failed to enable logging to file. File \"" << path << "\" cannot be created.");
+        }
+    }
+            
+            
+    void disableLoggingToFile()
+    {
+        Logger::disableLoggingToFile();
     }
 }

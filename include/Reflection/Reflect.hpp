@@ -24,11 +24,11 @@
         code\
     }
 
-#define SplitReflect(code)\
+#define SplitReflect()\
     template<typename Reflector>\
     void reflect(Reflector& reflector)\
     {\
-        splitReflectInType(r, *this);\
+        splitReflectInType(reflector, *this);\
     }\
 
 
