@@ -3,7 +3,7 @@
 #include <string>
 #include <type_traits>
 #include "ClassInvoker.hpp"
-#include "Traits/is_integer_no_bool.hpp"
+#include "Traits/is_integer_no_bool_no_char.hpp"
 namespace claid
 {
     template<typename Derived>
@@ -53,7 +53,7 @@ namespace claid
             };
 
             template<class T>
-            struct ReflectorType<T, typename std::enable_if<is_integer_no_bool<T>::value>::type> 
+            struct ReflectorType<T, typename std::enable_if<is_integer_no_bool_no_char<T>::value>::type> 
             {
                 static void call(const char* property, Derived& r, T& member) 
                 {

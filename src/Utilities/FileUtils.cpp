@@ -19,12 +19,18 @@
 #else
 #include <dirent.h>
 #include <ftw.h>
+int directoryDeleterHelper(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
+{
+	return remove(fpath);
+}
 #endif
 
 
 
 namespace claid
 {
+
+
 	#ifdef __WIN32
 
 		bool isDots(const char* str)
@@ -41,7 +47,7 @@ namespace claid
 			HANDLE hFind;  // file handle
 			WIN32_FIND_DATAA findFileData;
 
-			std::string dirPath = path + std::string("\\*");
+			std::string dirPath = path + std::string("/*");
 
 			hFind = FindFirstFileA(dirPath.c_str(), &findFileData); // find the first file
 			if (hFind == INVALID_HANDLE_VALUE)
@@ -58,7 +64,7 @@ namespace claid
 
 					if ((findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 					{
-						std::string subDirPath = path + std::string("\\") + std::string(findFileData.cFileName);
+						std::string subDirPath = path + std::string("/") + std::string(findFileData.cFileName);
 						// we have found a directory, recurse
 						if (!removeDirectoryRecursively(subDirPath))
 						{
@@ -68,7 +74,7 @@ namespace claid
 					}
 					else
 					{
-						std::string filePath = path + std::string("\\") + std::string(findFileData.cFileName);
+						std::string filePath = path + std::string("/") + std::string(findFileData.cFileName);
 						// It's a file, delete it.
 
 						if (!DeleteFileA(filePath.c_str()))
@@ -100,31 +106,9 @@ namespace claid
 	#else
 
 	// basically rm -rf
-	static bool removeDirectoryRecursively(const std::string& path)
+	bool FileUtils::removeDirectoryRecursively(const std::string& path)
 	{
-		struct dirent *ent;
-		DIR *dir = opendir(path.c_str());
-		if (dir != NULL) {
-			/* remove all the files and directories within directory */
-			while ((ent = readdir(dir)) != NULL) 
-			{
-				int res = std::remove((path + ent->d_name).c_str());
-				if(res != 0)
-				{
-					return false;
-				}
-			}
-			closedir (dir);
-		} 
-		else 
-		{
-			/* could not open directory */
-			return false;
-		}
-
-		// Delete directory itself
-		return std::remove(path.c_str()) == 0;
-
+		return nftw(path.c_str(), directoryDeleterHelper, 64, FTW_DEPTH | FTW_PHYS) == 0;
 	}
 	#endif
 
@@ -135,7 +119,7 @@ namespace claid
 		#ifdef _WIN32
 		return CreateDirectory(path.c_str(), NULL);
 		#else
-		return mkdir(path.c_str(), 0744) == -1;
+		return mkdir(path.c_str(), 0744) == 0;
 		#endif
 	}
 

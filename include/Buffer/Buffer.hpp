@@ -21,7 +21,7 @@ namespace claid
             {
             }
 
-            Buffer(std::shared_ptr<char> data, BufferDataType dataType, std::vector<size_t> shape) : data(data)
+            Buffer(std::shared_ptr<char> data, BufferDataType dataType, std::vector<int32_t> shape) : data(data)
             {
                 this->bufferInfo = BufferInfo(dataType, shape);
             }
@@ -35,7 +35,7 @@ namespace claid
 
             ReflectRead(Buffer,
                 reflector.member("BufferInfo", bufferInfo, "");
-                size_t bytes = bufferInfo.getNumberOfBytes();
+                int32_t bytes = bufferInfo.getNumberOfBytes();
 
                 this->allocateNew(bytes);
                 
@@ -45,15 +45,19 @@ namespace claid
 
             ReflectWrite(Buffer,
                 reflector.member("BufferInfo", bufferInfo, "");
-                size_t bytes = this->getNumberOfBytes();
+                int32_t bytes = this->getNumberOfBytes();
 
                 char* ptr = this->getData();
                 reflector.write(reinterpret_cast<const char*>(ptr), bytes);
             )
 
-          
+            #ifdef __JAVA_WRAPPERS__
+                CustomReflectForReflector(Buffer, JavaWrapper::JbindWrapperGenerator<Buffer>,
 
-           #ifdef __PYTHON_WRAPPERS__
+                )
+            #endif
+
+            #ifdef __PYTHON_WRAPPERS__
 
             // Override reflect function above if the Reflector is PybindWrapperGenerator.
             // This allows us to create a custom python wrapper for this data type.
@@ -80,7 +84,7 @@ namespace claid
                     BufferInfo bufferInfo;
                     bufferInfo.fromPyBufferInfo(info);
 
-                    size_t bytes = bufferInfo.getNumberOfBytes();
+                    int32_t bytes = bufferInfo.getNumberOfBytes();
                     std::shared_ptr<char> dataCopy(new char[bytes]);
 
                     memcpy(dataCopy.get(), info.ptr, bytes);
@@ -98,15 +102,15 @@ namespace claid
                 return this->bufferInfo;
             }
 
-            void allocateNew(const size_t bytes)
+            void allocateNew(const int32_t bytes)
             {
                 this->data = std::shared_ptr<char>(new char[bytes]);
             }
 
-            size_t size() const;
+            int32_t size() const;
             void setData();
 
-            size_t getNumberOfBytes() const
+            int32_t getNumberOfBytes() const
             {
                 return this->bufferInfo.getNumberOfBytes();
             }

@@ -234,12 +234,10 @@ namespace claid
 
             void startModule()
             {
-                
                 if(this->isRunning)
                 {
                     CLAID_THROW(Exception, "Error, startModule was called twice on Module \"" << this->getModuleName() << "\".");
                 }
-
 
                 if(this->runnableDispatcherThread.get() == nullptr)
                 {
@@ -265,7 +263,6 @@ namespace claid
                 this->isRunning = true;
 
                 this->runnableDispatcherThread->addRunnable(functionRunnable);
-
             }
 
             void stopModule(bool isForkedSubModule = false)

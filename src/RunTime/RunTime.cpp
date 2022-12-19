@@ -18,7 +18,7 @@ namespace claid
         std::vector<Module*> loadedModules;
     
         loadedModules = this->loader.executeAppropriateLoaders(xmlNode);
-        
+
         return loadedModules;
     }
 
@@ -70,10 +70,12 @@ namespace claid
         while(loadedXMLConfigsChannel.get(xmlNode, false))
         {
             std::vector<Module*> loadedModules = this->instantiateModulesFromRootXMLNode(xmlNode);
+
             this->insertModules(loadedModules);
             this->insertModulesLoadedFromXMLConfigs(loadedModules);
-            
+
         }
+
         this->startModules(this->modules);
 
 
@@ -288,7 +290,7 @@ namespace claid
     }
             
             
-    void disableLoggingToFile()
+    void RunTime::disableLoggingToFile()
     {
         Logger::disableLoggingToFile();
     }

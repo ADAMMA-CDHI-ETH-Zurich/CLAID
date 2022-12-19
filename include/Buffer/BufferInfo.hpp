@@ -13,26 +13,26 @@ namespace claid
         DECLARE_SERIALIZATION(BufferInfo)
 
         private:
-            std::vector<size_t> shape;
-            std::vector<size_t> strides;
+            std::vector<int32_t> shape;
+            std::vector<int32_t> strides;
             BufferDataType bufferDataType;
 
-            std::vector<size_t> calculateStrides() const
+            std::vector<int32_t> calculateStrides() const
             {
                 // Strides: how much you need to add to get to next element of same dimension.
                 // E.g., if 2D matrix and rowMajor, if you are in the first row, you need to add numColums elements
                 // to reach second row.
-                std::vector<size_t> strides;
+                std::vector<int32_t> strides;
 
-                for(size_t i = 0; i < this->shape.size(); i++)
+                for(int32_t i = 0; i < this->shape.size(); i++)
                 {
                     // Start at i + 1, because stride always is based on the *next* dimension.
                     // E.g., the stride for dimension 0 is based on all subsequent dimensions.
                     // Take the matrix example: The stride (see definition above) for the row dimension
                     // is based on the columns.
                     // To calculate stride for one dimension, multiply shape of all subsequent dimensions.
-                    size_t stride = 1;
-                    for(size_t j = i + 1; j < this->shape.size(); j++)
+                    int32_t stride = 1;
+                    for(int32_t j = i + 1; j < this->shape.size(); j++)
                     {
                         stride *= this->shape[j];
                     }
@@ -48,7 +48,7 @@ namespace claid
 
             }
 
-            BufferInfo(BufferDataType bufferDataType, std::vector<size_t> shape) : bufferDataType(bufferDataType), shape(shape)
+            BufferInfo(BufferDataType bufferDataType, std::vector<int32_t> shape) : bufferDataType(bufferDataType), shape(shape)
             {
                 this->strides = calculateStrides();
             }
@@ -59,27 +59,29 @@ namespace claid
                 reflectMember(bufferDataType);
             )
 
+       
 
-            const std::vector<size_t>& getShape() const
+
+            const std::vector<int32_t>& getShape() const
             {
                 return this->shape;
             }
 
-            const std::vector<size_t>& getStrides() const
+            const std::vector<int32_t>& getStrides() const
             {
                 return this->strides;
             }
 
-            size_t numberOfDimensions() const
+            int32_t numberOfDimensions() const
             {
                 return this->shape.size();
             }
 
-            size_t getNumberOfBytes() const
+            int32_t getNumberOfBytes() const
             {
-                size_t numBytes = sizeOfOneElementInBytes();
+                int32_t numBytes = sizeOfOneElementInBytes();
 
-                for(const size_t& value : this->shape)
+                for(const int32_t& value : this->shape)
                 {
                     numBytes *= value;
                 }
@@ -87,11 +89,11 @@ namespace claid
                 return numBytes;
             }
 
-            std::vector<size_t> stridesInBytes() const
+            std::vector<int32_t> stridesInBytes() const
             {
-                std::vector<size_t> tmp = this->strides;
+                std::vector<int32_t> tmp = this->strides;
 
-                for(size_t& value : tmp)
+                for(int32_t& value : tmp)
                 {
                     value *= sizeOfOneElementInBytes();
                 }
@@ -99,7 +101,7 @@ namespace claid
                 return tmp;
             }
 
-            size_t sizeOfOneElementInBytes() const
+            int32_t sizeOfOneElementInBytes() const
             {
                 switch(this->bufferDataType)
                 {
@@ -162,7 +164,7 @@ namespace claid
             virtual py::buffer_info getPyBufferInfo(void* data) const
             {
                 py::buffer_info bufferInfo;
-                std::vector<size_t> byteStrides = stridesInBytes();
+                std::vector<int32_t> byteStrides = stridesInBytes();
           
                 bufferInfo.ptr = data;
                 bufferInfo.itemsize = sizeOfOneElementInBytes();
@@ -258,8 +260,8 @@ namespace claid
                     << "In the py::buffer_info, the number of strides is " << pyBufferInfo.strides.size() << ", but for BufferInfo it is " << this->strides.size() << ".");
                 }
 
-                std::vector<size_t> byteStrides = stridesInBytes();
-                for(size_t i = 0; i < pyBufferInfo.strides.size(); i++)
+                std::vector<int32_t> byteStrides = stridesInBytes();
+                for(int32_t i = 0; i < pyBufferInfo.strides.size(); i++)
                 {
                     if(pyBufferInfo.strides[i] != byteStrides[i])
                     {
@@ -276,22 +278,22 @@ namespace claid
         private:
 
         #ifdef __PYTHON_WRAPPERS__
-            std::vector<py::ssize_t> vectorToPyVector(const std::vector<size_t>& vector) const
+            std::vector<py::sint32_t> vectorToPyVector(const std::vector<int32_t>& vector) const
             {
-                std::vector<py::ssize_t> pyVector;
+                std::vector<py::sint32_t> pyVector;
 
-                for(const size_t& value : vector)
+                for(const int32_t& value : vector)
                 {
                     pyVector.push_back(value);
                 }
                 return pyVector;
             }
 
-            std::vector<size_t> pyVectorToVector(const std::vector<py::ssize_t>& pyVector) const
+            std::vector<int32_t> pyVectorToVector(const std::vector<py::sint32_t>& pyVector) const
             {
-                std::vector<size_t> vector;
+                std::vector<int32_t> vector;
 
-                for(const py::ssize_t& value : pyVector)
+                for(const py::sint32_t& value : pyVector)
                 {
                     vector.push_back(value);
                 }
