@@ -1,5 +1,6 @@
 #pragma once
 
+#include "RemoteConnection/RemoteConnectedEntityUniqueIdentifier.hpp"
 #include "RemoteConnection/RemoteModule/RemoteModule.hpp"
 #include "RemoteConnection/ConnectionModule.hpp"
 #include "RemoteConnection/ConnectionLink.hpp"
@@ -51,6 +52,9 @@ namespace claid
 
                 Channel<Error> subscribeToErrorChannel(ChannelSubscriber<Error> channelSubscriber);
                 Channel<Error> registerToErrorChannel();
+
+                RemoteConnectedEntityUniqueIdentifier getUniqueIdentifier();
+
 
         };
     }

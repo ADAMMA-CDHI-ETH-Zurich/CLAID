@@ -42,6 +42,8 @@ namespace claid
                 
                 ChannelManager* globalChannelManager = nullptr;
 
+                static const std::string IS_DATA_RECEIVED_FROM_REMOTE_TAG;
+
                 void onMessageReceived(ChannelData<Message> message);
                 void onChannelUpdateMessage(const MessageHeaderChannelUpdate& header, const MessageDataString& data);
                 void onChannelDataMessage(const MessageHeaderChannelData& header, const MessageDataBinary& data);            
@@ -58,7 +60,8 @@ namespace claid
 
                 void terminate();
 
-     
+                void setIsDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data);
+                bool isDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data) const;
 
                 template<typename Header, typename Data, typename Class, typename... Args>
                 bool callFunctionIfSignatureMatches(const Message& message, void (Class::*f)(const Header& header, const Data& data, Args...), Class* obj, Args... args)

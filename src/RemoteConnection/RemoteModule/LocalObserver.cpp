@@ -79,18 +79,21 @@ namespace claid
 
         void LocalObserver::onChannelPublished(const std::string& channelID)
         {
+            Logger::printfln("LocalObserver: onChannelPublished %s", channelID.c_str());
             Message message = createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType::CHANNEL_PUBLISHED, channelID);
             this->sendMessage(message);
         }
 
         void LocalObserver::onChannelUnsubscribed(const std::string& channelID)
         {
+            Logger::printfln("LocalObserver: onChannelUnsubscribed %s", channelID.c_str());
             Message message = createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType::CHANNEL_UNSUBSCRIBED, channelID);
             this->sendMessage(message);
         }
 
         void LocalObserver::onChannelUnpublished(const std::string& channelID)
         {
+            Logger::printfln("LocalObserver: onChannelUnpublished %s", channelID.c_str());
             Message message = createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType::CHANNEL_UNPUBLISHED, channelID);
             this->sendMessage(message);
         }

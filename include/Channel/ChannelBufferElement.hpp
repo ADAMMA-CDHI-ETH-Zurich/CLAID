@@ -39,6 +39,7 @@ namespace claid
             bool binaryDataAvailable = false;
             std::mutex mutex;
 
+    
 
         public:
 
@@ -76,7 +77,7 @@ namespace claid
             {
                 if(!this->dataAvailable)
                 {
-                    CLAID_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement (untyped), but no data was never set (no data available).");
+                    CLAID_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement (untyped), but no data was ever set (no data available).");
                 }
 
                 return this->binaryData;
@@ -87,7 +88,7 @@ namespace claid
                 return this->dataAvailable;
             }
 
-
+            
 
 
 

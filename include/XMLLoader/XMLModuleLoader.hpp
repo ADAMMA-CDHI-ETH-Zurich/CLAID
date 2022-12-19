@@ -45,7 +45,6 @@ namespace claid
 							module->setID(id);
 						}
 
-						CLAID_RUNTIME->addModule(module);
 						
 						return module;
 					}

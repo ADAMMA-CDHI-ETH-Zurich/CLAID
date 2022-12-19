@@ -16,7 +16,7 @@ namespace claid
             // In other words: If Untyped publish and typed subscribe happens at runtime, then it's a problem.
             // Thus, we throw an exception if the function is called with a type that has no reflect function (see other template specialization below).
             template <typename U = T>
-            typename std::enable_if<has_mem_reflect<U>::value || has_non_member_function_reflect<BinaryDeserializer&, U&>::value>::type
+            typename std::enable_if<has_mem_reflect<U>::value || has_non_member_function_reflect<BinaryDeserializer&, U&>::value || std::is_arithmetic<U>::value>::type
             deserializeBinaryDataToTypedData()
             {
 
@@ -43,7 +43,7 @@ namespace claid
        
             // See comment above.
             template <typename U = T>
-            typename std::enable_if<!has_mem_reflect<U>::value && !has_non_member_function_reflect<BinaryDeserializer&, U&>::value>::type
+            typename std::enable_if<!has_mem_reflect<U>::value && !has_non_member_function_reflect<BinaryDeserializer&, U&>::value && !std::is_arithmetic<U>::value>::type
             deserializeBinaryDataToTypedData()
             {
                 CLAID_THROW(Exception, "Error! Cannot deserialize untyped binary data posted to a channel with data type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\"" <<
@@ -55,7 +55,7 @@ namespace claid
             // If the untyped subscriber never wants to access the binary data, then we don't have a problem.
             // Thus, we throw an exception if the function is called with a type that has no reflect function (see other template specialization below).
             template <typename U = T>
-            typename std::enable_if<has_mem_reflect<U>::value || has_non_member_function_reflect<BinaryDeserializer&, U&>::value>::type
+            typename std::enable_if<has_mem_reflect<U>::value || has_non_member_function_reflect<BinaryDeserializer&, U&>::value || std::is_arithmetic<U>::value>::type
             serializeTypedDataToBinaryData()
             {
 
@@ -81,7 +81,7 @@ namespace claid
        
             // See comment above.
             template <typename U = T>
-            typename std::enable_if<!has_mem_reflect<U>::value && !has_non_member_function_reflect<BinaryDeserializer&, U&>::value>::type
+            typename std::enable_if<!has_mem_reflect<U>::value && !has_non_member_function_reflect<BinaryDeserializer&, U&>::value && !std::is_arithmetic<U>::value>::type
             serializeTypedDataToBinaryData()
             {
                 CLAID_THROW(Exception, "Error! Cannot serialize typed data to binary data. A subscriber tried to get binary data from a channel of type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\", " <<

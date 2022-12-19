@@ -65,6 +65,11 @@ namespace claid
                 this->initialized = true;
             }
 
+            void postInitializeInternal()
+            {
+                this->postInitialize();
+            }
+
             void terminateInternal()
             {
                 this->terminate();
@@ -229,12 +234,10 @@ namespace claid
 
             void startModule()
             {
-                
                 if(this->isRunning)
                 {
                     CLAID_THROW(Exception, "Error, startModule was called twice on Module \"" << this->getModuleName() << "\".");
                 }
-
 
                 if(this->runnableDispatcherThread.get() == nullptr)
                 {
@@ -260,7 +263,6 @@ namespace claid
                 this->isRunning = true;
 
                 this->runnableDispatcherThread->addRunnable(functionRunnable);
-
             }
 
             void stopModule(bool isForkedSubModule = false)
@@ -320,14 +322,21 @@ namespace claid
                 return reinterpret_cast<uint64_t>(this->runnableDispatcherThread.get());
             }
 
-            std::string getModuleName()
+            virtual const std::string getModuleName()
             {
                 return TypeChecking::getCompilerSpecificRunTimeNameOfObject(*this);   
             }
 
             void onAllModulesHaveBeenInitialized()
             {
-                this->postInitialize();
+                std::function<void ()> postInitFunc = std::bind(&BaseModule::postInitializeInternal, this);
+                FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(postInitFunc);
+
+                functionRunnable->deleteAfterRun = true;
+
+                this->isRunning = true;
+
+                this->runnableDispatcherThread->addRunnable(functionRunnable);
             }
 
             

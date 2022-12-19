@@ -10,12 +10,12 @@
 #include <stdexcept>
 std::string claid::Logger::logTag = "claid";
 std::string claid::Logger::lastLogMessage = "";
+bool claid::Logger::loggingToFileEnabled = false;
+std::ofstream* claid::Logger::file = nullptr;
 
 #ifdef __ANDROID__
 	#include <android/log.h>
-	#define  LOG_TAG    "claid"
-	#define  LOGCAT(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
-
+	#define  LOGCAT(...)  __android_log_print(ANDROID_LOG_INFO,claid::Logger::logTag.c_str(),__VA_ARGS__)
 #endif
 
 /**
@@ -60,6 +60,10 @@ void claid::Logger::printfln(const char *format, ...)
 		std::cout << ss.str().c_str() << "\n" << std::flush;
 	#endif
 
+	if(claid::Logger::loggingToFileEnabled && claid::Logger::file != nullptr)
+	{
+		(*file) << ss.str();
+	}
 }
 
 /**
@@ -126,4 +130,36 @@ void claid::Logger::setLogTag(std::string logTag)
 std::string claid::Logger::getLastLogMessage()
 {
 	return claid::Logger::lastLogMessage;
+}
+
+
+bool claid::Logger::enableLoggingToFile(const std::string& path)
+{
+	// If logging is already enabled, first disable it (i.e., closing current log file).
+	if(claid::Logger::file != nullptr)
+	{
+		claid::Logger::disableLoggingToFile();
+	}
+
+	claid::Logger::file = new std::ofstream(path);
+
+	if(!file->is_open())
+	{
+		delete file;
+		return false;
+	}
+	
+	claid::Logger::loggingToFileEnabled = true;
+	return true;
+}
+
+void claid::Logger::disableLoggingToFile()
+{
+	if(claid::Logger::file != nullptr)
+	{
+		file->close();
+		delete file;
+	}
+
+	claid::Logger::loggingToFileEnabled = false;
 }

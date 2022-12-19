@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <fstream>
+
 
 namespace claid
 {
@@ -29,9 +31,16 @@ namespace claid
 				static std::string lastLogMessage;
 
 				static void getTimeString(std::string *timeStr);
+
+				static bool loggingToFileEnabled;
+				static std::ofstream* file;
 		public:
 			static void printfln(const char *format, ...);
 			static void setLogTag(std::string logTag);
 			static std::string getLastLogMessage();
+
+			// Returns true if log file was created successfully.
+			static bool enableLoggingToFile(const std::string& path);
+			static void disableLoggingToFile();
 	};
 }

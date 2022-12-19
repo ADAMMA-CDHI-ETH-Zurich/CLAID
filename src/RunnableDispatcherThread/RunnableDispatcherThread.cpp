@@ -46,7 +46,23 @@ namespace claid
             runnablesChannel.get(runnable);
 
             if(runnable->isValid())
-                runnable->run();
+            {
+                if(runnable->catchExceptions)
+                {
+                    try
+                    {
+                        runnable->run();
+                    }
+                    catch(std::exception& e)
+                    {
+                        runnable->setException(e.what());
+                    }
+                }
+                else
+                {
+                    runnable->run();
+                }
+            }
 
             runnable->wasExecuted = true;
             if(runnable->deleteAfterRun)

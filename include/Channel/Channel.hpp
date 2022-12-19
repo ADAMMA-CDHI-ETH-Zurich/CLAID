@@ -107,7 +107,6 @@ namespace claid
             // function for Untyped channels.
             // It would not be possible to use T, because we need to write
             // template<typename> in order to use std::enable_if
-            
             template <typename U = T>
             typename std::enable_if<!std::is_same<U, Untyped>::value>::type
             post(TaggedData<T>& data)
@@ -135,8 +134,7 @@ namespace claid
             void postBinaryData(TaggedData<BinaryData>& binaryData)
             {
                 this->verifyWriteAccess();
-                this->typedChannel->postBinaryData(binaryData);
-            
+                this->typedChannel->postBinaryData(binaryData);         
             }
 
             void getChannelDataIntervall(const Time& min, const Time& max, std::vector<ChannelData<T>>& channelDataIntervall)

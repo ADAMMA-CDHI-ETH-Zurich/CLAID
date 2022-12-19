@@ -84,8 +84,6 @@ namespace claid
             {
             }
 
-            
-
             const Time& getTimestamp() const
             {
                 return this->header.timestamp;
@@ -101,11 +99,12 @@ namespace claid
                 return channelBufferElement->getBinaryData();
             }
 
-
             virtual TaggedDataBase getHeader()
             {
                 return this->header;
             }
+
+     
         // ChannelData(ChannelBuffer<T>* holderBuffer, TaggedData<T>& data) : ChannelDataBase(true), holderBuffer(holderBuffer), data(data)
         // {
         //     holderBuffer->serialize();

@@ -5,6 +5,8 @@ namespace claid
 {
     namespace RemoteConnection
     {
+        const std::string RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG = "REMOTE_OBSERVER_IS_DATA_RECEIVED_FROM_REMOTE";
+
         RemoteObserver::RemoteObserver(ChannelManager* globalChannelManager) : globalChannelManager(globalChannelManager)
         {
 
@@ -116,8 +118,7 @@ namespace claid
             }
             else
             {
-                                Logger::printfln("Subscribing without callback");
-
+                Logger::printfln("Subscribing without callback");
                 Channel<Untyped> channel = this->subscribe<Untyped>(channelID);
                 this->subscribedChannels.insert(std::make_pair(channelID, channel));
             }
@@ -126,12 +127,14 @@ namespace claid
 
         void RemoteObserver::onChannelPublished(const std::string& channelID)
         {
+            Logger::printfln("RemoteObserver: onChannelPublished %s", channelID.c_str());
             Channel<Untyped> channel = this->publish<Untyped>(channelID);
             this->publishedChannels.insert(std::make_pair(channelID, channel));
         }
 
         void RemoteObserver::onChannelUnsubscribed(const std::string& channelID)
         {
+            Logger::printfln("RemoteObserver: onChannelUnsubscribed %s", channelID.c_str());
             // First, check if we have subscribed to that channel without callback.
             auto it = this->subscribedChannels.find(channelID);
 
@@ -166,6 +169,7 @@ namespace claid
 
         void RemoteObserver::onChannelUnpublished(const std::string& channelID)
         {
+            Logger::printfln("RemoteObserver: onChannelUnpublished %s", channelID.c_str());
             // Check if we have published that channel.
             auto it = this->publishedChannels.find(channelID);
 
@@ -192,7 +196,7 @@ namespace claid
 
         void RemoteObserver::onChannelDataReceivedFromRemoteRunTime(const std::string& targetChannel, TaggedData<BinaryData>& data)
         {
-            Logger::printfln("OnChannelDataReceivedFromRemuteRunTIme %s", targetChannel.c_str());
+            Logger::printfln("RemoteObserver: onChannelDataReceivedFromRemoteRunTime %s", targetChannel.c_str());
             // Check if we have publisher for channel (we SHOULD! otherwise RunTimes out of sync,
             // because how could the remote RunTime have posted that data we just received in the first place?).
             
@@ -205,12 +209,33 @@ namespace claid
                 << "in the first place, if no publisher is available ? ");
             }
 
+            this->setIsDataReceivedFromRemoteRunTime(data);
             it->second.postBinaryData(data);
         }
 
+        // Called, if a local Module (of this process) posted data to a channel, that has a subscriber in a remote run time.
         void RemoteObserver::onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo(std::string channelID, ChannelData<Untyped> data)
         {
-            Logger::printfln("RemoteModule:: onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo");
+            Logger::printfln("RemoteObserver: onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo %s", channelID.c_str());
+            // When there is a channel, that was subscribed to in the local RunTime AND the remote RunTime,
+            // then it can happen that data get's send back and forth and a loop happens.
+            // E.g.: 
+            // 1st The local RunTime posts data to the channel.
+            // 2nd Since there is a Module in the remote RunTime, that subscribed to that Channel, the data is send to the remote RunTime.
+            // 3rd In the remote RunTime, the data is posted to the Channel in onChannelDataReceivedFromRemoteRunTime function of the RemoteObserver.
+            // 4th This means, data is posted into the local channel in the remote RunTime. As the local RunTime (us) has subscribed to that Channel aswell,
+            // onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo is called in RemoteObserver of remote RunTime.
+            // 5th The data is sent back to us again and posted to our local channel.
+            // --> Go back to 1
+            // To solve this, we need to make sure that we do not react in this function to data that was posted in onChannelDataReceivedFromRemoteRunTime.
+            TaggedData<BinaryData> taggedData = data.getBinaryData();
+            if(this->isDataReceivedFromRemoteRunTime(taggedData))
+            {
+                Logger::printfln("Is data we received from remote run time, hence skipping");
+                // TODO: HOW CAN I FIX THIS
+                return;
+            }
+
 
             // Need to send to the remote RunTime
             // Get tagged binary data
@@ -224,9 +249,7 @@ namespace claid
             // Set will serialize TaggedData<BinaryData>.
             // TaggedData holds the header (timestamp, sequenceID) and the binary data.
             // Thus, timestamp and sequenceID will be serialized, the binary data will be copied into a bigger
-            // binary data buffer that contains timestamp, sequenceID and the binary data itself.
-            TaggedData<BinaryData> taggedData = data.getBinaryData();
-
+            // binary data buffer that contains timestamp, sequenceID and the binary data itself.       
             BinaryData binaryData = taggedData.value();
             message.data->as<MessageDataBinary>()->setBinaryData(binaryData);
             this->sendMessage(message);
@@ -280,7 +303,17 @@ namespace claid
             }
             this->publishedChannels.clear();                
         }
-                
+
+        void RemoteObserver::setIsDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data)
+        {
+            data.addTag(RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG);
+        }
+            
+
+        bool RemoteObserver::isDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data) const
+        {
+            return data.hasTag(RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG);
+        }
     }
 }
 

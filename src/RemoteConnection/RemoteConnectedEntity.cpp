@@ -77,5 +77,10 @@ namespace RemoteConnection
     {
         return this->connectionModule->registerToErrorChannel();
     }
+
+    RemoteConnectedEntityUniqueIdentifier RemoteConnectedEntity::getUniqueIdentifier()
+    {
+        return reinterpret_cast<intptr_t>(this);
+    }
 }
 }

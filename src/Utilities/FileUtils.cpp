@@ -15,6 +15,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <tchar.h>
+#include <fileapi.h>
 #else
 #include <dirent.h>
 #include <ftw.h>
@@ -22,22 +23,94 @@ int directoryDeleterHelper(const char *fpath, const struct stat *sb, int typefla
 {
 	return remove(fpath);
 }
-// <sys/types.h> and <sys/stat.h> needed, but also needed
-// for some of the windows functions. So no additional linux includes.
 #endif
 
 
 
 namespace claid
 {
-	bool FileUtils::deleteDirectory(std::string path)
+
+
+	#ifdef __WIN32
+
+		bool isDots(const char* str)
+		{
+			if (strcmp(str, ".") && strcmp(str, ".."))
+			{
+				return false;
+			}
+			return true;
+		}
+
+		bool FileUtils::removeDirectoryRecursively(const std::string& path)
+		{
+			HANDLE hFind;  // file handle
+			WIN32_FIND_DATAA findFileData;
+
+			std::string dirPath = path + std::string("/*");
+
+			hFind = FindFirstFileA(dirPath.c_str(), &findFileData); // find the first file
+			if (hFind == INVALID_HANDLE_VALUE)
+				return false;
+
+
+			bool bSearch = true;
+			while (bSearch)
+			{
+				if (FindNextFileA(hFind, &findFileData))
+				{
+					if (isDots(findFileData.cFileName))
+						continue;
+
+					if ((findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+					{
+						std::string subDirPath = path + std::string("/") + std::string(findFileData.cFileName);
+						// we have found a directory, recurse
+						if (!removeDirectoryRecursively(subDirPath))
+						{
+							FindClose(hFind);
+							return false; // directory couldn't be deleted
+						}      
+					}
+					else
+					{
+						std::string filePath = path + std::string("/") + std::string(findFileData.cFileName);
+						// It's a file, delete it.
+
+						if (!DeleteFileA(filePath.c_str()))
+						{  // delete the file
+							FindClose(hFind);                   
+							return false;
+						}
+					}
+				}
+				else
+				{
+					if (GetLastError() == ERROR_NO_MORE_FILES) // no more files there
+					{
+						bSearch = false;
+					}
+					else
+					{
+						// some error occured, close the handle and return FALSE
+						FindClose(hFind);
+						return false;
+					}
+
+				}
+
+			}
+			FindClose(hFind);  // closing file handle
+			return RemoveDirectoryA(path.c_str()); // remove the empty directory
+		}
+	#else
+
+	// basically rm -rf
+	bool FileUtils::removeDirectoryRecursively(const std::string& path)
 	{
-		#ifdef _WIN32
-			return false;
-		#else
-			return nftw(path.c_str(), directoryDeleterHelper, 64, FTW_DEPTH | FTW_PHYS) == 0;
-		#endif
+		return nftw(path.c_str(), directoryDeleterHelper, 64, FTW_DEPTH | FTW_PHYS) == 0;
 	}
+	#endif
 
 	bool FileUtils::createDirectory(std::string path)
 	{
@@ -46,7 +119,7 @@ namespace claid
 		#ifdef _WIN32
 		return CreateDirectory(path.c_str(), NULL);
 		#else
-		return mkdir(path.c_str(), 0744) == -1;
+		return mkdir(path.c_str(), 0744) == 0;
 		#endif
 	}
 
@@ -67,6 +140,21 @@ namespace claid
 	{
 		struct stat buffer;
 		return (stat(name.c_str(), &buffer) == 0);
+	}
+
+	bool FileUtils::removeFile(const std::string& path)
+	{
+		return remove(path.c_str()) == 0;
+	}
+
+	bool FileUtils::removeFileIfExists(const std::string& path)
+	{
+		if(!fileExists(path))
+		{
+			return true;
+		}
+
+		return removeFile(path);
 	}
 
 	bool FileUtils::createDirectoriesRecursively(std::string path)

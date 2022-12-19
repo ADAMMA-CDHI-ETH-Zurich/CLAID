@@ -1,18 +1,30 @@
 #pragma once
 
-template<typename T> struct is_integer_no_bool : public std::false_type {};
+namespace claid
+{
+    template<typename T> struct is_integer_no_bool : public std::false_type {};
+}
 
-#define ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(type) \
-template<>\
-struct is_integer_no_bool<type> : public std::true_type {};
+#define CLAID_IS_INTEGER_NO_BOOL(type) \
+namespace claid\
+{\
+    template<>\
+    struct is_integer_no_bool<type> : public std::true_type {};\
+}
+
+CLAID_IS_INTEGER_NO_BOOL(unsigned char)
+CLAID_IS_INTEGER_NO_BOOL(signed char)
+
+CLAID_IS_INTEGER_NO_BOOL(signed short)
+CLAID_IS_INTEGER_NO_BOOL(unsigned short)
+
+CLAID_IS_INTEGER_NO_BOOL(signed int)
+CLAID_IS_INTEGER_NO_BOOL(unsigned int)
+
+CLAID_IS_INTEGER_NO_BOOL(signed long)
+CLAID_IS_INTEGER_NO_BOOL(unsigned long)
+
+CLAID_IS_INTEGER_NO_BOOL(signed long long)
+CLAID_IS_INTEGER_NO_BOOL(unsigned long long)
 
 
-
-
-ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(short)
-ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(int)
-ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(long)
-ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(long long)
-ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(unsigned int)
-ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(unsigned long)
-ADD_TO_IS_INTEGER_NO_BOOL_TYPE_TRAIT(unsigned long long)

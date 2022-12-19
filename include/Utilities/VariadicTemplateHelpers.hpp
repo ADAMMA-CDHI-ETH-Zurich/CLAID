@@ -22,19 +22,21 @@ struct is_placeholder<placeholder_template<N>>: integral_constant<int, N+1> // t
 //////////////////////////////////////////////////////////////////////////////
 
 }
-template<int ...>
-struct sequence { };
 
-template<int N, int ...S>
-struct generateIntegerSequence : generateIntegerSequence<N-1, N-1, S...> { };
-
-template<int ...S>
-struct generateIntegerSequence<0, S...> {
-typedef sequence<S...> type;
-};
 
 namespace claid
 {
+    template<int ...>
+    struct sequence { };
+
+    template<int N, int ...S>
+    struct generateIntegerSequence : generateIntegerSequence<N-1, N-1, S...> { };
+
+    template<int ...S>
+    struct generateIntegerSequence<0, S...> {
+    typedef sequence<S...> type;
+    };
+
     struct VariadicTemplateHelpers
     {
         // bind_with_variadic_arguments (also please check at the beginning of this
@@ -55,13 +57,13 @@ namespace claid
 
 
         template<typename FunctionType, typename TupleType, int ...S>
-        static void applyTupleToFunction(sequence<S...>, TupleType tuple, FunctionType& function) 
+        static void applyTupleToFunction(sequence<S...>, TupleType& tuple, FunctionType& function) 
         {
             function(std::get<S>(tuple) ...);
         }
 
         template<typename FunctionType, typename... Ts>
-        static void applyTupleToFunction(std::tuple<Ts...> tuple, FunctionType& function)
+        static void applyTupleToFunction(std::tuple<Ts...>& tuple, FunctionType& function)
         {
             applyTupleToFunction(typename generateIntegerSequence<sizeof...(Ts)>::type(), tuple, function);
         }

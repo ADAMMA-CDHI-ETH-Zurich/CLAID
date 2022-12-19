@@ -16,11 +16,19 @@
         code\
     }\
 
-#define SplitReflect(code)\
+#define CustomReflectForReflector(Class, Reflector, code)\
+    template<>\
+    void reflect<Reflector>(Reflector& reflector)\
+    {\
+        typedef Class THIS_CLASS;\
+        code\
+    }
+
+#define SplitReflect()\
     template<typename Reflector>\
     void reflect(Reflector& reflector)\
     {\
-        splitReflectInType(r, *this);\
+        splitReflectInType(reflector, *this);\
     }\
 
 

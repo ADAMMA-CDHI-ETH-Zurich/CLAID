@@ -37,13 +37,17 @@ namespace claid
 					{
 						if (child->name == loader->getDesiredTag())
 						{
+							std::cout << "Instantiate 1\n" << std::flush;
 							claid::Module* loadedModule = loader->instantiateModuleFromNode(child);
+							std::cout << "Instantiate 2\n" << std::flush;
 
 							if(loadedModule == nullptr)
 							{
 								CLAID_THROW(claid::Exception, "Error in loading Module from XML. Cannot load Module from XML Node " << child->name);
 							}
-							loadedModules.push_back(loadedModule);							
+							loadedModules.push_back(loadedModule);			
+							std::cout << "Instantiate 3\n" << std::flush;
+				
 						}
 						else
 						{
@@ -54,6 +58,8 @@ namespace claid
 						}
 					} 
 				}
+				std::cout << "Instantiate 4\n" << std::flush;
+
 				return loadedModules;
 				
 			}

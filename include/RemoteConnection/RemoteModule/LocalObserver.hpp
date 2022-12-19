@@ -41,9 +41,6 @@ namespace claid
 
 
                 Message createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType type, const std::string& string);
-
-            
-
     
 
             public:

@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <string.h>
 
+// Needed for ::close (closing sockets)!
+#include <unistd.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h> 
 #include <netdb.h>
@@ -108,6 +110,7 @@ namespace claid
 		Logger::printfln("Connect to 1");
 		
 		this->sock = socket(AF_INET, SOCK_STREAM, 0);
+		Logger::printfln("Opened Socket %d", this->sock);
 		if (this->sock < 0) 
 		{
 			Logger::printfln("Failed to open socket.\n");
@@ -184,7 +187,7 @@ namespace claid
 			this->close();
 			return false;
 		}
-
+		Logger::printfln("low level socketclient: writing result %d", result);
 		return true;
 	}
 
@@ -219,7 +222,6 @@ namespace claid
 
 	void Network::SocketClient::close()
 	{
-		//::close(this->sock);
 		this->connected = false;
 
 		long arg; 
@@ -237,6 +239,8 @@ namespace claid
 			Logger::printfln("Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
 	
 		} 
+		::close(this->sock);
+
 	}
 
 	Network::SocketClient::SocketClientError Network::SocketClient::getLastError()
