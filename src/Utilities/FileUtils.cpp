@@ -8,7 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include <streambuf>
-
+#include <iostream>
 
 #include <assert.h>  
 #ifdef _WIN32
@@ -119,6 +119,7 @@ namespace claid
 		#ifdef _WIN32
 		return CreateDirectory(path.c_str(), NULL);
 		#else
+		std::cout << "Creating " << path << "\n";
 		return mkdir(path.c_str(), 0744) == 0;
 		#endif
 	}
@@ -174,6 +175,7 @@ namespace claid
 		}
 
 		std::string subPath;
+		pos = 0;
 		
 		bool atLeastOneDirectoryCreatedSuccessfully = false;
 		while (pos != -1)

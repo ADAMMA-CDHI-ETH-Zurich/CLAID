@@ -3,7 +3,7 @@
 #include "XML/XMLParser.hpp"
 #include "XMLNode.hpp"
 #include "File/File.hpp"
-
+#include "XML/XMLSerializer.hpp"
 namespace claid
 {
 	class XMLDocument
@@ -23,6 +23,15 @@ namespace claid
 			void setXMLNode(std::shared_ptr<XMLNode> xmlNode);
 
 			std::shared_ptr<XMLNode> getXMLNode();
+
+			template<typename T>
+			bool serializeObjectToFile(const std::string& path, T& object)
+			{
+				XMLSerializer serializer;
+				serializer.serialize(object);
+				this->xmlNode = serializer.getXMLNode();
+				return this->saveToFile(path);
+			}
 
 	};
 }

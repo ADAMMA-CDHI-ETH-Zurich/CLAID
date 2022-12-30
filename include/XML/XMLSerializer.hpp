@@ -186,12 +186,17 @@ namespace claid
             template<typename T> 
             void serialize(T& obj)
             {
-                std::string name = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
-                std::shared_ptr<XMLNode> node = std::shared_ptr<XMLNode>(new XMLNode(currentNode, name));
-                this->currentNode->addChild(node);
-                this->currentNode = node;
+                // std::string name = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
+                // std::shared_ptr<XMLNode> node = std::shared_ptr<XMLNode>(new XMLNode(currentNode, name));
+                // this->currentNode->addChild(node);
+                // this->currentNode = node;
 
                 invokeReflectOnObject(obj);
+            }
+
+            std::shared_ptr<XMLNode> getXMLNode()
+            {
+                return this->root;
             }
 
             void enforceName(std::string& name, int idInSequence = 0)

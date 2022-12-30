@@ -8,6 +8,8 @@
 
 
 #include "Binary/BinarySerializer.hpp"
+#include "XML/XMLSerializer.hpp"
+#include "Reflection/Reflect.hpp"
 
 namespace claid
 {
@@ -105,7 +107,7 @@ namespace claid
             }
 
      
-        // ChannelData(ChannelBuffer<T>* holderBuffer, TaggedData<T>& data) : ChannelDataBase(true), holderBuffer(holderBuffer), data(data)
+        // ChannelData(ChannelBuffer<T>* holderBuffer, TaggedData<T>& taggedData) : ChannelDataBase(true), holderBuffer(holderBuffer), taggedData(taggedData)
         // {
         //     holderBuffer->serialize();
         // }
@@ -116,10 +118,10 @@ namespace claid
     class ChannelData : public ChannelDataBase
     {
         private:
-            TaggedData<T> data;
+            TaggedData<T> taggedData;
             const TaggedData<T>& internalValue() const
             {
-                return data;
+                return taggedData;
             }
 
             // The ChannelBufferElement that our data belongs to.
@@ -142,11 +144,14 @@ namespace claid
             }
 
 
-            ChannelData(TaggedData<T>& data, 
-                std::shared_ptr<ChannelBufferElement> channelBufferElement) : ChannelDataBase(true), data(data), channelBufferElement(channelBufferElement)
+            ChannelData(TaggedData<T>& taggedData, 
+                std::shared_ptr<ChannelBufferElement> channelBufferElement) : ChannelDataBase(true), taggedData(taggedData), channelBufferElement(channelBufferElement)
             {
             }
 
+            Reflect(ChannelData,
+                reflectMember(taggedData);
+            )
 
 
             TaggedData<BinaryData> getBinaryData() 
@@ -156,17 +161,17 @@ namespace claid
 
             TaggedDataBase getHeader()
             {
-                return *static_cast<TaggedDataBase*>(&data);
+                return *static_cast<TaggedDataBase*>(&taggedData);
             }
 
             const Time& getTimestamp() const
             {
-                return this->data.timestamp;
+                return this->taggedData.timestamp;
             }
 
             const uint64_t getSequenceID()
             {
-                return this->data.sequenceID;
+                return this->taggedData.sequenceID;
             }
 
             operator const TaggedData<T>&() const 
@@ -184,6 +189,18 @@ namespace claid
             const TaggedData<T>* operator->() const 
             { 
                 return &this->internalValue();
+            }
+
+            std::shared_ptr<XMLNode> toXML()
+            {
+                if(!this->valid)
+                {
+                    CLAID_THROW(Exception, "Error, cannot serialize ChannelData to XML, data not valid");
+                }
+                XMLSerializer serializer;
+                serializer.serialize(*this);
+
+                return serializer.getXMLNode();
             }
 
 

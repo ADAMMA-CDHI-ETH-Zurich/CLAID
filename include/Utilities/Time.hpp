@@ -171,7 +171,6 @@ public:
 		return p0;
 	}
 
-
 	uint64_t toUnixTimestamp() const
 	{
 		return std::chrono::duration_cast<std::chrono::seconds>(*this - Time::unixEpoch()).count();
@@ -199,8 +198,6 @@ public:
 	{
 		return Time::unixEpoch() + std::chrono::milliseconds(milliSeconds);
 	}
-
-
 
 	void toDateTime(int& year, int& month, int& day, int& hour, int& minute, int& second)
 	{
@@ -265,7 +262,7 @@ public:
 		template<typename Reflector>
 		void reflectRead(Reflector& r)
 		{
-			uint32_t unixMs;
+			uint64_t unixMs;
 			r.member("UnixTimestamp", unixMs, "");
 
 			*this = Time::fromUnixTimestampMilliseconds(unixMs);
@@ -274,7 +271,7 @@ public:
 		template<typename Reflector>
 		void reflectWrite(Reflector& r)
 		{
-			uint32_t unixMs = this->toUnixTimestampMilliseconds();
+			uint64_t unixMs = this->toUnixTimestampMilliseconds();
 			r.member("UnixTimestamp", unixMs, "");
 		}
 
