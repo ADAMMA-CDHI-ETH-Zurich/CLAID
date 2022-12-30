@@ -54,7 +54,6 @@ void claid::Logger::printfln(const char *format, ...)
 
 	claid::Logger::lastLogMessage = ss.str().c_str();
 	#ifdef __ANDROID__
-
 		LOGCAT(ss.str().c_str(), __LINE__);
 	#else
 		std::cout << ss.str().c_str() << "\n" << std::flush;
