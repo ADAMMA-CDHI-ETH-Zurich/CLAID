@@ -31,7 +31,7 @@ namespace claid
 {
 
 
-	#ifdef __WIN32
+	#ifdef _WIN32
 
 		bool isDots(const char* str)
 		{
