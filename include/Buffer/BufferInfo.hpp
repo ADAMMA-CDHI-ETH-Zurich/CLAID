@@ -278,9 +278,9 @@ namespace claid
         private:
 
         #ifdef __PYTHON_WRAPPERS__
-            std::vector<py::sint32_t> vectorToPyVector(const std::vector<int32_t>& vector) const
+            std::vector<py::ssize_t> vectorToPyVector(const std::vector<int32_t>& vector) const
             {
-                std::vector<py::sint32_t> pyVector;
+                std::vector<py::ssize_t> pyVector;
 
                 for(const int32_t& value : vector)
                 {
@@ -289,11 +289,11 @@ namespace claid
                 return pyVector;
             }
 
-            std::vector<int32_t> pyVectorToVector(const std::vector<py::sint32_t>& pyVector) const
+            std::vector<int32_t> pyVectorToVector(const std::vector<py::ssize_t>& pyVector) const
             {
                 std::vector<int32_t> vector;
 
-                for(const py::sint32_t& value : pyVector)
+                for(const py::ssize_t& value : pyVector)
                 {
                     vector.push_back(value);
                 }
