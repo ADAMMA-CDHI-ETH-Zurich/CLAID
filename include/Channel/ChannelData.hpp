@@ -149,9 +149,7 @@ namespace claid
             {
             }
 
-            Reflect(ChannelData,
-                reflectMember(taggedData);
-            )
+            
 
 
             TaggedData<BinaryData> getBinaryData() 
@@ -198,7 +196,7 @@ namespace claid
                     CLAID_THROW(Exception, "Error, cannot serialize ChannelData to XML, data not valid");
                 }
                 XMLSerializer serializer;
-                serializer.serialize(*this);
+                serializer.serialize(this->taggedData);
 
                 return serializer.getXMLNode();
             }

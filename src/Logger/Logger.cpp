@@ -61,7 +61,8 @@ void claid::Logger::printfln(const char *format, ...)
 
 	if(claid::Logger::loggingToFileEnabled && claid::Logger::file != nullptr)
 	{
-		(*file) << ss.str();
+		(*file) << ss.str() << "\n";
+		file->flush();
 	}
 }
 
