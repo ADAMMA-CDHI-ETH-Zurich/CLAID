@@ -36,7 +36,6 @@ namespace claid
             std::thread* loadingThread = nullptr;
             std::thread* separateProcessThread = nullptr;
 
-            std::vector<Module*> instantiateModulesFromRootXMLNode(std::shared_ptr<XMLNode> node);
             void insertModules(std::vector<Module*> modules);
             void insertModulesLoadedFromXMLConfigs(std::vector<Module*> modules);
             void startModules(std::vector<Module*> modules);
@@ -81,6 +80,8 @@ namespace claid
             {
                 this->loader.registerLoader<T>(name);
             }
+
+            std::vector<Module*> instantiateModulesFromXMLNode(std::shared_ptr<XMLNode> node);
 
             void test()
             {

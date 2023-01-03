@@ -30,7 +30,6 @@ namespace claid
 				template<typename T>
 				void registerFactory(const std::string& className)
 				{
-					Logger::printfln("Registering %s\n", className.c_str());
 					auto it = classFactories.find(className);
 
 					if (it != classFactories.end())

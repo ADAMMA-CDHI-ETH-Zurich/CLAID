@@ -13,10 +13,12 @@ namespace claid
         this->addHiddenNamespace("/CLAID/LOCAL/");
     }
 
-    std::vector<Module*> RunTime::instantiateModulesFromRootXMLNode(std::shared_ptr<XMLNode> xmlNode)
+    std::vector<Module*> RunTime::instantiateModulesFromXMLNode(std::shared_ptr<XMLNode> xmlNode)
     {
         std::vector<Module*> loadedModules;
-    
+
+        // Evaluates each of the children of xmlNode and executes the loader 
+        // that can handle the node tag, if there is any.    
         loadedModules = this->loader.executeAppropriateLoaders(xmlNode);
 
         return loadedModules;
@@ -69,7 +71,7 @@ namespace claid
         // Returns false when no more data on the channel.
         while(loadedXMLConfigsChannel.get(xmlNode, false))
         {
-            std::vector<Module*> loadedModules = this->instantiateModulesFromRootXMLNode(xmlNode);
+            std::vector<Module*> loadedModules = this->instantiateModulesFromXMLNode(xmlNode);
 
             this->insertModules(loadedModules);
             this->insertModulesLoadedFromXMLConfigs(loadedModules);
@@ -95,7 +97,7 @@ namespace claid
 
     std::vector<Module*> RunTime::parseXMLAndStartModules(std::shared_ptr<XMLNode> xmlNode)
     {
-        std::vector<Module*> loadedModules = this->instantiateModulesFromRootXMLNode(xmlNode);
+        std::vector<Module*> loadedModules = this->instantiateModulesFromXMLNode(xmlNode);
         this->insertModules(loadedModules);
         this->insertModulesLoadedFromXMLConfigs(loadedModules);
         this->startModules(loadedModules);

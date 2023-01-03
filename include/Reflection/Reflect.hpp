@@ -51,3 +51,4 @@
 #define reflectMember(mem) reflector.member(#mem, mem, ""); reflector.pointer_to_member(#mem, &THIS_CLASS::mem)
 #define reflectMemberWithDefaultValue(mem, defaultValue) reflector.member(#mem, mem, "", defaultValue); reflector.pointer_to_member(#mem, &THIS_CLASS::mem)
 #define reflectFunction(function) reflector.pointer_to_function(#function, &THIS_CLASS::function)
+

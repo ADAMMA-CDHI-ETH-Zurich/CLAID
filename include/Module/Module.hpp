@@ -25,6 +25,7 @@
 
 
 #include "Channel/ChannelManager.hpp"
+#include "Namespace/Namespace.hpp"
 namespace claid
 {
     // Base class for any type of module.
@@ -52,6 +53,7 @@ namespace claid
             std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread = nullptr;
 
             std::map<std::string, DispatcherThreadTimer*> timers;
+            std::vector<Namespace> namespaces;
 
             std::string id;
 
@@ -163,6 +165,28 @@ namespace claid
 
 
             PropertyReflector propertyReflector;
+
+            protected:
+                std::string addNamespacesToChannelID(const std::string& channelID) const 
+                {
+                    std::string result = channelID;
+
+                    if(result.size() >= 2)
+                    {
+                        // Do not add namespaces to channels that start with //
+                        if(result[0] == '/' && result[1] == '/')
+                        {
+                            return result;
+                        }
+                    }
+
+                    for(const Namespace& ns : this->namespaces)
+                    {
+                        ns.prependNamespaceToString(result);
+                    }
+
+                    return result;
+                }
 
         public:
             BaseModule()
@@ -340,6 +364,11 @@ namespace claid
                 this->isRunning = true;
 
                 this->runnableDispatcherThread->addRunnable(functionRunnable);
+            }
+
+            void prependNamespace(const Namespace& namespaceName)
+            {
+                this->namespaces.push_back(namespaceName);
             }
 
             
