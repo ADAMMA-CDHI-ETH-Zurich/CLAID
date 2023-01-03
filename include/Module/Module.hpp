@@ -121,7 +121,10 @@ namespace claid
                 delete it->second;
             }
 
-
+            bool isPeriodicFunctionRegistered(const std::string& name) const
+            {
+                return this->timers.find(name) != this->timers.end();
+            }
 
             template<typename T, typename Class>
             ChannelSubscriber<T> makeSubscriber(void (Class::*f)(ChannelData<T>), Class* obj)         

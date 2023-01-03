@@ -38,6 +38,8 @@ namespace claid
                 size_t timeoutInMs = 3;
                 size_t tryToReconnectAfterMs = 200;
 
+                bool connected = false;
+
                 RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity;
 
                 Channel<RemoteConnection::Error> errorChannel;
@@ -171,6 +173,23 @@ namespace claid
 
                 void tryToReconnect()
                 {
+                    if(!this->isPeriodicFunctionRegistered("PeriodicTryToReconnect"))
+                    {
+                        // If tryToReconnectAfterMs is too small, 
+                        // it can happen that the next execution of the 
+                        // function is already scheduled, although a connection
+                        // has been successfully established the last time this funciton was called.
+                        // Therefore, if we do not check this here, it can happen that
+                        // connectToServer() is called multiple times successfully, which means
+                        // that we would connect to the same server twice (or more).
+                        // This actually happened sometimes in the tests, leading both 
+                        // the server and client to crash.
+
+                        // Therefore, if tryToReconnect() is called, but the periodicFunction (timer)
+                        // is not registered (anymore), we assume that we successfully established connection
+                        // in a prior call of this function.
+                        return;
+                    }
                     Logger::printfln("Trying to reconnect");
                     if(!connectToServer())
                     {
