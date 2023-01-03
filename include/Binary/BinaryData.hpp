@@ -1,7 +1,11 @@
 #pragma once
 #include <vector>
 #include "Reflection/SplitReflectInType.hpp"
+#include "Exception/Exception.hpp"
 #include <iostream>
+#include <fstream>
+
+
 namespace claid
 {
     class BinaryData
@@ -77,7 +81,6 @@ namespace claid
                 }
             }
 
-
             void resize(size_t size)
             {
                 size_t index = 0;
@@ -104,6 +107,17 @@ namespace claid
                 this->data.clear();
             }
 
+            void saveToFile(const std::string& path)
+            {
+                std::fstream file(path, std::ios::out | std::ios::binary);
+                if(!file.is_open())
+                {
+                    CLAID_THROW(claid::Exception, "Error, cannot save binary data to \"" << path << "\".\n"
+                    << "Could not open File for writing.");
+                }
+
+                file.write(this->data.data(), this->data.size());
+            }
      
 
         private:

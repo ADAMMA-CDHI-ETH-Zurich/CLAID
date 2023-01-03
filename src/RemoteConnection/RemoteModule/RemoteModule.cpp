@@ -5,7 +5,6 @@ namespace claid
 {
 namespace RemoteConnection
 {
-    //     void notifyOnConnectionLost();
     ChannelSubscriber<Message> RemoteModule::getSubscriberForReceptionOfMessages()
     {
         if(this->remoteObserver == nullptr)

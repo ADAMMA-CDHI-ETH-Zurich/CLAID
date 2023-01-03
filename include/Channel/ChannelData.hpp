@@ -42,6 +42,8 @@ namespace claid
             }
 
             virtual TaggedData<BinaryData> getBinaryData() = 0;
+            virtual std::shared_ptr<XMLNode> toXML() = 0;
+            virtual bool canSerializeToXML() = 0;
 
     };
 
@@ -104,6 +106,18 @@ namespace claid
             virtual TaggedDataBase getHeader()
             {
                 return this->header;
+            }
+
+            std::shared_ptr<XMLNode> toXML()
+            {
+                return this->channelBufferElement->toXML();
+            }
+
+            bool canSerializeToXML()
+            {
+                // When ChannelData is untyped, we can only
+                // serialize to XML if the bufferElement is typed.
+                return this->channelBufferElement->canSerializeToXML();
             }
 
      
@@ -195,10 +209,13 @@ namespace claid
                 {
                     CLAID_THROW(Exception, "Error, cannot serialize ChannelData to XML, data not valid");
                 }
-                XMLSerializer serializer;
-                serializer.serialize(this->taggedData);
+                return this->channelBufferElement->toXML();
+            }
 
-                return serializer.getXMLNode();
+            bool canSerializeToXML()
+            {
+                // When ChannelData is typed, we can always serialize to XML.
+                return true;
             }
 
 

@@ -183,8 +183,9 @@ namespace claid
 
             }
 
-            template<typename T> 
-            void serialize(T& obj)
+            template <typename T>
+            typename std::enable_if<!std::is_arithmetic<T>::value>::type
+            serialize(T& obj)
             {
                 // std::string name = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
                 // std::shared_ptr<XMLNode> node = std::shared_ptr<XMLNode>(new XMLNode(currentNode, name));
@@ -192,6 +193,13 @@ namespace claid
                 // this->currentNode = node;
 
                 invokeReflectOnObject(obj);
+            }
+
+            template <typename T>
+            typename std::enable_if<std::is_arithmetic<T>::value>::type
+            serialize(T& obj)
+            {
+                this->member("Value", obj, "");
             }
 
             std::shared_ptr<XMLNode> getXMLNode()

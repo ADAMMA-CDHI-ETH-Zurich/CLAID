@@ -2,6 +2,7 @@
 #include "Binary/BinaryDeserializer.hpp"
 #include "Binary/BinarySerializer.hpp"
 
+#include "XML/XMLSerializer.hpp"
 
 namespace claid
 {
@@ -85,8 +86,31 @@ namespace claid
             serializeTypedDataToBinaryData()
             {
                 CLAID_THROW(Exception, "Error! Cannot serialize typed data to binary data. A subscriber tried to get binary data from a channel of type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\", " <<
-                "but typed data could not be serialized, as no reflect function is available for the mentioned data type. Please add a reflect function to the datatype.");
+                "but typed data could not be serialized, as no reflect function is available for the mentioned data type. Please add a reflect function to the data type.");
             }
+
+            template<typename U = T>
+            typename std::enable_if<has_mem_reflect<U>::value || 
+                    has_non_member_function_reflect<BinaryDeserializer&, U&>::value ||
+                    std::is_arithmetic<U>::value, std::shared_ptr<XMLNode>>::type
+            serializeToXML()
+            {
+                XMLSerializer serializer;                
+                serializer.serialize(this->typedData.value());
+                return serializer.getXMLNode();
+            }
+
+            template<typename U = T>
+            typename std::enable_if<!has_mem_reflect<U>::value && 
+                    !has_non_member_function_reflect<BinaryDeserializer&, U&>::value &&
+                    !std::is_arithmetic<U>::value, std::shared_ptr<XMLNode>>::type
+            serializeToXML()
+            {
+                CLAID_THROW(Exception, "Error! Cannot serialize typed data to XML. A subscriber tried to get XML data from a channel of type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\", " <<
+                "but typed data could not be serialized, as no reflect function is available for the mentioned data type. Please add a reflect function to the data type.");
+            }
+
+            
 
         public:
 
@@ -130,6 +154,19 @@ namespace claid
            
 
                 return this->binaryData;
+            }
+
+            bool canSerializeToXML() const
+            {
+                // Can serialize to XML, because 
+                // we are a typed ChannelBufferElement.
+                return true;
+            }
+
+            
+            virtual std::shared_ptr<XMLNode> toXML()
+            {
+                return this->serializeToXML();
             }
 
    
