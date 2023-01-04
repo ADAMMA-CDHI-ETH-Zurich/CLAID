@@ -62,11 +62,11 @@ namespace claid
             void storeString(const std::string& value)
             {
                 // Store length of string
-                size_t size = value.size();
+                int32_t size = value.size();
                 this->store(size);
 
                 // Store characters
-                for(size_t i = 0; i < size; i++)
+                for(int32_t i = 0; i < size; i++)
                 {
                     this->store(value[i]);
                 }
@@ -107,7 +107,26 @@ namespace claid
                 this->data.clear();
             }
 
-            void saveToFile(const std::string& path)
+            void loadFromFile(const std::string& path)
+            {
+                   
+                std::fstream file(path, std::ios::in | std::ios::binary);
+                if(!file.is_open())
+                {
+                    CLAID_THROW(claid::Exception, "Error, cannot load binary data from \"" << path << "\".\n"
+                    << "Could not open File for writing.");
+                }
+
+                file.seekg(0, std::ios::end);
+                size_t numBytes = file.tellg();
+                file.seekg(0, std::ios::beg);
+
+                this->resize(numBytes);
+
+                file.read(this->data.data(), numBytes);
+            }
+
+            void saveToFile(const std::string& path) const
             {
                 std::fstream file(path, std::ios::out | std::ios::binary);
                 if(!file.is_open())

@@ -76,13 +76,13 @@ namespace claid
             void readString(std::string& value)
             {
                 // Load length of string
-                size_t size;
+                int32_t size;
                 this->read(size);
 
                 value.resize(size);
                 // Store characters
 
-                for(size_t i = 0; i < size; i++)
+                for(int32_t i = 0; i < size; i++)
                 {
                     this->read(value[i]);
                 }

@@ -167,26 +167,7 @@ namespace claid
             PropertyReflector propertyReflector;
 
             protected:
-                std::string addNamespacesToChannelID(const std::string& channelID) const 
-                {
-                    std::string result = channelID;
-
-                    if(result.size() >= 2)
-                    {
-                        // Do not add namespaces to channels that start with //
-                        if(result[0] == '/' && result[1] == '/')
-                        {
-                            return result;
-                        }
-                    }
-
-                    for(const Namespace& ns : this->namespaces)
-                    {
-                        ns.prependNamespaceToString(result);
-                    }
-
-                    return result;
-                }
+                
 
         public:
             BaseModule()
@@ -369,6 +350,27 @@ namespace claid
             void prependNamespace(const Namespace& namespaceName)
             {
                 this->namespaces.push_back(namespaceName);
+            }
+
+            std::string addNamespacesToChannelID(const std::string& channelID) const 
+            {
+                std::string result = channelID;
+
+                if(result.size() >= 2)
+                {
+                    // Do not add namespaces to channels that start with //
+                    if(result[0] == '/' && result[1] == '/')
+                    {
+                        return result;
+                    }
+                }
+
+                for(const Namespace& ns : this->namespaces)
+                {
+                    ns.prependNamespaceToString(result);
+                }
+
+                return result;
             }
 
             

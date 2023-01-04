@@ -42,6 +42,7 @@ namespace claid
             }
 
             virtual TaggedData<BinaryData> getBinaryData() = 0;
+            virtual std::shared_ptr<XMLNode> headerToXML() = 0;
             virtual std::shared_ptr<XMLNode> toXML() = 0;
             virtual bool canSerializeToXML() = 0;
 
@@ -106,6 +107,13 @@ namespace claid
             virtual TaggedDataBase getHeader()
             {
                 return this->header;
+            }
+
+            std::shared_ptr<XMLNode> headerToXML()
+            {
+                XMLSerializer serializer;
+                serializer.serialize(this->header);
+                return serializer.getXMLNode();
             }
 
             std::shared_ptr<XMLNode> toXML()
@@ -201,6 +209,14 @@ namespace claid
             const TaggedData<T>* operator->() const 
             { 
                 return &this->internalValue();
+            }
+
+            std::shared_ptr<XMLNode> headerToXML()
+            {
+                XMLSerializer serializer;
+                TaggedDataBase header = this->getHeader();
+                serializer.serialize(header);
+                return serializer.getXMLNode();
             }
 
             std::shared_ptr<XMLNode> toXML()

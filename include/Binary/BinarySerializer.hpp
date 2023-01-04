@@ -135,7 +135,7 @@ namespace claid
             template<typename T>
             void callEnum(const char* property, T& member)
             {
-                size_t m = static_cast<size_t>(member);
+                int32_t m = static_cast<int32_t>(member);
                 this->callInt(property, m);
             }
 

@@ -163,6 +163,7 @@ namespace claid
 		std::string delimiter = "\\";
 
 		int pos = path.find(delimiter);
+		printf("pos %d\n", pos);
 
 		if (pos == -1)
 		{
@@ -170,7 +171,9 @@ namespace claid
 			pos = path.find(delimiter);
 			if (pos == -1)
 			{
-				return false;
+				// Path has no / nor \\, hence it must be a directory directly.
+				// Try to treat path as name of directory and try to create it.
+				return FileUtils::createDirectory(path);
 			}
 		}
 
@@ -193,8 +196,49 @@ namespace claid
 	bool FileUtils::getAllDirectoriesInDirectory(std::string path, std::vector<std::string>& output)
 	{
 		#ifdef _WIN32
-			// TODO: IMPLEMENT THIS!
-			return false;
+			HANDLE hFind;  // file handle
+			WIN32_FIND_DATAA findFileData;
+
+			std::string dirPath = path + std::string("/*");
+
+			hFind = FindFirstFileA(dirPath.c_str(), &findFileData); // find the first file
+			if (hFind == INVALID_HANDLE_VALUE)
+				return false;
+
+
+			bool bSearch = true;
+			while (bSearch)
+			{
+				if (FindNextFileA(hFind, &findFileData))
+				{
+					if (isDots(findFileData.cFileName))
+						continue;
+
+					if ((findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+					{
+						std::string subDirPath = path + std::string("/") + std::string(findFileData.cFileName);
+						output.push_back(subDirPath);  
+					}
+				}
+				else
+				{
+					if (GetLastError() == ERROR_NO_MORE_FILES) // no more files there
+					{
+						bSearch = false;
+					}
+					else
+					{
+						// some error occured, close the handle and return FALSE
+						FindClose(hFind);
+						return false;
+					}
+
+				}
+
+			}
+			FindClose(hFind);  // closing file handle
+			return true;
+		
 
 		#else
 			output.clear();
@@ -224,6 +268,187 @@ namespace claid
 		#endif
 	}
 	
+	#ifdef _WIN32
+	bool FileUtils::getAllFilesInDirectory(std::string path, std::vector<std::string>& output)
+	{
+		HANDLE hFind;  // file handle
+		WIN32_FIND_DATAA findFileData;
+
+		std::string dirPath = path + std::string("/*");
+
+		hFind = FindFirstFileA(dirPath.c_str(), &findFileData); // find the first file
+		if (hFind == INVALID_HANDLE_VALUE)
+			return false;
+
+
+		bool bSearch = true;
+		while (bSearch)
+		{
+			if (FindNextFileA(hFind, &findFileData))
+			{
+				if (isDots(findFileData.cFileName))
+					continue;
+
+				if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+				{
+					std::string subDirPath = path + std::string("/") + std::string(findFileData.cFileName);
+					output.push_back(subDirPath);  
+				}
+			}
+			else
+			{
+				if (GetLastError() == ERROR_NO_MORE_FILES) // no more files there
+				{
+					bSearch = false;
+				}
+				else
+				{
+					// some error occured, close the handle and return FALSE
+					FindClose(hFind);
+					return false;
+				}
+
+			}
+
+		}
+		FindClose(hFind);  // closing file handle
+		return true;
+	}
+	#else
+	bool FileUtils::getAllFilesInDirectory(std::string path, std::vector<std::string>& output)
+	{
+		if(path == "./")
+		{
+			path = ".";
+		}
+		DIR *dir;
+		struct dirent *ent;
+		if ((dir = opendir (path.c_str())) != NULL) 
+		{
+			while ((ent = readdir (dir)) != NULL) 
+			{
+				std::string directory = std::string(ent->d_name);
+
+				if(directory == "." || directory == "..")
+					continue;
+
+				std::string filePath = path + std::string("/") + directory;
+				// Check if the file is not a directory.
+				if(!FileUtils::dirExists(filePath))
+				{
+					output.push_back(filePath);
+				}
+			}
+			closedir (dir);
+			return true;
+		} 
+		else 
+		{
+			return false;
+		}
+	}
+	#endif
+
+	#ifdef _WIN32
+	bool FileUtils::getAllFilesInDirectoryRecursively(std::string path, std::vector<std::string>& output)
+	{
+		HANDLE hFind;  // file handle
+		WIN32_FIND_DATAA findFileData;
+
+		std::string dirPath = path + std::string("/*");
+
+		hFind = FindFirstFileA(dirPath.c_str(), &findFileData); // find the first file
+		if (hFind == INVALID_HANDLE_VALUE)
+			return false;
+
+
+		bool bSearch = true;
+		while (bSearch)
+		{
+			if (FindNextFileA(hFind, &findFileData))
+			{
+				if (isDots(findFileData.cFileName))
+					continue;
+
+				if ((findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+				{
+					std::string subDirPath = path + std::string("/") + std::string(findFileData.cFileName);
+					// Is directory, recurse.
+					if(!getAllFilesInDirectoryRecursively(subDirPath), output);
+					{
+						return false;
+					}
+				}
+				else
+				{
+					// Is file, add it to the list.
+					output.push_back(subDirPath);
+				}
+			}
+			else
+			{
+				if (GetLastError() == ERROR_NO_MORE_FILES) // no more files there
+				{
+					bSearch = false;
+				}
+				else
+				{
+					// some error occured, close the handle and return FALSE
+					FindClose(hFind);
+					return false;
+				}
+
+			}
+
+		}
+		FindClose(hFind);  // closing file handle
+		return true;
+	}
+	#else
+	bool FileUtils::getAllFilesInDirectoryRecursively(std::string path, std::vector<std::string>& output)
+	{
+		if(path == "./")
+		{
+			path = ".";
+		}
+		DIR *dir;
+		struct dirent *ent;
+		if ((dir = opendir (path.c_str())) != NULL) 
+		{
+			while ((ent = readdir (dir)) != NULL) 
+			{
+				std::string directory = std::string(ent->d_name);
+
+				if(directory == "." || directory == "..")
+					continue;
+
+				std::string filePath = path + std::string("/") + directory;
+				// Check if the file is a directory.
+				if(FileUtils::dirExists(filePath))
+				{
+					// Is directory, recurse.
+					if(!getAllFilesInDirectoryRecursively(filePath, output))
+					{
+						return false;
+					}
+				}
+				else
+				{
+					// Is file, save it.
+					output.push_back(filePath);
+				}
+			}
+			closedir (dir);
+			return true;
+		} 
+		else 
+		{
+			return false;
+		}
+	}
+	#endif
+
+
 
 	bool FileUtils::readFileToString(std::string path, std::string& content)
 	{

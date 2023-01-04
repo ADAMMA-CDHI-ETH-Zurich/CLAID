@@ -69,6 +69,7 @@ namespace Network
                 CLAID_THROW(Exception, "Caught exception in SocketReaderModule "  << e.what());
             }
         }
+        Logger::printfln("Stopping reader");
         this->stopped = true;
     }
               
