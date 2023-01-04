@@ -22,7 +22,7 @@ namespace claid
             template<typename Reflector>
             void reflectRead(Reflector& r)
             {
-                size_t bytes;
+                int32_t bytes;
                 r.member("NumBytes", bytes, "");
 
                 this->resize(bytes);
@@ -34,7 +34,7 @@ namespace claid
             template<typename Reflector>
             void reflectWrite(Reflector& r)
             {
-                size_t bytes = this->data.size();
+                int32_t bytes = this->data.size();
                 r.member("NumBytes", bytes, "");
 
                 r.write(this->getRawData(), bytes);

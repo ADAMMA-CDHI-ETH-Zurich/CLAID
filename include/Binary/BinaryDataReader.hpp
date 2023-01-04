@@ -12,7 +12,7 @@ namespace claid
             char* dataEndPtr = nullptr;
             
             template<typename T>
-            void getBinarySize(size_t& size) const
+            void getBinarySize(int32_t& size) const
             {
                 size = sizeof(T);
             }
@@ -42,7 +42,7 @@ namespace claid
             {
 
 
-                size_t size;
+                int32_t size;
                 getBinarySize<T>(size);
 
                 // Test if we run out of bounds if we continue reading from the data.

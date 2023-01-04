@@ -278,7 +278,7 @@ namespace claid
                 return nullptr;
             }
 
-            void count(const std::string& name, size_t& count)
+            void count(const std::string& name, int32_t& count)
             {
                 count = 0;
                 for(std::shared_ptr<XMLNode> node : this->currentXMLNode->children)
@@ -290,7 +290,7 @@ namespace claid
                 }
             }
 
-            void countElements(size_t& count)
+            void countElements(int32_t& count)
             {
                 count = this->currentXMLNode->children.size();
             }

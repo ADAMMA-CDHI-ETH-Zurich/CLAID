@@ -139,12 +139,12 @@ namespace claid
                 this->callInt(property, m);
             }
 
-            void count(const std::string& name, size_t& count)
+            void count(const std::string& name, int32_t& count)
             {
                 this->binaryData->store(count);
             }
 
-            void countElements(size_t& count)
+            void countElements(int32_t& count)
             {
                 this->binaryData->store(count);
             }

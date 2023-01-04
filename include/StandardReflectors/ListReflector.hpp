@@ -61,7 +61,7 @@ namespace claid
             void reflectRead(Reflector& r)
             {
                 r.beginSequence();
-                size_t count;
+                int32_t count;
                 // Gets count from the current data.
                 r.count(this->identifier, count);
 
@@ -79,7 +79,7 @@ namespace claid
             void reflectWrite(Reflector& r)
             {
                 r.beginSequence();
-                size_t count = this->ref.size();
+                int32_t count = this->ref.size();
                 r.count(this->identifier, count);
 
                 for(size_t i = 0; i < this->ref.size(); i++)
