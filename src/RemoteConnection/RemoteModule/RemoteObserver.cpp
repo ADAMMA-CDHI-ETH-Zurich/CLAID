@@ -306,13 +306,16 @@ namespace claid
 
         void RemoteObserver::setIsDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data)
         {
-            data.addTag(RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG);
+            // Check if the data was tagged by us.
+            std::string tag = RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG + std::to_string(this->getUniqueIdentifier()); 
+            data.addTag(tag);
         }
             
 
-        bool RemoteObserver::isDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data) const
+        bool RemoteObserver::isDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data)
         {
-            return data.hasTag(RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG);
+            std::string tag = RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG + std::to_string(this->getUniqueIdentifier()); 
+            return data.hasTag(tag);
         }
     }
 }
