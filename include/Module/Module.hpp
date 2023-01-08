@@ -87,6 +87,12 @@ namespace claid
 
             void registerPeriodicFunction(const std::string& name, std::function<void()> function, size_t periodInMs)
             {
+                if(periodInMs == 0)
+                {
+                    CLAID_THROW(Exception, "Error in registerPeriodicFunction: Cannot register periodic function \"" << name << "\" (in Module \"" << this->getModuleName() << "\")"
+                    << " with a period of 0 milliseconds.\n"
+                    << "Period needs to be at least 1ms in order to allow a yield for the thread. Otherwise, this can result in memory leaks.");
+                }
                 auto it = this->timers.find(name);
 
                 if(it != this->timers.end())

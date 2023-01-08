@@ -188,13 +188,13 @@ public:
 	}
 
 	
-	static Time fromUnixTimestamp(uint32_t seconds)
+	static Time fromUnixTimestamp(uint64_t seconds)
 	{
 		return Time::unixEpoch() + std::chrono::seconds(seconds);
 	}
 
 
-	static Time fromUnixTimestampMilliseconds(uint32_t milliSeconds)
+	static Time fromUnixTimestampMilliseconds(uint64_t milliSeconds)
 	{
 		return Time::unixEpoch() + std::chrono::milliseconds(milliSeconds);
 	}
