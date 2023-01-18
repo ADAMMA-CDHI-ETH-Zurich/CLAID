@@ -1,6 +1,7 @@
 #pragma once
 #include "CompileTimeTypeNameDemangling.hpp"
 #include "TypeChecking/Invokers/TypeNameInvoker.hpp"
+#include <cstdio>
 namespace claid
 {
     namespace TypeChecking
