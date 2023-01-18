@@ -1,6 +1,6 @@
 #include "RemoteConnection/RemoteModule/RemoteModule.hpp"
 #include "RemoteConnection/Message/MessageData/MessageDataBinary.hpp"
-
+#include "RemoteConnection/Message/MessageHeader/TestMessage.hpp"
 namespace claid
 {
 namespace RemoteConnection
@@ -99,6 +99,7 @@ namespace RemoteConnection
         // Logger::printfln("RemoteModule cal sending.");
 
         this->localObserver->observe(&CLAID_RUNTIME->channelManager);
+        this->registerPeriodicFunction("PeriodicTest", &RemoteModule::periodicTest, this, 1000);
         
     }
 
@@ -114,13 +115,20 @@ namespace RemoteConnection
     {
         if(this->isInitialized())
         {
+            Logger::printfln("Joining and removing local observer");
             this->joinAndRemoveSubModule(this->localObserver);
+            Logger::printfln("Joining and removing remote observer");
             this->joinAndRemoveSubModule(this->remoteObserver);
         }
     }
 
     
-
+    void RemoteModule::periodicTest()
+    {
+        Logger::printfln("Sending test message");
+        Message message = Message::CreateMessage<TestMessage, MessageDataString>();
+        this->sendMessage(message);
+    }
 
 
 

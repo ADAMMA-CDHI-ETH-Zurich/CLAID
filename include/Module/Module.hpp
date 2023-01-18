@@ -294,7 +294,6 @@ namespace claid
                 // Wait for termination
                 while(!this->terminated)
                 {
-
                 }
 
                 if(!isForkedSubModule)

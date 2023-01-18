@@ -45,7 +45,6 @@ namespace claid
 
 
 				SocketClientError lastError;
-
 				
 
 

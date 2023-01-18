@@ -67,7 +67,7 @@ namespace claid
 
         void LocalObserver::onChannelSubscribed(const std::string& channelID)
         {
-            Logger::printfln("LocalObserver::OnChannelSubscribed %s", channelID.c_str());
+            Logger::printfln("LocalObserver %ld:OnChannelSubscribed %s %ld", this->getUniqueIdentifier(), channelID.c_str());
 
             // Send message to remotely connected RunTime that we have a local subscriber for that channel.
             // Therefore, a corresponding RemoteModule running in the other framework can subscribe to that channel.
@@ -79,21 +79,21 @@ namespace claid
 
         void LocalObserver::onChannelPublished(const std::string& channelID)
         {
-            Logger::printfln("LocalObserver: onChannelPublished %s", channelID.c_str());
+            Logger::printfln("LocalObserver %ld: onChannelPublished %s %ld", this->getUniqueIdentifier(), channelID.c_str());
             Message message = createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType::CHANNEL_PUBLISHED, channelID);
             this->sendMessage(message);
         }
 
         void LocalObserver::onChannelUnsubscribed(const std::string& channelID)
         {
-            Logger::printfln("LocalObserver: onChannelUnsubscribed %s", channelID.c_str());
+            Logger::printfln("LocalObserver %ld: onChannelUnsubscribed %s %ld", this->getUniqueIdentifier(), channelID.c_str());
             Message message = createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType::CHANNEL_UNSUBSCRIBED, channelID);
             this->sendMessage(message);
         }
 
         void LocalObserver::onChannelUnpublished(const std::string& channelID)
         {
-            Logger::printfln("LocalObserver: onChannelUnpublished %s", channelID.c_str());
+            Logger::printfln("LocalObserver %ld: onChannelUnpublished %s", this->getUniqueIdentifier(), channelID.c_str());
             Message message = createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType::CHANNEL_UNPUBLISHED, channelID);
             this->sendMessage(message);
         }
@@ -143,6 +143,11 @@ namespace claid
             for(const std::string& channelID : channelIDs)
             {
                 Logger::printfln("Channel %s", channelID.c_str());
+
+                if(CLAID_RUNTIME->isInHiddenNamespace(channelID))
+                {
+                    continue;
+                }
                 if(manager->hasChannelPublisher(channelID))
                 {
                     this->onChannelPublished(channelID);

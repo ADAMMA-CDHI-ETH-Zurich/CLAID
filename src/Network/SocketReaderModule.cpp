@@ -48,7 +48,7 @@ namespace Network
                     // Module has been stopped, thus we ignore the error.
                     break;
                 }
-                Logger::printfln("Read failed");
+                Logger::printfln("SocketReader read failed");
                 postError<ErrorReadFromSocketFailed>();
                 this->active = false;
                 break;

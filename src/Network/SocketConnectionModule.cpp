@@ -68,7 +68,11 @@ namespace Network
         BinaryData binaryData;
         BinarySerializer serializer;
         serializer.serialize(message, &binaryData);
-        this->socketClient.write(binaryData);
+        if(!this->socketClient.write(binaryData))
+        {
+            Logger::printfln("Socket client write failed");
+            this->postError<ErrorReadFromSocketFailed>();
+        }
     }
 
 

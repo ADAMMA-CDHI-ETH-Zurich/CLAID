@@ -48,7 +48,7 @@ namespace claid
                 void unpublishSendMessageChannel();
                 void unsubscribeReceiveMessageChannel();
 
-
+                void periodicTest();
 
                 void start();
                 void stop();

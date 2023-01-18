@@ -74,7 +74,8 @@ namespace claid
 
         void NetworkServerModule::onClientLostConnection(RemoteConnection::RemoteConnectedEntity* entity)
         {
-            Logger::printfln("A client lost connection, shutting it down now.");
+           
+            Logger::printfln("Client %ul lost connection, shutting it down now.", entity);
       
             onClientDisconnectedChannel.post(entity->getUniqueIdentifier());
             
@@ -82,8 +83,14 @@ namespace claid
 
             if(it == this->remoteConnectedEntities.end())
             {
-                CLAID_THROW(Exception, "Error in NetworkServerModule: A client lost connection, so we wanted to shut it down safely. "
-                "However, the client was not found in the list of known clients. This should not happen..");
+                // It can happen that this get's called two times per entity.
+                // Connection is considered to be lost, if read or write fail.
+                // Of course, that can also happen concurrently and at the same time.
+                // Hence, if we cannot find the entity anymore, assume it has lost connection
+                // and was removed before already.
+                return;
+                //CLAID_THROW(Exception, "Error in NetworkServerModule: A client lost connection, so we wanted to shut it down safely. "
+                //"However, the client was not found in the list of known clients. This should not happen..");
             }
 
             this->remoteConnectedEntities.erase(it);

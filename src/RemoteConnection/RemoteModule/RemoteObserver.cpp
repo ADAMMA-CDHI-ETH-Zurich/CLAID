@@ -1,6 +1,6 @@
 #include "RemoteConnection/RemoteModule/RemoteObserver.hpp"
 #include "RemoteConnection/Message/MessageData/MessageDataBinary.hpp"
-
+#include "RemoteConnection/Message/MessageHeader/TestMessage.hpp"
 namespace claid
 {
     namespace RemoteConnection
@@ -30,6 +30,10 @@ namespace claid
             if(callFunctionIfSignatureMatchesThrowExceptionIfWrongData<MessageHeaderChannelUpdate, MessageDataString>(messageRef, &RemoteObserver::onChannelUpdateMessage, this)) return;
             if(callFunctionIfSignatureMatchesThrowExceptionIfWrongData<MessageHeaderChannelData, MessageDataBinary>(messageRef, &RemoteObserver::onChannelDataMessage, this)) return;
            
+            if(messageRef.header->is<TestMessage>())
+            {
+                return;
+            }
            // if(callFunctionIfSignatureMatchesThrowExceptionIfWrongData<MessageHeaderChannelData, MessageDataBinary>(messageRef, &RemoteObserver::onChannelData, this)) return;
 
 

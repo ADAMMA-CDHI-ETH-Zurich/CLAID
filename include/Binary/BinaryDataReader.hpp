@@ -85,9 +85,7 @@ namespace claid
                 for(int32_t i = 0; i < size; i++)
                 {
                     this->read(value[i]);
-                }
-
-                                
+                }                                
 
             }
 
