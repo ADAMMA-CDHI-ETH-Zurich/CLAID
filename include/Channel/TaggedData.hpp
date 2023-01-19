@@ -5,6 +5,7 @@
 #include "Reflection/ReflectBase.hpp"
 #include <stdint.h>
 #include <iostream>
+#include <algorithm>
 namespace claid
 {
     template<typename T>

@@ -34,7 +34,8 @@ namespace claid
             {
                 // Only types of standard library we explicitly covered are safe.
                 ____INVALID_TYPE_OF_NAMESPACE_STD_IN_GETTING_TYPE_NAME_<T>::invoke();
-            }
+                return "invalid type";
+            }           
 
         }; 
 

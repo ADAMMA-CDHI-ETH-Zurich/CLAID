@@ -156,6 +156,7 @@ namespace claid
                     }
                     break;  
                 }
+                CLAID_THROW(Exception, "Invalid data type in BufferInfo. Enum value out of bounds.");
   
             }
 
