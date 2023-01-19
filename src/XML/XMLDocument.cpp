@@ -3,6 +3,17 @@
 
 namespace claid
 {
+	XMLDocument::XMLDocument()
+	{
+
+	}
+
+	XMLDocument::XMLDocument(std::shared_ptr<XMLNode> node) : xmlNode(node)
+	{
+
+	}
+
+
 	bool XMLDocument::loadFromFile(const File& file)
 	{
 		XMLParser xmlParser;

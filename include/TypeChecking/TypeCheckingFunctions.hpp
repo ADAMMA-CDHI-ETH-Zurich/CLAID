@@ -51,14 +51,12 @@ namespace claid
                 };
 
                 handle result( abi::__cxa_demangle(name.c_str(), NULL, NULL, &status) );
-                                printf("name gcc %s\n", result.p);
 
                 return (status==0) ? result.p : name ;
             #else
                 // Otherwise we return the mangled string.
       
                 removeKnownTypeNamePrefixes(name);
-                printf("name no gcc %s\n", name.c_str());
 
                 return name;
             #endif
@@ -85,7 +83,6 @@ namespace claid
                 std::string name = compileTimeTypeNameByUsingFunctionName<T>().toStdString();
             #endif
             removeKnownTypeNamePrefixes(name);
-                printf("name compile itme %s\n", name.c_str());
 
             return name;
         }
@@ -95,7 +92,6 @@ namespace claid
         {
             std::string name = TypeNameInvoker<T>::call();
             removeKnownTypeNamePrefixes(name);
-                printf("name independent %s\n", name.c_str());
 
             return name;
         }

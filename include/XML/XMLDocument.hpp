@@ -13,6 +13,9 @@ namespace claid
 
 		public:
 
+			XMLDocument();
+			XMLDocument(std::shared_ptr<XMLNode> node);
+
 			bool loadFromFile(const File& file);
 			bool loadFromFile(const std::string& file);
 			bool saveToFile(const std::string& file);

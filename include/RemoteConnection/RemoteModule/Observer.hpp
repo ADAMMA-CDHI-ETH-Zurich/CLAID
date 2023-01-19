@@ -2,6 +2,7 @@
 
 #include "RunTime/RunTime.hpp"
 #include "RemoteConnection/Message/Message.hpp"
+#include "RemoteConnection/Error/Error.hpp"
 
 namespace claid
 {
@@ -11,7 +12,22 @@ namespace claid
         {
             protected:
                 Channel<Message> sendMessageChannel;
+                Channel<Error> errorChannel;
                 bool sendMessageChannelSet = false;
+                bool errorChannelSet = false;
+
+                template<typename T>
+                void postError()
+                {
+                    if(!errorChannelSet)
+                    {
+                        CLAID_THROW(Exception, "Error in Observer, cannot post error since error channel was not set before.");
+                    }
+
+                    Error error;
+                    error.set<T>();
+                    this->errorChannel.post(error);
+                }
 
             public:
                 
@@ -19,6 +35,12 @@ namespace claid
                 {
                     this->sendMessageChannel = sendMessageChannel;
                     this->sendMessageChannelSet = true;
+                }
+
+                void setErrorChannel(Channel<Error> errorChannel)
+                {
+                    this->errorChannel = errorChannel;
+                    this->errorChannelSet = true;
                 }
 
                 void sendMessage(Message& message)

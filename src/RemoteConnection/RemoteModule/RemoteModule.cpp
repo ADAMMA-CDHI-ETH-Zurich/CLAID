@@ -48,6 +48,13 @@ namespace RemoteConnection
         this->receiveMessageChannel = channel;
     }
 
+    void RemoteModule::setErrorChannel(Channel<Error> channel)
+    {
+        this->errorChannel = channel;
+        this->localObserver->setErrorChannel(channel);
+        this->remoteObserver->setErrorChannel(channel);
+    }
+
     void RemoteModule::unpublishSendMessageChannel()
     {
         this->sendMessageChannel.unpublish();
@@ -58,7 +65,10 @@ namespace RemoteConnection
         this->receiveMessageChannel.unsubscribe();
     }
 
-   
+   void RemoteModule::unpublishErrorChannel()
+   {
+        this->errorChannel.unpublish();
+   }
 
     void RemoteModule::initialize()
     {
@@ -99,7 +109,7 @@ namespace RemoteConnection
         // Logger::printfln("RemoteModule cal sending.");
 
         this->localObserver->observe(&CLAID_RUNTIME->channelManager);
-        this->registerPeriodicFunction("PeriodicTest", &RemoteModule::periodicTest, this, 1000);
+   //     this->registerPeriodicFunction("PeriodicTest", &RemoteModule::periodicTest, this, 1000);
         
     }
 

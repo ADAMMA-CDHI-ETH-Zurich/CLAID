@@ -1,6 +1,7 @@
 #include "RemoteConnection/RemoteModule/RemoteObserver.hpp"
 #include "RemoteConnection/Message/MessageData/MessageDataBinary.hpp"
 #include "RemoteConnection/Message/MessageHeader/TestMessage.hpp"
+#include "RemoteConnection/Error/ErrorRemoteRuntimeOutOfSync.hpp"
 namespace claid
 {
     namespace RemoteConnection
@@ -162,11 +163,13 @@ namespace claid
                 }
                 else
                 {
+                    // Can happen, if we miss a message for example (e.g., temporary loss of network).
+                    this->postError<ErrorRemoteRuntimeOutOfSync>();
                     // ERROR! No subscriber left, we unsubscribed more than we have subscribed.
                     // Local and remote RunTime out of sync? Severe error.
-                    CLAID_THROW(Exception, "Error in RemoteObserver: Received message that indicates we shall unsubscribe from channel with ID \"" << channelID << "\", "
+                    /*CLAID_THROW(Exception, "Error in RemoteObserver: Received message that indicates we shall unsubscribe from channel with ID \"" << channelID << "\", "
                     << "however we have no subscriber left for that channel. Therefore, we unsubscribed more than we subscribed. Somehow, we have to have missed a subscription in " 
-                    << "the remotely running RunTime, therefore the local and remote RunTime probably are out of sync.");
+                    << "the remotely running RunTime, therefore the local and remote RunTime probably are out of sync.");*/
                 }
             }
         }
@@ -185,15 +188,18 @@ namespace claid
             }
             else
             {
+                // Can happen, if we miss a message for example (e.g., temporary loss of network).
+                this->postError<ErrorRemoteRuntimeOutOfSync>();
+
                 // Error, more unpublish channel more often than publish.
                 // This should not happen. That would mean in the remote RunTime, channel was unpublished more than
                 // published. Possibily the local and remote RunTime are out of sync.
 
                 // ERROR! No publisher left, we unpublished more than we have published.
                 // Local and remote RunTime out of sync? Severe error.
-                CLAID_THROW(Exception, "Error in RemoteObserver: Received message that indicates we shall unpublish channel with ID \"" << channelID << "\", "
-                << "however we have no publisher left for that channel. Therefore, we unpublished more than we published. Somehow, we have to have missed a publish in " 
-                << "the remotely running RunTime, therefore the local and remote RunTime probably are out of sync.");
+                // CLAID_THROW(Exception, "Error in RemoteObserver: Received message that indicates we shall unpublish channel with ID \"" << channelID << "\", "
+                // << "however we have no publisher left for that channel. Therefore, we unpublished more than we published. Somehow, we have to have missed a publish in " 
+                // << "the remotely running RunTime, therefore the local and remote RunTime probably are out of sync.");
             }
         }
 
