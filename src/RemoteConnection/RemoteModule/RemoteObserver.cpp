@@ -214,9 +214,12 @@ namespace claid
 
             if(it == this->publishedChannels.end())
             {
-                CLAID_THROW(Exception, "Error, received data from remote RunTime for channel with channelID \"" << targetChannel << "\", "
-                << "but we do not have a publisher for that channel. That should not be possible, because how could the remote RunTime have posted data to the channel "
-                << "in the first place, if no publisher is available ? ");
+                // Can happen, if we miss a message for example (e.g., temporary loss of network).
+                this->postError<ErrorRemoteRuntimeOutOfSync>();
+                return;
+                // CLAID_THROW(Exception, "Error, received data from remote RunTime for channel with channelID \"" << targetChannel << "\", "
+                // << "but we do not have a publisher for that channel. That should not be possible, because how could the remote RunTime have posted data to the channel "
+                // << "in the first place, if no publisher is available ? ");
             }
 
             this->setIsDataReceivedFromRemoteRunTime(data);

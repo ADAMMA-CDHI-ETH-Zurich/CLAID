@@ -179,8 +179,8 @@ namespace claid
 
                 // Is this thread safe?
                 // Yes.. as long as we create copies in getLatest, getClosest and getDataInterval.
-                std::shared_ptr<ChannelBufferElement>& element = this->getElement(this->currentIndex);
-                element = newChannelBufferElementFromTypedData(data);
+     
+                this->channelBufferElements[this->currentIndex] = newChannelBufferElementFromTypedData(data);
 
         
                 // Do not convert to binary data / serialize. It might not be needed.
