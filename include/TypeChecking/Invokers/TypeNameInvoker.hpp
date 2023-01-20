@@ -41,14 +41,7 @@ namespace claid
             }
         };    
 
-        template<class T>
-        struct TypeNameInvoker<T, typename std::enable_if<compileTimeTypeNameByUsingFunctionName<T>().isInNamespace("std::")>::type> 
-        {
-            static std::string call() 
-            {
-                return TypeNameInvoker<T>::call();
-            }
-        };    
+          
 
         // Pointer
 
