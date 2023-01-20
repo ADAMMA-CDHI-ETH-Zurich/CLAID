@@ -22,7 +22,7 @@ namespace claid
                 r.member("Data", binaryData, "");
             }
 
-            void setBinaryData(BinaryData& binaryData)
+            void setBinaryData(const BinaryData& binaryData)
             {
                 this->binaryData = binaryData;
             }

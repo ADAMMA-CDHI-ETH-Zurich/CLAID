@@ -172,10 +172,11 @@ namespace claid
             }
             
 
-            void insert(TaggedData<T>& data)
+            void insert(TaggedData<T> data)
             {
 
                 this->lockMutex();
+                Logger::printfln("Inserting typed data (ChannelBuffer) at index %d %s", this->currentIndex, this->dataTypeName.c_str());
 
                 // Is this thread safe?
                 // Yes.. as long as we create copies in getLatest, getClosest and getDataInterval.

@@ -8,10 +8,12 @@
 
 #include <string>
 #include <stdexcept>
+#include <mutex>
 std::string claid::Logger::logTag = "claid";
 std::string claid::Logger::lastLogMessage = "";
 bool claid::Logger::loggingToFileEnabled = false;
 std::ofstream* claid::Logger::file = nullptr;
+std::mutex fileAccessMutex;
 
 #ifdef __ANDROID__
 	#include <android/log.h>
@@ -52,7 +54,9 @@ void claid::Logger::printfln(const char *format, ...)
 	ss << "[" << claid::Logger::logTag << " | "
 			<< timeString << "] " << buffer;
 
-	claid::Logger::lastLogMessage = ss.str().c_str();
+	// This is not thread safe....
+	//claid::Logger::lastLogMessage = ss.str().c_str();
+	
 	#ifdef __ANDROID__
 		LOGCAT(ss.str().c_str(), __LINE__);
 	#else
@@ -61,8 +65,10 @@ void claid::Logger::printfln(const char *format, ...)
 
 	if(claid::Logger::loggingToFileEnabled && claid::Logger::file != nullptr)
 	{
+		fileAccessMutex.lock();
 		(*file) << ss.str() << "\n";
 		file->flush();
+		fileAccessMutex.unlock();
 	}
 }
 

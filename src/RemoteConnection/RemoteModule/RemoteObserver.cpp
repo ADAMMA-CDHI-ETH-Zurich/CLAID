@@ -24,7 +24,17 @@ namespace claid
             // so no overhead), because message->value() is const.
       //      Message copy = message->value();
             Logger::printfln("OnMessageReceived");
+            
             const Message& messageRef = message->value();
+            if(messageRef.header->is<MessageHeaderChannelUpdate>())
+            {
+                Logger::printfln("Header is MessageHeaderChannelUpdate");
+
+            }
+            else if(messageRef.header->is<MessageHeaderChannelData>())
+            {
+                Logger::printfln("Header is MessageHeaderChannelData");
+            }
 
             // Calls onChannelUpdate if message.header is MessageHeaderChannelUpdate and message.data is MessageDataString.
             // Throws exception, if header types match (message.header is MessageHeaderChannelUpdate), but data type does not (message.data is not MessageDataString).
@@ -249,7 +259,6 @@ namespace claid
                 return;
             }
             const BinaryData& constBinaryData = taggedData.value();
-            BinaryData binaryData = taggedData.value();
 
             // Need to send to the remote RunTime
             // Get tagged binary data
@@ -264,7 +273,7 @@ namespace claid
             // TaggedData holds the header (timestamp, sequenceID) and the binary data.
             // Thus, timestamp and sequenceID will be serialized, the binary data will be copied into a bigger
             // binary data buffer that contains timestamp, sequenceID and the binary data itself.       
-            message.data->as<MessageDataBinary>()->setBinaryData(binaryData);
+            message.data->as<MessageDataBinary>()->setBinaryData(constBinaryData);
             this->sendMessage(message);
 
             

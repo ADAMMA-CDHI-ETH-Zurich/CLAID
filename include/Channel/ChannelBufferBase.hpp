@@ -64,11 +64,11 @@ namespace claid
                 return this->dataTypeName;
             }
 
-            virtual void insertBinaryData(TaggedData<BinaryData>& binaryData)
+            virtual void insertBinaryData(TaggedData<BinaryData> binaryData)
             {
                 this->lockMutex();
 
-
+                Logger::printfln("Inserting binary data (ChannelBufferBase) at index %d %s", this->currentIndex, this->dataTypeName.c_str());
                 // Check data types by typename string.
                 std::string binaryDataTypeName;
                 this->getTypeNameFromBinaryData(binaryData.value(), binaryDataTypeName);
