@@ -92,6 +92,11 @@ namespace claid
                 return this->data.data();
             }
 
+            const char* getConstRawData() const
+            {
+                return this->data.data();
+            }
+
             std::vector<char>& getData()
             {
                 return this->data;

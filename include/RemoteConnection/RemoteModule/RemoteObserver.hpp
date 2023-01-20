@@ -61,7 +61,7 @@ namespace claid
                 void terminate();
 
                 void setIsDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data);
-                bool isDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data);
+                bool isDataReceivedFromRemoteRunTime(TaggedData<BinaryData> data);
 
                 template<typename Header, typename Data, typename Class, typename... Args>
                 bool callFunctionIfSignatureMatches(const Message& message, void (Class::*f)(const Header& header, const Data& data, Args...), Class* obj, Args... args)

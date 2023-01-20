@@ -48,7 +48,7 @@ namespace claid
 
             
 
-            void getTypeNameFromBinaryData(BinaryData& binaryData, std::string& typeName)
+            void getTypeNameFromBinaryData(const BinaryData& binaryData, std::string& typeName) const
             {
                 // First bytes of the binary data are the RTTI string identifiying the type.
                 BinaryDataReader reader(&binaryData);

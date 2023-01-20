@@ -245,7 +245,8 @@ namespace claid
                 // TODO: HOW CAN I FIX THIS
                 return;
             }
-
+            const BinaryData& constBinaryData = taggedData.value();
+            BinaryData binaryData = taggedData.value();
 
             // Need to send to the remote RunTime
             // Get tagged binary data
@@ -260,7 +261,6 @@ namespace claid
             // TaggedData holds the header (timestamp, sequenceID) and the binary data.
             // Thus, timestamp and sequenceID will be serialized, the binary data will be copied into a bigger
             // binary data buffer that contains timestamp, sequenceID and the binary data itself.       
-            BinaryData binaryData = taggedData.value();
             message.data->as<MessageDataBinary>()->setBinaryData(binaryData);
             this->sendMessage(message);
 
@@ -322,7 +322,7 @@ namespace claid
         }
             
 
-        bool RemoteObserver::isDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data)
+        bool RemoteObserver::isDataReceivedFromRemoteRunTime(TaggedData<BinaryData> data)
         {
             std::string tag = RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG + std::to_string(this->getUniqueIdentifier()); 
             return data.hasTag(tag);

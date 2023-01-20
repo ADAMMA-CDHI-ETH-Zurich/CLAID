@@ -75,12 +75,16 @@ namespace claid
 
             virtual TaggedData<BinaryData> getBinaryData()
             {
+                std::unique_lock<std::mutex> (this->mutex);
                 if(!this->dataAvailable)
                 {
                     CLAID_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement (untyped), but no data was ever set (no data available).");
                 }
 
-                return this->binaryData;
+                // This does not copy data, since TaggedData uses a shared_ptr internally.
+                TaggedData<BinaryData> data = this->binaryData;
+
+                return data;
             }
 
             bool isDataAvailable() const

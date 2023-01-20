@@ -20,6 +20,7 @@ namespace claid
             typename std::enable_if<has_mem_reflect<U>::value || has_non_member_function_reflect<BinaryDeserializer&, U&>::value || std::is_arithmetic<U>::value>::type
             deserializeBinaryDataToTypedData()
             {
+                std::unique_lock<std::mutex> (this->mutex);
 
                 if(!this->dataAvailable)
                 {
@@ -33,7 +34,7 @@ namespace claid
                 // If we just used TaggedData<T> (data), with data being of type T,
                 // then TaggedData would create the shared_ptr and making a copy of data.
 
-                std::shared_ptr<T> dataPtr(new T);
+                std::shared_ptr<T> dataPtr(new T());
                 deserializer.deserialize(*dataPtr.get(), reader);
 
                 this->typedData = TaggedData<T> (dataPtr, 
@@ -65,7 +66,7 @@ namespace claid
                 // TaggedData internally uses shared_ptr.
                 // Thus, we already create it, so we save a copy operation
                 // when creating the TaggedData object below.
-                std::shared_ptr<BinaryData> binaryData(new BinaryData);
+                std::shared_ptr<BinaryData> binaryData(new BinaryData());
                 BinarySerializer serializer;
                 serializer.serialize(this->typedData.value(), binaryData.get());
 
@@ -95,6 +96,7 @@ namespace claid
                     std::is_arithmetic<U>::value, std::shared_ptr<XMLNode>>::type
             serializeToXML()
             {
+                std::unique_lock<std::mutex> (this->mutex);
                 XMLSerializer serializer;                
                 serializer.serialize(this->typedData.value());
                 return serializer.getXMLNode();
@@ -134,7 +136,7 @@ namespace claid
                 this->binaryDataAvailable = true;
             }
 
-            TaggedData<T>& getTypedData()
+            TaggedData<T> getTypedData()
             {
                 return this->typedData;
             }

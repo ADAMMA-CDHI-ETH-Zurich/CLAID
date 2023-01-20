@@ -41,6 +41,18 @@ namespace claid
             }
 
         }; 
+
+        // CONST (we cast it away, for now..)
+            template<class T>
+            struct ReflectorType<T, typename std::enable_if<std::is_const<T>::value>::type> 
+            {
+                static void call(const char* property, Derived& r, T& member) 
+                {
+                    typedef typename std::remove_const<T>::type NonConstType; 
+                    NonConstType& non_const_member = *const_cast<NonConstType*>(&member);
+                    ReflectorType<NonConstType>::call(property, r, non_const_member);
+                }
+            };
         
         // ATOMIC TYPES
             template<class T>

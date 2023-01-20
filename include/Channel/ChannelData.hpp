@@ -166,7 +166,7 @@ namespace claid
             }
 
 
-            ChannelData(TaggedData<T>& taggedData, 
+            ChannelData(TaggedData<T> taggedData, 
                 std::shared_ptr<ChannelBufferElement> channelBufferElement) : ChannelDataBase(true), taggedData(taggedData), channelBufferElement(channelBufferElement)
             {
             }
