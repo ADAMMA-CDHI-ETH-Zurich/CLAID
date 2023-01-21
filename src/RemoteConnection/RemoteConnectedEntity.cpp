@@ -12,7 +12,10 @@ namespace RemoteConnection
 
     RemoteConnectedEntity::~RemoteConnectedEntity()
     {
-        delete this->connectionModule;
+        if(this->connectionModule != nullptr)
+        {
+            delete this->connectionModule;
+        }
     }
 
     void RemoteConnectedEntity::setup()
@@ -29,9 +32,13 @@ namespace RemoteConnection
 
     void RemoteConnectedEntity::disintegrate()
     {
-        this->link.unlink();
         this->remoteModule.stopModule();
         this->connectionModule->stopModule();
+
+        // Only unlink afer stop.
+        // Because if not stopped, remote module might still
+        // use the channels to send data.
+        this->link.unlink();
     }
 
     void RemoteConnectedEntity::start()

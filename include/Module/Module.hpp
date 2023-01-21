@@ -281,28 +281,15 @@ namespace claid
 
             void stopModule(bool isForkedSubModule = false)
             {
+                Logger::printfln("Module %s termination requested.", this->getModuleName().c_str());
+
                 if(!this->isRunning || this->terminated)
                 {
                     return;
                 }
 
-                std::function<void ()> terminateFunc = std::bind(&BaseModule::terminateInternal, this);
-                FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(terminateFunc);
-                functionRunnable->deleteAfterRun = true;
-                this->runnableDispatcherThread->addRunnable(functionRunnable);
-
-                // Wait for termination
-                while(!this->terminated)
-                {
-                }
-
-                if(!isForkedSubModule)
-                {
-                    this->runnableDispatcherThread->stop();
-                    this->runnableDispatcherThread->join();
-                }
                 
-                
+
                 for(auto it : this->timers)
                 {
                     // Will block until the timer is stopped.
@@ -313,6 +300,34 @@ namespace claid
                 // Should we ? That means when restarting the module,
                 // timers need to be registered again.. Which seems fine though.
                 this->timers.clear();
+
+                std::function<void ()> terminateFunc = std::bind(&BaseModule::terminateInternal, this);
+                FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(terminateFunc);
+                functionRunnable->deleteAfterRun = true;
+
+                if(!isForkedSubModule)
+                {
+                    // This means that this runnable will be the last runnable ever executed by this thread.
+                    // Even if there are other runnables in the queue, they will not be executed.
+                    // This is necessary, because usually modules run clean up code in their terminate function.
+                    functionRunnable->stopDispatcherAfterThisRunnable = true;
+                }
+
+                this->runnableDispatcherThread->addRunnable(functionRunnable);
+
+
+                // Wait for termination
+                while(!this->terminated)
+                {
+                }
+
+                if(!isForkedSubModule)
+                {
+                    this->runnableDispatcherThread->join();
+                }
+                
+                
+                
 
                 this->isRunning = false;
                 Logger::printfln("Module %s has been terminated.", this->getModuleName().c_str());
@@ -571,7 +586,7 @@ namespace claid
                 return subModule;
             }
 
-            void joinAndRemoveSubModule(SubModule* subModule)
+            void stopSubModule(SubModule* subModule)
             {
 
                 auto it = std::find(this->subModulesInSameThread.begin(), this->subModulesInSameThread.end(), subModule);
@@ -584,10 +599,23 @@ namespace claid
                 else
                 {
                     subModule->stopModule(true);
+                }
+            }
+
+            void removeSubModule(SubModule* subModule)
+            {
+                auto it = std::find(this->subModulesInSameThread.begin(), this->subModulesInSameThread.end(), subModule);
+
+                if(it == this->subModulesInSameThread.end())
+                {
+                    CLAID_THROW(Exception, "Error! joinAndRemoveSubModule was called with a SubModule pointer that is not known. Either this SubModule has been removed manually, "
+                    "or it was not created by using forkSubModuleInThread in the first place. The function joinAndRemoveSubModule can only be used for forked SubModules!");
+                }
+                else
+                {
                     delete subModule;
                     this->subModulesInSameThread.erase(it);
                 }
-
             }
 
             

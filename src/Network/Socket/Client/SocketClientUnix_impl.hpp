@@ -222,6 +222,10 @@ namespace claid
 
 	void Network::SocketClient::close()
 	{
+		// Don't call close when socket was closed already or is not connected.
+		// This will lead a funny "fdsan: attempted to close file descriptor 89, expected to be unowned, actually owned by ..."
+		if(!this->connected)
+			return;
 		this->connected = false;
 
 		long arg; 

@@ -13,6 +13,7 @@
 #include <list>
 #include <stack>
 #include <bitset>
+
 namespace claid
 {
     namespace TypeChecking
@@ -40,8 +41,6 @@ namespace claid
                 return TypeNameInvoker<typename std::remove_const<T>::type>::call();
             }
         };    
-
-          
 
         // Pointer
 

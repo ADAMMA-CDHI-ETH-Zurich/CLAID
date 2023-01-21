@@ -65,6 +65,13 @@ namespace claid
             }
 
             runnable->wasExecuted = true;
+            
+            if(runnable->stopDispatcherAfterThisRunnable)
+            {
+                // No more runnables will be executed after this one !
+                this->active = false;
+            }
+            
             if(runnable->deleteAfterRun)
             {
                 delete runnable;
