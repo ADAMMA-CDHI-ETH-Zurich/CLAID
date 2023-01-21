@@ -48,8 +48,7 @@ void claid::Logger::printfln(const char *format, ...)
 
 	va_end(vargs);
 	std::stringstream ss;
-	std::string timeString;
-	claid::Logger::getTimeString(&timeString);
+	std::string timeString = claid::Logger::getTimeString();
 
 	ss << "[" << claid::Logger::logTag << " | "
 			<< timeString << "] " << buffer;
@@ -86,7 +85,7 @@ void claid::Logger::printfln(const char *format, ...)
  *
  * @return void.
  */
-void claid::Logger::getTimeString(std::string *timeStr)
+std::string claid::Logger::getTimeString()
 {
 	time_t t = time(0);
 	struct tm * now = localtime(&t);
@@ -108,7 +107,7 @@ void claid::Logger::getTimeString(std::string *timeStr)
 	else
 		ss << now->tm_sec;
 
-	*timeStr = ss.str();
+	return ss.str();
 }
 
 /**

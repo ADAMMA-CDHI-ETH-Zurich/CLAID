@@ -1,5 +1,5 @@
 #include "Network/NetworkServerModule.hpp"
-
+#include "RemoteConnection/Error/ErrorRemoteRuntimeOutOfSync.hpp"
 namespace claid
 {
     namespace Network
@@ -43,6 +43,13 @@ namespace claid
                 // Read from socket failed. Connection lost.
                 this->onClientLostConnection(entity);
             }
+            else if(error.is<claid::RemoteConnection::ErrorRemoteRuntimeOutOfSync>())
+            {
+                Logger::printfln("NetworkServer: Error remote runtime out of sync.");
+                this->onClientLostConnection(entity);
+               
+            }
+            
         }
 
         void NetworkServerModule::onClientAcceptError(ChannelData<RemoteConnection::Error> error)
@@ -76,6 +83,8 @@ namespace claid
         {
            
             Logger::printfln("Client %ul lost connection, shutting it down now.", entity);
+            
+        
       
             onClientDisconnectedChannel.post(entity->getUniqueIdentifier());
             

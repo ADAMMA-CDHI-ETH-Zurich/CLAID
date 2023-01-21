@@ -3,6 +3,7 @@
 #include "RemoteConnection/ConnectionLink.hpp"
 #include "RemoteConnection/RemoteModule/RemoteModule.hpp"
 #include "RemoteConnection/RemoteConnectedEntity.hpp"
+#include "RemoteConnection/Error/ErrorRemoteRuntimeOutOfSync.hpp"
 #include "Network/SocketConnectionModule.hpp"
 #include "Network/NetworkModule.hpp"
 
@@ -155,6 +156,12 @@ namespace claid
                         Logger::printfln("Error read from socket failed.");
                         // Read from socket failed. Connection lost.
                         this->onConnectionLost();
+                    }
+                    if(error.is<RemoteConnection::ErrorRemoteRuntimeOutOfSync>())
+                    {
+                        Logger::printfln("NetworkClient: Error remote runtime out of sync.");
+                        this->onConnectionLost();
+                    
                     }
                 }
 

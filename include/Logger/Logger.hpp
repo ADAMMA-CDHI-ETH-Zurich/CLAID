@@ -30,7 +30,7 @@ namespace claid
 
 				static std::string lastLogMessage;
 
-				static void getTimeString(std::string *timeStr);
+				static std::string getTimeString();
 
 				static bool loggingToFileEnabled;
 				static std::ofstream* file;
