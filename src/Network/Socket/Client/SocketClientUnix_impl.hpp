@@ -176,7 +176,7 @@ namespace claid
 
 	bool Network::SocketClient::writeBytes(std::vector<char>& byteBuffer)
 	{
-		Logger::printfln("Low level socketclient: writing %ul bytes", byteBuffer.size());
+		Logger::printfln("Low level socketclient %d: writing  %ul bytes", this->sock, byteBuffer.size());
 		int result = send(this->sock, byteBuffer.data(), byteBuffer.size(), MSG_NOSIGNAL);
 		if (result < 0)
 		{
@@ -187,7 +187,7 @@ namespace claid
 			this->close();
 			return false;
 		}
-		Logger::printfln("low level socketclient: writing result %d", result);
+		Logger::printfln("low level socketclient %d: writing result %d", this->sock, result);
 		return true;
 	}
 

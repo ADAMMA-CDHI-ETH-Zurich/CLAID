@@ -4,7 +4,7 @@
 #include "Exception/Exception.hpp"
 #include <iostream>
 #include <fstream>
-
+#include <mutex>
 
 namespace claid
 {
@@ -13,6 +13,11 @@ namespace claid
         
        
         public:
+            BinaryData()
+            {
+                this->safeCopyMutex = std::make_shared<std::mutex>();
+            }
+
             template<typename Reflector>
             void reflect(Reflector& r)
             {
@@ -142,11 +147,25 @@ namespace claid
 
                 file.write(this->data.data(), this->data.size());
             }
+
+            void fastSafeCopyTo(BinaryData& copy) const
+            {
+                // If two threads make a copy of this binary data
+                // at exactly the same time, this can lead to bad_alloc
+                // on some architectures / compilers.
+                // Use this function to avoid this problem when copying.
+                const std::lock_guard<std::mutex> lock(*this->safeCopyMutex.get());
+                copy.data = this->data;
+            }
      
 
         private:
 
             std::vector<char> data;
+
+            // See fastSafeCopy.
+            // mutable in order to be usable in fastSafeCopyTo which is const function.
+            mutable std::shared_ptr<std::mutex> safeCopyMutex;
 
             template<typename T>
             static const char* toBinary(const T& value, size_t& size)

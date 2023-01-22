@@ -65,8 +65,9 @@ namespace Network
             }
             catch (const Exception& e)
             {
-                // TODO: IMPLEMENT PROPER ERROR HANDLING !!
-                CLAID_THROW(Exception, "Caught exception in SocketReaderModule "  << e.what());
+                postError<ErrorReadFromSocketFailed>();
+                this->active = false;
+                break;
             }
         }
         Logger::printfln("Stopping reader");
