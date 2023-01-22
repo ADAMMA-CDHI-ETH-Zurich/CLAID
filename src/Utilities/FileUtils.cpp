@@ -137,7 +137,7 @@ namespace claid
 			return false;
 	}
 
-	bool FileUtils::fileExists(std::string name)
+	bool FileUtils::fileExists(const std::string& name)
 	{
 		struct stat buffer;
 		return (stat(name.c_str(), &buffer) == 0);

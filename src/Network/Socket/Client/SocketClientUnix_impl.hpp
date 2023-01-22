@@ -222,6 +222,7 @@ namespace claid
 
 	void Network::SocketClient::close()
 	{
+		Logger::printfln("SocketClient::close %d", this->connected);
 		// Don't call close when socket was closed already or is not connected.
 		// This will lead a funny "fdsan: attempted to close file descriptor 89, expected to be unowned, actually owned by ..."
 		if(!this->connected)
@@ -243,7 +244,9 @@ namespace claid
 			Logger::printfln("Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
 	
 		} 
+		shutdown(sock, SHUT_RD);
 		::close(this->sock);
+		Logger::printfln("SocketClient::close done");
 
 	}
 

@@ -70,7 +70,7 @@ namespace Network
                 break;
             }
         }
-        Logger::printfln("Stopping reader");
+        Logger::printfln("Reader loop exited");
         this->stopped = true;
     }
               
@@ -87,11 +87,13 @@ namespace Network
 
     void SocketReaderModule::stop()
     {
+        Logger::printfln("ReaderModule::stop %d %d", this->stopped, this->active);
         if(!this->stopped)
         {
             this->stopped = true;
             this->active = false;
         }
+        Logger::printfln("ReaderModule::end stop %d %d", this->stopped, this->active);
     }
 
     bool SocketReaderModule::isStopped()
@@ -101,6 +103,7 @@ namespace Network
 
     void SocketReaderModule::terminate()
     {
+        Logger::printfln("SocketReaderModule has terminated");
         this->messageReceivedChannel.unpublish();
         this->errorChannel.unpublish();
     }

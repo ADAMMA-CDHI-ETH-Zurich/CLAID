@@ -42,16 +42,17 @@ namespace Network
 
     void SocketConnectionModule::stop()
     {
+        Logger::printfln("SocketConnectionModule::Stopping reader module");
         this->readerModule.stop();
 
         while(!this->readerModule.isStopped())
         {
             // Waiting
-            Logger::printfln("Stopping reader module");
+            Logger::printfln("waiting for stopping reader module");
         }
 
         // Since reader module has stopped reading, we can safely close the socket.
-        Logger::printfln("Closing socket");
+        Logger::printfln("SocketConnectionModule::Closing socket");
         this->socketClient.close();
 
 
