@@ -330,7 +330,7 @@ namespace claid
                 
 
                 this->isRunning = false;
-                Logger::printfln("Module %s has been terminated.", this->getModuleName().c_str());
+                Logger::printfln("Module %s %u has been terminated.", this->getModuleName().c_str(), this);
             }
 
             // UNIQUE IN THE CURRENT RUNTIME!

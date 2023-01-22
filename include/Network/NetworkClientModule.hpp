@@ -4,6 +4,7 @@
 #include "RemoteConnection/RemoteModule/RemoteModule.hpp"
 #include "RemoteConnection/RemoteConnectedEntity.hpp"
 #include "RemoteConnection/Error/ErrorRemoteRuntimeOutOfSync.hpp"
+#include "RemoteConnection/Error/ErrorConnectionTimeout.hpp"
 #include "Network/SocketConnectionModule.hpp"
 #include "Network/NetworkModule.hpp"
 
@@ -167,11 +168,16 @@ namespace claid
                         // Read from socket failed. Connection lost.
                         this->onConnectionLost(remoteConnectedEntity);
                     }
-                    if(error.is<RemoteConnection::ErrorRemoteRuntimeOutOfSync>())
+                    else if(error.is<RemoteConnection::ErrorRemoteRuntimeOutOfSync>())
                     {
                         Logger::printfln("NetworkClient: Error remote runtime out of sync.");
                         this->onConnectionLost(remoteConnectedEntity);
                     
+                    }
+                    else if(error.is<RemoteConnection::ErrorConnectionTimeout>())
+                    {
+                        Logger::printfln("NetworkClient: Error connection timeout.");
+                        this->onConnectionLost(remoteConnectedEntity);
                     }
                 }
 
@@ -195,9 +201,11 @@ namespace claid
                         return;
                     }
 
-                    Logger::printfln("Client has lost connection. Shutting down.");
+                    Logger::printfln("NetworkClient: Client has lost connection. Shutting down.");
                     this->remoteConnectedEntity->stop();
                     this->remoteConnectedEntity->disintegrate();
+
+                    Logger::printfln("NetworkClient: deleting entity %u", this->remoteConnectedEntity);
                     delete this->remoteConnectedEntity;
                     this->remoteConnectedEntity = nullptr;
 

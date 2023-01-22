@@ -24,7 +24,7 @@ namespace claid
 
             void setBinaryData(const BinaryData& binaryData)
             {
-                this->binaryData = binaryData;
+                binaryData.fastSafeCopyTo(this->binaryData);
             }
 
             void getBinaryData(BinaryData& binaryData)
