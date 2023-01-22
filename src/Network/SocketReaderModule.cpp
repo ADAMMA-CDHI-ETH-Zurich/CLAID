@@ -88,7 +88,7 @@ namespace Network
     {
         if(!this->stopped)
         {
-            this->stopped = false;
+            this->stopped = true;
             this->active = false;
         }
     }
