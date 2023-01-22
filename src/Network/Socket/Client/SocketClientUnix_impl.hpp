@@ -244,7 +244,7 @@ namespace claid
 			Logger::printfln("Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
 	
 		} 
-		shutdown(sock, SHUT_RD);
+		shutdown(sock, SHUT_RDWR);
 		::close(this->sock);
 		Logger::printfln("SocketClient::close done");
 

@@ -59,6 +59,7 @@ namespace Network
         // waits until the module (thread) has been stopped
         // Unpublishes messageReceive and errorChannel
         this->readerModule.stopModule();
+        Logger::printfln("ReaderModule stopped.");
 
         
     }
