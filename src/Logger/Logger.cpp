@@ -41,7 +41,7 @@ void claid::Logger::printfln(const char *format, ...)
 	va_start(vargs, format);
 
 
-	// Size 500 was too little.
+	// Size 500 was too small.
     char buffer[1024] = "";
 	std::vsprintf(buffer, format, vargs);
 
@@ -54,6 +54,7 @@ void claid::Logger::printfln(const char *format, ...)
 			<< timeString << "] " << buffer;
 
 	// This is not thread safe....
+	// Leads to segfault if multiple threads access it at the same time.
 	//claid::Logger::lastLogMessage = ss.str().c_str();
 	
 	#ifdef __ANDROID__

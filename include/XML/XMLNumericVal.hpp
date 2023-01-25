@@ -64,14 +64,17 @@ namespace claid
         // void parseFromString(long& value, const std::string& string) 
         // { 
         //     value = std::stoi(string); 
-        // } 
+        // }
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(short, std::stoi)
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(int, std::stoi)
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(long, std::stoi)
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(long long, std::stoi)
+
+        XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(unsigned short, std::stoi)
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(unsigned int, std::stoul)
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(unsigned long, std::stoul)
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(unsigned long long, std::stoull)
+
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(float, std::stof)
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(double, std::stod)
         XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(long double, std::stold)

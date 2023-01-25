@@ -164,6 +164,7 @@ namespace claid
 		if (res < 0) 
 		{
 			Logger::printfln("Could not connect to %s:%d %d %s %d", address.c_str(), port, res, strerror(errno), errno);
+			::close(this->sock);
 			return false;
 		}
 		Logger::printfln("connected %d %s %d",  res, strerror(errno), errno);

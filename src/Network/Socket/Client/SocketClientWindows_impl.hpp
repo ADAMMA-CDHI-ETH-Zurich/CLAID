@@ -80,6 +80,8 @@ namespace claid
 				error.errorType = SocketClientErrorType::ERROR_CONNECT_FAILED;
 				error.additionalErrorID = WSAGetLastError();
 				this->lastError = error;
+				closesocket(this->sock);
+				WSACleanup();
 				return false;
 			}
 
