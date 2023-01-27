@@ -58,9 +58,11 @@ namespace claid
 
             void store(const char* data, size_t size)
             {
+                const char* ptr = data;
                 for(size_t i = 0; i < size; i++)
                 {
-                    this->data.push_back(data[i]);
+                    this->data.push_back(*ptr);
+                    ptr++;
                 }
             }
 
@@ -74,15 +76,6 @@ namespace claid
                 for(int32_t i = 0; i < size; i++)
                 {
                     this->store(value[i]);
-                }
-            }
-
-            void insertBytes(const char* bytes, size_t numBytes)
-            {
-                for(size_t i = 0; i < numBytes; i++)
-                {
-                    this->data.push_back(*bytes);
-                    bytes++;
                 }
             }
 
@@ -110,6 +103,11 @@ namespace claid
             size_t getNumBytes() const
             {
                 return this->data.size();
+            }
+
+            size_t size() const
+            {
+                return this->getNumBytes();
             }
 
             void clear()
@@ -156,6 +154,12 @@ namespace claid
                 // Use this function to avoid this problem when copying.
                 const std::lock_guard<std::mutex> lock(*this->safeCopyMutex.get());
                 copy.data = this->data;
+            }
+
+            void append(const BinaryData& data)
+            {
+                const char* ptr = data.getConstRawData();
+                this->store(ptr, data.getNumBytes());
             }
      
 

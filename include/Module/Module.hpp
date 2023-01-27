@@ -84,9 +84,10 @@ namespace claid
 
             std::vector<DispatcherThreadTimer*> timer;
 
-
-            void registerPeriodicFunction(const std::string& name, std::function<void()> function, size_t periodInMs)
+            // sequential execution means that the next execution of this function is only rescheduled if the previous execution was finished.
+            void registerPeriodicFunction(const std::string& name, std::function<void()> function, size_t periodInMs, bool sequentialExecution = false)
             {
+                
                 if(periodInMs == 0)
                 {
                     CLAID_THROW(Exception, "Error in registerPeriodicFunction: Cannot register periodic function \"" << name << "\" (in Module \"" << this->getModuleName() << "\")"
@@ -101,7 +102,7 @@ namespace claid
                 }
 
                 FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(function);
-                DispatcherThreadTimer* dispatcherThreadTimer = new DispatcherThreadTimer(this->runnableDispatcherThread, static_cast<Runnable*>(functionRunnable), periodInMs);
+                DispatcherThreadTimer* dispatcherThreadTimer = new DispatcherThreadTimer(this->runnableDispatcherThread, static_cast<Runnable*>(functionRunnable), periodInMs, sequentialExecution);
                 dispatcherThreadTimer->start();
                 this->timers.insert(std::make_pair(name, dispatcherThreadTimer));
             }

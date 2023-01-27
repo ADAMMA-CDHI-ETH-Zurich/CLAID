@@ -166,7 +166,7 @@ namespace claid
             
             void write(const char* data, size_t size)
             {
-                this->binaryData->insertBytes(data, size);
+                this->binaryData->store(data, size);
             }
 
 
