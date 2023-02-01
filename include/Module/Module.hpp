@@ -108,10 +108,10 @@ namespace claid
             }
 
             template<typename Class>
-            void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, size_t periodInMs)
+            void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, size_t periodInMs, bool sequentialExecution = false)
             {
                 std::function<void()> function = std::bind(f, obj);
-                this->registerPeriodicFunction(name, function, periodInMs);
+                this->registerPeriodicFunction(name, function, periodInMs, sequentialExecution);
             }
 
             void unregisterPeriodicFunction(const std::string& name)

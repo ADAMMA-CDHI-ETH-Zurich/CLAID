@@ -14,6 +14,11 @@ namespace claid
 
         }
 
+        virtual ~XMLNumericVal()
+        {
+            
+        }
+
         template<typename T>
         static std::string toString(T& val)
         {

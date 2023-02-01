@@ -22,7 +22,6 @@ namespace claid
 
         public:
             std::string name;
-            std::shared_ptr<XMLNode> parent;
             
             intptr_t hierarchy = 0;
 
@@ -30,12 +29,17 @@ namespace claid
             
             std::map<std::string, std::string> attributes;
 
-            XMLNode(std::shared_ptr<XMLNode> parent, const std::string& name) : name(name), parent(parent)
+            XMLNode(std::shared_ptr<XMLNode> parent, const std::string& name) : name(name)
             {
                 if(parent != nullptr)
                 {
                     this->hierarchy = parent->hierarchy + 1;
                 }
+            }
+
+            virtual ~XMLNode()
+            {
+
             }
 
             std::shared_ptr<XMLNode> findChild(const std::string& name)
