@@ -10,7 +10,7 @@
 #include <mutex>
 #include <thread>
 #include <iostream>
-#define MAX_CHANNEL_BUFFER_SIZE 20
+#define MAX_CHANNEL_BUFFER_SIZE 5
 
 namespace claid
 {
