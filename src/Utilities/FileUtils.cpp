@@ -370,11 +370,12 @@ namespace claid
 				if (isDots(findFileData.cFileName))
 					continue;
 
+				std::string subDirPath = path + std::string("/") + std::string(findFileData.cFileName);
+
 				if ((findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 				{
-					std::string subDirPath = path + std::string("/") + std::string(findFileData.cFileName);
 					// Is directory, recurse.
-					if(!getAllFilesInDirectoryRecursively(subDirPath), output);
+					if(!getAllFilesInDirectoryRecursively(subDirPath, output))
 					{
 						return false;
 					}

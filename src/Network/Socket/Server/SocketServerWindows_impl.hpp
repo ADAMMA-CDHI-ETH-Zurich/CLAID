@@ -95,7 +95,7 @@ namespace claid
             struct sockaddr_in clientAddress; 
             // CRUCIAL ON ANDROID! IF NOT ZEROING, WEIRD STUFF CAN HAPPEN !
             // E.G. ACCEPT FAILS BECAUSE OF "invalid_argument".
-            bzero((char *) &clientAddress, sizeof(clientAddress));
+           // zero_memory((char *) &clientAddress, sizeof(clientAddress));
             
             socklen_t clientAddressLength = sizeof(clientAddress);
             clientSocket = ::accept(this->serverSocket, (struct sockaddr *)&clientAddress, &clientAddressLength);
