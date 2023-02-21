@@ -5,6 +5,7 @@
 
 #include "RemoteConnection/RemoteModule/LocalObserver.hpp"
 #include "RemoteConnection/RemoteModule/RemoteObserver.hpp"
+#include "RemoteConnection/Error/Error.hpp"
 
 
 namespace claid
@@ -30,6 +31,15 @@ namespace claid
 
                 Channel<Message> sendMessageChannel;
                 Channel<Message> receiveMessageChannel;
+                Channel<Error> errorChannel;
+
+                template<typename T>
+                void postError()
+                {
+                    Error error;
+                    error.set<T>();
+                    this->errorChannel.post(error);
+                }
 
                 void sendMessage(Message& message);
 
@@ -44,11 +54,13 @@ namespace claid
 
                 void setSendMessageChannel(Channel<Message> channel);
                 void setReceiveMessageChannel(Channel<Message> channel);
+                void setErrorChannel(Channel<Error> channel);
                 
                 void unpublishSendMessageChannel();
                 void unsubscribeReceiveMessageChannel();
+                void unpublishErrorChannel();
 
-
+                void periodicTest();
 
                 void start();
                 void stop();

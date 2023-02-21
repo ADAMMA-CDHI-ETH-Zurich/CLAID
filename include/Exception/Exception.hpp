@@ -12,13 +12,14 @@
 #include <thread>
 #include "Logger/Logger.hpp"
 
-
 #define CLAID_THROW(ex, msg)\
 {\
 	std::ostringstream ex_str;\
 	ex_str << msg;\
     claid::Logger::printfln("%s", ex_str.str().c_str());\
-	throw ex(ex_str.str(), __FILE__, __LINE__); \
+	claid::Logger::printfln("\n");\
+	std::this_thread::sleep_for(std::chrono::seconds(3));\
+	throw ex(ex_str.str(), __FILE__, __LINE__);\
 }
 // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 

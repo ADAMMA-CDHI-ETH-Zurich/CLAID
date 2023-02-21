@@ -5,6 +5,7 @@
 #include "Reflection/ReflectBase.hpp"
 #include <stdint.h>
 #include <iostream>
+#include <algorithm>
 namespace claid
 {
     template<typename T>
@@ -47,15 +48,17 @@ namespace claid
                 this->data = data;
             }
 
-            T& value()
-            {
-                return *this->data.get();
-            }
+            // T value()
+            // {
+            //     return *this->data.get();
+            // }
 
             const T& value() const
             {
                 return *this->data.get();
             }
+
+           
 
             // void toBinary()
             // {

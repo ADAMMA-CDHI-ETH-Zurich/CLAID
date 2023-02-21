@@ -5,8 +5,9 @@ namespace claid
     template<typename T>
     Channel<T> SubModule::subscribeLocal(const std::string& channelID)
     {
-        verifySafeAccessToChannels(channelID);
-        return this->channelManager->subscribe<T>(channelID, this->getUniqueIdentifier());
+        std::string channelIDWithNamespace = this->addNamespacesToChannelID(channelID);
+        verifySafeAccessToChannels(channelIDWithNamespace);
+        return this->channelManager->subscribe<T>(channelIDWithNamespace, this->getUniqueIdentifier());
     }
 
     template<typename T, typename Class>
@@ -21,24 +22,27 @@ namespace claid
     template<typename T>
     Channel<T> SubModule::subscribeLocal(const std::string& channelID, std::function<void (ChannelData<T>)> function)
     {
-        verifySafeAccessToChannels(channelID);
+        std::string channelIDWithNamespace = this->addNamespacesToChannelID(channelID);
+        verifySafeAccessToChannels(channelIDWithNamespace);
         // runtime::getChannel(channelID).subscribe()
         ChannelSubscriber<T> channelSubscriber(this->runnableDispatcherThread, function);
-        return this->channelManager->subscribe<T>(channelID, channelSubscriber, this->getUniqueIdentifier());
+        return this->channelManager->subscribe<T>(channelIDWithNamespace, channelSubscriber, this->getUniqueIdentifier());
     }
 
     template<typename T>
     Channel<T> SubModule::subscribeLocal(const std::string& channelID, ChannelSubscriber<T> channelSubscriber)
     {
-        verifySafeAccessToChannels(channelID);
-        return this->channelManager->subscribe(channelID, channelSubscriber, this->getUniqueIdentifier());
+        std::string channelIDWithNamespace = this->addNamespacesToChannelID(channelID);
+        verifySafeAccessToChannels(channelIDWithNamespace);
+        return this->channelManager->subscribe(channelIDWithNamespace, channelSubscriber, this->getUniqueIdentifier());
     }
 
     template<typename T>
     Channel<T> SubModule::publishLocal(const std::string& channelID)
     {
-        verifySafeAccessToChannels(channelID);
-        return this->channelManager->publish<T>(channelID, this->getUniqueIdentifier());
+        std::string channelIDWithNamespace = this->addNamespacesToChannelID(channelID);
+        verifySafeAccessToChannels(channelIDWithNamespace);
+        return this->channelManager->publish<T>(channelIDWithNamespace, this->getUniqueIdentifier());
     }
 }
 
@@ -50,8 +54,9 @@ namespace claid
 template<typename T>
 Channel<T> Module::subscribe(const std::string& channelID)
 {
-    verifySafeAccessToChannels(channelID);
-    return this->channelManager->subscribe<T>(channelID, this->getUniqueIdentifier());
+    std::string channelIDWithNamespace = this->addNamespacesToChannelID(channelID);
+    verifySafeAccessToChannels(channelIDWithNamespace);
+    return this->channelManager->subscribe<T>(channelIDWithNamespace, this->getUniqueIdentifier());
 }
 
 template<typename T, typename Class>
@@ -66,24 +71,27 @@ Channel<T> Module::subscribe(const std::string& channelID,
 template<typename T>
 Channel<T> Module::subscribe(const std::string& channelID, std::function<void (ChannelData<T>)> function)
 {
-    verifySafeAccessToChannels(channelID);
+    std::string channelIDWithNamespace = this->addNamespacesToChannelID(channelID);
+    verifySafeAccessToChannels(channelIDWithNamespace);
     // runtime::getChannel(channelID).subscribe()
     ChannelSubscriber<T> channelSubscriber(this->runnableDispatcherThread, function);
-    return this->channelManager->subscribe<T>(channelID, channelSubscriber, this->getUniqueIdentifier());
+    return this->channelManager->subscribe<T>(channelIDWithNamespace, channelSubscriber, this->getUniqueIdentifier());
 }
 
 template<typename T>
 Channel<T> Module::subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber)
 {
-    verifySafeAccessToChannels(channelID);
-    return this->channelManager->subscribe(channelID, channelSubscriber, this->getUniqueIdentifier());
+    std::string channelIDWithNamespace = this->addNamespacesToChannelID(channelID);
+    verifySafeAccessToChannels(channelIDWithNamespace);
+    return this->channelManager->subscribe(channelIDWithNamespace, channelSubscriber, this->getUniqueIdentifier());
 }
 
 template<typename T>
 Channel<T> Module::publish(const std::string& channelID)
 {
-    verifySafeAccessToChannels(channelID);
-    return this->channelManager->publish<T>(channelID, this->getUniqueIdentifier());
+    std::string channelIDWithNamespace = this->addNamespacesToChannelID(channelID);
+    verifySafeAccessToChannels(channelIDWithNamespace);
+    return this->channelManager->publish<T>(channelIDWithNamespace, this->getUniqueIdentifier());
 }
 }
 

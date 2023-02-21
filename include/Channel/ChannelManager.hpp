@@ -229,6 +229,8 @@ namespace claid
             template<typename T>
             Channel<T> subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber, uint64_t uniqueModuleID)
             {
+                Logger::printfln("Subscribing %s", channelID.c_str());
+
                 std::unique_lock<std::mutex> lock(this->channelMutex);
 
 
@@ -247,6 +249,7 @@ namespace claid
             template<typename T>
             Channel<T> publish(const std::string& channelID, uint64_t uniqueModuleID)
             {
+                Logger::printfln("Publishing %s", channelID.c_str());
                 std::unique_lock<std::mutex> lock(this->channelMutex);
 
                 Channel<T> returnChannel;

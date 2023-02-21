@@ -6,6 +6,20 @@ namespace claid
 {
     namespace TypeChecking
     {
+        static void removePrefix(std::string& string, const std::string& prefix)
+        {
+            if (string.find(prefix) != std::string::npos)
+            {
+                string = string.substr(prefix.size(), string.size() - prefix.size());
+            }
+        }
+
+        static void removeKnownTypeNamePrefixes(std::string& name)
+        {   
+            removePrefix(name, "struct ");
+            removePrefix(name, "class ");
+        }
+
         // Use extern to make sure the adress of this function is always the same no matter where it is used within the code.
         template<typename T>
         extern intptr_t getDataTypeUniqueIdentifier()
@@ -40,11 +54,9 @@ namespace claid
                 return (status==0) ? result.p : name ;
             #else
                 // Otherwise we return the mangled string.
-                
-                if (name.find("struct") != std::string::npos)
-                {
-                    name = name.substr(strlen("struct "), name.size() - strlen("struct "));
-                }
+      
+                removeKnownTypeNamePrefixes(name);
+
                 return name;
             #endif
 
@@ -69,10 +81,8 @@ namespace claid
             #else
                 std::string name = compileTimeTypeNameByUsingFunctionName<T>().toStdString();
             #endif
-            if (name.find("struct") != std::string::npos)
-            {
-                name = name.substr(strlen("struct "), name.size() - strlen("struct "));
-            }
+            removeKnownTypeNamePrefixes(name);
+
             return name;
         }
 
@@ -80,15 +90,8 @@ namespace claid
         static std::string getCompilerIndependentTypeNameOfClass()
         {
             std::string name = TypeNameInvoker<T>::call();
-            if (name.find("struct") != std::string::npos)
-            {
-                name = name.substr(strlen("struct "), name.size() - strlen("struct "));
-            }
+            removeKnownTypeNamePrefixes(name);
 
-            if (name.find("class") != std::string::npos)
-            {
-                name = name.substr(strlen("class "), name.size() - strlen("class "));
-            }
             return name;
         }
     }

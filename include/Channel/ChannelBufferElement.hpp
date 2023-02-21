@@ -2,10 +2,10 @@
 
 #include "ChannelData.hpp"
 #include "Binary/BinaryData.hpp"
+#include "XML/XMLNode.hpp"
 #include "Exception/Exception.hpp"
 
 #include <mutex>
-
 
 namespace claid
 {
@@ -75,17 +75,38 @@ namespace claid
 
             virtual TaggedData<BinaryData> getBinaryData()
             {
+                std::unique_lock<std::mutex> (this->mutex);
                 if(!this->dataAvailable)
                 {
                     CLAID_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement (untyped), but no data was ever set (no data available).");
                 }
 
-                return this->binaryData;
+                // This does not copy data, since TaggedData uses a shared_ptr internally.
+                TaggedData<BinaryData> data = this->binaryData;
+
+                return data;
             }
 
             bool isDataAvailable() const
             {
                 return this->dataAvailable;
+            }
+
+            virtual bool canSerializeToXML() const
+            {
+                // Cannot serialize to XML, because 
+                // we are an untyped ChannelBufferElement.
+                return false;
+            }
+
+            virtual std::shared_ptr<XMLNode> toXML()
+            {
+                CLAID_THROW(Exception, "Cannot serialize data to XML.\n"
+                << "The channel's buffer (ChannelBuffer) is untyped.\n"
+                << "Can only serialize, if there is at least one typed channel instance \n"
+                << "available for the targeted channel with a given channel ID in this process.\n"
+                << "Make sure there is at least one typed publisher or subscriber for this channel"
+                << "in the current instance of CLAID.");
             }
 
             

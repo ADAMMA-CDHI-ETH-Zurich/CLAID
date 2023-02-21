@@ -2,6 +2,7 @@
 #include "Binary/BinaryDeserializer.hpp"
 #include "Binary/BinarySerializer.hpp"
 
+#include "XML/XMLSerializer.hpp"
 
 namespace claid
 {
@@ -19,6 +20,7 @@ namespace claid
             typename std::enable_if<has_mem_reflect<U>::value || has_non_member_function_reflect<BinaryDeserializer&, U&>::value || std::is_arithmetic<U>::value>::type
             deserializeBinaryDataToTypedData()
             {
+                std::unique_lock<std::mutex> (this->mutex);
 
                 if(!this->dataAvailable)
                 {
@@ -32,7 +34,7 @@ namespace claid
                 // If we just used TaggedData<T> (data), with data being of type T,
                 // then TaggedData would create the shared_ptr and making a copy of data.
 
-                std::shared_ptr<T> dataPtr(new T);
+                std::shared_ptr<T> dataPtr(new T());
                 deserializer.deserialize(*dataPtr.get(), reader);
 
                 this->typedData = TaggedData<T> (dataPtr, 
@@ -64,7 +66,7 @@ namespace claid
                 // TaggedData internally uses shared_ptr.
                 // Thus, we already create it, so we save a copy operation
                 // when creating the TaggedData object below.
-                std::shared_ptr<BinaryData> binaryData(new BinaryData);
+                std::shared_ptr<BinaryData> binaryData(new BinaryData());
                 BinarySerializer serializer;
                 serializer.serialize(this->typedData.value(), binaryData.get());
 
@@ -85,8 +87,32 @@ namespace claid
             serializeTypedDataToBinaryData()
             {
                 CLAID_THROW(Exception, "Error! Cannot serialize typed data to binary data. A subscriber tried to get binary data from a channel of type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\", " <<
-                "but typed data could not be serialized, as no reflect function is available for the mentioned data type. Please add a reflect function to the datatype.");
+                "but typed data could not be serialized, as no reflect function is available for the mentioned data type. Please add a reflect function to the data type.");
             }
+
+            template<typename U = T>
+            typename std::enable_if<has_mem_reflect<U>::value || 
+                    has_non_member_function_reflect<BinaryDeserializer&, U&>::value ||
+                    std::is_arithmetic<U>::value, std::shared_ptr<XMLNode>>::type
+            serializeToXML()
+            {
+                std::unique_lock<std::mutex> (this->mutex);
+                XMLSerializer serializer;                
+                serializer.serialize(this->typedData.value());
+                return serializer.getXMLNode();
+            }
+
+            template<typename U = T>
+            typename std::enable_if<!has_mem_reflect<U>::value && 
+                    !has_non_member_function_reflect<BinaryDeserializer&, U&>::value &&
+                    !std::is_arithmetic<U>::value, std::shared_ptr<XMLNode>>::type
+            serializeToXML()
+            {
+                CLAID_THROW(Exception, "Error! Cannot serialize typed data to XML. A subscriber tried to get XML data from a channel of type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\", " <<
+                "but typed data could not be serialized, as no reflect function is available for the mentioned data type. Please add a reflect function to the data type.");
+            }
+
+            
 
         public:
 
@@ -110,7 +136,7 @@ namespace claid
                 this->binaryDataAvailable = true;
             }
 
-            TaggedData<T>& getTypedData()
+            TaggedData<T> getTypedData()
             {
                 return this->typedData;
             }
@@ -130,6 +156,19 @@ namespace claid
            
 
                 return this->binaryData;
+            }
+
+            bool canSerializeToXML() const
+            {
+                // Can serialize to XML, because 
+                // we are a typed ChannelBufferElement.
+                return true;
+            }
+
+            
+            virtual std::shared_ptr<XMLNode> toXML()
+            {
+                return this->serializeToXML();
             }
 
    

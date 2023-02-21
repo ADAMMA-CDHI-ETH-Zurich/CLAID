@@ -1,11 +1,10 @@
 #include "RemoteConnection/RemoteModule/RemoteModule.hpp"
 #include "RemoteConnection/Message/MessageData/MessageDataBinary.hpp"
-
+#include "RemoteConnection/Message/MessageHeader/TestMessage.hpp"
 namespace claid
 {
 namespace RemoteConnection
 {
-    //     void notifyOnConnectionLost();
     ChannelSubscriber<Message> RemoteModule::getSubscriberForReceptionOfMessages()
     {
         if(this->remoteObserver == nullptr)
@@ -49,6 +48,13 @@ namespace RemoteConnection
         this->receiveMessageChannel = channel;
     }
 
+    void RemoteModule::setErrorChannel(Channel<Error> channel)
+    {
+        this->errorChannel = channel;
+        this->localObserver->setErrorChannel(channel);
+        this->remoteObserver->setErrorChannel(channel);
+    }
+
     void RemoteModule::unpublishSendMessageChannel()
     {
         this->sendMessageChannel.unpublish();
@@ -59,13 +65,18 @@ namespace RemoteConnection
         this->receiveMessageChannel.unsubscribe();
     }
 
-   
+   void RemoteModule::unpublishErrorChannel()
+   {
+        this->errorChannel.unpublish();
+   }
 
     void RemoteModule::initialize()
     {
+        Logger::printfln("RemoteModule::initialize()");
         // By using forkSubModuleInThread, the LocalObserver will run on the same thread as the RemoteModule (no extra overhead).
         this->localObserver = this->forkSubModuleInThread<LocalObserver>();
         this->remoteObserver = this->forkSubModuleInThread<RemoteObserver>(&CLAID_RUNTIME->channelManager);
+        Logger::printfln("RemoteModule::initialize() end");
     }
 
 
@@ -100,28 +111,54 @@ namespace RemoteConnection
         // Logger::printfln("RemoteModule cal sending.");
 
         this->localObserver->observe(&CLAID_RUNTIME->channelManager);
+   //     this->registerPeriodicFunction("PeriodicTest", &RemoteModule::periodicTest, this, 1000);
         
     }
 
     // Get's called when stopModule() was called.
     void RemoteModule::terminate()
     {
-        this->unpublishSendMessageChannel();
-        this->unsubscribeReceiveMessageChannel();
+        // At this point, the runnable dispatcher thread of this
+        // module (and it's submodules) is stopped.
+        // No other function will ever be executed in this thread.
+        // Hence, now it is safe to unpublish and unsubscribe the channels,
+        // since it can not happen that any further function scheduled for
+        // the remote or local observer will be called, since the thread is stopped.
+        // In other words: Thread is stopped, even if there is data in a channel that remote or
+        // local observer have subscribed to, the associated callback will never be called.
+        Logger::printfln("RemoteModule terminating");
+       
+
+        this->removeSubModule(this->localObserver);
+        this->removeSubModule(this->remoteObserver);
         this->sendMessageChannelSet = false;
+
+        // Aaaand we are gone. Bye bye module.
     }
 
     void RemoteModule::stop()
     {
         if(this->isInitialized())
         {
-            this->joinAndRemoveSubModule(this->localObserver);
-            this->joinAndRemoveSubModule(this->remoteObserver);
+            // Do NOT delete the sub modules just yet!
+            // It could happen that there are still some callback functions scheduled for execution.
+            // And because the submodules share the same thread with the RemoteModule, the dispatcher thread
+            // is not stopped just yet. Therefore, even if the modules have been stopped now,
+            // it could still happen that there are some unprocessed runnables in the queue that still might get executed.
+            Logger::printfln("Joining and removing local observer");
+            this->stopSubModule(this->localObserver);
+            Logger::printfln("Joining and removing remote observer");
+            this->stopSubModule(this->remoteObserver);
         }
     }
 
     
-
+    void RemoteModule::periodicTest()
+    {
+        Logger::printfln("Sending test message");
+        Message message = Message::CreateMessage<TestMessage, MessageDataString>();
+        this->sendMessage(message);
+    }
 
 
 

@@ -11,7 +11,6 @@
 #include <mutex>
 #include <thread>
 #include <iostream>
-#define MAX_CHANNEL_BUFFER_SIZE 20
 
 namespace claid
 {
@@ -172,15 +171,16 @@ namespace claid
             }
             
 
-            void insert(TaggedData<T>& data)
+            void insert(TaggedData<T> data)
             {
 
                 this->lockMutex();
+                Logger::printfln("Inserting typed data (ChannelBuffer) at index %d %s", this->currentIndex, this->dataTypeName.c_str());
 
                 // Is this thread safe?
                 // Yes.. as long as we create copies in getLatest, getClosest and getDataInterval.
-                std::shared_ptr<ChannelBufferElement>& element = this->getElement(this->currentIndex);
-                element = newChannelBufferElementFromTypedData(data);
+     
+                this->channelBufferElements[this->currentIndex] = newChannelBufferElementFromTypedData(data);
 
         
                 // Do not convert to binary data / serialize. It might not be needed.

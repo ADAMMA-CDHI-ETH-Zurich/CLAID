@@ -25,6 +25,7 @@
 
 
 #include "Channel/ChannelManager.hpp"
+#include "Namespace/Namespace.hpp"
 namespace claid
 {
     // Base class for any type of module.
@@ -52,6 +53,7 @@ namespace claid
             std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread = nullptr;
 
             std::map<std::string, DispatcherThreadTimer*> timers;
+            std::vector<Namespace> namespaces;
 
             std::string id;
 
@@ -82,9 +84,16 @@ namespace claid
 
             std::vector<DispatcherThreadTimer*> timer;
 
-
-            void registerPeriodicFunction(const std::string& name, std::function<void()> function, size_t periodInMs)
+            // sequential execution means that the next execution of this function is only rescheduled if the previous execution was finished.
+            void registerPeriodicFunction(const std::string& name, std::function<void()> function, size_t periodInMs, bool sequentialExecution = false)
             {
+                
+                if(periodInMs == 0)
+                {
+                    CLAID_THROW(Exception, "Error in registerPeriodicFunction: Cannot register periodic function \"" << name << "\" (in Module \"" << this->getModuleName() << "\")"
+                    << " with a period of 0 milliseconds.\n"
+                    << "Period needs to be at least 1ms in order to allow a yield for the thread. Otherwise, this can result in memory leaks.");
+                }
                 auto it = this->timers.find(name);
 
                 if(it != this->timers.end())
@@ -93,16 +102,16 @@ namespace claid
                 }
 
                 FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(function);
-                DispatcherThreadTimer* dispatcherThreadTimer = new DispatcherThreadTimer(this->runnableDispatcherThread, static_cast<Runnable*>(functionRunnable), periodInMs);
+                DispatcherThreadTimer* dispatcherThreadTimer = new DispatcherThreadTimer(this->runnableDispatcherThread, static_cast<Runnable*>(functionRunnable), periodInMs, sequentialExecution);
                 dispatcherThreadTimer->start();
                 this->timers.insert(std::make_pair(name, dispatcherThreadTimer));
             }
 
             template<typename Class>
-            void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, size_t periodInMs)
+            void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, size_t periodInMs, bool sequentialExecution = false)
             {
                 std::function<void()> function = std::bind(f, obj);
-                this->registerPeriodicFunction(name, function, periodInMs);
+                this->registerPeriodicFunction(name, function, periodInMs, sequentialExecution);
             }
 
             void unregisterPeriodicFunction(const std::string& name)
@@ -121,7 +130,10 @@ namespace claid
                 delete it->second;
             }
 
-
+            bool isPeriodicFunctionRegistered(const std::string& name) const
+            {
+                return this->timers.find(name) != this->timers.end();
+            }
 
             template<typename T, typename Class>
             ChannelSubscriber<T> makeSubscriber(void (Class::*f)(ChannelData<T>), Class* obj)         
@@ -160,6 +172,9 @@ namespace claid
 
 
             PropertyReflector propertyReflector;
+
+            protected:
+                
 
         public:
             BaseModule()
@@ -267,29 +282,15 @@ namespace claid
 
             void stopModule(bool isForkedSubModule = false)
             {
+                Logger::printfln("Module %s termination requested.", this->getModuleName().c_str());
+
                 if(!this->isRunning || this->terminated)
                 {
                     return;
                 }
 
-                std::function<void ()> terminateFunc = std::bind(&BaseModule::terminateInternal, this);
-                FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(terminateFunc);
-                functionRunnable->deleteAfterRun = true;
-                this->runnableDispatcherThread->addRunnable(functionRunnable);
-
-                // Wait for termination
-                while(!this->terminated)
-                {
-
-                }
-
-                if(!isForkedSubModule)
-                {
-                    this->runnableDispatcherThread->stop();
-                    this->runnableDispatcherThread->join();
-                }
                 
-                
+
                 for(auto it : this->timers)
                 {
                     // Will block until the timer is stopped.
@@ -301,8 +302,36 @@ namespace claid
                 // timers need to be registered again.. Which seems fine though.
                 this->timers.clear();
 
+                std::function<void ()> terminateFunc = std::bind(&BaseModule::terminateInternal, this);
+                FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(terminateFunc);
+                functionRunnable->deleteAfterRun = true;
+
+                if(!isForkedSubModule)
+                {
+                    // This means that this runnable will be the last runnable ever executed by this thread.
+                    // Even if there are other runnables in the queue, they will not be executed.
+                    // This is necessary, because usually modules run clean up code in their terminate function.
+                    functionRunnable->stopDispatcherAfterThisRunnable = true;
+                }
+
+                this->runnableDispatcherThread->addRunnable(functionRunnable);
+
+
+                // Wait for termination
+                while(!this->terminated)
+                {
+                }
+
+                if(!isForkedSubModule)
+                {
+                    this->runnableDispatcherThread->join();
+                }
+                
+                
+                
+
                 this->isRunning = false;
-                Logger::printfln("Module %s has been terminated.", this->getModuleName().c_str());
+                Logger::printfln("Module %s %u has been terminated.", this->getModuleName().c_str(), this);
             }
 
             // UNIQUE IN THE CURRENT RUNTIME!
@@ -337,6 +366,32 @@ namespace claid
                 this->isRunning = true;
 
                 this->runnableDispatcherThread->addRunnable(functionRunnable);
+            }
+
+            void prependNamespace(const Namespace& namespaceName)
+            {
+                this->namespaces.push_back(namespaceName);
+            }
+
+            std::string addNamespacesToChannelID(const std::string& channelID) const 
+            {
+                std::string result = channelID;
+
+                if(result.size() >= 2)
+                {
+                    // Do not add namespaces to channels that start with //
+                    if(result[0] == '/' && result[1] == '/')
+                    {
+                        return result;
+                    }
+                }
+
+                for(const Namespace& ns : this->namespaces)
+                {
+                    ns.prependNamespaceToString(result);
+                }
+
+                return result;
             }
 
             
@@ -532,7 +587,7 @@ namespace claid
                 return subModule;
             }
 
-            void joinAndRemoveSubModule(SubModule* subModule)
+            void stopSubModule(SubModule* subModule)
             {
 
                 auto it = std::find(this->subModulesInSameThread.begin(), this->subModulesInSameThread.end(), subModule);
@@ -545,10 +600,23 @@ namespace claid
                 else
                 {
                     subModule->stopModule(true);
+                }
+            }
+
+            void removeSubModule(SubModule* subModule)
+            {
+                auto it = std::find(this->subModulesInSameThread.begin(), this->subModulesInSameThread.end(), subModule);
+
+                if(it == this->subModulesInSameThread.end())
+                {
+                    CLAID_THROW(Exception, "Error! joinAndRemoveSubModule was called with a SubModule pointer that is not known. Either this SubModule has been removed manually, "
+                    "or it was not created by using forkSubModuleInThread in the first place. The function joinAndRemoveSubModule can only be used for forked SubModules!");
+                }
+                else
+                {
                     delete subModule;
                     this->subModulesInSameThread.erase(it);
                 }
-
             }
 
             

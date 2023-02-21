@@ -4,8 +4,14 @@
 #include "RemoteConnection/Message/Message.hpp"
 #include "RemoteConnection/Message/MessageHeader/MessageHeaderChannelUpdate.hpp"
 #include "RemoteConnection/Message/MessageHeader/MessageHeaderChannelData.hpp"
+#include "RemoteConnection/Message/MessageHeader/MessageHeaderKeepAlive.hpp"
+#include "RemoteConnection/Message/MessageHeader/MessageHeaderKeepAliveResponse.hpp"
+
 #include "RemoteConnection/Message/MessageData/MessageDataString.hpp"
 #include "RemoteConnection/Message/MessageData/MessageDataBinary.hpp"
+#include "RemoteConnection/Message/MessageData/MessageDataEmpty.hpp"
+
+
 #include "Utilities/VariadicTemplateHelpers.hpp"
 #include "RemoteConnection/RemoteModule/Observer.hpp"
 #include <map>
@@ -44,6 +50,13 @@ namespace claid
 
                 static const std::string IS_DATA_RECEIVED_FROM_REMOTE_TAG;
 
+                // Interval in which a keep alive message is sent via the remote connection.
+                // A reply to that message needs to be received before the next message is sent,
+                // otherwise the connection is considered dead.
+                static const uint32_t KEEP_ALIVE_INTERVAL_MILLISECONDS;
+                bool keepAliveResponseReceived = false;
+                bool hasKeepAliveMessageBeenSend = false;
+
                 void onMessageReceived(ChannelData<Message> message);
                 void onChannelUpdateMessage(const MessageHeaderChannelUpdate& header, const MessageDataString& data);
                 void onChannelDataMessage(const MessageHeaderChannelData& header, const MessageDataBinary& data);            
@@ -58,10 +71,16 @@ namespace claid
 
                 void onChannelDataReceivedFromRemoteRunTime(const std::string& targetChannel, TaggedData<BinaryData>& data);
 
+                void initialize();
                 void terminate();
+            
 
                 void setIsDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data);
-                bool isDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data) const;
+                bool isDataReceivedFromRemoteRunTime(TaggedData<BinaryData> data);
+
+                void sendPeriodicKeepAliveMessage();
+                void onKeepAliveMessage(const MessageHeaderKeepAlive& header, const MessageDataEmpty& data);
+                void onKeepAliveResponse(const MessageHeaderKeepAliveResponse& header, const MessageDataEmpty& data);
 
                 template<typename Header, typename Data, typename Class, typename... Args>
                 bool callFunctionIfSignatureMatches(const Message& message, void (Class::*f)(const Header& header, const Data& data, Args...), Class* obj, Args... args)

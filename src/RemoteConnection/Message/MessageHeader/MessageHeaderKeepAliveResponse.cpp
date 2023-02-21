@@ -1,0 +1,3 @@
+#include "RemoteConnection/Message/MessageHeader/MessageHeaderKeepAliveResponse.hpp"
+
+REGISTER_SERIALIZATION(claid::RemoteConnection::MessageHeaderKeepAliveResponse)

@@ -7,20 +7,20 @@ namespace claid
     class BinaryDataReader
     {   
         private:
-            BinaryData* data = nullptr;
-            char* readingPtr = nullptr;
-            char* dataEndPtr = nullptr;
+            const BinaryData* data = nullptr;
+            const char* readingPtr = nullptr;
+            const char* dataEndPtr = nullptr;
             
             template<typename T>
-            void getBinarySize(size_t& size) const
+            void getBinarySize(int32_t& size) const
             {
                 size = sizeof(T);
             }
 
             template<typename T>
-            const T& fromBinary(char* ptr) const
+            const T& fromBinary(const char* ptr) const
             {
-                return *reinterpret_cast<T*>(ptr);
+                return *reinterpret_cast<const T*>(ptr);
             }
 
         public:
@@ -30,7 +30,7 @@ namespace claid
 
             }
 
-            BinaryDataReader(BinaryData* binaryData) : data(binaryData)
+            BinaryDataReader(const BinaryData* binaryData) : data(binaryData)
             {
                 this->resetReader();
             }
@@ -42,7 +42,7 @@ namespace claid
             {
 
 
-                size_t size;
+                int32_t size;
                 getBinarySize<T>(size);
 
                 // Test if we run out of bounds if we continue reading from the data.
@@ -50,7 +50,7 @@ namespace claid
                 {
                     CLAID_THROW(Exception, "Error reading from BinaryData. Trying to read value of type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\" which requires " << size << " bytes of data, " 
                     << "but only " << std::distance(this->readingPtr, this->dataEndPtr) << " bytes are left to read from the binary data (i.e. BinaryData contains less bytes than required).\n"
-                    << "Total number of bytes available is: " << this->data->getNumBytes() << ", number of bytes previously read already is " << std::distance(this->data->getRawData(), this->readingPtr));
+                    << "Total number of bytes available is: " << this->data->getNumBytes() << ", number of bytes previously read already is " << std::distance(this->data->getConstRawData(), this->readingPtr));
                 }
 
                 value = fromBinary<T>(this->readingPtr);
@@ -76,25 +76,23 @@ namespace claid
             void readString(std::string& value)
             {
                 // Load length of string
-                size_t size;
+                int32_t size;
                 this->read(size);
 
                 value.resize(size);
                 // Store characters
 
-                for(size_t i = 0; i < size; i++)
+                for(int32_t i = 0; i < size; i++)
                 {
                     this->read(value[i]);
-                }
-
-                                
+                }                                
 
             }
 
       
             void resetReader()
             {
-                this->readingPtr = this->data->getRawData();
+                this->readingPtr = this->data->getConstRawData();
                 this->dataEndPtr = this->readingPtr + this->data->getNumBytes();
             }
     };  

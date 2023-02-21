@@ -1,7 +1,11 @@
 #pragma once
 #include <vector>
 #include "Reflection/SplitReflectInType.hpp"
+#include "Exception/Exception.hpp"
 #include <iostream>
+#include <fstream>
+#include <mutex>
+
 namespace claid
 {
     class BinaryData
@@ -9,6 +13,11 @@ namespace claid
         
        
         public:
+            BinaryData()
+            {
+                this->safeCopyMutex = std::make_shared<std::mutex>();
+            }
+
             template<typename Reflector>
             void reflect(Reflector& r)
             {
@@ -18,7 +27,7 @@ namespace claid
             template<typename Reflector>
             void reflectRead(Reflector& r)
             {
-                size_t bytes;
+                int32_t bytes;
                 r.member("NumBytes", bytes, "");
 
                 this->resize(bytes);
@@ -30,7 +39,7 @@ namespace claid
             template<typename Reflector>
             void reflectWrite(Reflector& r)
             {
-                size_t bytes = this->data.size();
+                int32_t bytes = this->data.size();
                 r.member("NumBytes", bytes, "");
 
                 r.write(this->getRawData(), bytes);
@@ -49,34 +58,26 @@ namespace claid
 
             void store(const char* data, size_t size)
             {
+                const char* ptr = data;
                 for(size_t i = 0; i < size; i++)
                 {
-                    this->data.push_back(data[i]);
+                    this->data.push_back(*ptr);
+                    ptr++;
                 }
             }
 
             void storeString(const std::string& value)
             {
                 // Store length of string
-                size_t size = value.size();
+                int32_t size = value.size();
                 this->store(size);
 
                 // Store characters
-                for(size_t i = 0; i < size; i++)
+                for(int32_t i = 0; i < size; i++)
                 {
                     this->store(value[i]);
                 }
             }
-
-            void insertBytes(const char* bytes, size_t numBytes)
-            {
-                for(size_t i = 0; i < numBytes; i++)
-                {
-                    this->data.push_back(*bytes);
-                    bytes++;
-                }
-            }
-
 
             void resize(size_t size)
             {
@@ -85,6 +86,11 @@ namespace claid
             }
 
             char* getRawData()
+            {
+                return this->data.data();
+            }
+
+            const char* getConstRawData() const
             {
                 return this->data.data();
             }
@@ -99,16 +105,71 @@ namespace claid
                 return this->data.size();
             }
 
+            size_t size() const
+            {
+                return this->getNumBytes();
+            }
+
             void clear()
             {
                 this->data.clear();
             }
 
+            void loadFromFile(const std::string& path)
+            {
+                   
+                std::fstream file(path, std::ios::in | std::ios::binary);
+                if(!file.is_open())
+                {
+                    CLAID_THROW(claid::Exception, "Error, cannot load binary data from \"" << path << "\".\n"
+                    << "Could not open File for writing.");
+                }
+
+                file.seekg(0, std::ios::end);
+                size_t numBytes = file.tellg();
+                file.seekg(0, std::ios::beg);
+
+                this->resize(numBytes);
+
+                file.read(this->data.data(), numBytes);
+            }
+
+            void saveToFile(const std::string& path) const
+            {
+                std::fstream file(path, std::ios::out | std::ios::binary);
+                if(!file.is_open())
+                {
+                    CLAID_THROW(claid::Exception, "Error, cannot save binary data to \"" << path << "\".\n"
+                    << "Could not open File for writing.");
+                }
+
+                file.write(this->data.data(), this->data.size());
+            }
+
+            void fastSafeCopyTo(BinaryData& copy) const
+            {
+                // If two threads make a copy of this binary data
+                // at exactly the same time, this can lead to bad_alloc
+                // on some architectures / compilers.
+                // Use this function to avoid this problem when copying.
+                const std::lock_guard<std::mutex> lock(*this->safeCopyMutex.get());
+                copy.data = this->data;
+            }
+
+            void append(const BinaryData& data)
+            {
+                const char* ptr = data.getConstRawData();
+                this->store(ptr, data.getNumBytes());
+            }
      
 
         private:
 
             std::vector<char> data;
+
+            // See fastSafeCopy.
+            // mutable in order to be usable in fastSafeCopyTo which is const function.
+            mutable std::shared_ptr<std::mutex> safeCopyMutex;
 
             template<typename T>
             static const char* toBinary(const T& value, size_t& size)

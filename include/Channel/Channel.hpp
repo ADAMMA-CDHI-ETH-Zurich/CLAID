@@ -27,7 +27,7 @@ namespace claid
     class Channel
     {
         private:
-            TypedChannel<T>* typedChannel;
+            TypedChannel<T>* typedChannel = nullptr;
             const ChannelSubscriberBase* subscriberPtr;
             size_t publisherSubscriberUniqueIdentifier = {0};
 
@@ -41,7 +41,14 @@ namespace claid
             {
                 if(*this->channelAccessRights.get() != ChannelAccessRights::READ && *this->channelAccessRights.get() != ChannelAccessRights::READ_WRITE)
                 {
-                    CLAID_THROW(Exception, "Cannot read from channel with ID " << typedChannel->getChannelID() << " as it was either only published or has been unsubscribed.");
+                    if(this->typedChannel == nullptr)
+                    {
+                        CLAID_THROW(Exception, "Cannot read from channel as it was neither published nor subscribed.");
+                    }
+                    else
+                    {
+                        CLAID_THROW(Exception, "Cannot read from channel with ID " << typedChannel->getChannelID() << " as it was either only published or has been unsubscribed.");
+                    }
                 }
             }
 
@@ -49,7 +56,14 @@ namespace claid
             {
                 if(*this->channelAccessRights.get() != ChannelAccessRights::WRITE && *this->channelAccessRights.get() != ChannelAccessRights::READ_WRITE)
                 {
-                    CLAID_THROW(Exception, "Cannot post to channel with ID " << typedChannel->getChannelID() << " as it was either only subscribed to or has been unpublished.");
+                    if(this->typedChannel == nullptr)
+                    {
+                        CLAID_THROW(Exception, "Cannot post to channel as it was neither published nor subscribed.");
+                    }
+                    else
+                    {
+                        CLAID_THROW(Exception, "Cannot post to channel with ID " << typedChannel->getChannelID() << " as it was either only subscribed to or has been unpublished.");
+                    }
                 }
             }
         public:

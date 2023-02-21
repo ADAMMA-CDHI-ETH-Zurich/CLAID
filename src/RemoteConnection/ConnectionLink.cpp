@@ -46,6 +46,7 @@ namespace RemoteConnection
 
         this->remoteModule->setReceiveMessageChannel(connection->subscribeToReceiveChannel(subscriber));
         this->remoteModule->setSendMessageChannel(connection->registerToSendChannel());
+        this->remoteModule->setErrorChannel(connection->registerToErrorChannel());
     }
 
     void ConnectionLink::unlink()
@@ -63,6 +64,7 @@ namespace RemoteConnection
         
         this->remoteModule->unsubscribeReceiveMessageChannel();
         this->remoteModule->unpublishSendMessageChannel();
+        this->remoteModule->unpublishErrorChannel();
     }
 }
 }

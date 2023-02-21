@@ -5,6 +5,8 @@
 #include "Serialization/Serializer.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 
+#include <stack>
+
 namespace claid
 {
     class XMLSerializer : public Serializer<XMLSerializer>
@@ -13,10 +15,17 @@ namespace claid
             std::shared_ptr<XMLNode> root = nullptr;
             std::shared_ptr<XMLNode> currentNode = nullptr;
 
+            std::stack<std::shared_ptr<XMLNode>> nodeStack;
+
             XMLSerializer()
             {
                 this->root = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
                 this->currentNode = root;
+            }
+        
+            ~XMLSerializer()
+            {
+                
             }
 
             template<typename T>
@@ -72,6 +81,7 @@ namespace claid
             void callBeginClass(const char* property, T& member)
             {
                 std::shared_ptr<XMLNode> node = std::shared_ptr<XMLNode>(new XMLNode(currentNode, property));
+                this->nodeStack.push(this->currentNode);
                 this->currentNode->addChild(node);
                 this->currentNode = node;
             }
@@ -79,7 +89,8 @@ namespace claid
             template<typename T>
             void callEndClass(const char* property, T& member)
             {
-                this->currentNode = this->currentNode->parent;
+                this->currentNode = this->nodeStack.top();
+                this->nodeStack.pop();
             }
 
 
@@ -149,16 +160,16 @@ namespace claid
             template<typename T>
             void callEnum(const char* property, T& member)
             {
-                size_t m = static_cast<size_t>(member);
+                int32_t m = static_cast<int32_t>(member);
                 this->callInt(property, m);
             }
 
-            void count(const std::string& name, size_t& count)
+            void count(const std::string& name, int32_t& count)
             {
                 // Do nothing
             }
 
-            void countElements(size_t& count)
+            void countElements(int32_t& count)
             {
                 // Do nothing
             }
@@ -183,15 +194,28 @@ namespace claid
 
             }
 
-            template<typename T> 
-            void serialize(T& obj)
+            template <typename T>
+            typename std::enable_if<!std::is_arithmetic<T>::value>::type
+            serialize(T& obj)
             {
-                std::string name = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
-                std::shared_ptr<XMLNode> node = std::shared_ptr<XMLNode>(new XMLNode(currentNode, name));
-                this->currentNode->addChild(node);
-                this->currentNode = node;
+                // std::string name = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
+                // std::shared_ptr<XMLNode> node = std::shared_ptr<XMLNode>(new XMLNode(currentNode, name));
+                // this->currentNode->addChild(node);
+                // this->currentNode = node;
 
                 invokeReflectOnObject(obj);
+            }
+
+            template <typename T>
+            typename std::enable_if<std::is_arithmetic<T>::value>::type
+            serialize(T& obj)
+            {
+                this->member("Value", obj, "");
+            }
+
+            std::shared_ptr<XMLNode> getXMLNode()
+            {
+                return this->root;
             }
 
             void enforceName(std::string& name, int idInSequence = 0)

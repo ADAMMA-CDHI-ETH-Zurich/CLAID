@@ -164,6 +164,7 @@ namespace claid
 		if (res < 0) 
 		{
 			Logger::printfln("Could not connect to %s:%d %d %s %d", address.c_str(), port, res, strerror(errno), errno);
+			::close(this->sock);
 			return false;
 		}
 		Logger::printfln("connected %d %s %d",  res, strerror(errno), errno);
@@ -176,8 +177,8 @@ namespace claid
 
 	bool Network::SocketClient::writeBytes(std::vector<char>& byteBuffer)
 	{
-		Logger::printfln("Low level socketclient: writing %ul bytes", byteBuffer.size());
-		int result = send(this->sock, byteBuffer.data(), byteBuffer.size(), 0);
+		Logger::printfln("Low level socketclient %d: writing  %ul bytes", this->sock, byteBuffer.size());
+		int result = send(this->sock, byteBuffer.data(), byteBuffer.size(), MSG_NOSIGNAL);
 		if (result < 0)
 		{
 			SocketClientError error;
@@ -187,7 +188,7 @@ namespace claid
 			this->close();
 			return false;
 		}
-		Logger::printfln("low level socketclient: writing result %d", result);
+		Logger::printfln("low level socketclient %d: writing result %d", this->sock, result);
 		return true;
 	}
 
@@ -222,6 +223,11 @@ namespace claid
 
 	void Network::SocketClient::close()
 	{
+		Logger::printfln("SocketClient::close %d", this->connected);
+		// Don't call close when socket was closed already or is not connected.
+		// This will lead a funny "fdsan: attempted to close file descriptor 89, expected to be unowned, actually owned by ..."
+		if(!this->connected)
+			return;
 		this->connected = false;
 
 		long arg; 
@@ -239,7 +245,9 @@ namespace claid
 			Logger::printfln("Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
 	
 		} 
+		shutdown(sock, SHUT_RDWR);
 		::close(this->sock);
+		Logger::printfln("SocketClient::close done");
 
 	}
 

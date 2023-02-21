@@ -12,11 +12,11 @@ namespace claid
     bool Network::SocketClient::write(BinaryData& data)
     {
         // First, we write the size (number of bytes) of the data.
-        size_t size = data.getNumBytes();
+        int32_t size = data.getNumBytes();
 
-        std::vector<char> tmp(sizeof(size_t));
+        std::vector<char> tmp(sizeof(int32_t));
 
-        *reinterpret_cast<size_t*>(tmp.data()) = size;
+        *reinterpret_cast<int32_t*>(tmp.data()) = size;
 
         Logger::printfln("Writing header %u", size);
         if (!writeBytes(tmp))
@@ -33,16 +33,16 @@ namespace claid
     bool Network::SocketClient::read(BinaryData& data)
     {
         // We read the number of bytes first
-        size_t* dataNumBytes;
+        int32_t* dataNumBytes;
         std::vector<char> byteBuffer;
         // Read data size
 
-        if (!this->readBytes(byteBuffer, sizeof(size_t)))
+        if (!this->readBytes(byteBuffer, sizeof(int32_t)))
         {
             return false;
         }
 
-        dataNumBytes = reinterpret_cast<size_t*>(byteBuffer.data());
+        dataNumBytes = reinterpret_cast<int32_t*>(byteBuffer.data());
         Logger::printfln("Read header, continuing to read %d bytes", *dataNumBytes);
 
         // Now read the data

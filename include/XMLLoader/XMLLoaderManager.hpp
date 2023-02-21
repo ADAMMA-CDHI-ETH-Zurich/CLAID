@@ -16,6 +16,32 @@ namespace claid
 		private:
 			std::map<std::string, XMLLoaderBase*> xmlLoaders;
 
+			void checkModulesReturnedByLoader(std::vector<claid::Module*>& vector, const std::string& xmlTag)
+			{
+				for(claid::Module* entry : vector)
+				{
+					// Even though it should have been checked
+					// by the corresponding XMLLoader already in XMLLoaderBase::instantiateModulesFromNodes),
+					// we check again whether each module is valid,
+					// because custom loaders can also override this function and maybe did not check carefully.
+					if(entry == nullptr)
+					{
+						CLAID_THROW(Exception, "Error while parsing Modules from XML.\n"
+						<< "Loader for tag \"" << xmlTag << "\" returned a Module which is null.\n"
+						<< "This is not allowed.");
+					}
+				}
+			}
+
+			template<typename T>
+			void appendToVector(std::vector<T>& vector, const std::vector<T>& toAppend)
+			{
+				for(const T& entry : toAppend)
+				{
+					vector.push_back(entry);
+				}
+			}
+
 		public:
 			template<typename T>
 			void registerLoader(std::string name)
@@ -28,40 +54,33 @@ namespace claid
 			{
 				//std::cout << "EXECUTE LOADER " << loaders.size() << "\n";
 				std::vector<claid::Module*> loadedModules;
-				for (auto it : xmlLoaders)
+
+				std::map<std::string, std::vector<std::shared_ptr<XMLNode>>> nodesForEachTag;
+
+
+				for (std::shared_ptr<XMLNode> child : xmlNode->children)
 				{
-					XMLLoaderBase* loader = it.second;
-					std::vector<std::shared_ptr<XMLNode>> desiredNodes;
-
-					for (std::shared_ptr<XMLNode> child : xmlNode->children)
-					{
-						if (child->name == loader->getDesiredTag())
-						{
-							std::cout << "Instantiate 1\n" << std::flush;
-							claid::Module* loadedModule = loader->instantiateModuleFromNode(child);
-							std::cout << "Instantiate 2\n" << std::flush;
-
-							if(loadedModule == nullptr)
-							{
-								CLAID_THROW(claid::Exception, "Error in loading Module from XML. Cannot load Module from XML Node " << child->name);
-							}
-							loadedModules.push_back(loadedModule);			
-							std::cout << "Instantiate 3\n" << std::flush;
-				
-						}
-						else
-						{
-							if(!this->doesLoaderExistForTag(child->name))
-							{
-								CLAID_THROW(claid::Exception, "Error! No loader is able to handle tag \"" << child->name << "\" in XML file.");
-							}
-						}
-					} 
+					const std::string& xmlTag = child->name;
+					nodesForEachTag[xmlTag].push_back(child);
 				}
-				std::cout << "Instantiate 4\n" << std::flush;
+				
+				for(std::pair<std::string, std::vector<std::shared_ptr<XMLNode>>> entry : nodesForEachTag)
+				{
+					const std::string& xmlTag = entry.first;
+					if(!this->doesLoaderExistForTag(xmlTag))
+					{
+						CLAID_THROW(claid::Exception, "Error while loading from XML. Tag \"" << xmlTag << "\" in XML file is unknown.\n"
+						<< "No loader is able to handle this tag.");
+					}
+
+					XMLLoaderBase* loader = getLoaderForTag(xmlTag);
+
+					std::vector<claid::Module*> modules = loader->instantiateModulesFromNodes(entry.second);
+					checkModulesReturnedByLoader(modules, xmlTag);
+					appendToVector(loadedModules, modules);
+				}
 
 				return loadedModules;
-				
 			}
 
 			bool doesLoaderExistForTag(const std::string& tag)
@@ -76,6 +95,22 @@ namespace claid
 
 				}
 				return false;
+			}
+
+			XMLLoaderBase* getLoaderForTag(const std::string& tag)
+			{
+				for(auto it : xmlLoaders)
+				{
+					XMLLoaderBase* loader = it.second;
+					if (tag == loader->getDesiredTag())
+					{
+						return loader;
+					}
+
+				}
+
+				CLAID_THROW(Exception, "Error, cannot find XMLLoader for tag \"" << tag << "\".\n"
+					<< "No loader can handle this tag.");
 			}
 
 			void printLoaderTags()

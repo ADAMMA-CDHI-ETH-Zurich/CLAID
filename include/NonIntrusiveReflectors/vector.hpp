@@ -7,7 +7,7 @@ template<typename Reflector, typename T>
 void reflectRead(Reflector& r, std::vector<T>& vector)
 {
     r.beginSequence();
-    size_t count;
+    int32_t count;
     // Gets count from the current data.
     r.count("item", count);
 
@@ -25,7 +25,7 @@ template<typename Reflector, typename T>
 void reflectWrite(Reflector& r, std::vector<T>& vector)
 {
     r.beginSequence();
-    size_t count = vector.size();
+    int32_t count = vector.size();
     r.count("item", count);
 
     for(size_t i = 0; i < vector.size(); i++)

@@ -52,6 +52,8 @@ namespace claid
             )
 
             #ifdef __JAVA_WRAPPERS__
+                // Override reflect function above if the Reflector is JbindWrapperGenerator.
+                // This allows us to create a custom Java wrapper for this data type.
                 CustomReflectForReflector(Buffer, JavaWrapper::JbindWrapperGenerator<Buffer>,
 
                 )
@@ -76,8 +78,6 @@ namespace claid
                 });
 
                 pyClass->def(py::init([](py::buffer b) {
-                   
-
                     /* Request a buffer descriptor from Python */
                     py::buffer_info info = b.request();
 

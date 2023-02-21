@@ -135,16 +135,16 @@ namespace claid
             template<typename T>
             void callEnum(const char* property, T& member)
             {
-                size_t m = static_cast<size_t>(member);
+                int32_t m = static_cast<int32_t>(member);
                 this->callInt(property, m);
             }
 
-            void count(const std::string& name, size_t& count)
+            void count(const std::string& name, int32_t& count)
             {
                 this->binaryData->store(count);
             }
 
-            void countElements(size_t& count)
+            void countElements(int32_t& count)
             {
                 this->binaryData->store(count);
             }
@@ -166,7 +166,7 @@ namespace claid
             
             void write(const char* data, size_t size)
             {
-                this->binaryData->insertBytes(data, size);
+                this->binaryData->store(data, size);
             }
 
 

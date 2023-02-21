@@ -83,16 +83,16 @@ namespace claid
                 // __PRETTY_FUNCTION__ is going to be sth like
                 // auto claid::TypeChecking::compileTimeTypeNameByUsingFunctionName() [T = std::string]
                 // What we are interested in is only std::string, thus we remove the prefix and suffix.
-
                 const int totalLength = constexpr_length_of_c_string(__PRETTY_FUNCTION__);
                 const int prefixLength = constexpr_length_of_c_string("auto claid::TypeChecking::compileTimeTypeNameByUsingFunctionName() [T = "); 
                 const int suffixLength = constexpr_length_of_c_string("]");
             #elif defined(__GNUC__)
+            
                 static_string p = __PRETTY_FUNCTION__;
                 const int totalLength = constexpr_length_of_c_string(__PRETTY_FUNCTION__);
-                const int prefixLength = constexpr_length_of_c_string("auto claid::TypeChecking::compileTimeTypeNameByUsingFunctionName() [T = "); 
+                const int prefixLength = constexpr_length_of_c_string("constexpr auto claid::TypeChecking::compileTimeTypeNameByUsingFunctionName() [with T = "); 
                 const int suffixLength = constexpr_length_of_c_string("]");
-                
+
             #elif defined(_MSC_VER)
                 static_string p = __FUNCSIG__;
 

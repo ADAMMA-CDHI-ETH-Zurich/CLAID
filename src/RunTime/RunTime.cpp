@@ -13,10 +13,12 @@ namespace claid
         this->addHiddenNamespace("/CLAID/LOCAL/");
     }
 
-    std::vector<Module*> RunTime::instantiateModulesFromRootXMLNode(std::shared_ptr<XMLNode> xmlNode)
+    std::vector<Module*> RunTime::instantiateModulesFromXMLNode(std::shared_ptr<XMLNode> xmlNode)
     {
         std::vector<Module*> loadedModules;
-    
+
+        // Evaluates each of the children of xmlNode and executes the loader 
+        // that can handle the node tag, if there is any.    
         loadedModules = this->loader.executeAppropriateLoaders(xmlNode);
 
         return loadedModules;
@@ -65,11 +67,14 @@ namespace claid
         // Hence, we assume that the user wants to start all those modules (+ the ones added using addModule) simultaneously.
         // Therefore, at startup we process all configs already pushed to the channel and only switch to blocking mode after we are done.
         std::shared_ptr<XMLNode> xmlNode;
+        Logger::printfln("load and start");
 
         // Returns false when no more data on the channel.
         while(loadedXMLConfigsChannel.get(xmlNode, false))
         {
-            std::vector<Module*> loadedModules = this->instantiateModulesFromRootXMLNode(xmlNode);
+            Logger::printfln("loading XML");
+
+            std::vector<Module*> loadedModules = this->instantiateModulesFromXMLNode(xmlNode);
 
             this->insertModules(loadedModules);
             this->insertModulesLoadedFromXMLConfigs(loadedModules);
@@ -95,7 +100,7 @@ namespace claid
 
     std::vector<Module*> RunTime::parseXMLAndStartModules(std::shared_ptr<XMLNode> xmlNode)
     {
-        std::vector<Module*> loadedModules = this->instantiateModulesFromRootXMLNode(xmlNode);
+        std::vector<Module*> loadedModules = this->instantiateModulesFromXMLNode(xmlNode);
         this->insertModules(loadedModules);
         this->insertModulesLoadedFromXMLConfigs(loadedModules);
         this->startModules(loadedModules);
@@ -157,7 +162,8 @@ namespace claid
     void RunTime::startInSeparateThread()
     {
         startLoadingThread();
-        this->separateProcessThread = new std::thread(&RunTime::process, this);
+        this->running = true;
+        this->separateProcessThread = new std::thread(&RunTime::processRunnablesBlocking, this);
     }
 
     void RunTime::process()

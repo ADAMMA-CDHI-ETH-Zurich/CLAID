@@ -8,6 +8,8 @@
 
 
 #include "Binary/BinarySerializer.hpp"
+#include "XML/XMLSerializer.hpp"
+#include "Reflection/Reflect.hpp"
 
 namespace claid
 {
@@ -40,6 +42,9 @@ namespace claid
             }
 
             virtual TaggedData<BinaryData> getBinaryData() = 0;
+            virtual std::shared_ptr<XMLNode> headerToXML() = 0;
+            virtual std::shared_ptr<XMLNode> toXML() = 0;
+            virtual bool canSerializeToXML() = 0;
 
     };
 
@@ -104,8 +109,27 @@ namespace claid
                 return this->header;
             }
 
+            std::shared_ptr<XMLNode> headerToXML()
+            {
+                XMLSerializer serializer;
+                serializer.serialize(this->header);
+                return serializer.getXMLNode();
+            }
+
+            std::shared_ptr<XMLNode> toXML()
+            {
+                return this->channelBufferElement->toXML();
+            }
+
+            bool canSerializeToXML()
+            {
+                // When ChannelData is untyped, we can only
+                // serialize to XML if the bufferElement is typed.
+                return this->channelBufferElement->canSerializeToXML();
+            }
+
      
-        // ChannelData(ChannelBuffer<T>* holderBuffer, TaggedData<T>& data) : ChannelDataBase(true), holderBuffer(holderBuffer), data(data)
+        // ChannelData(ChannelBuffer<T>* holderBuffer, TaggedData<T>& taggedData) : ChannelDataBase(true), holderBuffer(holderBuffer), taggedData(taggedData)
         // {
         //     holderBuffer->serialize();
         // }
@@ -116,10 +140,10 @@ namespace claid
     class ChannelData : public ChannelDataBase
     {
         private:
-            TaggedData<T> data;
+            TaggedData<T> taggedData;
             const TaggedData<T>& internalValue() const
             {
-                return data;
+                return taggedData;
             }
 
             // The ChannelBufferElement that our data belongs to.
@@ -142,11 +166,12 @@ namespace claid
             }
 
 
-            ChannelData(TaggedData<T>& data, 
-                std::shared_ptr<ChannelBufferElement> channelBufferElement) : ChannelDataBase(true), data(data), channelBufferElement(channelBufferElement)
+            ChannelData(TaggedData<T> taggedData, 
+                std::shared_ptr<ChannelBufferElement> channelBufferElement) : ChannelDataBase(true), taggedData(taggedData), channelBufferElement(channelBufferElement)
             {
             }
 
+            
 
 
             TaggedData<BinaryData> getBinaryData() 
@@ -156,17 +181,17 @@ namespace claid
 
             TaggedDataBase getHeader()
             {
-                return *static_cast<TaggedDataBase*>(&data);
+                return *static_cast<TaggedDataBase*>(&taggedData);
             }
 
             const Time& getTimestamp() const
             {
-                return this->data.timestamp;
+                return this->taggedData.timestamp;
             }
 
             const uint64_t getSequenceID()
             {
-                return this->data.sequenceID;
+                return this->taggedData.sequenceID;
             }
 
             operator const TaggedData<T>&() const 
@@ -184,6 +209,29 @@ namespace claid
             const TaggedData<T>* operator->() const 
             { 
                 return &this->internalValue();
+            }
+
+            std::shared_ptr<XMLNode> headerToXML()
+            {
+                XMLSerializer serializer;
+                TaggedDataBase header = this->getHeader();
+                serializer.serialize(header);
+                return serializer.getXMLNode();
+            }
+
+            std::shared_ptr<XMLNode> toXML()
+            {
+                if(!this->valid)
+                {
+                    CLAID_THROW(Exception, "Error, cannot serialize ChannelData to XML, data not valid");
+                }
+                return this->channelBufferElement->toXML();
+            }
+
+            bool canSerializeToXML()
+            {
+                // When ChannelData is typed, we can always serialize to XML.
+                return true;
             }
 
 

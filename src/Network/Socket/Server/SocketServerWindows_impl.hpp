@@ -93,8 +93,12 @@ namespace claid
         {
             int clientSocket;
             struct sockaddr_in clientAddress; 
-                      
-            clientSocket = ::accept(this->serverSocket, NULL, NULL);
+            // CRUCIAL ON ANDROID! IF NOT ZEROING, WEIRD STUFF CAN HAPPEN !
+            // E.G. ACCEPT FAILS BECAUSE OF "invalid_argument".
+           // zero_memory((char *) &clientAddress, sizeof(clientAddress));
+            
+            socklen_t clientAddressLength = sizeof(clientAddress);
+            clientSocket = ::accept(this->serverSocket, (struct sockaddr *)&clientAddress, &clientAddressLength);
             if (clientSocket < 0) 
             { 
                 Logger::printfln("SocketServer:ClientHandler failed to accept client. Is Server down??\n");

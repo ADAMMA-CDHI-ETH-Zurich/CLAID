@@ -16,7 +16,7 @@ namespace Network
             return false;
         }
 
-        int opt;
+        int opt = 1;
         if (setsockopt(this->serverSocket, SOL_SOCKET, SO_REUSEADDR, 
                                                     &opt, sizeof(opt))) 
         { 
@@ -24,6 +24,14 @@ namespace Network
             this->lastError.errorString = strerror(errno);
             return false;
         } 
+
+        // #ifdef SO_NOSIGPIPE
+        // opt = 1;
+        // if(setsockopt(this->serverSocket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&opt, sizeof(opt)))
+        // {
+
+        // }
+        // #endif
         
         struct sockaddr_in address;         
         
@@ -58,7 +66,8 @@ namespace Network
         // E.G. ACCEPT FAILS BECAUSE OF "invalid_argument".
         bzero((char *) &clientAddress, sizeof(clientAddress));
         
-        clientSocket = ::accept(this->serverSocket, (struct sockaddr *)&clientAddress, (socklen_t*)&clientAddress);
+        socklen_t clientAddressLength = sizeof(clientAddress);
+        clientSocket = ::accept(this->serverSocket, (struct sockaddr *)&clientAddress, &clientAddressLength);
         if (clientSocket < 0) 
         { 
             Logger::printfln("SocketServer:ClientHandler failed to accept client. Is Server down??\n");
