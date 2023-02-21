@@ -8,10 +8,12 @@
 
 #include <string>
 #include <stdexcept>
+#include <mutex>
 std::string claid::Logger::logTag = "claid";
 std::string claid::Logger::lastLogMessage = "";
 bool claid::Logger::loggingToFileEnabled = false;
 std::ofstream* claid::Logger::file = nullptr;
+std::mutex fileAccessMutex;
 
 #ifdef __ANDROID__
 	#include <android/log.h>
@@ -39,20 +41,22 @@ void claid::Logger::printfln(const char *format, ...)
 	va_start(vargs, format);
 
 
-	// Size 500 was too little.
+	// Size 500 was too small.
     char buffer[1024] = "";
 	std::vsprintf(buffer, format, vargs);
 
 
 	va_end(vargs);
 	std::stringstream ss;
-	std::string timeString;
-	claid::Logger::getTimeString(&timeString);
+	std::string timeString = claid::Logger::getTimeString();
 
 	ss << "[" << claid::Logger::logTag << " | "
 			<< timeString << "] " << buffer;
 
-	claid::Logger::lastLogMessage = ss.str().c_str();
+	// This is not thread safe....
+	// Leads to segfault if multiple threads access it at the same time.
+	//claid::Logger::lastLogMessage = ss.str().c_str();
+	
 	#ifdef __ANDROID__
 		LOGCAT(ss.str().c_str(), __LINE__);
 	#else
@@ -61,8 +65,10 @@ void claid::Logger::printfln(const char *format, ...)
 
 	if(claid::Logger::loggingToFileEnabled && claid::Logger::file != nullptr)
 	{
+		fileAccessMutex.lock();
 		(*file) << ss.str() << "\n";
 		file->flush();
+		fileAccessMutex.unlock();
 	}
 }
 
@@ -80,7 +86,7 @@ void claid::Logger::printfln(const char *format, ...)
  *
  * @return void.
  */
-void claid::Logger::getTimeString(std::string *timeStr)
+std::string claid::Logger::getTimeString()
 {
 	time_t t = time(0);
 	struct tm * now = localtime(&t);
@@ -102,7 +108,7 @@ void claid::Logger::getTimeString(std::string *timeStr)
 	else
 		ss << now->tm_sec;
 
-	*timeStr = ss.str();
+	return ss.str();
 }
 
 /**

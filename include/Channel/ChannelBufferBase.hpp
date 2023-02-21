@@ -10,7 +10,7 @@
 #include <mutex>
 #include <thread>
 #include <iostream>
-#define MAX_CHANNEL_BUFFER_SIZE 20
+#define MAX_CHANNEL_BUFFER_SIZE 5
 
 namespace claid
 {
@@ -48,7 +48,7 @@ namespace claid
 
             
 
-            void getTypeNameFromBinaryData(BinaryData& binaryData, std::string& typeName)
+            void getTypeNameFromBinaryData(const BinaryData& binaryData, std::string& typeName) const
             {
                 // First bytes of the binary data are the RTTI string identifiying the type.
                 BinaryDataReader reader(&binaryData);
@@ -64,11 +64,11 @@ namespace claid
                 return this->dataTypeName;
             }
 
-            virtual void insertBinaryData(TaggedData<BinaryData>& binaryData)
+            virtual void insertBinaryData(TaggedData<BinaryData> binaryData)
             {
                 this->lockMutex();
 
-
+                Logger::printfln("Inserting binary data (ChannelBufferBase) at index %d %s", this->currentIndex, this->dataTypeName.c_str());
                 // Check data types by typename string.
                 std::string binaryDataTypeName;
                 this->getTypeNameFromBinaryData(binaryData.value(), binaryDataTypeName);

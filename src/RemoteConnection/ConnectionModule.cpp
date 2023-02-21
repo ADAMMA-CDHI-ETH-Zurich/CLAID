@@ -20,6 +20,7 @@ namespace RemoteConnection
     {
         Logger::printfln("onSendMessage");
         this->sendMessage(message->value());
+        Logger::printfln("send message done");
     }
 
     void ConnectionModule::initialize()
@@ -33,9 +34,11 @@ namespace RemoteConnection
 
     void ConnectionModule::terminate()
     {
+        Logger::printfln("ConnectionModule::terminate()");
         this->sendChannel.unsubscribe();
         this->receiveChannel.unpublish();
         this->errorChannel.unpublish();
+        Logger::printfln("ConnectionModule::terminate() end");
     }
 
     Channel<Message> ConnectionModule::subscribeToReceiveChannel(ChannelSubscriber<Message> channelSubscriber)

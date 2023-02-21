@@ -9,6 +9,7 @@
 #include "PolymorphicReflector/PolymorphicReflector.hpp"
 #include <algorithm>
 #include <memory.h>
+#include <stack>
 
 namespace claid
 {
@@ -17,6 +18,8 @@ namespace claid
         private:
             std::shared_ptr<XMLNode> xmlRootNode;
             std::shared_ptr<XMLNode> currentXMLNode;
+
+            std::stack<std::shared_ptr<XMLNode>> nodeStack;
 
             bool getCurrentNodeClassName(std::string& className)
             {
@@ -176,6 +179,8 @@ namespace claid
                     "We tried to deserialize an object of class \"" << className << "\", which has a member \"" << property << "\". This member was not specified in the corresponding XML node.");
                 }
 
+                this->nodeStack.push(this->currentXMLNode);
+
                 this->currentXMLNode = node;
                 this->isSequence = false;
             }
@@ -183,7 +188,8 @@ namespace claid
             template<typename T>
             void callEndClass(const char* property, T& member)
             {
-                this->currentXMLNode = this->currentXMLNode->parent;
+                this->currentXMLNode = this->nodeStack.top();
+                this->nodeStack.pop();
             }
 
             template<typename T>

@@ -3,6 +3,8 @@
 #include "RemoteConnection/ConnectionLink.hpp"
 #include "RemoteConnection/RemoteModule/RemoteModule.hpp"
 #include "RemoteConnection/RemoteConnectedEntity.hpp"
+#include "RemoteConnection/Error/ErrorRemoteRuntimeOutOfSync.hpp"
+#include "RemoteConnection/Error/ErrorConnectionTimeout.hpp"
 #include "Network/SocketConnectionModule.hpp"
 #include "Network/NetworkModule.hpp"
 
@@ -40,7 +42,7 @@ namespace claid
 
                 bool connected = false;
 
-                RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity;
+                RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity = nullptr;
 
                 Channel<RemoteConnection::Error> errorChannel;
                 
@@ -118,13 +120,23 @@ namespace claid
                     // First setup, then subscribe to errroChannel. Subscribing/publishing is only allowed during or after initialization
                     // of the corresponding module.
                     this->remoteConnectedEntity->setup();
-                    this->errorChannel = remoteConnectedEntity->subscribeToErrorChannel(this->makeSubscriber(&NetworkClientModule::onErrorReceived, this));
+
+                    // Why do we store the ptr to remoteConnectedEntity here?
+                    // Because onClientLostConnection could be called multiple times (e.g., if read and write fail at the same time).
+                    // The remoteConnectedEntity will be deleted the first time that onClientConnectionLost is called and will be set to nullptr.
+                    // The second time it will be called, we could just check if this->remoteConnectedEntity is nullptr and return without doying anything.
+                    // However, if we reconnected faster than onClientLostConnection is called for the second time, remoteConnectedEntity will not be nullptr anymore
+                    // and we would canceled the reestablished connection. Hence, if remoteConnectedEntity is not nullptr, we check if it is the current entity.
+                    // If yes, that means that the reestablished connection has already lost connection again. If not, it means onConnectionLost was called twice for the old connection
+                    // and we can ignore it aswell.
+                    std::function<void (ChannelData<RemoteConnection::Error>)> function = std::bind(&NetworkClientModule::onErrorReceived, this, this->remoteConnectedEntity, std::placeholders::_1);
+                    this->errorChannel = remoteConnectedEntity->subscribeToErrorChannel(this->makeSubscriber(function));
                     this->remoteConnectedEntity->start();
                 }
 
-                void onErrorReceived(ChannelData<RemoteConnection::Error> error)
+                void onErrorReceived(RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity, ChannelData<RemoteConnection::Error> error)
                 {
-                    this->onError(error->value());
+                    this->onError(remoteConnectedEntity, error->value());
                 }
 
                 template<typename T>
@@ -137,10 +149,10 @@ namespace claid
                     // (E.g.: If error is ErrorConnectToAdressFailed, then we might try to reconnect. If that fails again,
                     // it would call onError again, and so on and so forth resulting in unbound recursion, which would eventually lead
                     // to a stack overflow).
-                    this->callLater<NetworkClientModule, RemoteConnection::Error>(&NetworkClientModule::onError, this, error);
+                    this->callLater<NetworkClientModule, RemoteConnection::RemoteConnectedEntity*, RemoteConnection::Error>(&NetworkClientModule::onError, this, this->remoteConnectedEntity, error);
                 }
 
-                void onError(RemoteConnection::Error error)
+                void onError(RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity, RemoteConnection::Error error)
                 {
                     if(error.is<ErrorConnectToAdressFailed>())
                     {
@@ -154,16 +166,48 @@ namespace claid
                     {
                         Logger::printfln("Error read from socket failed.");
                         // Read from socket failed. Connection lost.
-                        this->onConnectionLost();
+                        this->onConnectionLost(remoteConnectedEntity);
+                    }
+                    else if(error.is<RemoteConnection::ErrorRemoteRuntimeOutOfSync>())
+                    {
+                        Logger::printfln("NetworkClient: Error remote runtime out of sync.");
+                        this->onConnectionLost(remoteConnectedEntity);
+                    
+                    }
+                    else if(error.is<RemoteConnection::ErrorConnectionTimeout>())
+                    {
+                        Logger::printfln("NetworkClient: Error connection timeout.");
+                        this->onConnectionLost(remoteConnectedEntity);
                     }
                 }
 
-                void onConnectionLost()
+
+                void onConnectionLost(RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity)
                 {
-                    Logger::printfln("Client has lost connection. Shutting down.");
+                    if(this->remoteConnectedEntity == nullptr)
+                    {
+                        // onConnectionLost might be called multiple times (e.g., if read and write
+                        // fail at the same time, two errors will be inserted into the channel, therefore onConnectionLost would be called twice.)
+                        return;
+                    }
+
+                    if(this->remoteConnectedEntity != remoteConnectedEntity)
+                    {
+                        // Connection was lost and onConnectionLost was called twice for the old entity.
+                        // However, connection was reestablished after onConnectionLost was called for the first time but before
+                        // it was called for the second time.
+                        // If we would close the connection now, that would mean we terminate the connection that was just reestablished.
+                        // See comment in onClientConnectedSuccessfully() (where we create the subscriber function).
+                        return;
+                    }
+
+                    Logger::printfln("NetworkClient: Client has lost connection. Shutting down.");
                     this->remoteConnectedEntity->stop();
                     this->remoteConnectedEntity->disintegrate();
+
+                    Logger::printfln("NetworkClient: deleting entity %u", this->remoteConnectedEntity);
                     delete this->remoteConnectedEntity;
+                    this->remoteConnectedEntity = nullptr;
 
                     if(this->tryToReconnectAfterMs > 0)
                     {

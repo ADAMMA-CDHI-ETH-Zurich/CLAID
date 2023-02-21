@@ -18,6 +18,11 @@ namespace claid
             {
             }
 
+            virtual ~XMLVal()
+            {
+                
+            }
+
             virtual void toString(std::string& string)
             {
                 std::string openingTag;

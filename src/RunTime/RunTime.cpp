@@ -67,10 +67,13 @@ namespace claid
         // Hence, we assume that the user wants to start all those modules (+ the ones added using addModule) simultaneously.
         // Therefore, at startup we process all configs already pushed to the channel and only switch to blocking mode after we are done.
         std::shared_ptr<XMLNode> xmlNode;
+        Logger::printfln("load and start");
 
         // Returns false when no more data on the channel.
         while(loadedXMLConfigsChannel.get(xmlNode, false))
         {
+            Logger::printfln("loading XML");
+
             std::vector<Module*> loadedModules = this->instantiateModulesFromXMLNode(xmlNode);
 
             this->insertModules(loadedModules);
@@ -159,7 +162,8 @@ namespace claid
     void RunTime::startInSeparateThread()
     {
         startLoadingThread();
-        this->separateProcessThread = new std::thread(&RunTime::process, this);
+        this->running = true;
+        this->separateProcessThread = new std::thread(&RunTime::processRunnablesBlocking, this);
     }
 
     void RunTime::process()

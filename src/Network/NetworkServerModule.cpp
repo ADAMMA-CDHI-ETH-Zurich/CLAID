@@ -1,4 +1,6 @@
 #include "Network/NetworkServerModule.hpp"
+#include "RemoteConnection/Error/ErrorRemoteRuntimeOutOfSync.hpp"
+#include "RemoteConnection/Error/ErrorConnectionTimeout.hpp"
 
 namespace claid
 {
@@ -43,6 +45,17 @@ namespace claid
                 // Read from socket failed. Connection lost.
                 this->onClientLostConnection(entity);
             }
+            else if(error.is<claid::RemoteConnection::ErrorRemoteRuntimeOutOfSync>())
+            {
+                Logger::printfln("NetworkServer: Error remote runtime out of sync.");
+                this->onClientLostConnection(entity);
+            }
+            else if(error.is<claid::RemoteConnection::ErrorConnectionTimeout>())
+            {
+                Logger::printfln("NetworkServer: Error connection timeout.");
+                this->onClientLostConnection(entity);
+            }
+            
         }
 
         void NetworkServerModule::onClientAcceptError(ChannelData<RemoteConnection::Error> error)
@@ -76,6 +89,8 @@ namespace claid
         {
            
             Logger::printfln("Client %ul lost connection, shutting it down now.", entity);
+            
+        
       
             onClientDisconnectedChannel.post(entity->getUniqueIdentifier());
             
@@ -83,6 +98,7 @@ namespace claid
 
             if(it == this->remoteConnectedEntities.end())
             {
+                Logger::printfln("Client not found anymore, must have lost connection before already.");
                 // It can happen that this get's called two times per entity.
                 // Connection is considered to be lost, if read or write fail.
                 // Of course, that can also happen concurrently and at the same time.
@@ -107,10 +123,11 @@ namespace claid
 
             this->errorChannels.erase(it2);
 
-
+            Logger::printfln("Stopping entity %u", entity);
             entity->stop();
             entity->disintegrate();
             delete entity;
+            Logger::printfln("Entity deleted %d", entity);
 
             
         }

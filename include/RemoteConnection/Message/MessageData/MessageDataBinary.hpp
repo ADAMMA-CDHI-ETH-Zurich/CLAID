@@ -22,9 +22,9 @@ namespace claid
                 r.member("Data", binaryData, "");
             }
 
-            void setBinaryData(BinaryData& binaryData)
+            void setBinaryData(const BinaryData& binaryData)
             {
-                this->binaryData = binaryData;
+                binaryData.fastSafeCopyTo(this->binaryData);
             }
 
             void getBinaryData(BinaryData& binaryData)

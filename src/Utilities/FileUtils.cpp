@@ -137,7 +137,7 @@ namespace claid
 			return false;
 	}
 
-	bool FileUtils::fileExists(std::string name)
+	bool FileUtils::fileExists(const std::string& name)
 	{
 		struct stat buffer;
 		return (stat(name.c_str(), &buffer) == 0);
@@ -370,11 +370,12 @@ namespace claid
 				if (isDots(findFileData.cFileName))
 					continue;
 
+				std::string subDirPath = path + std::string("/") + std::string(findFileData.cFileName);
+
 				if ((findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 				{
-					std::string subDirPath = path + std::string("/") + std::string(findFileData.cFileName);
 					// Is directory, recurse.
-					if(!getAllFilesInDirectoryRecursively(subDirPath), output);
+					if(!getAllFilesInDirectoryRecursively(subDirPath, output))
 					{
 						return false;
 					}

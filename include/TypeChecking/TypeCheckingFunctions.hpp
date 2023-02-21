@@ -18,7 +18,6 @@ namespace claid
         {   
             removePrefix(name, "struct ");
             removePrefix(name, "class ");
-            removePrefix(name, "me() [with T = ");
         }
 
         // Use extern to make sure the adress of this function is always the same no matter where it is used within the code.

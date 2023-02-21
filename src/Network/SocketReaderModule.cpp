@@ -65,11 +65,12 @@ namespace Network
             }
             catch (const Exception& e)
             {
-                // TODO: IMPLEMENT PROPER ERROR HANDLING !!
-                CLAID_THROW(Exception, "Caught exception in SocketReaderModule "  << e.what());
+                postError<ErrorReadFromSocketFailed>();
+                this->active = false;
+                break;
             }
         }
-        Logger::printfln("Stopping reader");
+        Logger::printfln("Reader loop exited");
         this->stopped = true;
     }
               
@@ -86,11 +87,13 @@ namespace Network
 
     void SocketReaderModule::stop()
     {
+        Logger::printfln("ReaderModule::stop %d %d", this->stopped, this->active);
         if(!this->stopped)
         {
-            this->stopped = false;
+            this->stopped = true;
             this->active = false;
         }
+        Logger::printfln("ReaderModule::end stop %d %d", this->stopped, this->active);
     }
 
     bool SocketReaderModule::isStopped()
@@ -100,6 +103,7 @@ namespace Network
 
     void SocketReaderModule::terminate()
     {
+        Logger::printfln("SocketReaderModule has terminated");
         this->messageReceivedChannel.unpublish();
         this->errorChannel.unpublish();
     }

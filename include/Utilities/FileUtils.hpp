@@ -11,7 +11,7 @@ namespace claid
 
             static bool deleteDirectory(std::string path);
             static bool dirExists(std::string path);
-            static bool fileExists(std::string path);
+            static bool fileExists(const std::string& path);
 
             static bool createDirectoriesRecursively(std::string path);
             static bool createDirectory(std::string path);

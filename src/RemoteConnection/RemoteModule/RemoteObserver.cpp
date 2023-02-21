@@ -2,11 +2,14 @@
 #include "RemoteConnection/Message/MessageData/MessageDataBinary.hpp"
 #include "RemoteConnection/Message/MessageHeader/TestMessage.hpp"
 #include "RemoteConnection/Error/ErrorRemoteRuntimeOutOfSync.hpp"
+#include "RemoteConnection/Error/ErrorConnectionTimeout.hpp"
+
 namespace claid
 {
     namespace RemoteConnection
     {
         const std::string RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG = "REMOTE_OBSERVER_IS_DATA_RECEIVED_FROM_REMOTE";
+        const uint32_t RemoteObserver::KEEP_ALIVE_INTERVAL_MILLISECONDS = 200000;
 
         RemoteObserver::RemoteObserver(ChannelManager* globalChannelManager) : globalChannelManager(globalChannelManager)
         {
@@ -24,13 +27,25 @@ namespace claid
             // so no overhead), because message->value() is const.
       //      Message copy = message->value();
             Logger::printfln("OnMessageReceived");
+            
             const Message& messageRef = message->value();
+            if(messageRef.header->is<MessageHeaderChannelUpdate>())
+            {
+                Logger::printfln("Header is MessageHeaderChannelUpdate");
+
+            }
+            else if(messageRef.header->is<MessageHeaderChannelData>())
+            {
+                Logger::printfln("Header is MessageHeaderChannelData");
+            }
 
             // Calls onChannelUpdate if message.header is MessageHeaderChannelUpdate and message.data is MessageDataString.
             // Throws exception, if header types match (message.header is MessageHeaderChannelUpdate), but data type does not (message.data is not MessageDataString).
             if(callFunctionIfSignatureMatchesThrowExceptionIfWrongData<MessageHeaderChannelUpdate, MessageDataString>(messageRef, &RemoteObserver::onChannelUpdateMessage, this)) return;
             if(callFunctionIfSignatureMatchesThrowExceptionIfWrongData<MessageHeaderChannelData, MessageDataBinary>(messageRef, &RemoteObserver::onChannelDataMessage, this)) return;
-           
+            if(callFunctionIfSignatureMatchesThrowExceptionIfWrongData<MessageHeaderKeepAlive, MessageDataEmpty>(messageRef, &RemoteObserver::onKeepAliveMessage, this)) return;
+            if(callFunctionIfSignatureMatchesThrowExceptionIfWrongData<MessageHeaderKeepAliveResponse, MessageDataEmpty>(messageRef, &RemoteObserver::onKeepAliveResponse, this)) return;
+
             if(messageRef.header->is<TestMessage>())
             {
                 return;
@@ -214,9 +229,12 @@ namespace claid
 
             if(it == this->publishedChannels.end())
             {
-                CLAID_THROW(Exception, "Error, received data from remote RunTime for channel with channelID \"" << targetChannel << "\", "
-                << "but we do not have a publisher for that channel. That should not be possible, because how could the remote RunTime have posted data to the channel "
-                << "in the first place, if no publisher is available ? ");
+                // Can happen, if we miss a message for example (e.g., temporary loss of network).
+                this->postError<ErrorRemoteRuntimeOutOfSync>();
+                return;
+                // CLAID_THROW(Exception, "Error, received data from remote RunTime for channel with channelID \"" << targetChannel << "\", "
+                // << "but we do not have a publisher for that channel. That should not be possible, because how could the remote RunTime have posted data to the channel "
+                // << "in the first place, if no publisher is available ? ");
             }
 
             this->setIsDataReceivedFromRemoteRunTime(data);
@@ -226,7 +244,7 @@ namespace claid
         // Called, if a local Module (of this process) posted data to a channel, that has a subscriber in a remote run time.
         void RemoteObserver::onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo(std::string channelID, ChannelData<Untyped> data)
         {
-            Logger::printfln("RemoteObserver: onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo %s", channelID.c_str());
+            Logger::printfln("RemoteObserver %u: onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo %s %d", this, channelID.c_str(), this->getUniqueIdentifier());
             // When there is a channel, that was subscribed to in the local RunTime AND the remote RunTime,
             // then it can happen that data get's send back and forth and a loop happens.
             // E.g.: 
@@ -245,7 +263,7 @@ namespace claid
                 // TODO: HOW CAN I FIX THIS
                 return;
             }
-
+            const BinaryData& constBinaryData = taggedData.value();
 
             // Need to send to the remote RunTime
             // Get tagged binary data
@@ -260,8 +278,7 @@ namespace claid
             // TaggedData holds the header (timestamp, sequenceID) and the binary data.
             // Thus, timestamp and sequenceID will be serialized, the binary data will be copied into a bigger
             // binary data buffer that contains timestamp, sequenceID and the binary data itself.       
-            BinaryData binaryData = taggedData.value();
-            message.data->as<MessageDataBinary>()->setBinaryData(binaryData);
+            message.data->as<MessageDataBinary>()->setBinaryData(constBinaryData);
             this->sendMessage(message);
 
             
@@ -292,9 +309,15 @@ namespace claid
             this->sendMessageChannel.post(message);
         }
 
+        void RemoteObserver::initialize()
+        {
+            Logger::printfln("RemoteObserver initialize");
+            this->registerPeriodicFunction("KeepAliveTimer", &RemoteObserver::sendPeriodicKeepAliveMessage, this, KEEP_ALIVE_INTERVAL_MILLISECONDS);
+        }
+
         void RemoteObserver::terminate()
         {
-            Logger::printfln("RemoteObserver terminate");
+            Logger::printfln("RemoteObserver %u terminate", this);
             for(auto it : this->subscribedChannelsWithCallback)
             {
                 it.second.unsubscribe();
@@ -322,10 +345,44 @@ namespace claid
         }
             
 
-        bool RemoteObserver::isDataReceivedFromRemoteRunTime(TaggedData<BinaryData>& data)
+        bool RemoteObserver::isDataReceivedFromRemoteRunTime(TaggedData<BinaryData> data)
         {
             std::string tag = RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG + std::to_string(this->getUniqueIdentifier()); 
             return data.hasTag(tag);
+        }
+
+        void RemoteObserver::sendPeriodicKeepAliveMessage()
+        {
+            if(this->hasKeepAliveMessageBeenSend)
+            {
+                if(!this->keepAliveResponseReceived)
+                {
+                    // Did not receive a reply to our previous message.
+                    // Consider the connection to be lost.
+
+                    this->postError<ErrorConnectionTimeout>();
+                    return;
+                }
+            }
+
+            Logger::printfln("RemoteObserver: Sending keep alive message");
+            Message message = Message::CreateMessage<MessageHeaderKeepAlive, MessageDataEmpty>();
+            this->sendMessage(message);
+            this->keepAliveResponseReceived = false;
+            this->hasKeepAliveMessageBeenSend = true;
+        }
+
+        void RemoteObserver::onKeepAliveMessage(const MessageHeaderKeepAlive& header, const MessageDataEmpty& data)
+        {
+            Logger::printfln("Received keep alive message. Sending response.");
+            Message message = Message::CreateMessage<MessageHeaderKeepAliveResponse, MessageDataEmpty>();
+            this->sendMessage(message);
+        }
+
+        void RemoteObserver::onKeepAliveResponse(const MessageHeaderKeepAliveResponse& header, const MessageDataEmpty& data)
+        {
+            Logger::printfln("RemoteObserver: Received keep alive message response. Connection is alive.");
+            this->keepAliveResponseReceived = true;
         }
     }
 }

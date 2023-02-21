@@ -17,6 +17,7 @@ namespace claid
             bool deleteAfterRun = false;
             bool wasExecuted = false;
             bool catchExceptions = false;
+            bool stopDispatcherAfterThisRunnable = false;
             
             bool isValid()
             {
