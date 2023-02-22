@@ -4,7 +4,6 @@ namespace claid
 {
     struct XMLConfigFlashedModulesDescription
     {
-        DECLARE_SERIALIZATION(XMLConfigFlashedModulesDescription);
 
         uint64_t uniqueIdentifier;
         std::vector<std::string> flashedModuleNames;

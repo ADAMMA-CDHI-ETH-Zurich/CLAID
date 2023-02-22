@@ -62,11 +62,13 @@ namespace claid
 	
 }
 
-#define REGISTER_POLYMORPHIC_REFLECTOR(className, Reflector, ReflectorName) \
-	claid::PolymorphicReflector::RegisterHelper<className, Reflector> className::polymorphicReflectorRegistrar##ReflectorName (#className);\
 
-#define DECLARE_POLYMORPHIC_REFLECTOR(className, Reflector, ReflectorName) \
-     static claid::PolymorphicReflector::RegisterHelper<className, Reflector> polymorphicReflectorRegistrar##ReflectorName;
+// #define DECLARE_POLYMORPHIC_REFLECTOR(className, Reflector, ReflectorName) \
+//      static claid::PolymorphicReflector::RegisterHelper<className, Reflector> polymorphicReflectorRegistrar##ReflectorName;
 
 
-	 
+#define REGISTER_POLYMORPHIC_REFLECTOR(className, Reflector, ReflectorName)\
+	namespace\
+	{\
+		static claid::PolymorphicReflector::RegisterHelper<className, Reflector> polymorphicReflectorRegistrar##ReflectorName (#className);\
+	}

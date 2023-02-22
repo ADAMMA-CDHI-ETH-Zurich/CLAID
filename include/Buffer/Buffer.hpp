@@ -10,7 +10,7 @@ namespace claid
 {
     struct Buffer
     {
-        DECLARE_SERIALIZATION(Buffer)
+        //DECLARE_SERIALIZATION(Buffer)
         private:
             std::shared_ptr<char> data;
             BufferInfo bufferInfo;

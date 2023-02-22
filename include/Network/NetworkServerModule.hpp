@@ -17,7 +17,6 @@ namespace claid
     {
         class NetworkServerModule : public NetworkModule
         {
-            DECLARE_MODULE(NetworkServerModule)
             
             public:
 

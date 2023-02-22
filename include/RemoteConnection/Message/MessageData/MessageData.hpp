@@ -7,7 +7,12 @@ namespace claid
     {
         struct MessageData
         {
-            DECLARE_SERIALIZATION(MessageData)
+            //DECLARE_SERIALIZATION(MessageData)
+
+            virtual ~MessageData()
+            {
+                
+            }
 
             template<typename Reflector>
             void reflect(Reflector& r)

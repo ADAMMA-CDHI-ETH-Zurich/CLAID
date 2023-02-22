@@ -6,7 +6,6 @@ namespace claid
 {
     class XMLConfigFlasherModule : public Module
     {
-        DECLARE_MODULE(XMLConfigFlasherModule)
 
         private:
             XMLFlasherUniqueIdentifier uniqueIdentifier;

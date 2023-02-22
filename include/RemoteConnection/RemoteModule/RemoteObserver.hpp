@@ -124,8 +124,8 @@ namespace claid
                         }
                         else
                         {
-                            CLAID_THROW(Exception, "Error! Received Message with header type \"" << messageHeader.getClassName() << "\" and expected data "
-                            << "to be of type \"" << Data::staticGetClassName() << "\", but got data with type \"" << messageData.getClassName() << "\".");
+                            CLAID_THROW(Exception, "Error! Received Message with header type \"" << ClassFactory::getInstance()->getClassNameOfObject(messageHeader) << "\" and expected data "
+                            << "to be of type \"" << ClassFactory::getInstance()->getClassName<Data>() << "\", but got data with type \"" << ClassFactory::getInstance()->getClassNameOfObject(messageData) << "\".");
                         }
                     }
                     return false;

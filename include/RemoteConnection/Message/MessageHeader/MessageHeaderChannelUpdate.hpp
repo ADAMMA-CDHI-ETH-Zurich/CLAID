@@ -7,7 +7,7 @@ namespace claid
     {
         struct MessageHeaderChannelUpdate : public MessageHeader
         {
-            DECLARE_SERIALIZATION(MessageHeaderChannelUpdate)
+            //DECLARE_SERIALIZATION(MessageHeaderChannelUpdate)
 
             enum UpdateType
             {

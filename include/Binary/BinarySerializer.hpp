@@ -101,7 +101,7 @@ namespace claid
 
                 // If there is a factory available for data type with given RTTI string (see above), then the className will
                 // be the correct name of the Polymorphic class.
-                std::string className = member->getClassName();
+                std::string className = ClassFactory::getInstance()->getClassNameOfObject(*member);
 
                 PolymorphicReflector::WrappedReflectorBase<BinarySerializer>* polymorphicReflector;
                 if (!PolymorphicReflector::PolymorphicReflector<BinarySerializer>::getInstance()->getReflector(className, polymorphicReflector))
@@ -110,7 +110,7 @@ namespace claid
                 }
 
                 // Store class name
-                this->binaryData->storeString(member->getClassName());
+                this->binaryData->storeString(className);
 
                 polymorphicReflector->invoke(*this, static_cast<void*>(member));               
             }

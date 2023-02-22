@@ -13,7 +13,7 @@ namespace claid
         // The other data types (e.g. MessageDataString) are just created for convenience.
         struct MessageDataBinary : public MessageData
         {
-            DECLARE_SERIALIZATION(MessageDataBinary)
+            //DECLARE_SERIALIZATION(MessageDataBinary)
             BinaryData binaryData;
 
             template<typename Reflector>

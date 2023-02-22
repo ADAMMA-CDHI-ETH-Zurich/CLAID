@@ -10,11 +10,11 @@
 
 // Only use the 4 serializers that come with the ModuleAPI (XMLSerializer, XMLDeserializer, BinarySerializer, BinaryDeserializer).
 // Necessary for Modules, for example, which should only use the standard de-/serializers.
-#define DECLARE_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className) \
-    DECLARE_POLYMORPHIC_REFLECTOR(className, claid::XMLSerializer, XMLSerializer)\
-    DECLARE_POLYMORPHIC_REFLECTOR(className, claid::XMLDeserializer, XMLDeserializer)\
-    DECLARE_POLYMORPHIC_REFLECTOR(className, claid::BinarySerializer, BinarySerializer)\
-    DECLARE_POLYMORPHIC_REFLECTOR(className, claid::BinaryDeserializer, BinaryDeserializer)\
+// #define DECLARE_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className) \
+//     DECLARE_POLYMORPHIC_REFLECTOR(className, claid::XMLSerializer, XMLSerializer)\
+//     DECLARE_POLYMORPHIC_REFLECTOR(className, claid::XMLDeserializer, XMLDeserializer)\
+//     DECLARE_POLYMORPHIC_REFLECTOR(className, claid::BinarySerializer, BinarySerializer)\
+//     DECLARE_POLYMORPHIC_REFLECTOR(className, claid::BinaryDeserializer, BinaryDeserializer)\
 
 #define REGISTER_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className)\
     REGISTER_POLYMORPHIC_REFLECTOR(className, claid::XMLSerializer, XMLSerializer)\
@@ -24,10 +24,10 @@
 
 
 
-#define DECLARE_SERIALIZATION(className) \
-    DECLARE_CLASS_FACTORY(className)\
-    DECLARE_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className) \
-    DECLARE_ADDITIONAL_DE_SERIALIZERS(className) // Serializers that might not always be available (e.g., JavaNativeSetter and Getter).
+// #define DECLARE_SERIALIZATION(className) \
+//     DECLARE_CLASS_FACTORY(className)\
+//     DECLARE_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className) \
+//     DECLARE_ADDITIONAL_DE_SERIALIZERS(className) // Serializers that might not always be available (e.g., JavaNativeSetter and Getter).
 
 #define REGISTER_SERIALIZATION(className) \
     REGISTER_TO_CLASS_FACTORY(className) \

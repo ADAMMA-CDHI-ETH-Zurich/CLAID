@@ -4,12 +4,9 @@
 
 namespace claid
 {
-	namespace ModuleFactory
+	class ModuleFactoryBase
 	{
-		class ModuleFactoryBase
-		{
-			public:
-				virtual BaseModule* getInstanceUntyped() = 0;
-		};
-	}
+		public:
+			virtual BaseModule* getInstanceUntyped() = 0;
+	};
 }

@@ -10,7 +10,7 @@ namespace claid
 {
     struct BufferInfo
     {       
-        DECLARE_SERIALIZATION(BufferInfo)
+        //DECLARE_SERIALIZATION(BufferInfo)
 
         private:
             std::vector<int32_t> shape;

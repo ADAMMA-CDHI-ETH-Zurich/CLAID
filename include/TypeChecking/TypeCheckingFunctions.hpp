@@ -34,7 +34,7 @@ namespace claid
 
     
         template<typename T>
-        std::string getCompilerSpecificRunTimeNameOfObject(T& t)
+        std::string getCompilerSpecificRunTimeNameOfObject(const T& t)
         {
             std::string name = typeid(t).name();
 
