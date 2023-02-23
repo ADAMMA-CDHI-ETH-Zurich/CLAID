@@ -95,7 +95,6 @@ namespace claid
 			{
 				// If className is something like namespace::Module, remove namespace:: and return Module.
 				// Otherwise, if className is Module (e.g. MicrophoneDataModule), just return Module.
-
 				size_t index = className.find_last_of("::");
 				if(index == std::string::npos)
 				{
