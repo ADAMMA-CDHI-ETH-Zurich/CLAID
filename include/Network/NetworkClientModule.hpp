@@ -149,7 +149,7 @@ namespace claid
                     // (E.g.: If error is ErrorConnectToAdressFailed, then we might try to reconnect. If that fails again,
                     // it would call onError again, and so on and so forth resulting in unbound recursion, which would eventually lead
                     // to a stack overflow).
-                    this->callLater<NetworkClientModule, RemoteConnection::RemoteConnectedEntity*, RemoteConnection::Error>(&NetworkClientModule::onError, this, this->remoteConnectedEntity, error);
+                    this->callInModuleThread<NetworkClientModule, RemoteConnection::RemoteConnectedEntity*, RemoteConnection::Error>(&NetworkClientModule::onError, this, this->remoteConnectedEntity, error);
                 }
 
                 void onError(RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity, RemoteConnection::Error error)

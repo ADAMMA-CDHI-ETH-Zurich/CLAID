@@ -25,7 +25,7 @@ namespace Network
         this->active = true;
         this->stopped = false;
         Logger::printfln("call later");
-        this->callLater(&SocketReaderModule::run, this);
+        this->callInModuleThread(&SocketReaderModule::run, this);
     }
 
     void SocketReaderModule::run()

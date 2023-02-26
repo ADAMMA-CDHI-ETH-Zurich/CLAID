@@ -198,12 +198,12 @@ namespace claid
             }
 
             template<typename Class, typename... Ts>
-            void callLater(void (Class::* f)(Ts...), Class* obj, Ts... params)
+            void callInModuleThread(void (Class::* f)(Ts...), Class* obj, Ts... params)
             {
                 if(this->runnableDispatcherThread.get() == nullptr)
                 {
-                    CLAID_THROW(Exception, "Error! callLater was called while module is stopped."
-                    "Please only use callLater while the Module is running.");
+                    CLAID_THROW(Exception, "Error! callInModuleThread was called while module is stopped."
+                    "Please only use callInModuleThread while the Module is running.");
                 }
                 //std::function<void(Ts...)> function = std::bind(f, obj, std::placeholders::_1, std::placeholders::_2);
 

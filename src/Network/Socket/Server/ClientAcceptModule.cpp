@@ -28,7 +28,7 @@ namespace claid
             this->server = server;
             this->active = true;
             // Start might be called by another thread. Make sure we switch to our own thread.
-            this->callLater(&ClientAcceptModule::run, this);
+            this->callInModuleThread(&ClientAcceptModule::run, this);
         }
 
 
