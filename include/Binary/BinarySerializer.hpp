@@ -215,5 +215,10 @@ namespace claid
                 this->binaryData->storeString(name);
             }
 
+            static std::string getReflectorName()
+            {
+                return "BinarySerializer";
+            }
+
     };
 }

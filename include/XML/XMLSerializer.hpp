@@ -231,5 +231,10 @@ namespace claid
                 // for XMLSerializer and -Deserialize.
             }
 
+            static std::string getReflectorName()
+            {
+                return "XMLSerializer";
+            }
+
     };
 }

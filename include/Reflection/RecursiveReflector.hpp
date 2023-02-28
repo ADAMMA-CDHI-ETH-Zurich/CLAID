@@ -9,7 +9,8 @@ namespace claid
     template<typename Derived>
     class RecursiveReflector : public AbstractReflector
     {
-        
+        // Has to be set by each specialization.
+        static std::string REFLECTOR_NAME;
 
         template<typename Type>
             struct ____INVALID_TYPE_IN_REFLECTION_TYPE_{
@@ -193,3 +194,5 @@ namespace claid
     };  
 }
 
+template<typename T>
+std::string RecursiveReflector<T>::REFLECTOR_NAME = "";

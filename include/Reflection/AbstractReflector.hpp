@@ -1,4 +1,5 @@
 #pragma once
+
 #include "MemberDetector.h"
 #include "NonMemberDetector.h"
 #include "NonIntrusiveReflectors/all.hpp"
@@ -14,6 +15,5 @@ namespace claid
 {
     class AbstractReflector
     {
-       
     };
 }

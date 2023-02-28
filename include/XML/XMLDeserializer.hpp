@@ -423,6 +423,11 @@ namespace claid
                 }
             }
 
+            static std::string getReflectorName()
+            {
+                return "XMLDeserializer";
+            }
+
         
     };
 }
