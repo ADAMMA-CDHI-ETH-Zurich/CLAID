@@ -14,6 +14,11 @@ namespace claid
 
         public:
             
+            const static std::string getReflectorName()
+            {
+                return "BinarySerializer";
+            } 
+            
             BinaryData* binaryData;
 
             BinarySerializer()
@@ -215,10 +220,8 @@ namespace claid
                 this->binaryData->storeString(name);
             }
 
-            static std::string getReflectorName()
-            {
-                return "BinarySerializer";
-            }
+      
 
     };
 }
+

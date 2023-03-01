@@ -29,7 +29,13 @@ namespace claid
             bool isSequence = false;
             size_t idInSequence = 0;
 
+
         public:
+
+            const static std::string getReflectorName()
+            {
+                return "XMLDeserializer";
+            } 
 
             XMLDeserializer()
             {
@@ -423,11 +429,9 @@ namespace claid
                 }
             }
 
-            static std::string getReflectorName()
-            {
-                return "XMLDeserializer";
-            }
-
+         
         
     };
 }
+
+

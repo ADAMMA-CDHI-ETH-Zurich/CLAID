@@ -15,6 +15,10 @@ namespace claid
 
         public:
             
+            const static std::string getReflectorName()
+            {
+                return "BinaryDeserializer";
+            } 
 
             BinaryDeserializer()
             {
@@ -193,10 +197,8 @@ namespace claid
                 this->binaryDataReader.readString(name);
             }
 
-            static std::string getReflectorName()
-            {
-                return "BinaryDeserializer";
-            }
+
 
     };
 }
+

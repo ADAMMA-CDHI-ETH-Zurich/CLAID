@@ -17,6 +17,11 @@ namespace claid
 
             std::stack<std::shared_ptr<XMLNode>> nodeStack;
 
+            const static std::string getReflectorName()
+            {
+                return "XMLSerializer";
+            } 
+
             XMLSerializer()
             {
                 this->root = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
@@ -231,10 +236,8 @@ namespace claid
                 // for XMLSerializer and -Deserialize.
             }
 
-            static std::string getReflectorName()
-            {
-                return "XMLSerializer";
-            }
+       
 
     };
 }
+
