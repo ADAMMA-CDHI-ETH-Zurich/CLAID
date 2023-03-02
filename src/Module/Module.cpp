@@ -13,7 +13,7 @@ namespace claid
 }
 // Yes, we do not use the REGISTER_MODULE macro here, because class "Module" should not be loadable by itself (it's just a base class!).
 REGISTER_TO_CLASS_FACTORY(claid::Module) 
-REGISTER_POLYMORPHIC_REFLECTOR(claid::Module, claid::XMLDeserializer, XMLDeserializer) 
-REGISTER_POLYMORPHIC_REFLECTOR(claid::Module, claid::XMLSerializer, XMLSerializer) 
-REGISTER_POLYMORPHIC_REFLECTOR(claid::Module, claid::BinarySerializer, BinarySerializer)
-REGISTER_POLYMORPHIC_REFLECTOR(claid::Module, claid::BinaryDeserializer, BinaryDeserializer)
+REGISTER_REFLECTOR_FOR_CLASS(claid::Module, claid::XMLDeserializer, XMLDeserializer) 
+REGISTER_REFLECTOR_FOR_CLASS(claid::Module, claid::XMLSerializer, XMLSerializer) 
+REGISTER_REFLECTOR_FOR_CLASS(claid::Module, claid::BinarySerializer, BinarySerializer)
+REGISTER_REFLECTOR_FOR_CLASS(claid::Module, claid::BinaryDeserializer, BinaryDeserializer)

@@ -6,7 +6,7 @@
 
 #include "XML/XMLParser.hpp"
 #include "ClassFactory/ClassFactory.hpp"
-#include "PolymorphicReflector/PolymorphicReflector.hpp"
+#include "Reflection/ReflectionManager.hpp"
 #include <algorithm>
 #include <memory.h>
 #include <stack>
@@ -214,13 +214,13 @@ namespace claid
 
                 member = ClassFactory::ClassFactory::getInstance()->getNewInstanceAndCast<T>(className);
 
-                PolymorphicReflector::WrappedReflectorBase<XMLDeserializer>* polymorphicReflector;
-                if (!PolymorphicReflector::PolymorphicReflector<XMLDeserializer>::getInstance()->getReflector(className, polymorphicReflector))
+                UntypedReflector* untypedReflector;
+                if (!ReflectionManager::getInstance()->getReflectorForClass(className, this->getReflectorName(), untypedReflector))
                 {
                     CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a polymorphic pointer type of class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
-                polymorphicReflector->invoke(*this, static_cast<void*>(member));
+                untypedReflector->invoke(static_cast<void*>(this), static_cast<void*>(member));               
             }
             
             template<typename T>
@@ -379,13 +379,13 @@ namespace claid
                     "If you want the deserializer to automatically create a corresponding object using the ClassFactory, use the deserialize function instead.");
                 }
 
-                PolymorphicReflector::WrappedReflectorBase<XMLDeserializer>* polymorphicReflector;
-                if (!PolymorphicReflector::PolymorphicReflector<XMLDeserializer>::getInstance()->getReflector(className, polymorphicReflector))
+                UntypedReflector* untypedReflector;
+                if (!ReflectionManager::getInstance()->getReflectorForClass(className, this->getReflectorName(), untypedReflector))
                 {
-                    CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. No PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                    CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. No PolymorphicReflector was registered for class \"" << className << "\". Was CLAID_SERIALIZATION implemented for this type?");
                 }
 
-                polymorphicReflector->invoke(*this, static_cast<void*>(obj));
+                untypedReflector->invoke(static_cast<void*>(this), static_cast<void*>(obj));
             }
 
 

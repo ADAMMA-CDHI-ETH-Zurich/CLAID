@@ -4,7 +4,7 @@
 
 #include "Serialization/Serializer.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
-#include "PolymorphicReflector/PolymorphicReflector.hpp"
+#include "Reflection/ReflectionManager.hpp"
 
 namespace claid
 {
@@ -108,8 +108,8 @@ namespace claid
                 // be the correct name of the Polymorphic class.
                 std::string className = ClassFactory::getInstance()->getClassNameOfObject(*member);
 
-                PolymorphicReflector::WrappedReflectorBase<BinarySerializer>* polymorphicReflector;
-                if (!PolymorphicReflector::PolymorphicReflector<BinarySerializer>::getInstance()->getReflector(className, polymorphicReflector))
+                UntypedReflector* untypedReflector;
+                if (!ReflectionManager::getInstance()->getReflectorForClass(className, this->getReflectorName(), untypedReflector))
                 {
                     CLAID_THROW(claid::Exception, "BinarySerializer failed to serialize object to binary. Member \"" << property << "\" is a pointer/polymorphic type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
@@ -117,7 +117,7 @@ namespace claid
                 // Store class name
                 this->binaryData->storeString(className);
 
-                polymorphicReflector->invoke(*this, static_cast<void*>(member));               
+                untypedReflector->invoke(static_cast<void*>(this), static_cast<void*>(member));               
             }
             
             template<typename T>

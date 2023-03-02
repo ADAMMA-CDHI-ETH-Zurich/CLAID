@@ -1,6 +1,6 @@
 #pragma once
 #include "ClassFactory/ClassFactory.hpp"
-#include "PolymorphicReflector/PolymorphicReflector.hpp"
+#include "Reflection/ReflectionManager.hpp"
 #include "XML/XMLSerializer.hpp"
 #include "XML/XMLDeserializer.hpp"
 #include "Binary/BinarySerializer.hpp"
@@ -17,10 +17,10 @@
 //     DECLARE_POLYMORPHIC_REFLECTOR(className, claid::BinaryDeserializer, BinaryDeserializer)\
 
 #define REGISTER_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className)\
-    REGISTER_POLYMORPHIC_REFLECTOR(className, claid::XMLSerializer, XMLSerializer)\
-    REGISTER_POLYMORPHIC_REFLECTOR(className, claid::XMLDeserializer, XMLDeserializer)\
-    REGISTER_POLYMORPHIC_REFLECTOR(className, claid::BinarySerializer, BinarySerializer)\
-    REGISTER_POLYMORPHIC_REFLECTOR(className, claid::BinaryDeserializer, BinaryDeserializer)\
+    REGISTER_REFLECTOR_FOR_CLASS(className, claid::XMLSerializer, XMLSerializer)\
+    REGISTER_REFLECTOR_FOR_CLASS(className, claid::XMLDeserializer, XMLDeserializer)\
+    REGISTER_REFLECTOR_FOR_CLASS(className, claid::BinarySerializer, BinarySerializer)\
+    REGISTER_REFLECTOR_FOR_CLASS(className, claid::BinaryDeserializer, BinaryDeserializer)\
 
 
 

@@ -13,7 +13,7 @@
 
 #include "RunnableDispatcherThread/FunctionRunnable.hpp"
 #include "ClassFactory/ClassFactory.hpp"
-#include "PolymorphicReflector/PolymorphicReflector.hpp"
+#include "Reflection/ReflectionManager.hpp"
 #include "Reflection/PropertyReflector.hpp"
 
 
