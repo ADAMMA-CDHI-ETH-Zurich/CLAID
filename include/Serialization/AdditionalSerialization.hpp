@@ -9,12 +9,7 @@
     #include "JavaWrapper/JavaWrapperMaster.hpp"
 #endif
 
-#if defined(__ANDROID__) || defined(__JAVA_WRAPPERS__)
-    #define DECLARE_JAVA_DE_SERIALIZERS(className) \
-        DECLARE_JAVA_WRAPPER(className) 
-#else
-    #define DECLARE_JAVA_DE_SERIALIZERS(className) 
-#endif 
+
 
 
 #if defined(__ANDROID__) || defined(__JAVA_WRAPPERS__)
@@ -30,10 +25,8 @@
 
 
 #ifdef __PYTHON_WRAPPERS__
-    #define DECLARE_PYTHON_DE_SERIALIZERS(className) DECLARE_PYTHON_WRAPPER(className)
     #define REGISTER_PYTHON_DE_SERIALIZERS(className) REGISTER_PYTHON_WRAPPER(className)
 #else
-    #define DECLARE_PYTHON_DE_SERIALIZERS(className)
     #define REGISTER_PYTHON_DE_SERIALIZERS(className)
 #endif
 
