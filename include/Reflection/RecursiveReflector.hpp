@@ -150,32 +150,31 @@ namespace claid
                 ReflectorInvoker<Derived, T>::call(*This(), obj);
             }
 
+           
             template<typename T>
-            void property(const char* property, T& member, const char* comment)
+            void member(const char* name, T& member, const char* comment)
             {
                 this->currentDefaultValue = nullptr;
-                ReflectorType<T>::call(property, *this->This(), member);
+                ReflectorType<T>::call(name, *this->This(), member);
             }
 
             template<typename T>
-            void property(const char* property, T& member, const char* comment, T defaultValue)
+            void member(const char* name, T& member, const char* comment, T defaultValue)
             {
                 this->currentDefaultValue = &defaultValue;
-                ReflectorType<T>::call(property, *this->This(), member);
+                ReflectorType<T>::call(name, *this->This(), member);
             }
 
-            template<typename T>
-            void member(const char* property, T& member, const char* comment)
+            template<typename T, typename Class>
+            void member(const char* name, const char* comment, void (Class::*setter)(T&), const T& (Class::*getter)(), Class* obj)
             {
-                this->currentDefaultValue = nullptr;
-                ReflectorType<T>::call(property, *this->This(), member);
+
             }
 
-            template<typename T>
-            void member(const char* property, T& member, const char* comment, T defaultValue)
+            template<typename T, typename Class>
+            void member(const char* name, const char* comment, void (Class::*setter)(const T&), T (Class::*getter)(), Class* obj)
             {
-                this->currentDefaultValue = &defaultValue;
-                ReflectorType<T>::call(property, *this->This(), member);
+
             }
 
             // Determines the type of the object (can be anything, primitive or class),
