@@ -4,34 +4,7 @@
 
 namespace claid
 {
-    template<typename T>
-    class ReflectedVariable
-    {
-
-            
-            ReflectedVariableGetter<T> getter;
-            ReflectedVariableSetter<T> setter;
-
-            ReflectedVariable(ReflectedVariableGetter<T> getter, ReflectedVariableSetter<T> setter) : getter(getter), setter(setter)
-            {
-                
-            }
-
-            operator=(const T& other)
-            {
-                setter(T);
-            }
-
-            getter::return_value_type get() const
-            {
-                return getter();
-            }
-
-            operator getter::return_value_type() const
-            {
-                return this->get();
-            }
-    };
+    
 
     template<typename T>
     class ReflectedVariableGetter
@@ -41,16 +14,21 @@ namespace claid
             const T& reference;
 
         public:
-            typedef const T& return_value_type;
+            typedef const T& ValueType;
 
             ReflectedVariableGetter(const T& reference) : reference(reference)
             {
 
             }
 
-            operator return_value_type() const
+            ValueType get() const
             {
-                return reference;
+                return this->reference;
+            }
+
+            operator ValueType() const
+            {
+                return this->get();
             }
     };
 
@@ -62,14 +40,14 @@ namespace claid
             Getter<T> getter;
 
         public:
-            typedef T return_value_type;
+            typedef T ValueType;
 
             ReflectedVariableGetter(Getter<T> getter) : getter(getter)
             {
 
             }
 
-            operator return_value_type() const
+            operator ValueType() const
             {
                 return getter();
             }
@@ -89,30 +67,74 @@ namespace claid
 
             }
 
-            operator= (const T& other)
+            ReflectedVariableSetter<T>& operator= (const T& other)
             {
                 reference = other;
+                return *this;
             }
     };
 
     template<typename T>
-    class ReflectedVariableGetter<Getter<T>>
+    class ReflectedVariableSetter<Setter<T>>
     {
-        // Access via separate getter
+        // Access via separate setter
         private:
             Setter<T> setter;
 
         public:
-            typedef T return_value_type;
+            typedef T ValueType;
 
-            ReflectedVariableGetter(Setter<T> setter) : setter(setter)
+            ReflectedVariableSetter(Setter<T> setter) : setter(setter)
             {
 
             }
 
-            operator= (const T& other)
+            ReflectedVariableSetter<Setter<T>>& operator= (const T& other)
             {
                 setter(other);
+                return *this;
+            }
+    };
+
+
+    template<typename T>
+    class ReflectedVariable
+    {
+
+        private:
+            ReflectedVariableGetter<T> getter;
+            ReflectedVariableSetter<T> setter;
+
+        public:
+
+            typedef typename ReflectedVariableGetter<T>::ValueType GetterValueType;
+
+            ReflectedVariable(T& variable)
+            {
+                this->getter = ReflectedVariableGetter<T>(variable);
+                this->setter = ReflectedVariableSetter<T>(variable);
+
+            }
+
+            ReflectedVariable(ReflectedVariableGetter<T> getter, ReflectedVariableSetter<T> setter) : getter(getter), setter(setter)
+            {
+                
+            }
+
+            ReflectedVariable<T>& operator=(const T& other)
+            {
+                setter(other);
+                return *this;
+            }
+
+            GetterValueType get() const
+            {
+                return getter.get();
+            }
+
+            operator GetterValueType() const
+            {
+                return this->get();
             }
     };
 

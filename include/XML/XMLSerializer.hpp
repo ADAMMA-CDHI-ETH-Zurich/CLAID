@@ -166,7 +166,7 @@ namespace claid
             void callEnum(const char* property, ReflectedVariable<T> member)
             {
                 int32_t m = static_cast<int32_t>(member);
-                this->callInt(property, m);
+                this->callInt(property, ReflectedVariable<int32_t>(m));
             }
 
             void count(const std::string& name, int32_t& count)

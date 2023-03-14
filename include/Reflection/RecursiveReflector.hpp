@@ -133,6 +133,8 @@ namespace claid
             };
             
 
+            
+
         public:
             virtual void beginSequence()
             {
@@ -144,6 +146,12 @@ namespace claid
                 
             }
 
+            template<typename T>
+            void forwardReflectedVariable(ReflectedVariable<T> member)
+            {
+                ReflectorInvoker<Derived, T>::call(*This(), member);
+            }
+
             // Calls the reflect function of the given object.
             template<typename T>
             void invokeReflectOnObject(T& obj)
@@ -153,18 +161,24 @@ namespace claid
 
            
             template<typename T>
-            void member(const char* name, T& member, const char* comment)
+            void member(const char* name, T& mem, const char* comment)
             {
                 this->currentDefaultValue = nullptr;
-                ReflectedVariable<T> variable(ReflectedVariableGetter<T>(member), ReflectedVariableSetter<T>(member));
+                ReflectedVariableGetter<T> getter(mem);
+                ReflectedVariableSetter<T> setter(mem);
+
+                ReflectedVariable<T> variable(getter, setter);
                 ReflectorType<T>::call(name, *this->This(), variable);
             }
 
             template<typename T>
-            void member(const char* name, T& member, const char* comment, T defaultValue)
+            void member(const char* name, T& mem, const char* comment, T defaultValue)
             {
                 this->currentDefaultValue = &defaultValue;
-                ReflectedVariable<T> variable(ReflectedVariableGetter<T>(member), ReflectedVariableSetter<T>(member));
+                ReflectedVariableGetter<T> getter(mem);
+                ReflectedVariableSetter<T> setter(mem);
+
+                ReflectedVariable<T> variable(getter, setter);
                 ReflectorType<T>::call(name, *this->This(), variable);
             }
 
