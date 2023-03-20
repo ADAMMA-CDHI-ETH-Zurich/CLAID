@@ -148,7 +148,7 @@ namespace claid
             void callSharedPointer(const char* property, ReflectedVariable<T> member)
             {
                 typedef typename T::element_type BaseTypeT;
-                BaseTypeT* ptr = member.get();
+                BaseTypeT* ptr = member.get().get();
 
 
                 if(ptr == nullptr)
@@ -159,14 +159,14 @@ namespace claid
                     return;
                 }
 
-                this->callPointer<BaseTypeT>(property, ptr);
+                this->callPointer<BaseTypeT>(property, make_reflected_variable(property, ptr));
             }
 
             template<typename T>
             void callEnum(const char* property, ReflectedVariable<T> member)
             {
                 int32_t m = static_cast<int32_t>(member);
-                this->callInt(property, ReflectedVariable<int32_t>(m));
+                this->callInt(property, ReflectedVariable<int32_t>(property, m));
             }
 
             void count(const std::string& name, int32_t& count)

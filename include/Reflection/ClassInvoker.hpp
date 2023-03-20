@@ -15,8 +15,14 @@ namespace claid
             // Any other class
             r.callBeginClass(property, member);
             // Call reflect method on that class recursively.
+            
+            // Could be a reference or a copy..
+            auto val = member.get();
 
-            r.forwardReflectedVariable(member);
+            typedef typename std::remove_const<decltype(val)>::type NonConstType; 
+            NonConstType& non_const_member = *const_cast<NonConstType*>(&val);
+
+            r.invokeReflectOnObject(val);
             r.callEndClass(property, member);
         }
 

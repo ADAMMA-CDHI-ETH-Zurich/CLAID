@@ -30,7 +30,7 @@ namespace claid
     template<typename Reflector, typename T>
     struct ReflectorInvoker<Reflector, T, typename std::enable_if<!std::is_const<T>::value && has_mem_reflect<T>::value>::type>
     {
-        static void call(Reflector& r, ReflectedVariable<T> member) 
+        static void call(Reflector& r, T& member) 
         {
             member.reflect(r);
         }
@@ -40,7 +40,7 @@ namespace claid
     template<typename Reflector, typename T>
     struct ReflectorInvoker<Reflector, T, typename std::enable_if<!std::is_const<T>::value && has_non_member_function_reflect<Reflector&, T&>::value>::type>
     {
-        static void call(Reflector& r, ReflectedVariable<T> member) 
+        static void call(Reflector& r, T& member) 
         {
             reflect(r, member);
         }
@@ -51,7 +51,7 @@ namespace claid
     template<typename Reflector, typename T>
     struct ReflectorInvoker<Reflector, T, typename std::enable_if<std::is_const<T>::value>::type>
     {
-        static void call(Reflector& r, const ReflectedVariable<T> member) 
+        static void call(Reflector& r, const T& member) 
         {
             typedef typename std::remove_const<T>::type NonConstType; 
             NonConstType& non_const_member = *const_cast<NonConstType*>(&member);

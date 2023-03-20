@@ -72,6 +72,12 @@ namespace claid
                 reference = other;
                 return *this;
             }
+
+            ReflectedVariableSetter<T> operator()(const T& other)
+            {
+                reference = other;
+                return *this;
+            }
     };
 
     template<typename T>
@@ -104,19 +110,21 @@ namespace claid
         private:
             ReflectedVariableGetter<T> getter;
             ReflectedVariableSetter<T> setter;
+            std::string variableName;
+
+     
 
         public:
 
             typedef typename ReflectedVariableGetter<T>::ValueType GetterValueType;
+            typedef T ValueType;
 
-            ReflectedVariable(T& variable)
+            ReflectedVariable(std::string variableName, T& variable) : variableName(variableName), getter(ReflectedVariableGetter<T>(variable)), setter(ReflectedVariableSetter<T>(variable))
             {
-                this->getter = ReflectedVariableGetter<T>(variable);
-                this->setter = ReflectedVariableSetter<T>(variable);
 
             }
 
-            ReflectedVariable(ReflectedVariableGetter<T> getter, ReflectedVariableSetter<T> setter) : getter(getter), setter(setter)
+            ReflectedVariable(std::string variableName, ReflectedVariableGetter<T> getter, ReflectedVariableSetter<T> setter) : variableName(variableName), getter(getter), setter(setter)
             {
                 
             }
@@ -136,6 +144,26 @@ namespace claid
             {
                 return this->get();
             }
+
+          
     };
+
+    template<typename T>
+    typename std::enable_if<!std::is_const<T>::value, ReflectedVariable<T>>::type 
+    static inline make_reflected_variable(const char* name, T& member)
+    {
+        return ReflectedVariable<T>(name, member);
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_const<T>::value, ReflectedVariable<typename std::remove_const<T>::type>>::type 
+    static inline make_reflected_variable(const char* name, T& member)
+    {
+        typedef typename std::remove_const<T>::type NonConstType; 
+        NonConstType& non_const_member = *const_cast<NonConstType*>(&member);
+
+
+        return ReflectedVariable<NonConstType>(name, non_const_member);
+    }
 
 }

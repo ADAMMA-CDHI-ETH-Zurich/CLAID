@@ -44,17 +44,20 @@ namespace claid
 
         }; 
 
-        // // CONST (we cast it away, for now..)
-        //     template<class T>
-        //     struct ReflectorType<T, typename std::enable_if<std::is_const<T>::value>::type> 
-        //     {
-        //         static void call(const char* property, Derived& r, ReflectedVariable<T> member) 
-        //         {
-        //             typedef typename std::remove_const<T>::type NonConstType; 
-        //             NonConstType& non_const_member = *const_cast<NonConstType*>(&member);
-        //             ReflectorType<NonConstType>::call(property, r, non_const_member);
-        //         }
-        //     };
+        // CONST (we cast it away, for now..)
+            template<class T>
+            struct ReflectorType<T, typename std::enable_if<std::is_const<T>::value>::type> 
+            {
+                static void call(const char* property, Derived& r, ReflectedVariable<T> member) 
+                {
+                    typedef typename std::remove_const<T>::type NonConstType; 
+                    NonConstType& non_const_member = *const_cast<NonConstType*>(&member);
+
+
+
+                    ReflectorType<NonConstType>::call(property, r, non_const_member);
+                }
+            };
         
         // ATOMIC TYPES
             template<class T>
@@ -164,21 +167,19 @@ namespace claid
             void member(const char* name, T& mem, const char* comment)
             {
                 this->currentDefaultValue = nullptr;
-                ReflectedVariableGetter<T> getter(mem);
-                ReflectedVariableSetter<T> setter(mem);
-
-                ReflectedVariable<T> variable(getter, setter);
-                ReflectorType<T>::call(name, *this->This(), variable);
+       
+                auto variable = make_reflected_variable(name, mem);
+                ReflectorType<typename decltype(variable)::ValueType>::call(name, *this->This(), variable);
             }
 
             template<typename T>
             void member(const char* name, T& mem, const char* comment, T defaultValue)
             {
                 this->currentDefaultValue = &defaultValue;
-                ReflectedVariableGetter<T> getter(mem);
-                ReflectedVariableSetter<T> setter(mem);
+          
 
-                ReflectedVariable<T> variable(getter, setter);
+                ReflectedVariable<T> variable = make_reflected_variable(name, mem);
+
                 ReflectorType<T>::call(name, *this->This(), variable);
             }
 
@@ -194,13 +195,7 @@ namespace claid
 
             // }
 
-            // Determines the type of the object (can be anything, primitive or class),
-            // and decies which function to call in the reflector (e.g. callInt, callFloat, ...)
-            template<typename T>
-            void callAppropriateFunctionBasedOnType(const char* name, T& obj)
-            {
-                ReflectorType<T>::call(name, *this->This(), obj);
-            }
+          
 
             Derived* This()
             {

@@ -48,7 +48,7 @@ namespace claid
             }
 
             template<typename T>
-            void callFloatOrDouble(const char* property, T& member)
+            void callFloatOrDouble(const char* property, ReflectedVariable<T> member)
             {
                 std::shared_ptr<XMLNode> node = this->getChildNode(property);
                 if (node.get() == nullptr)
@@ -68,13 +68,16 @@ namespace claid
                     {
                         CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
-                    XMLNumericVal::parseFromString(member, value->getValue());
+
+                    T tmp;
+                    XMLNumericVal::parseFromString(tmp, value->getValue());
+                    member = tmp;
                 }
             }   
 
             // Also includes any variants of signed, unsigned, short, long, long long, ...
             template<typename T>
-            void callInt(const char* property, T& member)
+            void callInt(const char* property, ReflectedVariable<T> member)
             {
                 std::shared_ptr<XMLNode> node = this->getChildNode(property);
                 if(node.get() == nullptr)
@@ -94,11 +97,14 @@ namespace claid
                     {
                         CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
-                    XMLNumericVal::parseFromString(member, value->getValue());
+                                        
+                    T tmp;
+                    XMLNumericVal::parseFromString(tmp, value->getValue());
+                    member = tmp;
                 }
             }
 
-            void callBool(const char* property, bool& member)
+            void callBool(const char* property, ReflectedVariable<bool> member)
             {
                 std::shared_ptr<XMLNode> node = this->getChildNode(property);
                 if(node.get() == nullptr)
@@ -143,7 +149,7 @@ namespace claid
             // char, signed char, unsigned char (char can either be defined as signed char or as unsigned char)
             // See: https://stackoverflow.com/questions/16503373/difference-between-char-and-signed-char-in-c   
             template<typename T>
-            void callChar(const char* property, T& member)
+            void callChar(const char* property, ReflectedVariable<T> member)
             {
                 std::shared_ptr<XMLNode> node = this->getChildNode(property);
                 if(node.get() == nullptr)
@@ -175,7 +181,7 @@ namespace claid
             }
 
             template<typename T>
-            void callBeginClass(const char* property, T& member)
+            void callBeginClass(const char* property, ReflectedVariable<T> member)
             {
                 std::shared_ptr<XMLNode> node = getChildNode(property);
                 if(node.get() == nullptr)
@@ -192,14 +198,14 @@ namespace claid
             }
 
             template<typename T>
-            void callEndClass(const char* property, T& member)
+            void callEndClass(const char* property, ReflectedVariable<T> member)
             {
                 this->currentXMLNode = this->nodeStack.top();
                 this->nodeStack.pop();
             }
 
             template<typename T>
-            void callPointer(const char* property, T*& member)
+            void callPointer(const char* property, ReflectedVariable<T*> member)
             {
                 std::string className;
                 if (!this->getCurrentNodeClassName(className))
@@ -224,7 +230,7 @@ namespace claid
             }
             
             template<typename T>
-            void callSharedPointer(const char* property, T& member)
+            void callSharedPointer(const char* property, ReflectedVariable<T> member)
             {
                 typedef typename T::element_type BaseTypeT;
                 BaseTypeT* pointer;
@@ -233,15 +239,16 @@ namespace claid
             }
 
             template<typename T>
-            void callEnum(const char* property, T& member)
+            void callEnum(const char* property, ReflectedVariable<T> member)
             {
                 int32_t m;
-                this->callInt(property, m);
+                ReflectedVariable<int32_t> var = make_reflected_variable(property, m);
+                this->callInt(property, var);
                 member = static_cast<T>(m);
             }
 
             template<typename T>
-            void callString(const char* property, T& member)
+            void callString(const char* property, ReflectedVariable<T> member)
             {
                 std::shared_ptr<XMLNode> node = this->getChildNode(property);
                 if(node.get() == nullptr)

@@ -27,50 +27,50 @@ namespace claid
             }
 
             template<typename T>
-            void callFloatOrDouble(const char* property, T& member)
+            void callFloatOrDouble(const char* property, ReflectedVariable<T> member)
             {
-                this->binaryData->store(member);
+                this->binaryData->store(member.get());
             }   
 
             // Also includes any variants of signed, unsigned, short, long, long long, ...
             template<typename T>
-            void callInt(const char* property, T& member)
+            void callInt(const char* property, ReflectedVariable<T> member)
             {
-                this->binaryData->store(member);
+                this->binaryData->store(member.get());
             }
 
-            void callBool(const char* property, bool& member)
+            void callBool(const char* property, ReflectedVariable<bool> member)
             {
-                this->binaryData->store(member);
+                this->binaryData->store(member.get());
             }
 
             // Why template? Because we can have signed and unsigned char.
             template<typename T>
-            void callChar(const char* property, T& member)
+            void callChar(const char* property, ReflectedVariable<T> member)
             {
-                this->binaryData->store(member);
+                this->binaryData->store(member.get());
             }
 
-            void callString(const char* property, std::string& member)
+            void callString(const char* property, ReflectedVariable<std::string> member)
             {
-                this->binaryData->storeString(member);
+                this->binaryData->storeString(member.get());
             }
 
             template<typename T>
-            void callBeginClass(const char* property, T& member)
+            void callBeginClass(const char* property, ReflectedVariable<T> member)
             {
                 
             }
 
             template<typename T>
-            void callEndClass(const char* property, T& member)
+            void callEndClass(const char* property, ReflectedVariable<T> member)
             {
 
             }
 
 
             template<typename T>
-            void callPointer(const char* property, T*& member)
+            void callPointer(const char* property, ReflectedVariable<T*> member)
             {
                 if(member == nullptr)
                 {
@@ -121,10 +121,10 @@ namespace claid
             }
             
             template<typename T>
-            void callSharedPointer(const char* property, T& member)
+            void callSharedPointer(const char* property, ReflectedVariable<T> member)
             {
                 typedef typename T::element_type BaseTypeT;
-                BaseTypeT* ptr = member.get();
+                BaseTypeT* ptr = member.get().get();
 
                 if(ptr == nullptr)
                 {
@@ -134,14 +134,15 @@ namespace claid
                     return;
                 }
 
-                this->callPointer<BaseTypeT>(property, ptr);
+                this->callPointer<BaseTypeT>(property, make_reflected_variable(property, ptr));
             }
 
             template<typename T>
-            void callEnum(const char* property, T& member)
+            void callEnum(const char* property, ReflectedVariable<T> member)
             {
                 int32_t m = static_cast<int32_t>(member);
-                this->callInt(property, m);
+                ReflectedVariable<int32_t> var = make_reflected_variable(property, m);
+                this->callInt(property, var);
             }
 
             void count(const std::string& name, int32_t& count)

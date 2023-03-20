@@ -15,22 +15,13 @@ namespace claid
 
         public:
 
+            typedef T GetterValueType;
 
             Getter(std::function<T()> getterFunction) : getterFunction(getterFunction)
             {
 
             }
 
-            Getter(std::function<const T&()> getterFunction) : getterFunction(getterFunction)
-            {
-
-            }
-
-            template<typename Class>
-            Getter(const T& (Class::*getter)(), Class& obj) 
-            {
-                this->getterFunction = std::bind(getter, obj);
-            }
 
             template<typename Class>
             Getter(T (Class::*getter)(), Class& obj) 

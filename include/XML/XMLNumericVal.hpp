@@ -20,7 +20,7 @@ namespace claid
         }
 
         template<typename T>
-        static std::string toString(T& val)
+        static std::string toString(const T& val)
         {
             return std::to_string(val);
         }

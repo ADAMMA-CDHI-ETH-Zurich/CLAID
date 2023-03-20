@@ -42,6 +42,12 @@ namespace claid
                 setterFunction(value);
                 return *this;
             }
+
+            Setter operator()(const T& value)
+            {
+                setterFunction(value);
+                return *this;
+            }
    
    
     };
