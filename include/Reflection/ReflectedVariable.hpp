@@ -103,33 +103,29 @@ namespace claid
     };
 
 
-    template<typename T>
+    template<typename T, typename GetterType = T, typename SetterType = T>
     class ReflectedVariable
     {
 
         private:
-            ReflectedVariableGetter<T> getter;
-            ReflectedVariableSetter<T> setter;
+            ReflectedVariableGetter<GetterType> getter;
+            ReflectedVariableSetter<SetterType> setter;
             std::string variableName;
 
      
 
         public:
 
-            typedef typename ReflectedVariableGetter<T>::ValueType GetterValueType;
+            typedef typename ReflectedVariableGetter<GetterType>::ValueType GetterValueType;
             typedef T ValueType;
+           
 
-            ReflectedVariable(std::string variableName, T& variable) : variableName(variableName), getter(ReflectedVariableGetter<T>(variable)), setter(ReflectedVariableSetter<T>(variable))
-            {
-
-            }
-
-            ReflectedVariable(std::string variableName, ReflectedVariableGetter<T> getter, ReflectedVariableSetter<T> setter) : variableName(variableName), getter(getter), setter(setter)
+            ReflectedVariable(std::string variableName, ReflectedVariableGetter<GetterType> getter, ReflectedVariableSetter<SetterType> setter) : variableName(variableName), getter(getter), setter(setter)
             {
                 
             }
 
-            ReflectedVariable<T>& operator=(const T& other)
+            ReflectedVariable& operator=(const T& other)
             {
                 setter(other);
                 return *this;
@@ -152,7 +148,9 @@ namespace claid
     typename std::enable_if<!std::is_const<T>::value, ReflectedVariable<T>>::type 
     static inline make_reflected_variable(const char* name, T& member)
     {
-        return ReflectedVariable<T>(name, member);
+        ReflectedVariableGetter<T> getter(member);
+        ReflectedVariableSetter<T> setter(member);
+        return ReflectedVariable<T>(name, getter, setter);
     }
 
     template<typename T>

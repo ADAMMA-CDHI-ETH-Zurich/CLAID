@@ -26,9 +26,9 @@ namespace claid
             }
 
             template<typename Class>
-            Setter(void (Class::*setter)(const T&), Class& obj) 
+            Setter(void (Class::*setter)(const T&), Class* obj) 
             {
-                this->setterFunction = std::bind(setter, obj);
+                this->setterFunction = std::bind(setter, *obj);
             }
 
             template<typename Class>

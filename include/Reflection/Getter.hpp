@@ -22,9 +22,8 @@ namespace claid
 
             }
 
-
             template<typename Class>
-            Getter(T (Class::*getter)(), Class& obj) 
+            Getter(T (Class::*getter)(), Class* obj) 
             {
                 this->getterFunction = std::bind(getter, obj);
             }

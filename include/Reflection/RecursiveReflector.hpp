@@ -183,6 +183,15 @@ namespace claid
                 ReflectorType<T>::call(name, *this->This(), variable);
             }
 
+            template<typename T>
+            void member(const char* name, Getter<T> getter, Setter<T> setter)
+            {
+                ReflectedVariableGetter<Getter<T>> g(getter);
+                ReflectedVariableSetter<Setter<T>> s(setter);
+                ReflectedVariable<T, Getter<T>, Setter<T>> variable(name, g, s);
+                ReflectorType<T>::call(name, *this->This(), variable);
+            }
+
             // template<typename T, typename Class>
             // void member(const char* name, const char* comment, void (Class::*setter)(T&), const T& (Class::*getter)(), Class* obj)
             // {

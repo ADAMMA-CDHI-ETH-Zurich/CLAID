@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include "ReflectedVariable.hpp"
 #define EmptyReflect(Class)\
     template<typename Reflector>\
     void reflect(Reflector& reflector)\
@@ -49,6 +49,6 @@
     }\
 
 #define reflectMember(mem) reflector.member(#mem, mem, ""); reflector.pointer_to_member(#mem, &THIS_CLASS::mem)
+#define reflectGetterSetter(mem, getter, setter) reflector.member(#mem, getter, setter);
 #define reflectMemberWithDefaultValue(mem, defaultValue) reflector.member(#mem, mem, "", defaultValue); reflector.pointer_to_member(#mem, &THIS_CLASS::mem)
 #define reflectFunction(function) reflector.pointer_to_function(#function, &THIS_CLASS::function)
-
