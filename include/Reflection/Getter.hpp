@@ -17,18 +17,20 @@ namespace claid
 
             typedef T GetterValueType;
 
+
             Getter(std::function<T()> getterFunction) : getterFunction(getterFunction)
             {
 
             }
 
-            template<typename Class>
-            Getter(T (Class::*getter)(), Class* obj) 
+            
+            template<typename Class, typename... Params>
+            Getter(T (Class::*getter)(Params...), Class* obj, Params... params) 
             {
-                this->getterFunction = std::bind(getter, obj);
+                this->getterFunction = std::bind(getter, obj, params...);
             }
 
-            T get()
+            T get() const
             {
                 return getterFunction();
             }

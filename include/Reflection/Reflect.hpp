@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ReflectedVariable.hpp"
+#include "VariableWithGetterSetter.hpp"
 #define EmptyReflect(Class)\
     template<typename Reflector>\
     void reflect(Reflector& reflector)\

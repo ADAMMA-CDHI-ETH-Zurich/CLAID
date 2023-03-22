@@ -2,7 +2,7 @@
 #include <type_traits>
 #include "AbstractReflector.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
-#include "ReflectedVariable.hpp"
+
 namespace claid
 {
 
@@ -19,7 +19,7 @@ namespace claid
     template<typename Reflector, typename T, class Enable = void>
     struct ReflectorInvoker 
     {
-        static void call(Reflector& r, ReflectedVariable<T> member) 
+        static void call(Reflector& r, T& member) 
         {
            ____MISSING_REFLECT_METHOD_FOR_<T>::invoke();
         }

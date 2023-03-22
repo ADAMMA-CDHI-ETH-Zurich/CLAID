@@ -4,14 +4,12 @@
 #include <type_traits>
 #include "ClassInvoker.hpp"
 #include "Traits/is_integer_no_bool_no_char.hpp"
-#include "ReflectedVariable.hpp"
 namespace claid
 {
     template<typename Derived>
     class RecursiveReflector : public AbstractReflector
     {
-        // Has to be set by each specialization.
-        // static std::string REFLECTOR_NAME;
+        
 
         template<typename Type>
             struct ____INVALID_TYPE_IN_REFLECTION_TYPE_{
@@ -37,7 +35,7 @@ namespace claid
         template<typename T, class Enable = void>
         struct ReflectorType 
         {
-            static void call(const char* property, Derived& r, ReflectedVariable<T> member) 
+            static void call(const char* property, Derived& r, T& member) 
             {
                 ____INVALID_TYPE_IN_REFLECTION_TYPE_<T>::invoke();
             }
@@ -48,13 +46,10 @@ namespace claid
             template<class T>
             struct ReflectorType<T, typename std::enable_if<std::is_const<T>::value>::type> 
             {
-                static void call(const char* property, Derived& r, ReflectedVariable<T> member) 
+                static void call(const char* property, Derived& r, T& member) 
                 {
                     typedef typename std::remove_const<T>::type NonConstType; 
                     NonConstType& non_const_member = *const_cast<NonConstType*>(&member);
-
-
-
                     ReflectorType<NonConstType>::call(property, r, non_const_member);
                 }
             };
@@ -63,7 +58,7 @@ namespace claid
             template<class T>
             struct ReflectorType<T, typename std::enable_if<std::is_floating_point<T>::value>::type> 
             {
-                static void call(const char* property, Derived& r, ReflectedVariable<T> member) 
+                static void call(const char* property, Derived& r, T& member) 
                 {
                     r.callFloatOrDouble(property, member);
                 }
@@ -72,18 +67,16 @@ namespace claid
             template<class T>
             struct ReflectorType<T, typename std::enable_if<is_integer_no_bool_no_char<T>::value>::type> 
             {
-                static void call(const char* property, Derived& r, ReflectedVariable<T> member) 
+                static void call(const char* property, Derived& r, T& member) 
                 {
-
                     r.callInt(property, member);
-                
                 }
             };
 
             template<class T>
             struct ReflectorType<T, typename std::enable_if<std::is_same<T, bool>::value>::type> 
             {
-                static void call(const char* property, Derived& r, ReflectedVariable<T> member) 
+                static void call(const char* property, Derived& r, T& member) 
                 {
                     r.callBool(property, member);
                 }
@@ -95,7 +88,7 @@ namespace claid
             struct ReflectorType<T, typename std::enable_if<std::is_same<T, signed char>::value || std::is_same<T, unsigned char>::value || 
                             std::is_same<T, char>::value || std::is_same<T, char16_t>::value || std::is_same<T, char32_t>::value >::type> 
             {
-                static void call(const char* property, Derived& r, ReflectedVariable<T> member) 
+                static void call(const char* property, Derived& r, T& member) 
                 {
                     r.callChar(property, member);
                 }
@@ -106,7 +99,7 @@ namespace claid
             template<class T>
             struct ReflectorType<T, typename std::enable_if<std::is_class<T>::value>::type> 
             {
-                static void call(const char* property, Derived& r, ReflectedVariable<T> member) 
+                static void call(const char* property, Derived& r, T& member) 
                 {
                     ClassInvoker<Derived, T>::call(r, property, member);
                 }
@@ -118,7 +111,7 @@ namespace claid
             template<class T>
             struct ReflectorType<T, typename std::enable_if<std::is_pointer<T>::value>::type>
             {
-                static void call(const char* property, Derived& r, ReflectedVariable<T> member)
+                static void call(const char* property, Derived& r, T& member)
                 {
                     r.callPointer(property, member);
                 }
@@ -129,13 +122,11 @@ namespace claid
             template<class T>
             struct ReflectorType<T, typename std::enable_if<std::is_enum<T>::value>::type>
             {
-                static void call(const char* property, Derived& r, ReflectedVariable<T> member)
+                static void call(const char* property, Derived& r, T& member)
                 {
                     r.callEnum(property, member);
                 }
             };
-            
-
             
 
         public:
@@ -149,12 +140,6 @@ namespace claid
                 
             }
 
-            template<typename T>
-            void forwardReflectedVariable(ReflectedVariable<T> member)
-            {
-                ReflectorInvoker<Derived, T>::call(*This(), member);
-            }
-
             // Calls the reflect function of the given object.
             template<typename T>
             void invokeReflectOnObject(T& obj)
@@ -162,49 +147,51 @@ namespace claid
                 ReflectorInvoker<Derived, T>::call(*This(), obj);
             }
 
-           
             template<typename T>
-            void member(const char* name, T& mem, const char* comment)
+            void property(const char* property, T& member, const char* comment)
             {
                 this->currentDefaultValue = nullptr;
-       
-                auto variable = make_reflected_variable(name, mem);
-                ReflectorType<typename decltype(variable)::ValueType>::call(name, *this->This(), variable);
+                ReflectorType<T>::call(property, *this->This(), member);
             }
 
             template<typename T>
-            void member(const char* name, T& mem, const char* comment, T defaultValue)
+            void property(const char* property, T& member, const char* comment, T defaultValue)
             {
                 this->currentDefaultValue = &defaultValue;
-          
-
-                ReflectedVariable<T> variable = make_reflected_variable(name, mem);
-
-                ReflectorType<T>::call(name, *this->This(), variable);
+                ReflectorType<T>::call(property, *this->This(), member);
             }
 
             template<typename T>
-            void member(const char* name, Getter<T> getter, Setter<T> setter)
+            void member(const char* property, T& member, const char* comment)
             {
-                ReflectedVariableGetter<Getter<T>> g(getter);
-                ReflectedVariableSetter<Setter<T>> s(setter);
-                ReflectedVariable<T, Getter<T>, Setter<T>> variable(name, g, s);
-                ReflectorType<T>::call(name, *this->This(), variable);
+                this->currentDefaultValue = nullptr;
+                ReflectorType<T>::call(property, *this->This(), member);
             }
 
-            // template<typename T, typename Class>
-            // void member(const char* name, const char* comment, void (Class::*setter)(T&), const T& (Class::*getter)(), Class* obj)
-            // {
+            template<typename T>
+            void member(const char* property, T& member, const char* comment, T defaultValue)
+            {
+                this->currentDefaultValue = &defaultValue;
+                ReflectorType<T>::call(property, *this->This(), member);
+            }
 
-            // }
+            template<typename T>
+            void member(const char* property, Getter<T> getter, Setter<T> setter)
+            {
+                VariableWithGetterSetter<T> var(property, getter, setter);
 
-            // template<typename T, typename Class>
-            // void member(const char* name, const char* comment, void (Class::*setter)(const T&), T (Class::*getter)(), Class* obj)
-            // {
+                // This will invoke the reflector invoker for classes, which therefore will call the reflect function of VariableWithGetterSetter,
+                // which forwards the reflector to the underlying type T. See how ClassInvoker treats VariableWithGetterSetter for more details.
+                ReflectorType<VariableWithGetterSetter<T>>::call(property, *this->This(), var);
+            }
 
-            // }
-
-          
+            // Determines the type of the object (can be anything, primitive or class),
+            // and decies which function to call in the reflector (e.g. callInt, callFloat, ...)
+            template<typename T>
+            void callAppropriateFunctionBasedOnType(const char* name, T& obj)
+            {
+                ReflectorType<T>::call(name, *this->This(), obj);
+            }
 
             Derived* This()
             {
