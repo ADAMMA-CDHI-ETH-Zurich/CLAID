@@ -2,12 +2,9 @@
 
 namespace claid
 {
-	namespace ClassFactory
+	class ClassFactoryBase
 	{
-		class ClassFactoryBase
-		{
-			public:
-				virtual void* getInstanceUntyped() = 0;
-		};
-	}
+		public:
+			virtual void* getInstanceUntyped() = 0;
+	};
 }

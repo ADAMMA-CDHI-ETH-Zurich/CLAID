@@ -14,7 +14,6 @@ namespace claid
     {
         class NetworkClientModule : public NetworkModule
         {
-            DECLARE_MODULE(NetworkClientModule)
 
             public:
                 NetworkClientModule()

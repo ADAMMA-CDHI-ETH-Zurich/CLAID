@@ -4,6 +4,7 @@
 #include "Serialization/Serializer.hpp"
 #include "Serialization/Deserializer.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
+#include "Reflection/ReflectionManager.hpp"
 
 namespace claid
 {
@@ -15,6 +16,10 @@ namespace claid
 
         public:
             
+            const static std::string getReflectorName()
+            {
+                return "BinaryDeserializer";
+            } 
 
             BinaryDeserializer()
             {
@@ -80,13 +85,13 @@ namespace claid
 
                 member = ClassFactory::ClassFactory::getInstance()->getNewInstanceAndCast<T>(className);
 
-                PolymorphicReflector::WrappedReflectorBase<BinaryDeserializer>* polymorphicReflector;
-                if (!PolymorphicReflector::PolymorphicReflector<BinaryDeserializer>::getInstance()->getReflector(className, polymorphicReflector))
+                UntypedReflector* untypedReflector;
+                if (!ReflectionManager::getInstance()->getReflectorForClass(className, this->getReflectorName(), untypedReflector))
                 {
-                    CLAID_THROW(claid::Exception, "BinaryDeserializer failed to deserialize object from binary. Member \"" << property << "\" is a pointer type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
+                    CLAID_THROW(claid::Exception, "BinaryDeserializer failed to deserialize object from binary. Member \"" << property << "\" is a pointer type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was CLAID_SERIALIZATION implemented for this type?");
                 }
 
-                polymorphicReflector->invoke(*this, static_cast<void*>(member));               
+                untypedReflector->invoke(static_cast<void*>(this), static_cast<void*>(member));               
             }
             
             template<typename T>
@@ -193,5 +198,8 @@ namespace claid
                 this->binaryDataReader.readString(name);
             }
 
+
+
     };
 }
+

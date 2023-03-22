@@ -7,7 +7,7 @@ namespace claid
     {
         struct MessageHeaderChannelData : public MessageHeader
         {
-            DECLARE_SERIALIZATION(MessageHeaderChannelData)
+            //DECLARE_SERIALIZATION(MessageHeaderChannelData)
 
 
             template<typename Reflector>

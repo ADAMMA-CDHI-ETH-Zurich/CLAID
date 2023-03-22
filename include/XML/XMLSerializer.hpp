@@ -4,7 +4,7 @@
 
 #include "Serialization/Serializer.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
-
+#include "Reflection/ReflectionManager.hpp"
 #include <stack>
 
 namespace claid
@@ -16,6 +16,11 @@ namespace claid
             std::shared_ptr<XMLNode> currentNode = nullptr;
 
             std::stack<std::shared_ptr<XMLNode>> nodeStack;
+
+            const static std::string getReflectorName()
+            {
+                return "XMLSerializer";
+            } 
 
             XMLSerializer()
             {
@@ -127,15 +132,15 @@ namespace claid
                     CLAID_THROW(claid::Exception, "XMLSerializer failed to serialize object to XML. Member \"" << property << "\" is a pointer/polymorphic object of type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
-                std::string className = member->getClassName();
+                std::string className = ClassFactory::getInstance()->getClassNameOfObject(*member);
 
-                PolymorphicReflector::WrappedReflectorBase<XMLSerializer>* polymorphicReflector;
-                if (!PolymorphicReflector::PolymorphicReflector<XMLSerializer>::getInstance()->getReflector(className, polymorphicReflector))
+                UntypedReflector* untypedReflector;
+                if (!ReflectionManager::getInstance()->getReflectorForClass(className, this->getReflectorName(), untypedReflector))
                 {
                     CLAID_THROW(claid::Exception, "XMLSerializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
-                polymorphicReflector->invoke(*this, static_cast<void*>(member));
+                untypedReflector->invoke(static_cast<void*>(this), static_cast<void*>(member));
                 this->currentNode->setAttribute("class", className);
             }
             
@@ -231,5 +236,8 @@ namespace claid
                 // for XMLSerializer and -Deserialize.
             }
 
+       
+
     };
 }
+

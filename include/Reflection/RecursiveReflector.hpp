@@ -69,9 +69,7 @@ namespace claid
             {
                 static void call(const char* property, Derived& r, T& member) 
                 {
-
                     r.callInt(property, member);
-                
                 }
             };
 
@@ -175,6 +173,16 @@ namespace claid
             {
                 this->currentDefaultValue = &defaultValue;
                 ReflectorType<T>::call(property, *this->This(), member);
+            }
+
+            template<typename T>
+            void member(const char* property, Getter<T> getter, Setter<T> setter)
+            {
+                VariableWithGetterSetter<T> var(property, getter, setter);
+
+                // This will invoke the reflector invoker for classes, which therefore will call the reflect function of VariableWithGetterSetter,
+                // which forwards the reflector to the underlying type T. See how ClassInvoker treats VariableWithGetterSetter for more details.
+                ReflectorType<VariableWithGetterSetter<T>>::call(property, *this->This(), var);
             }
 
             // Determines the type of the object (can be anything, primitive or class),

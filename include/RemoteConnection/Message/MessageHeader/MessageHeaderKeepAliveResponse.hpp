@@ -8,7 +8,7 @@ namespace claid
         // Answer message to MessageHeaderKeepAlive. See there for more details.
         struct MessageHeaderKeepAliveResponse : public MessageHeader
         {
-            DECLARE_SERIALIZATION(MessageHeaderKeepAliveResponse)
+            //DECLARE_SERIALIZATION(MessageHeaderKeepAliveResponse)
 
             template<typename Reflector>
             void reflect(Reflector& r)

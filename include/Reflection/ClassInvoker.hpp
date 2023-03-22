@@ -2,6 +2,8 @@
 #include <type_traits>
 #include <memory.h>
 #include <iostream>
+#include "Traits/is_specialization_of.hpp"
+#include "Reflection/VariableWithGetterSetter.hpp"
 namespace claid
 {
     // For any other class 
@@ -28,6 +30,17 @@ namespace claid
         static void call(Reflector& r, const char* property, T& member) 
         {
             r.callString(property, member);
+        }
+
+    }; 
+
+    // For class string
+    template<typename Reflector, typename T>
+    struct ClassInvoker<Reflector, T, typename std::enable_if<is_specialization_of<T, claid::VariableWithGetterSetter>::value>::type>
+    {
+        static void call(Reflector& r, const char* property, T& member) 
+        {
+            member.reflect(r);
         }
 
     }; 

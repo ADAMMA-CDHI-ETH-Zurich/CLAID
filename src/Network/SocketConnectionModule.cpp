@@ -80,3 +80,14 @@ namespace Network
 
 }
 }
+
+// class GenericReflector
+// {
+//     AnyReflector reflector;
+
+//     template<typename T>
+//     void member(T& t)
+//     {
+//         reflector.member(t);
+//     }
+// };

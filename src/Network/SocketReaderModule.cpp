@@ -38,7 +38,7 @@ namespace Network
         while(this->active)
         {
             Logger::printfln("reading");
-                    Logger::printfln("Socket client fd in reader %d", socketClient->sock);
+            Logger::printfln("Socket client fd in reader %d", socketClient->sock);
 
             BinaryData binaryData;
             if(!this->socketClient->read(binaryData))

@@ -53,7 +53,7 @@ namespace claid
            // if(callFunctionIfSignatureMatchesThrowExceptionIfWrongData<MessageHeaderChannelData, MessageDataBinary>(messageRef, &RemoteObserver::onChannelData, this)) return;
 
 
-            CLAID_THROW(Exception, "Error! RemoteObserver received message with unexpected header \"" << messageRef.header->getClassName() << "\".");
+            CLAID_THROW(Exception, "Error! RemoteObserver received message with unexpected header \"" << ClassFactory::getInstance()->getClassNameOfObject(messageRef) << "\".");
 
         }    
 

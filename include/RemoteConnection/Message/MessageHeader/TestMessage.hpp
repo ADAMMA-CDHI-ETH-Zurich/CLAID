@@ -7,7 +7,6 @@ namespace claid
     {
         struct TestMessage : public MessageHeader
         {
-            DECLARE_SERIALIZATION(TestMessage)
 
             template<typename Reflector>
             void reflect(Reflector& r)
