@@ -15,5 +15,11 @@ namespace claid
 {
     class AbstractReflector
     {
+        public:
+            virtual std::string getReflectorName() = 0;
+            virtual ~AbstractReflector()
+            {
+                
+            }
     };
 }

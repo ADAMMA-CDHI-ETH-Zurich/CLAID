@@ -14,12 +14,12 @@ namespace claid
 
         public:
             
-            const static std::string getReflectorName()
+            std::string getReflectorName()
             {
                 return "BinarySerializer";
             } 
             
-            BinaryData* binaryData;
+            BinaryData* binaryData = nullptr;
 
             BinarySerializer()
             {
@@ -183,12 +183,6 @@ namespace claid
                 this->binaryData = targetContainer;
                 this->binaryData->clear();
 
-                // Store data type string in order to check it during deserialization.
-                // This is crucial and needs to platform independent.
-                std::string name = TypeChecking::getCompilerIndependentTypeNameOfClass<T>();
-                this->binaryData->storeString(name);
-
-
                 invokeReflectOnObject(obj);
             }
 
@@ -208,6 +202,15 @@ namespace claid
                 this->binaryData->store(obj);
             }
 
+            template<typename T>
+            void onInvocation(T& obj)
+            {
+                // Store data type string in order to check it during deserialization.
+                // This is crucial and needs to platform independent.
+                std::string name = TypeChecking::getCompilerIndependentTypeNameOfClass<T>();
+                this->binaryData->storeString(name);
+            }
+
 
             void enforceName(std::string& name, int idInSequence = 0)
             {
@@ -220,7 +223,21 @@ namespace claid
                 this->binaryData->storeString(name);
             }
 
-      
+            virtual bool getByteRepresentationOfSerializedData(std::vector<char>& data)
+            {
+                printf("bla\n");
+                if(this->binaryData == nullptr)
+                {
+                    data.clear();
+                }
+                else
+                {
+                    // Is this safe ?
+                    data = binaryData->getData();
+                }
+                return true;
+
+            }
 
     };
 }

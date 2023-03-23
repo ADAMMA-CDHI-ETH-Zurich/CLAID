@@ -20,7 +20,10 @@ namespace claid
 				TypedReflector<Class, Reflector>* reflector = new TypedReflector<Class, Reflector>();
 
 				std::string className = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<Class>();
-				std::string reflectorName = Reflector::getReflectorName();
+
+				// Create an instance of the reflector in order to retrieve it's name..
+				Reflector r;
+				std::string reflectorName = r.getReflectorName();
 
 				UntypedReflector* untypedReflector = static_cast<UntypedReflector*>(reflector);
 				std::cout << "Registering class " << className << "\n";
@@ -37,7 +40,10 @@ namespace claid
 			bool getReflectorForClass(UntypedReflector*& reflector)
 			{
 				std::string className = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<Class>();
-				std::string reflectorName = Reflector::getReflectorName();
+
+				// Create an instance of the reflector in order to get its name..
+				Reflector r;
+				std::string reflectorName = r.getReflectorName();
 
 				return getReflectorForClass(className, reflectorName, reflector);
 			}

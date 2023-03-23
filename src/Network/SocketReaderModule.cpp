@@ -59,7 +59,7 @@ namespace Network
             RemoteConnection::Message message;
             try
             {
-                BinaryDataReader reader(&binaryData);
+                std::shared_ptr<BinaryDataReader> reader = std::make_shared<BinaryDataReader>(binaryData);
                 deserializer.deserialize(message, reader);
                 this->messageReceivedChannel.post(message);
             }

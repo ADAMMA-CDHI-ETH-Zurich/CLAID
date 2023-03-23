@@ -6,6 +6,7 @@
 
 #include "XML/XMLParser.hpp"
 #include "ClassFactory/ClassFactory.hpp"
+#include "Reflection/Reflect.hpp"
 #include "Reflection/ReflectionManager.hpp"
 #include <algorithm>
 #include <memory.h>
@@ -32,7 +33,7 @@ namespace claid
 
         public:
 
-            const static std::string getReflectorName()
+            std::string getReflectorName()
             {
                 return "XMLDeserializer";
             } 
@@ -46,6 +47,8 @@ namespace claid
             {
 
             }
+
+            EmptyReflect(XMLDeserializer)
 
             template<typename T>
             void callFloatOrDouble(const char* property, T& member)
@@ -429,7 +432,10 @@ namespace claid
                 }
             }
 
-         
+            bool setByteRepresentationOfSerializedData(std::vector<char>& data)
+            {
+                return false;
+            }
         
     };
 }

@@ -5,22 +5,27 @@
 #include "Serialization/Serializer.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
 #include "Reflection/ReflectionManager.hpp"
-#include <stack>
+#include "Reflection/Reflect.hpp"
 
+#include <stack>
 namespace claid
 {
     class XMLSerializer : public Serializer<XMLSerializer>
     {
+        private:
+            std::string savePath; 
+
         public:
             std::shared_ptr<XMLNode> root = nullptr;
             std::shared_ptr<XMLNode> currentNode = nullptr;
 
             std::stack<std::shared_ptr<XMLNode>> nodeStack;
 
-            const static std::string getReflectorName()
+            std::string getReflectorName()
             {
                 return "XMLSerializer";
             } 
+
 
             XMLSerializer()
             {
@@ -32,6 +37,10 @@ namespace claid
             {
                 
             }
+
+            Reflect(XMLSerializer,
+                reflectMember(savePath);
+            )
 
             template<typename T>
             void callFloatOrDouble(const char* property, T& member)
@@ -234,6 +243,25 @@ namespace claid
 
                 // Note, that as the XMLSerializer stores names of members everytime anyways, this function is not needed
                 // for XMLSerializer and -Deserialize.
+            }
+
+            bool getByteRepresentationOfSerializedData(std::vector<char>& data)
+            {
+                printf("Get byte rep \n");
+                if(this->root == nullptr)
+                {
+                    data.clear();
+                }
+                else
+                {
+                    std::string str;
+                    this->root->toString(str);
+                    printf("XMLSerializer str %s", str.c_str());
+
+                    std::copy(str.begin(), str.end(), std::back_inserter(data));
+                }
+                return true;
+
             }
 
        

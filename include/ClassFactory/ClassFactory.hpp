@@ -99,6 +99,25 @@ namespace claid
 				return obj;
 			}
 
+	
+			std::shared_ptr<void> getNewUntypedInstance(const std::string& className)
+			{
+				if (!isFactoryRegisteredForClass(className))
+				{
+					return nullptr;
+				}
+				
+				// ClassFactoryTyped<T>* factory = dynamic_cast<ClassFactoryTyped<T>*>(getFactoryForClassByName(className));
+
+				// if(factory == nullptr)
+				// {
+				// 	CLAID_THROW(Exception, "Error in ClassFactory. Tried to create a new object of class \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\" from "
+				// 	<< "factory associated with type \"" << className << "\". The types are incompatible, the latter cannot be cast to the former.");
+				// }
+
+				return getFactoryForClassByName(className)->getInstanceUntypedAsSharedPtr();
+			}
+
 			void getRegisteredClasses(std::vector<std::string>& registeredClasses)
 			{
 				for(auto it : classFactories)
@@ -115,7 +134,8 @@ namespace claid
 
 				if(it == rttiToRegisteredClassNameMap.end())
 				{
-					CLAID_THROW(Exception, "Cannot get registered class name for type \"" << rttiTypename << "\". This type was not registered to the class factory using REGISTER_CLASS");
+					//CLAID_THROW(Exception, "Cannot get registered class name for type \"" << rttiTypename << "\". This type was not registered to the class factory using REGISTER_CLASS");
+					return rttiTypename;
 				}
 				else
 				{
@@ -131,7 +151,8 @@ namespace claid
 
 				if(it == rttiToRegisteredClassNameMap.end())
 				{
-					CLAID_THROW(Exception, "Cannot get registered class name for type \"" << rttiTypename << "\". This type was not registered to the class factory using REGISTER_CLASS");
+					//CLAID_THROW(Exception, "Cannot get registered class name for type \"" << rttiTypename << "\". This type was not registered to the class factory using REGISTER_CLASS");
+					return rttiTypename;
 				}
 				else
 				{

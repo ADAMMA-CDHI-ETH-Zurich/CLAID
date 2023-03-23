@@ -44,7 +44,7 @@ namespace claid
             void get(T& data)
             {
                 BinaryDeserializer deserializer;
-                BinaryDataReader reader(&this->binaryData);
+                std::shared_ptr<BinaryDataReader> reader = std::make_shared<BinaryDataReader>(this->binaryData);
 
                 deserializer.deserialize(data, reader); 
             }

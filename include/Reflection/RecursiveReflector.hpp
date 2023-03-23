@@ -9,7 +9,7 @@ namespace claid
     template<typename Derived>
     class RecursiveReflector : public AbstractReflector
     {
-        
+           
 
         template<typename Type>
             struct ____INVALID_TYPE_IN_REFLECTION_TYPE_{
@@ -144,8 +144,17 @@ namespace claid
             template<typename T>
             void invokeReflectOnObject(T& obj)
             {
+                this->This()->onInvocation(obj);
                 ReflectorInvoker<Derived, T>::call(*This(), obj);
             }
+
+            template<typename T>
+            void onInvocation(T& obj)
+            {
+                // Default implementation
+            }
+
+         
 
             template<typename T>
             void property(const char* property, T& member, const char* comment)

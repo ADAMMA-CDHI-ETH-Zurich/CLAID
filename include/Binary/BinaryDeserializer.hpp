@@ -12,11 +12,17 @@ namespace claid
     {
     
         private:
-            BinaryDataReader binaryDataReader;
+            std::shared_ptr<BinaryDataReader> binaryDataReader;
+
+            // Only required if the BinaryDeserializer has to store a reference
+            // to the underlying data held by binaryDataReader in order to prevent its deletion.
+            // E.g., this is required if setByteRepresentationOfSerializedData is used, for example
+            // when using an UntypedReflector.
+            std::shared_ptr<BinaryData> ownedData = nullptr;
 
         public:
             
-            const static std::string getReflectorName()
+            std::string getReflectorName()
             {
                 return "BinaryDeserializer";
             } 
@@ -26,36 +32,39 @@ namespace claid
                 
             }
 
-           
+            BinaryDeserializer(std::shared_ptr<BinaryDataReader> binaryDataReader) : binaryDataReader(binaryDataReader)           
+            {
+                
+            }
 
             template<typename T>
             void callFloatOrDouble(const char* property, T& member)
             {
-                this->binaryDataReader.read(member);
+                this->binaryDataReader->read(member);
             }   
 
             // Also includes any variants of signed, unsigned, short, long, long long, ...
             template<typename T>
             void callInt(const char* property, T& member)
             {
-                this->binaryDataReader.read(member);
+                this->binaryDataReader->read(member);
             }
 
             void callBool(const char* property, bool& member)
             {
-                this->binaryDataReader.read(member);
+                this->binaryDataReader->read(member);
             }
 
             // Why template? Because we can have signed and unsigned char.
             template<typename T>
             void callChar(const char* property, T& member)
             {
-                this->binaryDataReader.read(member);
+                this->binaryDataReader->read(member);
             }
 
             void callString(const char* property, std::string& member)
             {
-                this->binaryDataReader.readString(member);
+                this->binaryDataReader->readString(member);
             }
 
             template<typename T>
@@ -75,7 +84,7 @@ namespace claid
             void callPointer(const char* property, T*& member)
             {
                 std::string className;
-                this->binaryDataReader.readString(className);
+                this->binaryDataReader->readString(className);
 
                 // Check if ClassFactory is registered for className.
                 if (!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForClass(className))
@@ -113,12 +122,12 @@ namespace claid
 
             void count(const std::string& name, int32_t& count)
             {
-                this->binaryDataReader.read(count);
+                this->binaryDataReader->read(count);
             }
 
             void countElements(int32_t& count)
             {
-                this->binaryDataReader.read(count);
+                this->binaryDataReader->read(count);
             }
 
             void beginSequence()
@@ -138,36 +147,25 @@ namespace claid
 
             void read(char*& data, size_t size)
             {
-                this->binaryDataReader.readBytes(data, size);
+                this->binaryDataReader->readBytes(data, size);
             }
 
             
 
             template <typename T>
             typename std::enable_if<!std::is_arithmetic<T>::value>::type
-            deserialize(T& obj, BinaryDataReader& binaryDataReader)
+            deserialize(T& obj, std::shared_ptr<BinaryDataReader> binaryDataReader)
             {
                 this->binaryDataReader = binaryDataReader;
 
-                // Read data type string and check if it matches the data type of obj.
-                std::string name = TypeChecking::getCompilerIndependentTypeNameOfClass<T>();
-                std::string storedName;
-
-
-                this->binaryDataReader.readString(storedName);
-
-                if(name != storedName)
-                {
-                    CLAID_THROW(Exception, "Error, failed to deserialize object from binary data because of mismatching types."
-                                                "The data type of the object is " << name << " but the serialized data is of type " << storedName);
-                }
+                
 
                 invokeReflectOnObject(obj);
             }
 
             template <typename T>
             typename std::enable_if<std::is_arithmetic<T>::value>::type
-            deserialize(T& obj, BinaryDataReader& binaryDataReader)
+            deserialize(T& obj, std::shared_ptr<BinaryDataReader> binaryDataReader)
             {
                 this->binaryDataReader = binaryDataReader;
 
@@ -176,7 +174,7 @@ namespace claid
                 std::string storedName;
 
 
-                this->binaryDataReader.readString(storedName);
+                this->binaryDataReader->readString(storedName);
 
                 if(name != storedName)
                 {
@@ -184,8 +182,30 @@ namespace claid
                                                 "The data type of the object is " << name << " but the serialized data is of type " << storedName);
                 }
 
-                this->binaryDataReader.read(obj);
+                this->binaryDataReader->read(obj);
             }
+
+            template<typename T>
+            void onInvocation(T& obj)
+            {
+                if(this->binaryDataReader == nullptr)
+                {
+                    CLAID_THROW(Exception, "Error in BinaryDeserializer! Cannot deserialize data, as no valid BinaryData has been set.");
+                }
+                // Read data type string and check if it matches the data type of obj.
+                std::string name = TypeChecking::getCompilerIndependentTypeNameOfClass<T>();
+                std::string storedName;
+
+                this->binaryDataReader->readString(storedName);
+
+                if(name != storedName)
+                {
+                    CLAID_THROW(Exception, "Error, failed to deserialize object from binary data because of mismatching types."
+                                                "The data type of the object is " << name << " but the serialized data is of type " << storedName);
+                }
+            }
+
+           
 
             void enforceName(std::string& name, int idInSequence = 0)
             {
@@ -195,7 +215,13 @@ namespace claid
                 // as it might be needed for deserialization etc.
                 // Thus, this function allows to make sure the string "name" is explicitly stored.
                 
-                this->binaryDataReader.readString(name);
+                this->binaryDataReader->readString(name);
+            }
+
+            bool setByteRepresentationOfSerializedData(std::vector<char>& data)
+            {
+                this->ownedData = std::make_shared<BinaryData>(data);
+                return true;
             }
 
 

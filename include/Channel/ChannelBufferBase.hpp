@@ -34,14 +34,14 @@ namespace claid
 
             virtual std::shared_ptr<ChannelBufferElement> newEmptyChannelBufferElement()
             {
-                std::shared_ptr<ChannelBufferElement> element = std::shared_ptr<ChannelBufferElement>(new ChannelBufferElement);
+                std::shared_ptr<ChannelBufferElement> element = std::shared_ptr<ChannelBufferElement>(new ChannelBufferElement(this->dataTypeName));
      
                 return element;
             }
 
             virtual std::shared_ptr<ChannelBufferElement> newChannelBufferElementFromBinaryData(TaggedData<BinaryData>& binaryData)
             {
-                std::shared_ptr<ChannelBufferElement> element = std::shared_ptr<ChannelBufferElement>(new ChannelBufferElement(binaryData));
+                std::shared_ptr<ChannelBufferElement> element = std::shared_ptr<ChannelBufferElement>(new ChannelBufferElement(binaryData, this->dataTypeName));
      
                 return element;
             }
@@ -51,7 +51,7 @@ namespace claid
             void getTypeNameFromBinaryData(const BinaryData& binaryData, std::string& typeName) const
             {
                 // First bytes of the binary data are the RTTI string identifiying the type.
-                BinaryDataReader reader(&binaryData);
+                BinaryDataReader reader(binaryData);
                 reader.readString(typeName);
             }
 

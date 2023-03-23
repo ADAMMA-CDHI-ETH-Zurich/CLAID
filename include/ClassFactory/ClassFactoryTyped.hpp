@@ -13,6 +13,11 @@ namespace claid
 				return static_cast<void*>(new T);
 			}
 
+			std::shared_ptr<void> getInstanceUntypedAsSharedPtr()
+			{
+				return std::static_pointer_cast<void>(std::make_shared<T>());
+			}
+
 			T* getInstance()
 			{
 				return new T;

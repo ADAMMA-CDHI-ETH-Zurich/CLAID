@@ -17,6 +17,11 @@ namespace claid
             {
             }
 
+            BinaryData(std::vector<char>& data) : data(data)
+            {
+
+            }
+
             template<typename Reflector>
             void reflect(Reflector& r)
             {

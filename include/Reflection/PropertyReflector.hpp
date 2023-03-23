@@ -11,6 +11,10 @@ namespace claid
 
     public:
 
+        std::string getReflectorName()
+        {
+            return "PropertyReflector";
+        }
    
 
         template<typename T>

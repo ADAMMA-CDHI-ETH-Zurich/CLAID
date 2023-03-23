@@ -1,10 +1,11 @@
 #pragma once
 #include "Reflection/RecursiveReflector.hpp"
+#include "Serialization/AbstractDeserializer.hpp"
 
 namespace claid
 {
     template<typename Derived>
-    class Deserializer : public RecursiveReflector<Derived>
+    class Deserializer : public RecursiveReflector<Derived>, public AbstractDeserializer
     { 
         public:
             static constexpr bool isReadOnly = false;

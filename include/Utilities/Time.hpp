@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <limits>
 #include <sstream>
+#include <iomanip>
 
 namespace claid
 {
@@ -223,9 +224,14 @@ public:
 		Time::toDateTime(now, year, month, day, hour, minute, second);
 	}
 
-	static void timeString(std::string& timeString)
+	std::string strftime(const char* fmt)
 	{
-
+		time_t tt = std::chrono::system_clock::to_time_t(*this);
+		tm local_tm = *localtime(&tt);
+		
+		std::stringstream ss;
+		ss << std::put_time(&local_tm, fmt);
+		return ss.str();
 	}
      
 
