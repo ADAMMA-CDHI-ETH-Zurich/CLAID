@@ -17,7 +17,7 @@ namespace claid
             r.callBeginClass(property, member);
             // Call reflect method on that class recursively.
 
-            r.invokeReflectOnObject(member);
+            r.invokeReflectOnObject(member, false);
             r.callEndClass(property, member);
         }
 

@@ -28,5 +28,15 @@ namespace claid
 			r.member(memberName, obj, "");
 		}
 
+		virtual void invokeMemberWithDefaultValue(const char* memberName, void* reflector, void* obj, void* defaultValue)
+		{
+			return this->invokeMemberWithDefaultValueTyped(memberName, *static_cast<Reflector*>(reflector), *static_cast<ObjectType*>(obj), *static_cast<ObjectType*>(defaultValue));
+		}
+
+		virtual void invokeMemberWithDefaultValueTyped(const char* memberName, Reflector& r, ObjectType& obj, ObjectType& defaultValue)
+		{
+			r.member(memberName, obj, "", defaultValue);
+		}
+
 	};
 }

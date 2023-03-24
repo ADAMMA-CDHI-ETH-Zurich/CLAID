@@ -19,6 +19,8 @@
 #else
 #include <dirent.h>
 #include <ftw.h>
+
+#include "Logger/Logger.hpp"
 int directoryDeleterHelper(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
 {
 	return remove(fpath);
@@ -465,4 +467,41 @@ namespace claid
 		content = content.substr(0, content.size() - 1);
 		return true;
 	}
+
+	bool FileUtils::copyFileTo(const std::string& source, const std::string& destination, bool appendExistingFile)
+	{
+		std::ifstream in(source, std::ios::in | std::ios::binary);
+
+		std::ofstream out;
+
+		if(appendExistingFile)
+		{
+			out = std::ofstream(destination, std::ios::app | std::ios::binary);
+		}
+		else
+		{
+			out = std::ofstream (destination, std::ios::binary);
+		}
+
+
+		if(!in.is_open() || !out.is_open())
+		{
+			return false;
+		}
+
+		out << in.rdbuf();
+		return true;
+	}
+
+	bool FileUtils::moveFileTo(const std::string& source, const std::string& destination, bool appendExistingFile)
+	{
+		if(!copyFileTo(source, destination, appendExistingFile))
+		{
+			Logger::printfln("Copy file to failed");
+			return false;
+		}
+
+		return removeFile(source);
+	}
+            
 }

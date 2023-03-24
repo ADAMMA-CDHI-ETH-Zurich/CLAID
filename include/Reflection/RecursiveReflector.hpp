@@ -140,11 +140,19 @@ namespace claid
                 
             }
 
+            template<typename T>
+            void forwardReflector(T& obj)
+            {
+                ReflectorInvoker<Derived, T>::call(*This(), obj);
+            }
+
             // Calls the reflect function of the given object.
             template<typename T>
-            void invokeReflectOnObject(T& obj)
+            void invokeReflectOnObject(T& obj, bool externalInvocation = true)
             {
-                if(numInvocations == 0)
+                // externalInvocation: Did an external function apply this reflector an object,
+                // or was invokeReflectOnObject called by ourselves internally, e.g., by the ClassInvoker?
+                if(numInvocations == 0 && externalInvocation)
                 {
                     this->This()->onInvocationStart(obj);
                 }
@@ -152,7 +160,7 @@ namespace claid
                 ReflectorInvoker<Derived, T>::call(*This(), obj);
 
                 numInvocations--;
-                if(numInvocations == 0)
+                if(numInvocations == 0 && externalInvocation)
                 {
                     this->This()->onInvocationEnd(obj);
                 }
@@ -194,9 +202,9 @@ namespace claid
             }
 
             template<typename T>
-            void member(const char* property, T& member, const char* comment, T defaultValue)
+            void member(const char* property, T& member, const char* comment, const T& defaultValue)
             {
-                this->currentDefaultValue = &defaultValue;
+                this->currentDefaultValue = const_cast<T*>(&defaultValue);
                 ReflectorType<T>::call(property, *this->This(), member);
             }
 
@@ -204,6 +212,17 @@ namespace claid
             void member(const char* property, Getter<T> getter, Setter<T> setter)
             {
                 VariableWithGetterSetter<T> var(property, getter, setter);
+
+                // This will invoke the reflector invoker for classes, which therefore will call the reflect function of VariableWithGetterSetter,
+                // which forwards the reflector to the underlying type T. See how ClassInvoker treats VariableWithGetterSetter for more details.
+                ReflectorType<VariableWithGetterSetter<T>>::call(property, *this->This(), var);
+            }
+
+            template<typename T>
+            void member(const char* property, Getter<T> getter, Setter<T> setter, const T& defaultValue)
+            {
+                VariableWithGetterSetter<T> var(property, getter, setter);
+                this->currentDefaultValue = const_cast<T*>(&defaultValue);
 
                 // This will invoke the reflector invoker for classes, which therefore will call the reflect function of VariableWithGetterSetter,
                 // which forwards the reflector to the underlying type T. See how ClassInvoker treats VariableWithGetterSetter for more details.

@@ -221,19 +221,21 @@ namespace claid
             typename std::enable_if<std::is_arithmetic<T>::value>::type
             serialize(T& obj)
             {
+                this->root = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
+                this->currentNode = root;
                 this->member("Value", obj, "");
             }
 
             template<typename T>
             void onInvocationStart(T& obj)
             {
-                
+                this->root = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
+                this->currentNode = root;
             }
 
             void forceReset()
             {
-                this->root = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
-                this->currentNode = root;
+                
             }
 
             std::shared_ptr<XMLNode> getXMLNode()

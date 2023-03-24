@@ -26,7 +26,6 @@ namespace claid
 				std::string reflectorName = r.getReflectorName();
 
 				UntypedReflector* untypedReflector = static_cast<UntypedReflector*>(reflector);
-				std::cout << "Registering class " << className << "\n";
 				reflectors[className].insert(std::make_pair(reflectorName, untypedReflector));
 			}
 
@@ -80,7 +79,6 @@ namespace claid
 	public:
 		ReflectionManagerRegistrar()
 		{
-			std::cout << "Registrar helper\n";
 			ReflectionManager::getInstance()->template registerReflectorForClass<ObjectType, Reflector>();
 		}
 	};

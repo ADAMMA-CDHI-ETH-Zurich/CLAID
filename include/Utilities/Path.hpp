@@ -2,7 +2,7 @@
 
 #include <string>
 #include "Utilities/Time.hpp"
-
+#include "Utilities/StringUtils.hpp"
 
 namespace claid
 {
@@ -11,7 +11,7 @@ namespace claid
         private:
             std::string path;
 
-            size_t getIndexOfRightMostPathSeparator()
+            size_t getIndexOfRightMostPathSeparator() const
             {
                 if(path.size() == 0)
                 {
@@ -45,7 +45,13 @@ namespace claid
 
             }
 
-            std::string getFolderPath()
+
+            static Path join(const std::string& path1, const std::string& path2)
+            {
+                return Path(path1 + "/" + path2);
+            }
+
+            std::string getFolderPath() const
             {
                 size_t index = this->getIndexOfRightMostPathSeparator();
                 if(index == 0)
@@ -56,7 +62,7 @@ namespace claid
                 return this->path.substr(0, index);
             }
 
-            std::string getFilePath()
+            std::string getFilePath() const
             {
                 size_t index = this->getIndexOfRightMostPathSeparator();
                 if(index == 0)
@@ -67,7 +73,7 @@ namespace claid
                 return this->path.substr(index + 1, this->path.size());
             }
 
-            std::string getFileSuffix()
+            std::string getFileSuffix() const
             {
                 if(path.size() == 0)
                 {
@@ -87,6 +93,15 @@ namespace claid
                 }
 
                 return "";
+            }
+
+            std::string getPathRelativeTo(const std::string& path) const
+            {
+                if(StringUtils::startsWith(this->path, path))
+                {
+                    return this->path.substr(path.size() + 1, this->path.size());
+                }
+                return path;
             }
 
             std::string toString() const

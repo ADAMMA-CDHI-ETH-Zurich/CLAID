@@ -1,7 +1,7 @@
 #pragma once
 #include "Getter.hpp"
 #include "Setter.hpp"
-
+#include <string>
 namespace claid
 {
     

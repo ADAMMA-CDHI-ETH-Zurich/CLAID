@@ -1,39 +1,57 @@
 #pragma once
 
 #include "CLAID.hpp"
-
+#include <sstream>
 namespace claid
 {
     class CSVSerializer : public Serializer<CSVSerializer>
     {
         private:
-            bool headerExists;
-            std::string header;
-            std::string lastData;
+            std::stringstream header;
+            std::stringstream data;
 
-            void addValue(std::string name, std::string stringRepresentation)
+            template<typename T>
+            void addValue(std::string name, const T& value)
             {
-                if(header == "")
+                if(header.str() == "")
                 {
-                    header += name;
+                    header << name;
                 }
                 else
                 {
-                    header += "," + name;
+                    header << "," << name;
                 }
 
-                if(lastData == "")
+                if(data.str() == "")
                 {
-                    lastData = stringRepresentation;
+                    data << value;
                 }
                 else
                 {
-                    lastData += "," + stringRepresentation;
+                    data << "," << value;
                 }
             }
 
         public:
             EmptyReflect(CSVSerializer)
+
+            CSVSerializer()
+            {
+
+            }
+
+            CSVSerializer(const CSVSerializer& other)
+            {
+                this->data << other.data.str();
+                this->header << other.header.str();
+            }
+
+            CSVSerializer& operator=(const CSVSerializer& other)
+            {
+                this->data << other.data.str();
+                this->header << other.header.str();
+                return *this;
+            }
 
             std::string getReflectorName()
             {
@@ -44,14 +62,14 @@ namespace claid
             template<typename T>
             void callFloatOrDouble(const char* property, T& member)
             {
-                addValue(property, std::to_string(member));
+                addValue(property, member);
             }   
 
             // Also includes any variants of signed, unsigned, short, long, long long, ...
             template<typename T>
             void callInt(const char* property, T& member)
             {
-                addValue(property, std::to_string(member));
+                addValue(property, member);
             }
 
             void callBool(const char* property, bool& member)
@@ -63,7 +81,7 @@ namespace claid
             template<typename T>
             void callChar(const char* property, T& member)
             {
-                addValue(property, std::string(member));
+                addValue(property, member);
             }
 
             template<typename T>
@@ -138,8 +156,12 @@ namespace claid
             template<typename T>
             void onInvocationStart(T& obj)
             {
-                this->lastData = "";
-                this->header = "";
+                this->forceReset();
+            }
+
+            template<typename T>
+            void onInvocationEnd(T& obj)
+            {
                 
             }
 
@@ -154,8 +176,19 @@ namespace claid
            
             }
 
+            void getHeaderWriteableToFile(std::vector<char>& data)
+            {
+                data.clear();
+                std::string headerString = header.str();
+                std::copy(headerString.begin(), headerString.end(), std::back_inserter(data));
+            }
+
             void getDataWriteableToFile(std::vector<char>& data)
             {
+                data.clear();
+                std::string dataString = this->data.str();
+                std::copy(dataString.begin(), dataString.end(), std::back_inserter(data));
+
                 // printf("Get byte rep \n");
                 // if(this->root == nullptr)
                 // {
@@ -172,5 +205,10 @@ namespace claid
 
             }
 
+            void forceReset()
+            {
+                this->header.str("");
+                this->data.str("");
+            }
     };
 }
