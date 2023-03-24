@@ -48,7 +48,7 @@ namespace claid
             virtual std::shared_ptr<XMLNode> headerToXML() = 0;
             virtual std::shared_ptr<XMLNode> toXML() = 0;
             virtual bool canSerializeToXML() = 0;
-            virtual bool applySerializerToData(std::shared_ptr<AbstractSerializer> serializer) = 0;
+            virtual bool applySerializerToData(std::shared_ptr<AbstractSerializer> serializer, bool addHeader = false) = 0;
 
     };
 
@@ -132,9 +132,9 @@ namespace claid
                 return this->channelBufferElement->canSerializeToXML();
             }
 
-            bool applySerializerToData(std::shared_ptr<AbstractSerializer> serializer)
+            bool applySerializerToData(std::shared_ptr<AbstractSerializer> serializer, bool addHeader = false)
             {
-                return this->channelBufferElement->applySerializerToData(serializer);
+                return this->channelBufferElement->applySerializerToData(serializer, addHeader);
             }
 
 
@@ -245,9 +245,9 @@ namespace claid
                 return true;
             }
 
-            bool applySerializerToData(std::shared_ptr<AbstractSerializer> serializer)
+            bool applySerializerToData(std::shared_ptr<AbstractSerializer> serializer, bool addHeader = false)
             {
-                return this->channelBufferElement->applySerializerToData(serializer);
+                return this->channelBufferElement->applySerializerToData(serializer, addHeader);
             }
 
 

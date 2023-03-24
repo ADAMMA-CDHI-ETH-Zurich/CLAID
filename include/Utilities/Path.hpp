@@ -64,7 +64,7 @@ namespace claid
                     // No path separator found, assume the path points to a file.
                     return this->path;
                 }
-                return "";
+                return this->path.substr(index + 1, this->path.size());
             }
 
             std::string getFileSuffix()

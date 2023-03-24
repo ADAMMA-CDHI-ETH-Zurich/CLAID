@@ -13,7 +13,6 @@ namespace claid
     class XMLSerializer : public Serializer<XMLSerializer>
     {
         private:
-            std::string savePath; 
 
         public:
             std::shared_ptr<XMLNode> root = nullptr;
@@ -38,9 +37,7 @@ namespace claid
                 
             }
 
-            Reflect(XMLSerializer,
-                reflectMember(savePath);
-            )
+            EmptyReflect(XMLSerializer)
 
             template<typename T>
             void callFloatOrDouble(const char* property, T& member)
@@ -227,6 +224,18 @@ namespace claid
                 this->member("Value", obj, "");
             }
 
+            template<typename T>
+            void onInvocationStart(T& obj)
+            {
+                
+            }
+
+            void forceReset()
+            {
+                this->root = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
+                this->currentNode = root;
+            }
+
             std::shared_ptr<XMLNode> getXMLNode()
             {
                 return this->root;
@@ -245,7 +254,7 @@ namespace claid
                 // for XMLSerializer and -Deserialize.
             }
 
-            bool getByteRepresentationOfSerializedData(std::vector<char>& data)
+            void getDataWriteableToFile(std::vector<char>& data)
             {
                 printf("Get byte rep \n");
                 if(this->root == nullptr)
@@ -260,7 +269,6 @@ namespace claid
 
                     std::copy(str.begin(), str.end(), std::back_inserter(data));
                 }
-                return true;
 
             }
 

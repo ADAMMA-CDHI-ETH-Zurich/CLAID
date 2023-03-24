@@ -173,7 +173,7 @@ namespace claid
                 return this->serializeToXML();
             }
 
-            virtual bool applySerializerToData(std::shared_ptr<AbstractSerializer> serializer)
+            virtual bool applySerializerToData(std::shared_ptr<AbstractSerializer> serializer, bool addHeader = false)
             {
                 const T& data = typedData.value();
                 std::string dataTypeName = ClassFactory::getInstance()->getClassNameOfObject(data);
@@ -187,6 +187,12 @@ namespace claid
 
                 T* nonConstData = const_cast<T*>(&data);
                 untypedReflector->invoke(static_cast<void*>(serializer.get()), reinterpret_cast<void*>(nonConstData));               
+
+                if(addHeader)
+                {
+                    this->addDataHeaderAsMemberUsingSerializer(serializer);
+                }
+
                 return true;
             }
 

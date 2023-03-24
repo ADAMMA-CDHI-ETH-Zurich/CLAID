@@ -5,9 +5,10 @@
 #include "XML/XMLDeserializer.hpp"
 #include "Binary/BinarySerializer.hpp"
 #include "Binary/BinaryDeserializer.hpp"
+#include "CSV/CSVSerializer.hpp"
+
 #include "AdditionalSerialization.hpp"
 #include "RunTime/RunTime.hpp"
-
 // Only use the 4 serializers that come with the ModuleAPI (XMLSerializer, XMLDeserializer, BinarySerializer, BinaryDeserializer).
 // Necessary for Modules, for example, which should only use the standard de-/serializers.
 // #define DECLARE_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className) \
@@ -21,6 +22,7 @@
     REGISTER_REFLECTOR_FOR_CLASS(className, claid::XMLDeserializer, XMLDeserializer)\
     REGISTER_REFLECTOR_FOR_CLASS(className, claid::BinarySerializer, BinarySerializer)\
     REGISTER_REFLECTOR_FOR_CLASS(className, claid::BinaryDeserializer, BinaryDeserializer)\
+    REGISTER_REFLECTOR_FOR_CLASS(className, claid::CSVSerializer, CSVSerializer)\
 
 
 

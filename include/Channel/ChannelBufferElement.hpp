@@ -113,7 +113,7 @@ namespace claid
                 << "in the current instance of CLAID.");
             }
 
-            virtual bool applySerializerToData(std::shared_ptr<AbstractSerializer> serializer)
+            virtual bool applySerializerToData(std::shared_ptr<AbstractSerializer> serializer, bool addHeader = false)
             {
 
                 // The ChannelBuffer is untyped.
@@ -155,10 +155,35 @@ namespace claid
                 UntypedReflector* untypedSerializer;
                 if (!ReflectionManager::getInstance()->getReflectorForClass(dataTypeName, reflectorName, untypedSerializer))
                 {
+                //      CLAID_THROW(claid::Exception, "Cannot apply serializer to untyped data received on channel.\n"
+                //     << "It was tried to apply a serializer of type \"" << reflectorName << "\" to data type \"" << dataTypeName << "\", however the serializer does not support this data type."
+                //     << "Make sure that the reflector was registered for that data type. If it is a standard serializer, such as BinarySerializer or XMLSerializer, make sure you register your data type using REGISTER_SERIALIZATION(...).");
+                // 
                     return false;
                 }
-                untypedSerializer->invoke(static_cast<void*>(serializer.get()), untypedInstance.get());               
+                untypedSerializer->invoke(static_cast<void*>(serializer.get()), untypedInstance.get());   
+
+                if(addHeader)
+                {
+                    addDataHeaderAsMemberUsingSerializer(serializer);
+                }
+
                 return true;
+            }
+
+            void addDataHeaderAsMemberUsingSerializer(std::shared_ptr<AbstractSerializer> serializer)
+            {
+                std::string dataTypeName = ClassFactory::getInstance()->getClassNameOfObject(this->header);
+                std::string reflectorName = serializer->getReflectorName();
+
+                UntypedReflector* untypedSerializer;
+                if (!ReflectionManager::getInstance()->getReflectorForClass(dataTypeName, reflectorName, untypedSerializer))
+                {
+                     CLAID_THROW(claid::Exception, "Cannot apply serializer to header of type \"" << dataTypeName << "\" of untyped data received on channel.\n"
+                    << "It was tried to apply a serializer of type \"" << reflectorName << "\" to the header of data received in an untyped channel. This might happen if you implemented a custom header (inheriting from TaggedDataBase)"
+                    << "and forgot to add it to CLAID's serialization system using REGISTER_SERIALIZATION(...)");
+                }
+                untypedSerializer->invokeMember("header", static_cast<void*>(serializer.get()), static_cast<void*>(&this->header));            
             }
 
             

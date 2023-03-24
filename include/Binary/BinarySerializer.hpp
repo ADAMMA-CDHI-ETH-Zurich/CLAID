@@ -203,7 +203,7 @@ namespace claid
             }
 
             template<typename T>
-            void onInvocation(T& obj)
+            void onInvocationStart(T& obj)
             {
                 // Store data type string in order to check it during deserialization.
                 // This is crucial and needs to platform independent.

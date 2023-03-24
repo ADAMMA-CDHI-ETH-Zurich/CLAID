@@ -34,7 +34,7 @@ namespace claid
 
             BinaryDeserializer(std::shared_ptr<BinaryDataReader> binaryDataReader) : binaryDataReader(binaryDataReader)           
             {
-                
+
             }
 
             template<typename T>
@@ -186,7 +186,7 @@ namespace claid
             }
 
             template<typename T>
-            void onInvocation(T& obj)
+            void onInvocationStart(T& obj)
             {
                 if(this->binaryDataReader == nullptr)
                 {
