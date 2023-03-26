@@ -497,7 +497,6 @@ namespace claid
 	{
 		if(!copyFileTo(source, destination, appendExistingFile))
 		{
-			Logger::printfln("Copy file to failed");
 			return false;
 		}
 
