@@ -207,23 +207,23 @@ namespace claid
 
             template <typename T>
             typename std::enable_if<!std::is_arithmetic<T>::value>::type
-            serialize(T& obj)
+            serialize(const std::string& name, T& obj)
             {
                 // std::string name = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
                 // std::shared_ptr<XMLNode> node = std::shared_ptr<XMLNode>(new XMLNode(currentNode, name));
                 // this->currentNode->addChild(node);
                 // this->currentNode = node;
 
-                invokeReflectOnObject(obj);
+                invokeReflectOnObject(name.c_str(), obj);
             }
 
             template <typename T>
             typename std::enable_if<std::is_arithmetic<T>::value>::type
-            serialize(T& obj)
+            serialize(const std::string& name, T& obj)
             {
                 this->root = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
                 this->currentNode = root;
-                this->member("Value", obj, "");
+                this->member(name.c_str(), obj, "");
             }
 
             template<typename T>

@@ -116,7 +116,7 @@ namespace claid
             std::shared_ptr<XMLNode> headerToXML()
             {
                 XMLSerializer serializer;
-                serializer.serialize(this->header);
+                serializer.serialize("header", this->header);
                 return serializer.getXMLNode();
             }
 
@@ -226,7 +226,7 @@ namespace claid
             {
                 XMLSerializer serializer;
                 TaggedDataBase header = this->getHeader();
-                serializer.serialize(header);
+                serializer.serialize("header", header);
                 return serializer.getXMLNode();
             }
 

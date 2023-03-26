@@ -204,10 +204,26 @@ namespace claid
             template<typename T>
             void callPointer(const char* property, T*& member)
             {
-                std::string className;
-                if (!this->getCurrentNodeClassName(className))
+                std::shared_ptr<XMLNode> node = this->getChildNode(property);
+
+                if (node.get() == nullptr)
                 {
-                    CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type. However, attribute \"class\" was not specified for the XML node. We don't know which class you want!");
+                    if (!this->defaultValueCurrentlySet())
+                    {
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
+                    }
+
+                    member = this->getCurrentDefaultValue<T*>();
+
+                    return;
+                }
+               
+
+                std::string className;
+                
+                if (!node->getAttribute("class", className))
+                {
+                    CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type. However, attribute \"class\" was not specified for the XML node. We don't know what class to instantiate.");
                 }
 
                 if (!ClassFactory::ClassFactory::getInstance()->isFactoryRegisteredForClass(className))
@@ -222,8 +238,10 @@ namespace claid
                 {
                     CLAID_THROW(claid::Exception, "XMLDeserializer failed to deserialize object from XML. Member \"" << property << "\" is a polymorphic pointer type of class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
-
+                std::shared_ptr<XMLNode> parent = this->currentXMLNode;
+                this->currentXMLNode = node;
                 untypedReflector->invoke(static_cast<void*>(this), static_cast<void*>(member));               
+                this->currentXMLNode = parent;
             }
             
             template<typename T>
@@ -358,14 +376,19 @@ namespace claid
                     CLAID_THROW(claid::Exception, "Error in deserialization of object of type " << name << " from XML. No XML node corresponding to the object was found (<" << name << "> missing).");
                 }
                
-               invokeReflectOnObject(obj);
+               invokeReflectOnObject(name.c_str(), obj);
 
             }
 
             template<typename T>
             void deserializeFromNode(std::string name, T& obj)
             {
-                this->invokeReflectOnObject(obj);
+                std::shared_ptr<XMLNode> newRootNode = std::make_shared<XMLNode>(nullptr, name);
+                newRootNode->addChild(this->currentXMLNode);
+                this->xmlRootNode = newRootNode;
+                this->currentXMLNode = this->xmlRootNode;
+
+                this->member(name.c_str(), obj, "");
             }
 
             template<typename T>
