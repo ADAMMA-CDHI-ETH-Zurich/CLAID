@@ -53,6 +53,7 @@ namespace claid
             template<typename T>
             void callFloatOrDouble(const char* property, T& member)
             {
+
                 std::shared_ptr<XMLNode> node = this->getChildNode(property);
                 if (node.get() == nullptr)
                 {
@@ -183,9 +184,13 @@ namespace claid
                 std::shared_ptr<XMLNode> node = getChildNode(property);
                 if(node.get() == nullptr)
                 {
-                    std::string className = TypeChecking::getCompilerSpecificRunTimeNameOfObject(member);
-                    CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!"
-                    "We tried to deserialize an object of class \"" << className << "\", which has a member \"" << property << "\". This member was not specified in the corresponding XML node.");
+                    if (!this->defaultValueCurrentlySet())
+                    {
+                        std::string className = TypeChecking::getCompilerSpecificRunTimeNameOfObject(member);
+                        CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!"
+                        "We tried to deserialize an object of class \"" << className << "\", which has a member \"" << property << "\". This member was not specified in the corresponding XML node.");
+                    }
+                    member = this->getCurrentDefaultValue<T>();
                 }
 
                 this->nodeStack.push(this->currentXMLNode);
@@ -288,6 +293,11 @@ namespace claid
 
             std::shared_ptr<XMLNode> getChildNode(const char* property)
             {
+                if(this->currentXMLNode == nullptr)
+                {
+                    return nullptr;
+                }
+                
                 if(!this->isSequence)
                 {
                     return this->currentXMLNode->findChild(property);
