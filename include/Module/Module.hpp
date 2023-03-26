@@ -548,7 +548,7 @@ namespace claid
             {
 
             }
-
+        public:
             template<typename T>
             Channel<T> subscribe(const std::string& channelID);
 
