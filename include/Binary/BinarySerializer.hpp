@@ -183,7 +183,7 @@ namespace claid
                 this->binaryData = targetContainer;
                 this->binaryData->clear();
 
-                invokeReflectOnObject(obj);
+                invokeReflectOnObject("", obj);
             }
 
             template <typename T>

@@ -4,6 +4,7 @@
 #include <type_traits>
 #include "ClassInvoker.hpp"
 #include "Traits/is_integer_no_bool_no_char.hpp"
+#include "NonIntrusiveReflectors/all.hpp"
 namespace claid
 {
     template<typename Derived>
@@ -141,14 +142,20 @@ namespace claid
             }
 
             template<typename T>
-            void forwardReflector(T& obj)
+            void chooseReflectionFunction(const char* property, T& member)
             {
-                ReflectorInvoker<Derived, T>::call(*This(), obj);
+                ReflectorType<T>::call(property, *this->This(), member);
+            }
+
+            template<typename T>
+            void forwardReflectorOnClass(T& obj)
+            {
+                ClassReflectFunctionInvoker<Derived, T>::call(*This(), obj);
             }
 
             // Calls the reflect function of the given object.
             template<typename T>
-            void invokeReflectOnObject(T& obj, bool externalInvocation = true)
+            void invokeReflectOnObject(const char* name, T& obj, bool externalInvocation = true)
             {
                 // externalInvocation: Did an external function apply this reflector an object,
                 // or was invokeReflectOnObject called by ourselves internally, e.g., by the ClassInvoker?
@@ -157,8 +164,11 @@ namespace claid
                     this->This()->onInvocationStart(obj);
                 }
                 numInvocations++;
-                ReflectorInvoker<Derived, T>::call(*This(), obj);
+                //ReflectorInvoker<Derived, T>::call(*This(), obj);
 
+                typedef typename std::remove_const<T>::type NonConstType; 
+                NonConstType& non_const_member = *const_cast<NonConstType*>(&obj);
+                this->member(name, non_const_member, "");
                 numInvocations--;
                 if(numInvocations == 0 && externalInvocation)
                 {

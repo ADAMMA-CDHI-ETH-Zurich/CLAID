@@ -98,7 +98,7 @@ namespace claid
             {
                 std::unique_lock<std::mutex> (this->mutex);
                 XMLSerializer serializer;                
-                serializer.serialize(this->typedData.value());
+                serializer.serialize("value", this->typedData.value());
                 return serializer.getXMLNode();
             }
 

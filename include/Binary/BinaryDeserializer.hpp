@@ -160,7 +160,7 @@ namespace claid
 
                 
 
-                invokeReflectOnObject(obj);
+                invokeReflectOnObject("", obj);
             }
 
             template <typename T>

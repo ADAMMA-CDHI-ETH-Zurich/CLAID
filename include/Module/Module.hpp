@@ -179,6 +179,7 @@ namespace claid
         public:
             BaseModule()
             {
+                this->initialized = false;
                 if(this->runnableDispatcherThread.get() != nullptr)
                 {   
                     CLAID_THROW(Exception, "Error! Constructor of BaseModule called, but RunnableDispatcherThread is not null!")
@@ -231,6 +232,7 @@ namespace claid
             
             void waitForInitialization()
             {
+                Logger::printfln("WaitForInitialization called %d", this->initialized);
                 // If this thread is runnable dispatcher thread, waiting would result in a deadlock.
                 if(std::this_thread::get_id() == this->runnableDispatcherThread->getThreadID())
                 {
@@ -243,7 +245,8 @@ namespace claid
 
                 while(!this->initialized)
                 {
-                    
+                    Logger::printfln("WaitForIniti %s", this->getModuleName().c_str());
+                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
                 }
             }
 

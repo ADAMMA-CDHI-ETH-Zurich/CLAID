@@ -25,6 +25,9 @@ namespace claid
 				Reflector r;
 				std::string reflectorName = r.getReflectorName();
 
+				Logger::printfln("Registering reflector %s for class %s", reflectorName.c_str(), className.c_str());
+
+
 				UntypedReflector* untypedReflector = static_cast<UntypedReflector*>(reflector);
 				reflectors[className].insert(std::make_pair(reflectorName, untypedReflector));
 			}
@@ -49,10 +52,15 @@ namespace claid
 
 			bool getReflectorForClass(const std::string& className, const std::string& reflectorName, UntypedReflector*& reflector)
 			{
-				std::cout << "Class name " << className << "\n";
-				std::cout << "ReflectorName " << reflectorName << "\n";
-
+				Logger::printfln("Class name %s", className.c_str());
+				Logger::printfln("Reflector name %s", reflectorName.c_str());
+				Logger::printfln("Map size: %d", this->reflectors.size());
 				auto it = this->reflectors.find(className);
+
+				for(auto n : this->reflectors)
+				{
+					Logger::printfln("Class: %s\n", n.first.c_str());
+				}
 
 				if (it == this->reflectors.end())
 				{
