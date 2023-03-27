@@ -196,7 +196,7 @@ namespace claid
                 {
                     return;
                 }
-                this->disable();
+                this->disableNetworkConnection();
             }
             else
             {
@@ -204,9 +204,19 @@ namespace claid
                 {
                     return;
                 }
-                this->enable();
+                this->enableNetworkConnection();
             }
 
+        }
+
+        void NetworkClientModule::enableNetworkConnection()
+        {
+
+        }
+
+        void NetworkClientModule::disableNetworkConnection()
+        {
+            
         }
     }
 }

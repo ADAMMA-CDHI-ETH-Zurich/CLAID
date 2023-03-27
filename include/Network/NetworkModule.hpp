@@ -8,7 +8,7 @@
 #include "RemoteConnection/Error/Error.hpp"
 #include "Network/Error/NetworkErrors.hpp"
 #include "Network/NetworkStateChangeRequest.hpp"
-
+#include "Reflection/Reflect.hpp"
 namespace claid
 {
     namespace Network
@@ -45,11 +45,9 @@ namespace claid
 
             public: 
 
-                template<typename Reflector>
-                void reflect(Reflector& r)
-                {
-                    reflectMember(listenForNetworkChangeRequestsOn);
-                }
+                Reflect(NetworkModule,
+                    reflectMemberWithDefaultValue(listenForNetworkChangeRequestsOn, std::string(""));
+                )
           
                 virtual ~NetworkModule()
                 {

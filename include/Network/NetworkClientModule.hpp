@@ -74,6 +74,9 @@ namespace claid
                 void tryToReconnect();
 
                 void onNetworkStateChangeRequested(const NetworkStateChangeRequest& networkStateChangeRequest);
+
+                void enableNetworkConnection();
+                void disableNetworkConnection();
         };
 
     }

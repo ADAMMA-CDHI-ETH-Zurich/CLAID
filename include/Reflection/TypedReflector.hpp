@@ -15,7 +15,7 @@ namespace claid
 
 		virtual void invokeTyped(Reflector& r, ObjectType& obj)
 		{
-			r.forwardReflectorOnClass(obj);
+			r.invokeReflectorOnClassThatHasReflectFunction(obj);
 		}
 
 		virtual void invokeMember(const char* memberName, void* reflector, void* obj)

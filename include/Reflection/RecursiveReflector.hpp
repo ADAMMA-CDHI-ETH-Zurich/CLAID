@@ -5,6 +5,7 @@
 #include "ClassInvoker.hpp"
 #include "Traits/is_integer_no_bool_no_char.hpp"
 #include "NonIntrusiveReflectors/all.hpp"
+#include "TypeChecking/TypeCheckingFunctions.hpp"
 namespace claid
 {
     template<typename Derived>
@@ -31,6 +32,22 @@ namespace claid
             bool defaultValueCurrentlySet()
             {
                 return currentDefaultValue != nullptr;
+            }
+
+            template<typename T>
+            typename std::enable_if<std::is_copy_assignable<T>::value && std::is_constructible<T, T&>::value>::type
+            assignDefaultValue(T& value)
+            {
+                value = this->getCurrentDefaultValue<T>();
+            }
+
+            template<typename T>
+            typename std::enable_if<!std::is_copy_assignable<T>::value || !std::is_constructible<T, T&>::value>::type
+            assignDefaultValue(T& value)
+            {
+                std::string dataTypeName = TypeChecking::getCompilerSpecificRunTimeNameOfObject(value);
+                CLAID_THROW(claid::Exception, "Reflector " << this->getReflectorName() << " cannot assign default value to variable of type \"" << dataTypeName << "\".\n"
+                << "Type " << dataTypeName << " is not copy assignable, possibly the copy assignment operator is implicitly deleted.");
             }
 
         template<typename T, class Enable = void>
@@ -102,6 +119,8 @@ namespace claid
             {
                 static void call(const char* property, Derived& r, T& member) 
                 {
+                    std::string test = TypeChecking::getCompilerSpecificRunTimeNameOfObject(member);
+                    std::string test2 = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
                     ClassInvoker<Derived, T>::call(r, property, member);
                 }
             };
@@ -151,6 +170,23 @@ namespace claid
             void forwardReflectorOnClass(T& obj)
             {
                 ClassReflectFunctionInvoker<Derived, T>::call(*This(), obj);
+            }
+
+            // Used by untyped reflector
+            template<typename T>
+            void invokeReflectorOnClassThatHasReflectFunction(T& obj, bool externalInvocation = true)
+            {
+                if(numInvocations == 0 && externalInvocation)
+                {
+                    this->This()->onInvocationStart(obj);
+                }
+                numInvocations++;
+                ClassReflectFunctionInvoker<Derived, T>::call(*This(), obj);
+                numInvocations--;
+                if(numInvocations == 0 && externalInvocation)
+                {
+                    this->This()->onInvocationEnd(obj);
+                }
             }
 
             // Calls the reflect function of the given object.

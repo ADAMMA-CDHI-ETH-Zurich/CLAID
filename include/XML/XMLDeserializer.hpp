@@ -62,7 +62,7 @@ namespace claid
                         CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
-                    member = this->getCurrentDefaultValue<T>();
+                    assignDefaultValue(member);
                 }
                 else
                 {
@@ -88,7 +88,7 @@ namespace claid
                         CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
-                    member = this->getCurrentDefaultValue<T>();
+                    assignDefaultValue(member);
                 }
                 else
                 {
@@ -112,7 +112,7 @@ namespace claid
                         CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
-                    member = this->getCurrentDefaultValue<bool>();
+                    assignDefaultValue(member);
                 }
                 else
                 {
@@ -157,7 +157,7 @@ namespace claid
                         CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
-                    member = this->getCurrentDefaultValue<char>();
+                    assignDefaultValue(member);
                 }
                 else
                 {
@@ -190,7 +190,7 @@ namespace claid
                         CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!"
                         "We tried to deserialize an object of class \"" << className << "\", which has a member \"" << property << "\". This member was not specified in the corresponding XML node.");
                     }
-                    member = this->getCurrentDefaultValue<T>();
+                    assignDefaultValue(member);
                 }
 
                 this->nodeStack.push(this->currentXMLNode);
@@ -218,7 +218,7 @@ namespace claid
                         CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
-                    member = this->getCurrentDefaultValue<T*>();
+                    assignDefaultValue(member);
 
                     return;
                 }
@@ -277,7 +277,7 @@ namespace claid
                         CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" of member \"" << this->getDebugNodeName(this->currentXMLNode) << "\" is missing!");
                     }
 
-                    member = this->getCurrentDefaultValue<T>();
+                    assignDefaultValue(member);
                 }
                 else
                 {

@@ -1,10 +1,14 @@
 #pragma once
 
-#include "ClassFactoryBase.hpp"
+#include "ClassFactory/ClassFactoryBase.hpp"
+
 #include <type_traits>
 #include "Exception/Exception.hpp"
+#include "TypeChecking/TypeCheckingFunctions.hpp"
 namespace claid
 {
+	class ClassFactory;
+
 	template<typename T>
 	class ClassFactoryTyped : public ClassFactoryBase
 	{
@@ -20,7 +24,7 @@ namespace claid
 			typename std::enable_if<std::is_abstract<U>::value, void*>::type
 				getInstanceUntypedHelper()
 			{
-				CLAID_THROW(Exception, "Error, cannot create instance of class \"" << ClassFactory::getInstance()->getClassName<U>() << "\" at runtime using ClassFactory."
+				CLAID_THROW(Exception, "Error, cannot create instance of class \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<U>() << "\" at runtime using ClassFactory."
 					<< "This class is an abstract class.");
 			}
 
@@ -35,7 +39,7 @@ namespace claid
 			typename std::enable_if<std::is_abstract<U>::value, std::shared_ptr<void>>::type
 				getInstanceUntypedAsSharedPtrHelper()
 			{
-				CLAID_THROW(Exception, "Error, cannot create instance of class \"" << ClassFactory::getInstance()->getClassName<U>() << "\" at runtime using ClassFactory."
+				CLAID_THROW(Exception, "Error, cannot create instance of class \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<U>() << "\" at runtime using ClassFactory."
 					<< "This class is an abstract class.");
 			}
 

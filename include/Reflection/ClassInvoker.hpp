@@ -127,9 +127,9 @@ namespace claid
     {
         static void call(Reflector& r, const char* property, T& member) 
         {
-            r.callBeginClass(property, member);
+            //r.callBeginClass(property, member);
             r.callSharedPointer(property, member);
-            r.callEndClass(property, member);
+            //r.callEndClass(property, member);
         }
 
     };
