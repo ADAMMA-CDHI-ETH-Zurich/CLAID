@@ -52,15 +52,10 @@ namespace claid
 
 			bool getReflectorForClass(const std::string& className, const std::string& reflectorName, UntypedReflector*& reflector)
 			{
-				Logger::printfln("Class name %s", className.c_str());
-				Logger::printfln("Reflector name %s", reflectorName.c_str());
-				Logger::printfln("Map size: %d", this->reflectors.size());
+		
 				auto it = this->reflectors.find(className);
 
-				for(auto n : this->reflectors)
-				{
-					Logger::printfln("Class: %s\n", n.first.c_str());
-				}
+			
 
 				if (it == this->reflectors.end())
 				{

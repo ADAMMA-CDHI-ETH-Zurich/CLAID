@@ -204,7 +204,7 @@ namespace claid
 
         void NetworkClientModule::onNetworkStateChangeRequested(const NetworkStateChangeRequest& networkStateChangeRequest)
         {
-            if(networkStateChangeRequest.networkRequest == NetworkRequest::ENABLE_NETWORK)
+            if(networkStateChangeRequest.networkRequest == NetworkRequest::DISABLE_NETWORK)
             {
                 if(this->disabled)
                 {
