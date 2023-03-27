@@ -68,6 +68,9 @@ namespace claid
                     this->callInModuleThread<NetworkClientModule, RemoteConnection::RemoteConnectedEntity*, RemoteConnection::Error>(&NetworkClientModule::onError, this, this->remoteConnectedEntity, error);
                 }
 
+                void registerFunctionToPeriodicallyTryToReconnect();
+                void unregisterFunctionToPeriodicallyTryToReconnect();
+
                 void onError(RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity, RemoteConnection::Error error);
 
                 void onConnectionLost(RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity);

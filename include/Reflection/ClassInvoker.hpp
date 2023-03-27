@@ -65,7 +65,7 @@ namespace claid
 
     // For classes with internal reflect function
     template<typename Reflector, typename T>
-    struct ClassInvoker<Reflector, T, typename std::enable_if<has_mem_reflect<T>::value>::type>
+    struct ClassInvoker<Reflector, T, typename std::enable_if<has_mem_reflect<T>::value && !is_specialization_of<T, claid::VariableWithGetterSetter>::value>::type>
     {
         // default case
         static void call(Reflector& r, const char* property, T& member) 
@@ -110,16 +110,16 @@ namespace claid
 
     }; 
 
-    // // For class "VariableWithGetterSetter"
-    // template<typename Reflector, typename T>
-    // struct ClassInvoker<Reflector, T, typename std::enable_if<is_specialization_of<T, claid::VariableWithGetterSetter>::value>::type>
-    // {
-    //     static void call(Reflector& r, const char* property, T& member) 
-    //     {
-    //         member.reflect(r);
-    //     }
+    // For class "VariableWithGetterSetter"
+    template<typename Reflector, typename T>
+    struct ClassInvoker<Reflector, T, typename std::enable_if<is_specialization_of<T, claid::VariableWithGetterSetter>::value>::type>
+    {
+        static void call(Reflector& r, const char* property, T& member) 
+        {
+            member.reflect(r);
+        }
 
-    // }; 
+    }; 
 
     // For class std::shared_ptr
     template<typename Reflector, typename T>

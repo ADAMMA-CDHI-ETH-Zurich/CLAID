@@ -42,6 +42,9 @@ namespace Network
 
     void SocketConnectionModule::stop()
     {
+        Logger::printfln("SocketConnectionModule::Closing socket");
+        this->socketClient.close();
+
         Logger::printfln("SocketConnectionModule::Stopping reader module");
         this->readerModule.stop();
 
@@ -51,17 +54,13 @@ namespace Network
             Logger::printfln("waiting for stopping reader module");
         }
 
-        // Since reader module has stopped reading, we can safely close the socket.
-        Logger::printfln("SocketConnectionModule::Closing socket");
-        this->socketClient.close();
+        
 
 
         // waits until the module (thread) has been stopped
         // Unpublishes messageReceive and errorChannel
         this->readerModule.stopModule();
-        Logger::printfln("ReaderModule stopped.");
-
-        
+        Logger::printfln("ReaderModule stopped.");        
     }
 
     void SocketConnectionModule::sendMessage(RemoteConnection::Message message)

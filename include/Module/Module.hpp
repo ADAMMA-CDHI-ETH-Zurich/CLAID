@@ -120,7 +120,7 @@ namespace claid
 
                 if(it == this->timers.end())
                 {
-                    CLAID_THROW(Exception, "Error, tried to unregister periodic function \"" << name << "\" in Module << \"" << this->getModuleName() << "\", but function was not found in list of registered functions."
+                    CLAID_THROW(Exception, "Error, tried to unregister periodic function \"" << name << "\" in Module \"" << this->getModuleName() << "\", but function was not found in list of registered functions."
                     << "Was a function with this name ever registered before?" );
                 }
 

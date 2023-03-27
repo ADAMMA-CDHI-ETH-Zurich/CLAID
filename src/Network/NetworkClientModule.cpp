@@ -99,9 +99,10 @@ namespace claid
             if(error.is<ErrorConnectToAdressFailed>())
             {
                 Logger::printfln("Error connecting to adress failed.");
-                if(this->tryToReconnectAfterMs > 0)
+
+                if(this->tryToReconnectAfterMs > 0 && !this->disabled)
                 {
-                    this->registerPeriodicFunction("PeriodicTryToReconnect", &NetworkClientModule::tryToReconnect, this, this->tryToReconnectAfterMs);
+                    registerFunctionToPeriodicallyTryToReconnect();
                 }
             }
             else if(error.is<ErrorReadFromSocketFailed>())
@@ -151,9 +152,22 @@ namespace claid
             delete this->remoteConnectedEntity;
             this->remoteConnectedEntity = nullptr;
 
-            if(this->tryToReconnectAfterMs > 0)
+            if(this->tryToReconnectAfterMs > 0 && !this->disabled)
             {
-                this->registerPeriodicFunction("PeriodicTryToReconnect", &NetworkClientModule::tryToReconnect, this, this->tryToReconnectAfterMs);
+                registerFunctionToPeriodicallyTryToReconnect();
+            }
+        }
+
+        void NetworkClientModule::registerFunctionToPeriodicallyTryToReconnect()
+        {
+            this->registerPeriodicFunction("PeriodicTryToReconnect", &NetworkClientModule::tryToReconnect, this, this->tryToReconnectAfterMs);
+        }
+
+        void NetworkClientModule::unregisterFunctionToPeriodicallyTryToReconnect()
+        {
+            if(this->isPeriodicFunctionRegistered("PeriodicTryToReconnect"))
+            {
+                this->unregisterPeriodicFunction("PeriodicTryToReconnect");
             }
         }
 
@@ -184,7 +198,7 @@ namespace claid
             }
 
             // On success, we unregister the function so that it is not called again.                 
-            this->unregisterPeriodicFunction("PeriodicTryToReconnect");
+            this->unregisterFunctionToPeriodicallyTryToReconnect();
         }
 
 
@@ -211,12 +225,30 @@ namespace claid
 
         void NetworkClientModule::enableNetworkConnection()
         {
-
+            Logger::printfln("NetworkClientModule: Got request to enable network.");
+            this->disabled = false;
+            if(this->tryToReconnectAfterMs > 0)
+            {
+                Logger::printfln("Network enabled");
+                this->registerFunctionToPeriodicallyTryToReconnect();
+            }
         }
 
         void NetworkClientModule::disableNetworkConnection()
         {
-            
+            Logger::printfln("NetworkClientModule: Got request to disable network.");
+            this->disabled = true;
+
+            if(this->remoteConnectedEntity != nullptr)
+            {  
+                // Stopping the entity will produce an error which leads to onConnectionLost being called,
+                // where the entity will be deleted eventually.
+                this->remoteConnectedEntity->stop();
+            }
+
+            this->unregisterFunctionToPeriodicallyTryToReconnect();
+
+            Logger::printfln("Network disabled");   
         }
     }
 }

@@ -407,7 +407,8 @@ namespace claid
                 // Assumes T is a polymorphic type (e.g., any class inheriting from claid::Module) and
                 // calls the corresponding PolymorphicReflector on that object.
                 // The object needs to exist already! deserializeExistingPolymorphicObject will NOT create the object using the ClassFactory!
-           
+
+
                 if(obj == nullptr)
                 {
                     CLAID_THROW(claid::Exception, "Error in deserialization from XML. It was tried to deserialize a polymorphic object with specified class \"" << className << "\", however the "
