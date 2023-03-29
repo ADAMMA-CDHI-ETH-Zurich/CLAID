@@ -30,12 +30,14 @@ namespace claid
         {
             NetworkModule::initialize();
 
-            if(!connectToServer())
+            if(!this->disabled)
             {
-                this->callError<ErrorConnectToAdressFailed>();
-                return;
+                if(!connectToServer())
+                {
+                    this->callError<ErrorConnectToAdressFailed>();
+                    return;
+                }
             }
-
         }
 
         bool NetworkClientModule::connectToServer()

@@ -224,7 +224,7 @@ public:
 		Time::toDateTime(now, year, month, day, hour, minute, second);
 	}
 
-	std::string strftime(const char* fmt)
+	std::string strftime(const char* fmt) const
 	{
 		time_t tt = std::chrono::system_clock::to_time_t(*this);
 		tm local_tm = *localtime(&tt);
