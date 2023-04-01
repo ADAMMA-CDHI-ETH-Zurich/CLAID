@@ -31,6 +31,11 @@
 //     DECLARE_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className) \
 //     DECLARE_ADDITIONAL_DE_SERIALIZERS(className) // Serializers that might not always be available (e.g., JavaNativeSetter and Getter).
 
+#define REGISTER_VECTOR_SERIALIZATION(className)\
+    REGISTER_TO_CLASS_FACTORY(std::vector<className>)\
+    REGISTER_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(std::vector<className>)\
+    REGISTER_ADDITIONAL_DE_SERIALIZERS(std::vector<className>)
+
 #define REGISTER_SERIALIZATION(className)\
     REGISTER_TO_CLASS_FACTORY(className)\
     REGISTER_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className)\

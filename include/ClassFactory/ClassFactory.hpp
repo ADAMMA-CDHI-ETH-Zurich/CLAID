@@ -8,6 +8,7 @@
 #include "Utilities/Singleton.hpp"
 
 #include "TypeChecking/TypeCheckingFunctions.hpp"
+#include "MacroUtilities/MakeUniqueVariableName.hpp"
 
 #include <map>
 #include <string>
@@ -134,7 +135,7 @@ namespace claid
 
 				if(it == rttiToRegisteredClassNameMap.end())
 				{
-					//CLAID_THROW(Exception, "Cannot get registered class name for type \"" << rttiTypename << "\". This type was not registered to the class factory using REGISTER_CLASS");
+					//CLAID_THROW(Exception, "Cannot get registered class name for type \"" << rttiTypename << "\". This type was not registered to the class factory using REGISTER_SERIALIZATION");
 					return rttiTypename;
 				}
 				else
@@ -151,7 +152,7 @@ namespace claid
 
 				if(it == rttiToRegisteredClassNameMap.end())
 				{
-					//CLAID_THROW(Exception, "Cannot get registered class name for type \"" << rttiTypename << "\". This type was not registered to the class factory using REGISTER_CLASS");
+					//CLAID_THROW(Exception, "Cannot get registered class name for type \"" << rttiTypename << "\". This type was not registered to the class factory using REGISTER_SERIALIZATION");
 					return rttiTypename;
 				}
 				else
@@ -166,10 +167,14 @@ namespace claid
 	{
 
 		public:
-			ClassFactoryRegistrar(std::string name) 
+			
+			ClassFactoryRegistrar() 
 			{
-				ClassFactory::getInstance()->registerFactory<T>(name);
+				ClassFactory::getInstance()->registerFactory<T>(TypeChecking::getCompilerIndependentTypeNameOfClass<T>());
+			
+				
 			}
+
 
 
 	};
@@ -183,7 +188,7 @@ namespace claid
 #define REGISTER_TO_CLASS_FACTORY(className) \
 	namespace\
 	{\
-		volatile claid::ClassFactoryRegistrar<className> classFactoryRegistrar (#className);\
+		volatile claid::ClassFactoryRegistrar<className> classFactoryRegistrar ;\
 	}
 
 

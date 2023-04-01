@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Utilities/Singleton.hpp"
+#include "MacroUtilities/MakeUniqueVariableName.hpp"
+#include "TypedReflector.hpp"
 
 #include <map>
 #include <string>
-#include "TypedReflector.hpp"
 namespace claid
 {
 	class ReflectionManager : public Singleton<ReflectionManager>
@@ -19,7 +20,7 @@ namespace claid
 			{
 				TypedReflector<Class, Reflector>* reflector = new TypedReflector<Class, Reflector>();
 
-				std::string className = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<Class>();
+				std::string className = TypeChecking::getCompilerIndependentTypeNameOfClass<Class>();
 
 				// Create an instance of the reflector in order to retrieve it's name..
 				Reflector r;
@@ -41,7 +42,7 @@ namespace claid
 			template<typename Class, typename Reflector>
 			bool getReflectorForClass(UntypedReflector*& reflector)
 			{
-				std::string className = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<Class>();
+				std::string className = TypeChecking::getCompilerIndependentTypeNameOfClass<Class>();
 
 				// Create an instance of the reflector in order to get its name..
 				Reflector r;
@@ -97,3 +98,4 @@ namespace claid
 	{\
 		static volatile claid::ReflectionManagerRegistrar<Class, Reflector> reflectorRegistrar##ReflectorName;\
 	}
+	
