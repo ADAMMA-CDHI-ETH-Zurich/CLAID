@@ -397,6 +397,7 @@ namespace claid
                 newRootNode->addChild(this->currentXMLNode);
                 this->xmlRootNode = newRootNode;
                 this->currentXMLNode = this->xmlRootNode;
+   
 
                 this->member(name.c_str(), obj, "");
             }

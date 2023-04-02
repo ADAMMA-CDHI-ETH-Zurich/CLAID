@@ -23,7 +23,7 @@ namespace claid
             void preprocess(std::string& xmlString, std::string parentFilePath="")
             {
                 printf("XML String before %s\n\n", xmlString.c_str());
-
+                removeComments(xmlString);
                 StringUtils::stringReplaceAll(xmlString, "\n", "");
                 StringUtils::stringReplaceAll(xmlString, "> ", ">");
                 StringUtils::stringReplaceAll(xmlString, "< ", "<");
@@ -235,6 +235,11 @@ namespace claid
 
                 xmlContent = contentBeforeInclude + includedContent + contentAfterInclude;
             }
-            
+
+            void removeComments(std::string& xmlString)
+            {
+                std::regex regexp("<!--[\\s\\S\\n]*?-->"); // <!--.--> doesn't work (also, . does not include newlines etc.)
+                xmlString = std::regex_replace(xmlString, regexp, ""); 
+            }
     };
 }
