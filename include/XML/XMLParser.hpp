@@ -61,10 +61,10 @@ namespace claid
                 std::vector<std::shared_ptr<XMLNode>> parentStack;
                 parseToStack(nodeBegin, stack);
 
-                if(stack[0].element != "root")
-                {
-                    CLAID_THROW(claid::Exception, "Expected first element in XML to be <root>. Root node missing!");
-                }
+                // if(stack[0].element != "root")
+                // {
+                //     CLAID_THROW(claid::Exception, "Expected first element in XML to be <root>. Root node missing!");
+                // }
 
                 rootNode = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
                 
