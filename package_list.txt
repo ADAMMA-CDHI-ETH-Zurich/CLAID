@@ -1,0 +1,2 @@
+ModuleAPI;https://github.com/RealLast/ModuleAPI;main
+CollectorAPI;https://github.com/RealLast/CollectorAPI;main
