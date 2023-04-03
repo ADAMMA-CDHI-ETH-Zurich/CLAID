@@ -1,12 +1,16 @@
 import os
 
-def parse_package_list():
+def get_claid_path():
     CLAID_PATH = ""
     if "CLAID_PATH" in os.environ:
         CLAID_PATH = os.environ.get("CLAID_PATH")
     else:
         raise Exception("Error, cannot parse package list file. Environment variable CLAID_PATH is not set.\n"
                         "Did you install python before?")
+    return CLAID_PATH
+
+def parse_package_list():
+    CLAID_PATH = get_claid_path()
 
     package_list_path = CLAID_PATH + "/package_list.txt"
     

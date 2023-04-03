@@ -13,5 +13,7 @@ def install_package(package_name):
     
     repo_path, branch = packages[package_name]
 
-    repo = Repo.clone_from(repo_path, package_name, branch=branch)
+    CLAID_PATH = common.get_claid_path()
+
+    repo = Repo.clone_from(repo_path, CLAID_PATH + "/packages/" + package_name, branch=branch)
     repo.submodule_update(recursive=True)
