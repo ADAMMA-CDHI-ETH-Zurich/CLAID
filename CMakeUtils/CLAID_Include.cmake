@@ -17,4 +17,6 @@ macro(CLAID_Include claid_package)
   include(${CLAID_PACKAGE_PATH}/Require.cmake)
   message("Included package ${claid_package}.")
 
-  endmacro()
+endmacro()
+
+include(${CMAKE_CURRENT_LIST_DIR}/FindJava.cmake)

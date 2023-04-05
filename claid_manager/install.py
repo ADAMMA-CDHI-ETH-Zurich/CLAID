@@ -1,7 +1,7 @@
 from git import Repo
 import common
 
-def install_package(package_name):
+def install_package(package_name, *args):
     print("Install package")
     packages = common.parse_package_list()
 
