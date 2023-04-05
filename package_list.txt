@@ -1,2 +1,3 @@
 ModuleAPI;https://github.com/RealLast/ModuleAPI;main
 CollectorAPI;https://github.com/RealLast/CollectorAPI;main
+JavaWrapper;https://github.com/RealLast/JavaWrapper;main
