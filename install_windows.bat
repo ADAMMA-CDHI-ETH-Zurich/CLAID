@@ -4,6 +4,8 @@ echo "Installing CLAID into %mypath:~0,-1%"
 setx CLAID_PATH "%mypath:~0,-1%"
 setx CLAID_CMAKE_MODULE_PATH "%mypath:~0,-1%"\CMakeUtils\
 setx CMAKE_PREFIX_PATH "%mypath:~0,-1%"\CMakeUtils\
-setx PATH "%PATH%;%mypath:~0,-1%"\claid_manager
+setx "python C:\Users\planger\Desktop\CLAID\claid_manager\claid"
+
+
 echo "CLAID installed successfully."
 pause
