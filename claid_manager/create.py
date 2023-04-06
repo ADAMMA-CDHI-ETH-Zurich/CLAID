@@ -18,8 +18,8 @@ def get_source_path():
 def create_application_folder(path):  
     path = resolve_path(path)
 
-    os.makedirs("{}/src".format(path))
-    os.makedirs("{}/include".format(path))
+    os.makedirs(os.path.join(path, "src"))
+    os.makedirs(os.path.join(path, "include"))
 
 def create(type, path, *args):
 
@@ -46,17 +46,17 @@ def create_java_application(path):
     path = resolve_path(path)
 
     source_path = get_source_path()
-    application_source_path = "{}/ApplicationTypes/Java/".format(source_path)
+    application_source_path = os.path.join(source_path, "ApplicationTypes", "Java")
 
-    files = [file.replace(application_source_path, "") 
+    files = [os.path.relpath(file, start=application_source_path)
              for x in os.walk(application_source_path) for file in glob(os.path.join(x[0], '*')) 
              if os.path.isfile(file)]
 
 
     for file in files:
-
-        file_source_path = "{}/{}".format(application_source_path, file)
-        file_destination_path = "{}/{}".format(path, file)
+        print(file, source_path, application_source_path)
+        file_source_path = os.path.join(application_source_path, file)
+        file_destination_path = os.path.join(path, file)
 
         try:
             os.makedirs(pathlib.Path(file_destination_path).parent)
