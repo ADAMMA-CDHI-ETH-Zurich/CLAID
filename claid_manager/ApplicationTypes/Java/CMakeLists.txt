@@ -25,3 +25,7 @@ target_link_libraries(JavaCLAID ${CLAID_LINK_LIBRARIES})
 
 CLAID_FIND_JAVA()
 jbind11_deploy(JavaCLAID ./)
+
+if(MSVC)
+  add_definitions(/MP)
+endif()
