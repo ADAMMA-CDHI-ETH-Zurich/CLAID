@@ -9,16 +9,11 @@ class Singleton
 {
 public:
 
-
     static T *getInstance()
     {
         if(mpInstance == nullptr)
         {
             mpInstance = new T();
-        }
-        if(claid::TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() == "claid::RunTime")
-        {
-           // claid::Logger::printfln("%s", claid::TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>().c_str());
         }
         
         return mpInstance;
