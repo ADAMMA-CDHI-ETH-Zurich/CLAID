@@ -1,11 +1,11 @@
 #pragma once
 #include "XMLNode.hpp"
 #include "XMLNumericVal.hpp"
+#include "XMLPreprocessor.hpp"
 
 #include "Reflection/RecursiveReflector.hpp"
-
 #include "Exception/Exception.hpp"
-
+#include "Utilities/StringUtils.hpp"
 #include <deque>
 
 namespace claid
@@ -32,31 +32,19 @@ namespace claid
 
 
         public:
-            bool parseFromString(const std::string& string, std::shared_ptr<XMLNode>& rootNode)
+            bool parseFromString(const std::string& string, std::shared_ptr<XMLNode>& rootNode, std::string parentFilePath = "")
             {
                 std::string filtered = string;
 
-                replaceInString(filtered, "\n", "");
-                replaceInString(filtered, "> ", ">");
-                replaceInString(filtered, "< ", "");
-                replaceInString(filtered, "\t", "");
+                XMLPreprocessor preprocessor;
 
-                removeWhiteSpacesBetweenTabs(filtered);
-                removeWhiteSpacesAtBeginning(filtered);
-
-
-                if(filtered.size() == 0)
-                {
-                    CLAID_THROW(Exception, "Cannot parse XML config, config is empty or only contains whitespaces!");
-                    return false;
-                }
-
+                // Removes unnecessary whitespaces and tabs and resolves include directives.
+                preprocessor.preprocess(filtered, parentFilePath);
 
                 if(!this->parseNode(filtered, rootNode))
                 {
                     return false;
                 }
-
                 
                 return true;   
             }
@@ -73,10 +61,10 @@ namespace claid
                 std::vector<std::shared_ptr<XMLNode>> parentStack;
                 parseToStack(nodeBegin, stack);
 
-                if(stack[0].element != "root")
-                {
-                    CLAID_THROW(claid::Exception, "Expected first element in XML to be <root>. Root node missing!");
-                }
+                // if(stack[0].element != "root")
+                // {
+                //     CLAID_THROW(claid::Exception, "Expected first element in XML to be <root>. Root node missing!");
+                // }
 
                 rootNode = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
                 
@@ -87,8 +75,6 @@ namespace claid
                 for(size_t i = 1; i < stack.size() - 1; i++)
                 {
                     const XMLElement& element = stack[i];
-
-  
 
                     if(element.elementType == XMLElementType::OPENING)
                     {
@@ -137,9 +123,6 @@ namespace claid
                         CLAID_THROW(claid::Exception, "Invalid XML! Found a value where a tag (opening or closing) was expected.");
                     }
                 }
-
-                
-
                 return true;
             }
 
@@ -147,13 +130,9 @@ namespace claid
             {
                 size_t index = 0;
 
-            
-
-
                 while(index < xml.size())
                 {
         
-
                     XMLElement xmlElement;
                     if(xml.at(index) == '<')
                     {   
@@ -203,7 +182,7 @@ namespace claid
                 size_t index = xmlTag.find(" ");
                 element.element = xmlTag.substr(0, index);
 
-                replaceInString(xmlTag, "\"", "");
+                StringUtils::stringReplaceAll(xmlTag, "\"", "");
                 
                 std::string attributeName;
                 std::string attributeValue;
@@ -285,54 +264,10 @@ namespace claid
 
             }
 
-            void replaceInString(std::string& subject, const std::string& search,
-                          const std::string& replace) 
-            {
-                size_t pos = 0;
-                while((pos = subject.find(search, pos)) != std::string::npos)
-                {
-                    subject.replace(pos, search.length(), replace);
-                    pos += replace.length();
-                }
-            }
 
 
 
-            void removeWhiteSpacesBetweenTabs(std::string& string)
-            {
-                std::string copy = string;
-
-                size_t index = 0;
-
-                string = "";
-
-                while (index < copy.size())
-                {
-                    string += copy.at(index);
-                    if (copy.at(index) == '>')
-                    {
-                        index++;
-                        while (index < copy.size() && copy.at(index) == ' ')
-                        {
-                            index++;
-                        }
-                        index--;
-                     
-                    }
-                    index++;
-                }
-            }
-
-            void removeWhiteSpacesAtBeginning(std::string& string)
-            {
-                int charIndex = 0;
-                while(string[charIndex] == ' ' && charIndex < string.size())
-                {
-                    charIndex++;
-                }
-
-                string = string.substr(charIndex, string.size());
-            }
+            
         
     };
 }

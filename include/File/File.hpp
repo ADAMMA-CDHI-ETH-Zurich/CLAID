@@ -11,7 +11,7 @@ namespace claid
 {
     class File
     {
-        DECLARE_SERIALIZATION(File)
+        //DECLARE_SERIALIZATION(File)
 
         protected:
             std::string path;

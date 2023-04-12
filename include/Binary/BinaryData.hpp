@@ -15,7 +15,11 @@ namespace claid
         public:
             BinaryData()
             {
-                this->safeCopyMutex = std::make_shared<std::mutex>();
+            }
+
+            BinaryData(std::vector<char>& data) : data(data)
+            {
+
             }
 
             template<typename Reflector>

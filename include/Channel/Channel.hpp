@@ -203,6 +203,11 @@ namespace claid
                 return this->publisherSubscriberUniqueIdentifier;
             }
 
+            std::string getChannelDataTypeName()
+            {
+                return this->typedChannel->getChannelDataTypeName();
+            }
+
 
     };
     // TODO: Add mutex when subscribing / unsubscribing

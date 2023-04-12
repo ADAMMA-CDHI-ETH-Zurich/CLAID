@@ -4,12 +4,14 @@
 #include <type_traits>
 #include "ClassInvoker.hpp"
 #include "Traits/is_integer_no_bool_no_char.hpp"
+#include "NonIntrusiveReflectors/all.hpp"
+#include "TypeChecking/TypeCheckingFunctions.hpp"
 namespace claid
 {
     template<typename Derived>
     class RecursiveReflector : public AbstractReflector
     {
-        
+        int numInvocations = 0;
 
         template<typename Type>
             struct ____INVALID_TYPE_IN_REFLECTION_TYPE_{
@@ -30,6 +32,22 @@ namespace claid
             bool defaultValueCurrentlySet()
             {
                 return currentDefaultValue != nullptr;
+            }
+
+            template<typename T>
+            typename std::enable_if<std::is_copy_assignable<T>::value && std::is_constructible<T, T&>::value>::type
+            assignDefaultValue(T& value)
+            {
+                value = this->getCurrentDefaultValue<T>();
+            }
+
+            template<typename T>
+            typename std::enable_if<!std::is_copy_assignable<T>::value || !std::is_constructible<T, T&>::value>::type
+            assignDefaultValue(T& value)
+            {
+                std::string dataTypeName = TypeChecking::getCompilerSpecificRunTimeNameOfObject(value);
+                CLAID_THROW(claid::Exception, "Reflector " << this->getReflectorName() << " cannot assign default value to variable of type \"" << dataTypeName << "\".\n"
+                << "Type " << dataTypeName << " is not copy assignable, possibly the copy assignment operator is implicitly deleted.");
             }
 
         template<typename T, class Enable = void>
@@ -69,9 +87,7 @@ namespace claid
             {
                 static void call(const char* property, Derived& r, T& member) 
                 {
-
                     r.callInt(property, member);
-                
                 }
             };
 
@@ -103,6 +119,8 @@ namespace claid
             {
                 static void call(const char* property, Derived& r, T& member) 
                 {
+                    std::string test = TypeChecking::getCompilerSpecificRunTimeNameOfObject(member);
+                    std::string test2 = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
                     ClassInvoker<Derived, T>::call(r, property, member);
                 }
             };
@@ -142,12 +160,71 @@ namespace claid
                 
             }
 
+            template<typename T>
+            void chooseReflectionFunction(const char* property, T& member)
+            {
+                ReflectorType<T>::call(property, *this->This(), member);
+            }
+
+            template<typename T>
+            void forwardReflectorOnClass(T& obj)
+            {
+                ClassReflectFunctionInvoker<Derived, T>::call(*This(), obj);
+            }
+
+            // Used by untyped reflector
+            template<typename T>
+            void invokeReflectorOnClassThatHasReflectFunction(T& obj, bool externalInvocation = true)
+            {
+                if(numInvocations == 0 && externalInvocation)
+                {
+                    this->This()->onInvocationStart(obj);
+                }
+                numInvocations++;
+                ClassReflectFunctionInvoker<Derived, T>::call(*This(), obj);
+                numInvocations--;
+                if(numInvocations == 0 && externalInvocation)
+                {
+                    this->This()->onInvocationEnd(obj);
+                }
+            }
+
             // Calls the reflect function of the given object.
             template<typename T>
-            void invokeReflectOnObject(T& obj)
+            void invokeReflectOnObject(const char* name, T& obj, bool externalInvocation = true)
             {
-                ReflectorInvoker<Derived, T>::call(*This(), obj);
+                // externalInvocation: Did an external function apply this reflector an object,
+                // or was invokeReflectOnObject called by ourselves internally, e.g., by the ClassInvoker?
+                if(numInvocations == 0 && externalInvocation)
+                {
+                    this->This()->onInvocationStart(obj);
+                }
+                numInvocations++;
+                //ReflectorInvoker<Derived, T>::call(*This(), obj);
+
+                typedef typename std::remove_const<T>::type NonConstType; 
+                NonConstType& non_const_member = *const_cast<NonConstType*>(&obj);
+                this->member(name, non_const_member, "");
+                numInvocations--;
+                if(numInvocations == 0 && externalInvocation)
+                {
+                    this->This()->onInvocationEnd(obj);
+                }
+            
             }
+
+            template<typename T>
+            void onInvocationStart(T& obj)
+            {
+                // Default implementation
+            }
+
+            template<typename T>
+            void onInvocationEnd(T& obj)
+            {
+                // Default implementation
+            }
+
 
             template<typename T>
             void property(const char* property, T& member, const char* comment)
@@ -171,10 +248,31 @@ namespace claid
             }
 
             template<typename T>
-            void member(const char* property, T& member, const char* comment, T defaultValue)
+            void member(const char* property, T& member, const char* comment, const T& defaultValue)
             {
-                this->currentDefaultValue = &defaultValue;
+                this->currentDefaultValue = const_cast<T*>(&defaultValue);
                 ReflectorType<T>::call(property, *this->This(), member);
+            }
+
+            template<typename T>
+            void member(const char* property, Getter<T> getter, Setter<T> setter)
+            {
+                VariableWithGetterSetter<T> var(property, getter, setter);
+
+                // This will invoke the reflector invoker for classes, which therefore will call the reflect function of VariableWithGetterSetter,
+                // which forwards the reflector to the underlying type T. See how ClassInvoker treats VariableWithGetterSetter for more details.
+                ReflectorType<VariableWithGetterSetter<T>>::call(property, *this->This(), var);
+            }
+
+            template<typename T>
+            void member(const char* property, Getter<T> getter, Setter<T> setter, const T& defaultValue)
+            {
+                VariableWithGetterSetter<T> var(property, getter, setter);
+                this->currentDefaultValue = const_cast<T*>(&defaultValue);
+
+                // This will invoke the reflector invoker for classes, which therefore will call the reflect function of VariableWithGetterSetter,
+                // which forwards the reflector to the underlying type T. See how ClassInvoker treats VariableWithGetterSetter for more details.
+                ReflectorType<VariableWithGetterSetter<T>>::call(property, *this->This(), var);
             }
 
             // Determines the type of the object (can be anything, primitive or class),

@@ -10,7 +10,7 @@ namespace claid
         // (typically set by RemoteObserver). Otherwise, connection is considered dead.
         struct MessageHeaderKeepAlive : public MessageHeader
         {
-            DECLARE_SERIALIZATION(MessageHeaderKeepAlive)
+            //DECLARE_SERIALIZATION(MessageHeaderKeepAlive)
 
             template<typename Reflector>
             void reflect(Reflector& r)

@@ -25,11 +25,15 @@ namespace RemoteConnection
 
     void ConnectionModule::initialize()
     {
-        Logger::printfln("ConnectionModule init");
+        Logger::printfln("ConnectionModule init 1");
         this->sendChannel = this->subscribeLocal<Message>(SEND_CHANNEL, &ConnectionModule::onSendMessage, this);
+        Logger::printfln("ConnectionModule init 2");
         this->receiveChannel = this->publishLocal<Message>(RECEIVE_CHANNEL);
+        Logger::printfln("ConnectionModule init 3");
         this->errorChannel = this->publishLocal<Error>(ERROR_CHANNEL);
+        Logger::printfln("ConnectionModule calling setup");
         this->setup();
+        Logger::printfln("ConnectionModule init end()");
     }
 
     void ConnectionModule::terminate()

@@ -13,7 +13,7 @@ namespace claid
         // The other data types (e.g. MessageDataString) are just created for convenience.
         struct MessageDataBinary : public MessageData
         {
-            DECLARE_SERIALIZATION(MessageDataBinary)
+            //DECLARE_SERIALIZATION(MessageDataBinary)
             BinaryData binaryData;
 
             template<typename Reflector>
@@ -44,7 +44,7 @@ namespace claid
             void get(T& data)
             {
                 BinaryDeserializer deserializer;
-                BinaryDataReader reader(&this->binaryData);
+                std::shared_ptr<BinaryDataReader> reader = std::make_shared<BinaryDataReader>(this->binaryData);
 
                 deserializer.deserialize(data, reader); 
             }

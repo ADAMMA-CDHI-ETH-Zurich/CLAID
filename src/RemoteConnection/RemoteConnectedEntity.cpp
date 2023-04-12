@@ -27,6 +27,7 @@ namespace RemoteConnection
         Logger::printfln("Start connection module2 ");
         this->remoteModule.startModule();
         this->remoteModule.waitForInitialization();
+        Logger::printfln("Start connection module2 ");
         this->link.link(this->connectionModule, &this->remoteModule);
     }
 

@@ -2,16 +2,20 @@
 #include "CompileTimeTypeNameDemangling.hpp"
 #include "TypeChecking/Invokers/TypeNameInvoker.hpp"
 #include <cstring>
+#include "Utilities/StringUtils.hpp"
 namespace claid
 {
     namespace TypeChecking
     {
         static void removePrefix(std::string& string, const std::string& prefix)
         {
-            if (string.find(prefix) != std::string::npos)
-            {
-                string = string.substr(prefix.size(), string.size() - prefix.size());
-            }
+            StringUtils::stringReplaceAll(string, prefix, "");
+            // size_t charIndex = string.find(prefix);
+            // if (charIndex != std::string::npos)
+            // {
+            //     string = string.substr(0, charIndex) + string.substr(charIndex + 1, string.size());
+            //    // string = string.substr(prefix.size(), string.size() - prefix.size());
+            // }
         }
 
         static void removeKnownTypeNamePrefixes(std::string& name)
@@ -34,7 +38,7 @@ namespace claid
 
     
         template<typename T>
-        std::string getCompilerSpecificRunTimeNameOfObject(T& t)
+        std::string getCompilerSpecificRunTimeNameOfObject(const T& t)
         {
             std::string name = typeid(t).name();
 

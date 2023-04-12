@@ -1,4 +1,5 @@
 #pragma once
+
 #include "MemberDetector.h"
 #include "NonMemberDetector.h"
 #include "NonIntrusiveReflectors/all.hpp"
@@ -14,6 +15,11 @@ namespace claid
 {
     class AbstractReflector
     {
-       
+        public:
+            virtual std::string getReflectorName() = 0;
+            virtual ~AbstractReflector()
+            {
+                
+            }
     };
 }

@@ -65,6 +65,7 @@ namespace claid
 
         void NetworkServerModule::initialize()
         {
+            NetworkModule::initialize();
             if(!server.bindTo(port))
             {
                 Logger::printfln("SocketServer error: %s (%s)", this->server.getLastError().errorTypeAsString().c_str(), this->server.getLastError().errorString.c_str());

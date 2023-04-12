@@ -5,7 +5,7 @@
 // The else case in the is_class case of ReflectorType is still evaluated at compile time for string.
 // If we didnt have a reflect function, we would get an error.
 template<typename Reflector, typename T>
-void reflect(Reflector& r, std::shared_ptr<T>& string)
+void reflect(Reflector& r, std::shared_ptr<T>& ptr)
 {
-  
+    
 }

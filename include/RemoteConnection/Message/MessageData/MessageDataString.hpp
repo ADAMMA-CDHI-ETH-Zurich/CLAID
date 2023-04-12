@@ -8,7 +8,7 @@ namespace claid
     {
         struct MessageDataString : public MessageData
         {
-            DECLARE_SERIALIZATION(MessageDataString)
+            //DECLARE_SERIALIZATION(MessageDataString)
 
             template<typename Reflector>
             void reflect(Reflector& r)

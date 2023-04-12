@@ -25,7 +25,7 @@ namespace Network
         this->active = true;
         this->stopped = false;
         Logger::printfln("call later");
-        this->callLater(&SocketReaderModule::run, this);
+        this->callInModuleThread(&SocketReaderModule::run, this);
     }
 
     void SocketReaderModule::run()
@@ -38,7 +38,7 @@ namespace Network
         while(this->active)
         {
             Logger::printfln("reading");
-                    Logger::printfln("Socket client fd in reader %d", socketClient->sock);
+            Logger::printfln("Socket client fd in reader %d", socketClient->sock);
 
             BinaryData binaryData;
             if(!this->socketClient->read(binaryData))
@@ -59,7 +59,7 @@ namespace Network
             RemoteConnection::Message message;
             try
             {
-                BinaryDataReader reader(&binaryData);
+                std::shared_ptr<BinaryDataReader> reader = std::make_shared<BinaryDataReader>(binaryData);
                 deserializer.deserialize(message, reader);
                 this->messageReceivedChannel.post(message);
             }

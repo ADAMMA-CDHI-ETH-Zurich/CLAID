@@ -159,13 +159,13 @@ namespace claid
 // In Module.hpp would be a cyclic dependency.
 #include "Module/ModuleFactory/ModuleFactory.hpp"
 #include "Serialization/Serialization.hpp"
-#define DECLARE_MODULE(className)\
-    DECLARE_CLASS_FACTORY(className)\
-    DECLARE_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className)\
-    DECLARE_MODULE_FACTORY(className)\
+// #define DECLARE_MODULE(className)\
+//     DECLARE_CLASS_FACTORY(className)\
+//     DECLARE_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className)\
+//     DECLARE_MODULE_FACTORY(className)\
 
 #define REGISTER_MODULE(className)\
-    static_assert(std::is_base_of<claid::BaseModule, className>::value, "Tried to register a class as Module (see above), which did not inherit from BaseModule. Did you forget to inherit from Module or BaseModule. "  ); \
+    static_assert(std::is_base_of<claid::BaseModule, className>::value, "Tried to register a class as Module (see above), which did not inherit from BaseModule. Did you forget to inherit from Module or BaseModule?"  ); \
     REGISTER_TO_CLASS_FACTORY(className) \
     REGISTER_SERIALIZATION_STANDARD_SERIALIZERS_ONLY(className)\
     REGISTER_MODULE_FACTORY(className)

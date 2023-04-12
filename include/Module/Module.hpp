@@ -13,7 +13,7 @@
 
 #include "RunnableDispatcherThread/FunctionRunnable.hpp"
 #include "ClassFactory/ClassFactory.hpp"
-#include "PolymorphicReflector/PolymorphicReflector.hpp"
+#include "Reflection/ReflectionManager.hpp"
 #include "Reflection/PropertyReflector.hpp"
 
 
@@ -120,7 +120,7 @@ namespace claid
 
                 if(it == this->timers.end())
                 {
-                    CLAID_THROW(Exception, "Error, tried to unregister periodic function \"" << name << "\" in Module << \"" << this->getModuleName() << "\", but function was not found in list of registered functions."
+                    CLAID_THROW(Exception, "Error, tried to unregister periodic function \"" << name << "\" in Module \"" << this->getModuleName() << "\", but function was not found in list of registered functions."
                     << "Was a function with this name ever registered before?" );
                 }
 
@@ -179,6 +179,7 @@ namespace claid
         public:
             BaseModule()
             {
+                this->initialized = false;
                 if(this->runnableDispatcherThread.get() != nullptr)
                 {   
                     CLAID_THROW(Exception, "Error! Constructor of BaseModule called, but RunnableDispatcherThread is not null!")
@@ -198,12 +199,12 @@ namespace claid
             }
 
             template<typename Class, typename... Ts>
-            void callLater(void (Class::* f)(Ts...), Class* obj, Ts... params)
+            void callInModuleThread(void (Class::* f)(Ts...), Class* obj, Ts... params)
             {
                 if(this->runnableDispatcherThread.get() == nullptr)
                 {
-                    CLAID_THROW(Exception, "Error! callLater was called while module is stopped."
-                    "Please only use callLater while the Module is running.");
+                    CLAID_THROW(Exception, "Error! callInModuleThread was called while module is stopped."
+                    "Please only use callInModuleThread while the Module is running.");
                 }
                 //std::function<void(Ts...)> function = std::bind(f, obj, std::placeholders::_1, std::placeholders::_2);
 
@@ -231,6 +232,7 @@ namespace claid
             
             void waitForInitialization()
             {
+                Logger::printfln("WaitForInitialization called %d", this->initialized);
                 // If this thread is runnable dispatcher thread, waiting would result in a deadlock.
                 if(std::this_thread::get_id() == this->runnableDispatcherThread->getThreadID())
                 {
@@ -243,7 +245,8 @@ namespace claid
 
                 while(!this->initialized)
                 {
-                    
+                    Logger::printfln("WaitForIniti %s", this->getModuleName().c_str());
+                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
                 }
             }
 
@@ -501,11 +504,11 @@ namespace claid
     // remote) via ChannelIDs, in contrast to a SubModule.
     class Module : public BaseModule
     {   
-        DECLARE_CLASS_FACTORY(Module)
-        DECLARE_POLYMORPHIC_REFLECTOR(Module, claid::XMLSerializer, XMLSerializer)
-        DECLARE_POLYMORPHIC_REFLECTOR(Module, claid::XMLDeserializer, XMLDeserializer)
-        DECLARE_POLYMORPHIC_REFLECTOR(Module, claid::BinarySerializer, BinarySerializer)
-        DECLARE_POLYMORPHIC_REFLECTOR(Module, claid::BinaryDeserializer, BinaryDeserializer)
+        //DECLARE_CLASS_FACTORY(Module)
+        // DECLARE_POLYMORPHIC_REFLECTOR(Module, claid::XMLSerializer, XMLSerializer)
+        // DECLARE_POLYMORPHIC_REFLECTOR(Module, claid::XMLDeserializer, XMLDeserializer)
+        // DECLARE_POLYMORPHIC_REFLECTOR(Module, claid::BinarySerializer, BinarySerializer)
+        // DECLARE_POLYMORPHIC_REFLECTOR(Module, claid::BinaryDeserializer, BinaryDeserializer)
 
         public:
             Module();
@@ -548,7 +551,7 @@ namespace claid
             {
 
             }
-
+        public:
             template<typename T>
             Channel<T> subscribe(const std::string& channelID);
 

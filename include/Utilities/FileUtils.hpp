@@ -27,5 +27,9 @@ namespace claid
             static bool removeFile(const std::string& path);
             static bool removeFileIfExists(const std::string& path);
 
+            static bool copyFileTo(const std::string& source, const std::string& destination, bool appendExistingFile = false);
+            static bool moveFileTo(const std::string& source, const std::string& destination, bool appendExistingFile = false);
+            
+
     };
 }

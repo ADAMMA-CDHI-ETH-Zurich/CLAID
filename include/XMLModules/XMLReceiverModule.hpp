@@ -4,7 +4,6 @@ namespace claid
 {
     class XMLReceiverModule : public Module
     {
-        DECLARE_MODULE(XMLReceiverModule)
 
         private:
             std::string xmlChannelName;

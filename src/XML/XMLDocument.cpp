@@ -13,7 +13,6 @@ namespace claid
 
 	}
 
-
 	bool XMLDocument::loadFromFile(const File& file)
 	{
 		XMLParser xmlParser;
@@ -41,7 +40,7 @@ namespace claid
 
 		XMLParser xmlParser;
 
-		return (xmlParser.parseFromString(fileContent, this->xmlNode));
+		return (xmlParser.parseFromString(fileContent, this->xmlNode, filePath));
 		
 	}
 

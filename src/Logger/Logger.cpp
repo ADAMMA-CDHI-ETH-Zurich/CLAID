@@ -42,8 +42,11 @@ void claid::Logger::printfln(const char *format, ...)
 
 
 	// Size 500 was too small.
-    char buffer[1024] = "";
-	std::vsprintf(buffer, format, vargs);
+	const int BUFF_SIZE = 10240;
+    char buffer[BUFF_SIZE] = "";
+	// If number of character is > BUFF_SIZE, the remaining characters will not be written
+	// by using vsnprintf (in contrast to vsprintf). Therefore, should not yield a segfault.
+	std::vsnprintf(buffer, BUFF_SIZE, format, vargs);
 
 
 	va_end(vargs);

@@ -28,7 +28,7 @@ namespace claid
                 }
 
                 BinaryDeserializer deserializer;
-                BinaryDataReader reader(&this->binaryData.value());
+                std::shared_ptr<BinaryDataReader> reader = std::make_shared<BinaryDataReader>(this->binaryData.value());
 
                 // We create the shared_ptr ourselves, to save a copy operation.
                 // If we just used TaggedData<T> (data), with data being of type T,
@@ -98,7 +98,7 @@ namespace claid
             {
                 std::unique_lock<std::mutex> (this->mutex);
                 XMLSerializer serializer;                
-                serializer.serialize(this->typedData.value());
+                serializer.serialize("value", this->typedData.value());
                 return serializer.getXMLNode();
             }
 
@@ -116,24 +116,26 @@ namespace claid
 
         public:
 
-            ChannelBufferElementTyped() : ChannelBufferElement()
+            ChannelBufferElementTyped() : ChannelBufferElement("")
             {
-
             }
 
-            ChannelBufferElementTyped(TaggedData<T> typedData)
+            ChannelBufferElementTyped(TaggedData<T> typedData) : ChannelBufferElement("")
             {
                 this->typedData = typedData;
                 this->header = typedData.getHeader();
                 this->dataAvailable = true;
                 this->binaryDataAvailable = false;
+
+                this->dataTypeName = ClassFactory::getInstance()->getClassNameOfObject(this->typedData.value());
             }
 
-            ChannelBufferElementTyped(TaggedData<BinaryData> binaryData) : ChannelBufferElement(binaryData)
+            ChannelBufferElementTyped(TaggedData<BinaryData> binaryData) : ChannelBufferElement(binaryData, "")
             {
                 this->deserializeBinaryDataToTypedData();
                 this->dataAvailable = true;
                 this->binaryDataAvailable = true;
+                this->dataTypeName = ClassFactory::getInstance()->getClassNameOfObject(this->typedData.value());
             }
 
             TaggedData<T> getTypedData()
@@ -169,6 +171,29 @@ namespace claid
             virtual std::shared_ptr<XMLNode> toXML()
             {
                 return this->serializeToXML();
+            }
+
+            virtual bool applySerializerToData(std::shared_ptr<AbstractSerializer> serializer, bool addHeader = false)
+            {
+                const T& data = typedData.value();
+                std::string dataTypeName = ClassFactory::getInstance()->getClassNameOfObject(data);
+                std::string reflectorName = serializer->getReflectorName();
+
+                UntypedReflector* untypedReflector;
+                if (!ReflectionManager::getInstance()->getReflectorForClass(dataTypeName, reflectorName, untypedReflector))
+                {
+                    return false;
+                }
+
+                T* nonConstData = const_cast<T*>(&data);
+                untypedReflector->invoke(static_cast<void*>(serializer.get()), reinterpret_cast<void*>(nonConstData));               
+
+                if(addHeader)
+                {
+                    this->addDataHeaderAsMemberUsingSerializer(serializer);
+                }
+
+                return true;
             }
 
    

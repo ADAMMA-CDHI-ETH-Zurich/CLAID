@@ -17,7 +17,6 @@ namespace claid
     {
         class NetworkServerModule : public NetworkModule
         {
-            DECLARE_MODULE(NetworkServerModule)
             
             public:
 
@@ -34,6 +33,7 @@ namespace claid
                 template<typename Reflector>
                 void reflect(Reflector& r)
                 {
+                    REFLECT_BASE(r, NetworkModule)
                     r.member("Port", this->port, "");
                 }
 

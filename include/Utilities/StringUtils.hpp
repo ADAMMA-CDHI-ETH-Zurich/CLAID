@@ -15,9 +15,11 @@ namespace claid
             {
                 str.replace(start_pos, from.length(), to);
                 start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
-                printf("%s\n", str.c_str());
             }
         }
+
+
+  
 
         static void splitStringToVector(const std::string& str, const std::string delimiter, std::vector<std::string>& output)
         {

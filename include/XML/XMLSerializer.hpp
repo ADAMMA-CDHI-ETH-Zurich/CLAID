@@ -4,18 +4,27 @@
 
 #include "Serialization/Serializer.hpp"
 #include "TypeChecking/TypeCheckingFunctions.hpp"
+#include "Reflection/ReflectionManager.hpp"
+#include "Reflection/Reflect.hpp"
 
 #include <stack>
-
 namespace claid
 {
     class XMLSerializer : public Serializer<XMLSerializer>
     {
+        private:
+
         public:
             std::shared_ptr<XMLNode> root = nullptr;
             std::shared_ptr<XMLNode> currentNode = nullptr;
 
             std::stack<std::shared_ptr<XMLNode>> nodeStack;
+
+            std::string getReflectorName()
+            {
+                return "XMLSerializer";
+            } 
+
 
             XMLSerializer()
             {
@@ -27,6 +36,8 @@ namespace claid
             {
                 
             }
+
+            EmptyReflect(XMLSerializer)
 
             template<typename T>
             void callFloatOrDouble(const char* property, T& member)
@@ -127,15 +138,15 @@ namespace claid
                     CLAID_THROW(claid::Exception, "XMLSerializer failed to serialize object to XML. Member \"" << property << "\" is a pointer/polymorphic object of type \"" << rttiTypeString << "\". However, no PolymorphicReflector was registered for type \"" << rttiTypeString << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
-                std::string className = member->getClassName();
+                std::string className = ClassFactory::getInstance()->getClassNameOfObject(*member);
 
-                PolymorphicReflector::WrappedReflectorBase<XMLSerializer>* polymorphicReflector;
-                if (!PolymorphicReflector::PolymorphicReflector<XMLSerializer>::getInstance()->getReflector(className, polymorphicReflector))
+                UntypedReflector* untypedReflector;
+                if (!ReflectionManager::getInstance()->getReflectorForClass(className, this->getReflectorName(), untypedReflector))
                 {
                     CLAID_THROW(claid::Exception, "XMLSerializer failed to deserialize object from XML. Member \"" << property << "\" is a pointer type with it's class specified as \"" << className << "\". However, no PolymorphicReflector was registered for class \"" << className << "\". Was PORTAIBLE_SERIALIZATION implemented for this type?");
                 }
 
-                polymorphicReflector->invoke(*this, static_cast<void*>(member));
+                untypedReflector->invoke(static_cast<void*>(this), static_cast<void*>(member));
                 this->currentNode->setAttribute("class", className);
             }
             
@@ -196,21 +207,35 @@ namespace claid
 
             template <typename T>
             typename std::enable_if<!std::is_arithmetic<T>::value>::type
-            serialize(T& obj)
+            serialize(const std::string& name, T& obj)
             {
                 // std::string name = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
                 // std::shared_ptr<XMLNode> node = std::shared_ptr<XMLNode>(new XMLNode(currentNode, name));
                 // this->currentNode->addChild(node);
                 // this->currentNode = node;
 
-                invokeReflectOnObject(obj);
+                invokeReflectOnObject(name.c_str(), obj);
             }
 
             template <typename T>
             typename std::enable_if<std::is_arithmetic<T>::value>::type
-            serialize(T& obj)
+            serialize(const std::string& name, T& obj)
             {
-                this->member("Value", obj, "");
+                this->root = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
+                this->currentNode = root;
+                this->member(name.c_str(), obj, "");
+            }
+
+            template<typename T>
+            void onInvocationStart(T& obj)
+            {
+                this->root = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
+                this->currentNode = root;
+            }
+
+            void forceReset()
+            {
+                
             }
 
             std::shared_ptr<XMLNode> getXMLNode()
@@ -231,5 +256,26 @@ namespace claid
                 // for XMLSerializer and -Deserialize.
             }
 
+            void getDataWriteableToFile(std::vector<char>& data)
+            {
+                printf("Get byte rep \n");
+                if(this->root == nullptr)
+                {
+                    data.clear();
+                }
+                else
+                {
+                    std::string str;
+                    this->root->toString(str);
+                    printf("XMLSerializer str %s", str.c_str());
+
+                    std::copy(str.begin(), str.end(), std::back_inserter(data));
+                }
+
+            }
+
+       
+
     };
 }
+

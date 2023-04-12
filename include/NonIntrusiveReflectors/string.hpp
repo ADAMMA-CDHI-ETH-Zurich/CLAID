@@ -7,5 +7,5 @@
 template<typename Reflector>
 void reflect(Reflector& r, std::string& string)
 {
-    r.callString("", string);
+    r.callString("string", string);
 }

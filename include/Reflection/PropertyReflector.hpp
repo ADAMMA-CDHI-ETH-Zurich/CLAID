@@ -11,6 +11,10 @@ namespace claid
 
     public:
 
+        std::string getReflectorName()
+        {
+            return "PropertyReflector";
+        }
    
 
         template<typename T>
@@ -73,7 +77,7 @@ namespace claid
         template<typename T>
         void reflect(std::string name, T& obj)
         {
-            this->callAppropriateFunctionBasedOnType(name.c_str(), obj);
+            //this->callAppropriateFunctionBasedOnType(name.c_str(), obj);
         }
       
     };

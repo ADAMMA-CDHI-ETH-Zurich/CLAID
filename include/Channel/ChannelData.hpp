@@ -8,8 +8,11 @@
 
 
 #include "Binary/BinarySerializer.hpp"
+#include "Binary/BinaryDeserializer.hpp"
+
 #include "XML/XMLSerializer.hpp"
 #include "Reflection/Reflect.hpp"
+#include "Serialization/Serializer.hpp"
 
 namespace claid
 {
@@ -45,6 +48,7 @@ namespace claid
             virtual std::shared_ptr<XMLNode> headerToXML() = 0;
             virtual std::shared_ptr<XMLNode> toXML() = 0;
             virtual bool canSerializeToXML() = 0;
+            virtual bool applySerializerToData(std::shared_ptr<AbstractSerializer> serializer, bool addHeader = false) = 0;
 
     };
 
@@ -112,7 +116,7 @@ namespace claid
             std::shared_ptr<XMLNode> headerToXML()
             {
                 XMLSerializer serializer;
-                serializer.serialize(this->header);
+                serializer.serialize("header", this->header);
                 return serializer.getXMLNode();
             }
 
@@ -127,6 +131,13 @@ namespace claid
                 // serialize to XML if the bufferElement is typed.
                 return this->channelBufferElement->canSerializeToXML();
             }
+
+            bool applySerializerToData(std::shared_ptr<AbstractSerializer> serializer, bool addHeader = false)
+            {
+                return this->channelBufferElement->applySerializerToData(serializer, addHeader);
+            }
+
+
 
      
         // ChannelData(ChannelBuffer<T>* holderBuffer, TaggedData<T>& taggedData) : ChannelDataBase(true), holderBuffer(holderBuffer), taggedData(taggedData)
@@ -215,7 +226,7 @@ namespace claid
             {
                 XMLSerializer serializer;
                 TaggedDataBase header = this->getHeader();
-                serializer.serialize(header);
+                serializer.serialize("header", header);
                 return serializer.getXMLNode();
             }
 
@@ -232,6 +243,11 @@ namespace claid
             {
                 // When ChannelData is typed, we can always serialize to XML.
                 return true;
+            }
+
+            bool applySerializerToData(std::shared_ptr<AbstractSerializer> serializer, bool addHeader = false)
+            {
+                return this->channelBufferElement->applySerializerToData(serializer, addHeader);
             }
 
 

@@ -125,7 +125,7 @@ namespace claid
 			int bytesReceived = 0;
 			
 			byteBuffer = std::vector<char>(numBytes);
-			bytesReceived = recv(this->sock, byteBuffer.data(), numBytes, 0);
+			bytesReceived = recv(this->sock, byteBuffer.data(), numBytes, MSG_WAITALL);
 			
 			if (bytesReceived < 1)
 			{
