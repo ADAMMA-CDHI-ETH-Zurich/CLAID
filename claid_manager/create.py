@@ -65,10 +65,6 @@ def create_java_application(path):
 
         shutil.copy(file_source_path, file_destination_path)
 
-    print(files)
-    # shutil.copy("{}/ApplicationTypes/Java/CMakeLists.txt".format(source_path), "{}/CMakeLists.txt".format(path))
-    # print("{}/Java/CMakeLists.txt".format(source_path), "{}/CMakeLists.txt".format(path))
-    # print("Java application create sucessfully at {}".format(path))
 
 
         

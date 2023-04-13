@@ -24,7 +24,6 @@ def parse_package_list():
 
     for line in Lines:
         line = line.replace("\n", "")
-        print("Line ", line)
         package_name, repo_path, branch = line.split(";")
         packages[package_name] = (repo_path, branch)
 
