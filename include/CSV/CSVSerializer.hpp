@@ -176,33 +176,34 @@ namespace claid
            
             }
 
-            void getHeaderWriteableToFile(std::vector<char>& data)
+             void writeHeaderToFile(const std::string& path, bool append = true)
             {
-                data.clear();
-                std::string headerString = header.str();
-                std::copy(headerString.begin(), headerString.end(), std::back_inserter(data));
+                std::ofstream file;
+                if(append)
+                {
+                    file = std::ofstream(path, std::ios::app | std::ios::binary);
+                }
+                else
+                {
+                    file = std::ofstream(path, std::ios::out | std::ios::binary);
+                }
+
+                file << this->header.str();
             }
 
-            void getDataWriteableToFile(std::vector<char>& data)
+            void writeDataToFile(const std::string& path, bool append = true)
             {
-                data.clear();
-                std::string dataString = this->data.str();
-                std::copy(dataString.begin(), dataString.end(), std::back_inserter(data));
+                std::ofstream file;
+                if(append)
+                {
+                    file = std::ofstream(path, std::ios::app | std::ios::binary);
+                }
+                else
+                {
+                    file = std::ofstream(path, std::ios::out | std::ios::binary);
+                }
 
-                // printf("Get byte rep \n");
-                // if(this->root == nullptr)
-                // {
-                //     data.clear();
-                // }
-                // else
-                // {
-                //     std::string str;
-                //     this->root->toString(str);
-                //     printf("XMLSerializer str %s", str.c_str());
-
-                //     std::copy(str.begin(), str.end(), std::back_inserter(data));
-                // }
-
+                file << this->data.str();
             }
 
             void forceReset()

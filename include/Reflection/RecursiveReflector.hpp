@@ -174,7 +174,7 @@ namespace claid
 
             // Used by untyped reflector
             template<typename T>
-            void invokeReflectorOnClassThatHasReflectFunction(T& obj, bool externalInvocation = true)
+            void invokeReflectorOnNonPrimitiveType(T& obj, bool externalInvocation = true)
             {
                 if(numInvocations == 0 && externalInvocation)
                 {

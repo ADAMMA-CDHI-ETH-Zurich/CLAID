@@ -93,7 +93,7 @@ namespace claid
 		{
 
 
-			int result = send(this->sock, byteBuffer.data(), byteBuffer.size(), 0);
+			int result = send(this->sock, byteBuffer.data(), byteBuffer.size(), MSG_NOSIGNAL);
 			if (result == SOCKET_ERROR)
 			{
 				SocketClientError error;

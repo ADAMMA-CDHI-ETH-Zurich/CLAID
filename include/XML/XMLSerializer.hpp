@@ -256,26 +256,22 @@ namespace claid
                 // for XMLSerializer and -Deserialize.
             }
 
-            void getDataWriteableToFile(std::vector<char>& data)
+            virtual void writeDataToFile(const std::string& path, bool append = true)
             {
-                printf("Get byte rep \n");
-                if(this->root == nullptr)
+                std::ofstream file;
+                if(append)
                 {
-                    data.clear();
+                    file = std::ofstream(path, std::ios::app | std::ios::binary);
                 }
                 else
                 {
-                    std::string str;
-                    this->root->toString(str);
-                    printf("XMLSerializer str %s", str.c_str());
-
-                    std::copy(str.begin(), str.end(), std::back_inserter(data));
+                    file = std::ofstream(path, std::ios::out | std::ios::binary);
                 }
 
+                std::string str;
+                this->root->toString(str);
+                file << str;
             }
-
-       
-
     };
 }
 

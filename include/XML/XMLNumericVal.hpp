@@ -44,8 +44,11 @@ namespace claid
             return true;
         }
 
-       
-
+        virtual void contentAsString(std::string& string)
+        {
+            string = this->value;
+        }
+    
         #define XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(type, func) \
         static void parseFromString(type& member, const std::string& string) \
         { \

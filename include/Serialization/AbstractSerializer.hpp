@@ -16,16 +16,15 @@ namespace claid
             // Not all Serializers might require a header.
             // A header exists only once per file.
             // E.g., in a CSV, a header would be written only once at the start.
-            virtual void getHeaderWriteableToFile(std::vector<char>& data)
+            virtual void writeHeaderToFile(const std::string& path, bool append = true)
             {
-                data.clear();
             }
 
-            virtual void getDataWriteableToFile(std::vector<char>& data)
+            virtual void writeDataToFile(const std::string& path, bool append = true)
             {
                 CLAID_THROW(Exception, "Serializer " << this->getReflectorName() << "was used to serialize some data.\n"
-                << "In order to write data to a file, a writeable representation was requested.\n"
-                << "However, Serializer " << this->getReflectorName() << " does not support to transform serialized data to a representation that can be written to a file.");
+                << "It was requested to store the serialized data in file \"" << path << "\", however serializer "
+                << this->getReflectorName() << " does not support writing serialized data to a file.");
             }
 
             virtual void forceReset()

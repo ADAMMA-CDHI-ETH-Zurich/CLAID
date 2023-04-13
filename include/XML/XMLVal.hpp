@@ -40,6 +40,11 @@ namespace claid
                 return true;
             }
 
+            virtual void contentAsString(std::string& string)
+            {
+                string = this->value;
+            }
+
             const std::string& getValue()
             {
                 return this->value;
