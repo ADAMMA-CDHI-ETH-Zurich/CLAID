@@ -1,5 +1,5 @@
 #include "Network/Socket/Client/SocketClient.hpp"
-
+#include "Utilities/Time.hpp"
 
 #include <Ws2tcpip.h>
 #include <winsock2.h>
@@ -92,8 +92,8 @@ namespace claid
 		bool SocketClient::writeBytes(std::vector<char>& byteBuffer)
 		{
 
-
-			int result = send(this->sock, byteBuffer.data(), byteBuffer.size(), MSG_NOSIGNAL);
+			int result = send(this->sock, byteBuffer.data(), byteBuffer.size(), 0);
+		
 			if (result == SOCKET_ERROR)
 			{
 				SocketClientError error;

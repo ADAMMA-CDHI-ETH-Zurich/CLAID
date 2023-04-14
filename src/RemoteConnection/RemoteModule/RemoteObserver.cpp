@@ -3,7 +3,7 @@
 #include "RemoteConnection/Message/MessageHeader/TestMessage.hpp"
 #include "RemoteConnection/Error/ErrorRemoteRuntimeOutOfSync.hpp"
 #include "RemoteConnection/Error/ErrorConnectionTimeout.hpp"
-
+#include "Utilities/Time.hpp"
 namespace claid
 {
     namespace RemoteConnection
@@ -244,6 +244,7 @@ namespace claid
         // Called, if a local Module (of this process) posted data to a channel, that has a subscriber in a remote run time.
         void RemoteObserver::onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo(std::string channelID, ChannelData<Untyped> data)
         {
+            	
             Logger::printfln("RemoteObserver %u: onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo %s %d", this, channelID.c_str(), this->getUniqueIdentifier());
             // When there is a channel, that was subscribed to in the local RunTime AND the remote RunTime,
             // then it can happen that data get's send back and forth and a loop happens.
@@ -257,6 +258,7 @@ namespace claid
             // --> Go back to 1
             // To solve this, we need to make sure that we do not react in this function to data that was posted in onChannelDataReceivedFromRemoteRunTime.
             TaggedData<BinaryData> taggedData = data.getBinaryData();
+          
             if(this->isDataReceivedFromRemoteRunTime(taggedData))
             {
                 Logger::printfln("Is data we received from remote run time, hence skipping");
@@ -280,7 +282,8 @@ namespace claid
             // binary data buffer that contains timestamp, sequenceID and the binary data itself.       
             message.data->as<MessageDataBinary>()->setBinaryData(constBinaryData);
             this->sendMessage(message);
-
+	
+            
             
             // // Check if we have published that channel.
             // auto it = this->publishedChannels.find(channelID);

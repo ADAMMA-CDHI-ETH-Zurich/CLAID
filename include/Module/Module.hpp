@@ -124,10 +124,13 @@ namespace claid
                     << "Was a function with this name ever registered before?" );
                 }
 
-                it->second->stop();
+
+                DispatcherThreadTimer* timer = it->second;
+
+                timer->stop();
                 this->timers.erase(it);
                 
-                delete it->second;
+                delete timer;
             }
 
             bool isPeriodicFunctionRegistered(const std::string& name) const

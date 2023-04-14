@@ -63,11 +63,7 @@ namespace claid
             void store(const char* data, int32_t size)
             {
                 const char* ptr = data;
-                for(int32_t i = 0; i < size; i++)
-                {
-                    this->data.push_back(*ptr);
-                    ptr++;
-                }
+                this->data.insert(this->data.end(), data, data + size);
             }
 
             void storeString(const std::string& value)
