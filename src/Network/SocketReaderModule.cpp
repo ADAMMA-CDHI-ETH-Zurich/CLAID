@@ -24,7 +24,6 @@ namespace Network
         // Thus, we make sure that we switch to our thread (of this module).
         this->active = true;
         this->stopped = false;
-        Logger::printfln("call later");
         this->callInModuleThread(&SocketReaderModule::run, this);
     }
 
@@ -37,9 +36,6 @@ namespace Network
 
         while(this->active)
         {
-            Logger::printfln("reading");
-            Logger::printfln("Socket client fd in reader %d", socketClient->sock);
-
             BinaryData binaryData;
             if(!this->socketClient->read(binaryData))
             {
@@ -48,7 +44,6 @@ namespace Network
                     // Module has been stopped, thus we ignore the error.
                     break;
                 }
-                Logger::printfln("SocketReader read failed");
                 postError<ErrorReadFromSocketFailed>();
                 this->active = false;
                 break;

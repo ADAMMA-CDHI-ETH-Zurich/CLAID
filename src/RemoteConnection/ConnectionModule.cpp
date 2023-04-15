@@ -18,31 +18,22 @@ namespace RemoteConnection
     // Called by external module.
     void ConnectionModule::onSendMessage(ChannelData<Message> message)
     {
-        Logger::printfln("onSendMessage");
         this->sendMessage(message->value());
-        Logger::printfln("send message done1 ");
     }
 
     void ConnectionModule::initialize()
     {
-        Logger::printfln("ConnectionModule init 1");
         this->sendChannel = this->subscribeLocal<Message>(SEND_CHANNEL, &ConnectionModule::onSendMessage, this);
-        Logger::printfln("ConnectionModule init 2");
         this->receiveChannel = this->publishLocal<Message>(RECEIVE_CHANNEL);
-        Logger::printfln("ConnectionModule init 3");
         this->errorChannel = this->publishLocal<Error>(ERROR_CHANNEL);
-        Logger::printfln("ConnectionModule calling setup");
         this->setup();
-        Logger::printfln("ConnectionModule init end()");
     }
 
     void ConnectionModule::terminate()
     {
-        Logger::printfln("ConnectionModule::terminate()");
         this->sendChannel.unsubscribe();
         this->receiveChannel.unpublish();
         this->errorChannel.unpublish();
-        Logger::printfln("ConnectionModule::terminate() end");
     }
 
     Channel<Message> ConnectionModule::subscribeToReceiveChannel(ChannelSubscriber<Message> channelSubscriber)

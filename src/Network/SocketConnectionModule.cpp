@@ -60,25 +60,21 @@ namespace Network
         // waits until the module (thread) has been stopped
         // Unpublishes messageReceive and errorChannel
         this->readerModule.stopModule();
-        Logger::printfln("ReaderModule stopped.");        
     }
 
     void SocketConnectionModule::sendMessage(RemoteConnection::Message message)
     {
-        Logger::printfln("Send message 0");
 
         // if(message.header->is<RemoteConnection::MessageHeaderChannelData>())
         // {
         //     Logger::printfln("Skipping message");
         //     return;
         // }
-        Logger::printfln("Send message");
         BinaryData binaryData;
         BinarySerializer serializer;
         serializer.serialize(message, &binaryData);
         if(!this->socketClient.write(binaryData))
         {
-            Logger::printfln("Socket client write failed");
             this->postError<ErrorReadFromSocketFailed>();
         }
     }

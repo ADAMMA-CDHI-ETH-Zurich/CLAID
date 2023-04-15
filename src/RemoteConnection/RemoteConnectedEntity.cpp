@@ -20,14 +20,11 @@ namespace RemoteConnection
 
     void RemoteConnectedEntity::setup()
     {
-        Logger::printfln("Start connection module");
         this->connectionModule->startModule();
         this->connectionModule->waitForInitialization();
         
-        Logger::printfln("Start connection module2 ");
         this->remoteModule.startModule();
         this->remoteModule.waitForInitialization();
-        Logger::printfln("Start connection module2 ");
         this->link.link(this->connectionModule, &this->remoteModule);
     }
 
