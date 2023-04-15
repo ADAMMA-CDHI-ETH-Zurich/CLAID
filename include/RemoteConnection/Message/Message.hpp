@@ -19,9 +19,9 @@ namespace claid
             static Message CreateMessage()
             {
                 Message message;
-                Logger::printfln("Creating namess %s with data %s", 
-                TypeChecking::getCompilerSpecificCompileTypeNameOfClass<HeaderType>().c_str(),
-                TypeChecking::getCompilerSpecificCompileTypeNameOfClass<DataType>().c_str());
+                // Logger::printfln("Creating namess %s with data %s", 
+                // TypeChecking::getCompilerSpecificCompileTypeNameOfClass<HeaderType>().c_str(),
+                // TypeChecking::getCompilerSpecificCompileTypeNameOfClass<DataType>().c_str());
 
                 message.header = 
                     std::static_pointer_cast<MessageHeader>(std::shared_ptr<HeaderType>(new HeaderType));

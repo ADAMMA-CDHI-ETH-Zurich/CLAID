@@ -1,6 +1,6 @@
 #include "Network/SocketConnectionModule.hpp"
 #include "Binary/BinarySerializer.hpp"
-
+#include "RemoteConnection/Message/MessageHeader/MessageHeaderChannelData.hpp"
 namespace claid
 {
 namespace Network
@@ -65,6 +65,13 @@ namespace Network
 
     void SocketConnectionModule::sendMessage(RemoteConnection::Message message)
     {
+        Logger::printfln("Send message 0");
+
+        // if(message.header->is<RemoteConnection::MessageHeaderChannelData>())
+        // {
+        //     Logger::printfln("Skipping message");
+        //     return;
+        // }
         Logger::printfln("Send message");
         BinaryData binaryData;
         BinarySerializer serializer;

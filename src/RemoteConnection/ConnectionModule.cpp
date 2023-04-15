@@ -20,7 +20,7 @@ namespace RemoteConnection
     {
         Logger::printfln("onSendMessage");
         this->sendMessage(message->value());
-        Logger::printfln("send message done");
+        Logger::printfln("send message done1 ");
     }
 
     void ConnectionModule::initialize()

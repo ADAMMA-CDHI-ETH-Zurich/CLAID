@@ -256,7 +256,7 @@ namespace claid
             // onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo is called in RemoteObserver of remote RunTime.
             // 5th The data is sent back to us again and posted to our local channel.
             // --> Go back to 1
-            // To solve this, we need to make sure that we do not react in this function to data that was posted in onChannelDataReceivedFromRemoteRunTime.
+            // // To solve this, we need to make sure that we do not react in this function to data that was posted in onChannelDataReceivedFromRemoteRunTime.
             TaggedData<BinaryData> taggedData = data.getBinaryData();
           
             if(this->isDataReceivedFromRemoteRunTime(taggedData))
@@ -272,16 +272,21 @@ namespace claid
             MessageDataBinary messageDataBinary;
 
             Message message = Message::CreateMessage<MessageHeaderChannelData, MessageDataBinary>();
-    
+             
             message.header->as<MessageHeaderChannelData>()->targetChannel = channelID;
             message.header->as<MessageHeaderChannelData>()->header = data.getHeader();
+            Logger::printfln("onNewLocalDataInChannel 1");
             Logger::printfln("Setting header timestamp %s %d", channelID.c_str(), data.getHeader().timestamp.toUnixTimestamp());
             // Set will serialize TaggedData<BinaryData>.
             // TaggedData holds the header (timestamp, sequenceID) and the binary data.
             // Thus, timestamp and sequenceID will be serialized, the binary data will be copied into a bigger
-            // binary data buffer that contains timestamp, sequenceID and the binary data itself.       
+            // binary data buffer that contains timestamp, sequenceID and the binary data itself.    
+            Logger::printfln("onNewLocalDataInChannel 2");   
             message.data->as<MessageDataBinary>()->setBinaryData(constBinaryData);
+            Logger::printfln("onNewLocalDataInChannel 3");
+
             this->sendMessage(message);
+            Logger::printfln("onNewLocalDataInChannel 4");
 	
             
             
@@ -307,9 +312,12 @@ namespace claid
             // }
         }
 
-        void RemoteObserver::sendMessage(const Message& message)
+        void RemoteObserver::sendMessage(Message message)
         {
+
+            Logger::printfln("sendMessage 1");
             this->sendMessageChannel.post(message);
+            Logger::printfln("sendMessage 2");
         }
 
         void RemoteObserver::initialize()

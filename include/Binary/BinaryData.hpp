@@ -22,6 +22,11 @@ namespace claid
 
             }
 
+            virtual ~BinaryData()
+            {
+                
+            }
+
             template<typename Reflector>
             void reflect(Reflector& r)
             {

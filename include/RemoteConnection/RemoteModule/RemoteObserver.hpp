@@ -67,7 +67,7 @@ namespace claid
                 void onChannelUnpublished(const std::string& channelID);
 
                 void onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo(std::string channelID, ChannelData<Untyped> binaryData);            
-                void sendMessage(const Message& message);
+                void sendMessage(Message message);
 
                 void onChannelDataReceivedFromRemoteRunTime(const std::string& targetChannel, TaggedData<BinaryData>& data);
 

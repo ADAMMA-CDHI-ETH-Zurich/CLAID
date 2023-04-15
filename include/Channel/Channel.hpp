@@ -221,6 +221,7 @@ namespace claid
 
             void signalNewDataToSubscribers()
             {
+                Logger::printfln("Signal new data to subs");
                 for(ChannelSubscriberBase*& channelSubscriber : channelSubscribers)
                 {
                     channelSubscriber->signalNewDataIsAvailable();
@@ -288,7 +289,9 @@ namespace claid
             typename std::enable_if<!std::is_same<U, Untyped>::value>::type
             post(const U& data, const Time timestamp = Time::now(), uint64_t sequenceID = 0) 
             {
+                Logger::printfln("Post data 4");
                 this->post(TaggedData<U>(data, timestamp, sequenceID));
+                Logger::printfln("Post data 5");
             }
 
             // Use new template parameter U to allow to remove this
@@ -299,7 +302,9 @@ namespace claid
             typename std::enable_if<!std::is_same<U, Untyped>::value>::type
             post(std::shared_ptr<T> data, const Time timestamp = Time::now(), uint64_t sequenceID = 0)
             {
+                Logger::printfln("Post data 6");
                 this->post(TaggedData<T>(data, timestamp, sequenceID));
+                Logger::printfln("Post data 7");
             }
     
             // Use new template parameter U to allow to remove this
@@ -310,8 +315,11 @@ namespace claid
             typename std::enable_if<!std::is_same<U, Untyped>::value>::type
             post(TaggedData<T> data)
             {
+                Logger::printfln("Post data 1");
                 this->castBuffer()->insert(data);
+                Logger::printfln("Post data 2");
                 this->signalNewDataToSubscribers();
+                Logger::printfln("Post data 3");
             }           
 
             intptr_t getChannelDataTypeUniqueIdentifier()

@@ -1,6 +1,6 @@
 #include "Network/Socket/Client/SocketClient.hpp"
 #include "Utilities/Time.hpp"
-
+#include "Logger/Logger.hpp"
 #include <Ws2tcpip.h>
 #include <winsock2.h>
 
@@ -91,11 +91,13 @@ namespace claid
 
 		bool SocketClient::writeBytes(std::vector<char>& byteBuffer)
 		{
-
+			Logger::printfln("Write bytes 1\n");
 			int result = send(this->sock, byteBuffer.data(), byteBuffer.size(), 0);
-		
+			Logger::printfln("Write bytes 2 %d %d %u %d\n", result, byteBuffer.size(), this, this->sock);
+
 			if (result == SOCKET_ERROR)
 			{
+			Logger::printfln("Write bytes 3\n");
 				SocketClientError error;
 				error.errorType = SocketClientErrorType::ERROR_WRITE_FAILED;
 				error.additionalErrorID = WSAGetLastError();
@@ -105,6 +107,8 @@ namespace claid
 				return false;
 			}
 
+			Logger::printfln("Write bytes 4\n");
+
 
 			return true;
 		}
@@ -112,8 +116,12 @@ namespace claid
 	
 		bool SocketClient::readBytes(std::vector<char>& byteBuffer, size_t numBytes)
 		{
+			Logger::printfln("read bytes 1\n");
+
 			if (numBytes == 0)
 			{
+				Logger::printfln("read bytes 2\n");
+
 				SocketClientError error;
 				error.additionalErrorID = WSAGetLastError();
 				error.errorType = SocketClientErrorType::ERROR_READ_FAILED;
@@ -123,12 +131,16 @@ namespace claid
 				return false;
 			}
 			int bytesReceived = 0;
-			
+			Logger::printfln("read bytes 3\n");
+		
 			byteBuffer = std::vector<char>(numBytes);
 			bytesReceived = recv(this->sock, byteBuffer.data(), numBytes, MSG_WAITALL);
+			Logger::printfln("read bytes 4\n");
 			
 			if (bytesReceived < 1)
 			{
+							Logger::printfln("read bytes 5\n");
+
 				SocketClientError error;
 				error.additionalErrorID = WSAGetLastError();
 				error.errorType = SocketClientErrorType::ERROR_READ_FAILED;
@@ -139,6 +151,7 @@ namespace claid
 			}
 
 
+			Logger::printfln("read bytes 6\n");
 
 			return true;
 		}
@@ -160,6 +173,7 @@ namespace claid
 			
 			closesocket(this->sock);
 			WSACleanup();
+			shutdown(this->sock, SD_BOTH);
 			this->connected = false;
 		}
 
