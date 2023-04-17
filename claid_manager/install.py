@@ -15,7 +15,7 @@ def install_package(package_name, *args):
 
     CLAID_PATH = common.get_claid_path()
 
-    repo = Repo.clone_from(repo_path, CLAID_PATH + "/packages/" + package_name, branch=branch)
+    repo = Repo.clone_from(repo_path, CLAID_PATH + "/packages/" + package_name, branch=branch, multi_options=["--recurse-submodules"])
     repo.submodule_update(recursive=True)
 
     print("Successfully installed package", package_name)
