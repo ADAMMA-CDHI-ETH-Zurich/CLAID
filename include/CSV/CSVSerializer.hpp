@@ -173,7 +173,6 @@ namespace claid
                 // For some cases, however, it might be necessary to store such strings in the serialized data nevertheless,
                 // as it might be needed for deserialization etc.
                 // Thus, this function allows to make sure the string "name" is explicitly stored.
-           
             }
 
              void writeHeaderToFile(const std::string& path, bool append = true)
@@ -188,7 +187,7 @@ namespace claid
                     file = std::ofstream(path, std::ios::out | std::ios::binary);
                 }
 
-                file << this->header.str();
+                file << this->header.str() << "\n";
             }
 
             void writeDataToFile(const std::string& path, bool append = true)
@@ -203,7 +202,7 @@ namespace claid
                     file = std::ofstream(path, std::ios::out | std::ios::binary);
                 }
 
-                file << this->data.str();
+                file << this->data.str() << "\n";
             }
 
             void forceReset()
