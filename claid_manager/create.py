@@ -43,7 +43,7 @@ def create(type, path, *args):
     elif(type == "java_application"):
         create_java_application(path)
     elif(type == "android_application"):
-        create_android_application()
+        create_android_application(path)
     else:
         raise Exception("Keyword {} is unknown for claid create. Options are: [application, java_application].".format(type))
 
@@ -56,6 +56,10 @@ def create_java_application(path):
     create_application_folder(path)
     copy_files_from_template_folder(path, "Java")
     
+def create_android_application(path):
+    create_application_folder(path)
+    copy_files_from_template_folder(path, "AndroidCLAID")
+
 def copy_files_from_template_folder(path, application_type):
     path = resolve_path(path)
 
