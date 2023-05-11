@@ -2,7 +2,8 @@ import argparse
 from git import Repo
 from install import install_package
 from create import create
-
+from build import build 
+ 
 args = ""
 
 
@@ -20,6 +21,7 @@ def init():
     map = [("list_packages", list_packages),
            ("install", install_package),
            ("create", create),
+           ("build", build)
            ]
 
     for entry in map:

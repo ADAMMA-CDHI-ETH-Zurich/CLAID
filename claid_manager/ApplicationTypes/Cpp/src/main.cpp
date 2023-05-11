@@ -1,4 +1,5 @@
 #include "CLAID.hpp"
+#include "MyModule.hpp"
 
 int main()
 {

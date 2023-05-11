@@ -1,0 +1,92 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.example.androidclaid'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.example.androidclaid"
+        minSdk 24
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                cppFlags '-std=c++14'
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    externalNativeBuild {
+        cmake {
+            path file('src/main/cpp/CMakeLists.txt')
+            version '3.22.1'
+        }
+    }
+    buildFeatures {
+        viewBinding true
+    }
+
+    sourceSets {
+        if (file('src/main/cpp/CLAIDJavaDirectories.txt').exists()) {
+            def srcDirs = file('src/main/cpp/CLAIDJavaDirectories.txt').text.readLines()
+            srcDirs.each {
+                srcDirectory ->
+                    main {
+                        java {
+                            srcDir srcDirectory
+                        }
+                    }
+            }
+        }
+
+        main.java.srcDirs += "src/main/cpp/JavaCLAID"
+    }
+}
+
+task deploy_jbind11_sources(type:Exec){
+    print("$projectDir/src/main/cpp/JavaCLAID")
+    workingDir "$projectDir/src/main/cpp/JavaCLAID"
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine 'cmake', '.', '&&', 'cmake', '--build', '.'
+    } else {
+        commandLine 'cmake', '.'
+        commandLine 'cmake', '--build', '.', '-j'
+    }
+}
+
+project.afterEvaluate {
+    // Specify that java can only be built after native built is complete.
+    // That's necessary, as native build might deploy java files generated
+    // by jbind11.
+    if (tasks.findByName("externalNativeBuildDebug")) {
+        compileDebugJavaWithJavac.dependsOn externalNativeBuildDebug
+    }
+    if (tasks.findByName("externalNativeBuildRelease")) {
+        compileReleaseJavaWithJavac.dependsOn externalNativeBuildRelease
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}

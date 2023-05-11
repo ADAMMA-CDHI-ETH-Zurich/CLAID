@@ -2,8 +2,10 @@ set (CMAKE_CXX_STANDARD 14)
 
 # This allows you to use CLAID_Include,
 # that can be used to include CLAID packages
+
 find_package(CLAID REQUIRED)
-CLAID_Include(ModuleAPI)
+# Include desired packages.
+include(${CMAKE_CURRENT_LIST_DIR}/CLAIDPackageList.txt)
 
 # Scanning for all .cpp files in the src directory
 file(GLOB_RECURSE PROJECT_SOURCES
