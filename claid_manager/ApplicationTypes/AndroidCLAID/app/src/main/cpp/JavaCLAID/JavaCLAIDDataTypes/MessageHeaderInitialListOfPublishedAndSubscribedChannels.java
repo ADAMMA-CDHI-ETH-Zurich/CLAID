@@ -1,5 +1,0 @@
-package JavaCLAIDDataTypes;
-public class MessageHeaderInitialListOfPublishedAndSubscribedChannels extends jbind11.JBindWrapper
-{
-
-}
