@@ -35,10 +35,4 @@ public class MainActivity extends AppCompatActivity {
         tv.setText("Hello from CLAID!\nIf you see this,\nCLAID should be working ;)");
 
     }
-
-    /**
-     * A native method that is implemented by the 'androidclaid' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI();
 }
