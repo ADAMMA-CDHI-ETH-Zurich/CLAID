@@ -2,6 +2,7 @@ package com.example.androidclaid;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -25,12 +26,15 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Best way to start CLAID on Android without blocking the main activity.
+        CLAID.setContext(this.getApplicationContext());
+
+        CLAID.loadFromAssets("CLAID.xml");
+        // This is the best way to start CLAID on Android without blocking the main activity.
         // You could also use CLAID.startNonBlocking(), but then you would have to manually
         // call the CLAID update loop periodically.
+        // Do not use CLAID.start() here, as this would block the UI thread.
         CLAID.startInSeparateThread();
 
-        // Example of a call to a native method
         TextView tv = binding.sampleText;
         tv.setText("Hello from CLAID!\nIf you see this,\nCLAID should be working ;)");
 

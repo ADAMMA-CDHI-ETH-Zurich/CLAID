@@ -2,3 +2,4 @@ ModuleAPI;https://github.com/ADAMMA-CDHI-ETH-Zurich/ModuleAPI;main
 CollectorAPI;https://github.com/RealLast/CollectorAPI;main
 JavaCLAID;https://github.com/ADAMMA-CDHI-ETH-Zurich/JavaCLAID;main
 PyCLAID;https://github.com/ADAMMA-CDHI-ETH-Zurich/PyCLAID.git;main
+Permissions;https://github.com/ADAMMA-CDHI-ETH-Zurich/Permissions;main
