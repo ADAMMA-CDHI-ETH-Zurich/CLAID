@@ -27,8 +27,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         CLAID.setContext(this.getApplicationContext());
-
         CLAID.loadFromAssets("CLAID.xml");
+        
         // This is the best way to start CLAID on Android without blocking the main activity.
         // You could also use CLAID.startNonBlocking(), but then you would have to manually
         // call the CLAID update loop periodically.
