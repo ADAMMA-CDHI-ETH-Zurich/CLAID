@@ -11,7 +11,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/CLAIDPackages.cmake)
 
 
 
-
 file(WRITE ${CMAKE_CURRENT_LIST_DIR}/CLAIDJavaDirectories.txt)
 foreach(java_directory ${CLAID_JAVA_DIRECTORIES})
     file(APPEND ${CMAKE_CURRENT_LIST_DIR}/CLAIDJavaDirectories.txt "${java_directory}\n")

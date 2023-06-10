@@ -14,7 +14,7 @@ def build(*args):
     if cmake_process.wait() != 0:
         print("claid build failed")
 
-    make_process = subprocess.Popen(["make", "-j"], stderr=subprocess.STDOUT)
+    make_process = subprocess.Popen(["cmake", "--build", ".", "-j"], stderr=subprocess.STDOUT)
     if make_process.wait() != 0:
         print("claid build failed")
     
