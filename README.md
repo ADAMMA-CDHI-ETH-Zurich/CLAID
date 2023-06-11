@@ -5,7 +5,7 @@ This repository contains the implementation of the CLAID middleware layer.
 
 - Java bindings (JavaCLAID): [JavaCLAID](https://gitfront.io/r/user-1539181/SKXcxTFeKiqN/JavaCLAID/)
 - Python bindings (PyCLAID): [PyCLAID](https://gitfront.io/r/user-1539181/q71cipzLKA4e/PyCLAID/)
-- TensorFlowLiteModule: https://github.com/ADAMMA-CDHI-ETH-Zurich/TensorFlowLiteModule 
+- TensorFlowLiteModule: [TensorFlowLiteModule](https://gitfront.io/r/user-1539181/e5C2BsUvGhHm/TensorFlowLiteModule/)
 - Data Collection Modules: 
   - Accelerometer: https://github.com/ADAMMA-CDHI-ETH-Zurich/AccelerometerCollector
   - Microphone: https://github.com/ADAMMA-CDHI-ETH-Zurich/MicrophoneCollector
