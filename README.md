@@ -7,5 +7,5 @@ This repository contains the implementation of the CLAID middleware layer.
 - Python bindings (PyCLAID): [PyCLAID](https://gitfront.io/r/user-1539181/q71cipzLKA4e/PyCLAID/)
 - TensorFlowLiteModule: [TensorFlowLiteModule](https://gitfront.io/r/user-1539181/e5C2BsUvGhHm/TensorFlowLiteModule/)
 - Data Collection Modules: 
-  - Accelerometer: https://github.com/ADAMMA-CDHI-ETH-Zurich/AccelerometerCollector
+  - Accelerometer: [AccelerometerCollector](https://gitfront.io/r/user-1539181/42xcLcbhFhvY/AccelerometerCollector/)
   - Microphone: https://github.com/ADAMMA-CDHI-ETH-Zurich/MicrophoneCollector
