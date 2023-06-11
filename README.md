@@ -8,8 +8,9 @@ This repository contains the implementation of the CLAID middleware layer.
 - TensorFlowLiteModule: [TensorFlowLiteModule](https://gitfront.io/r/user-1539181/e5C2BsUvGhHm/TensorFlowLiteModule/)
 - Data Collection Modules: 
   - Accelerometer: [AccelerometerCollector](https://gitfront.io/r/user-1539181/42xcLcbhFhvY/AccelerometerCollector/)
-  - Microphone: [MicrophoneCollector](https://gitfront.io/r/user-1539181/4h1ZvxV6PUGm/MicrophoneCollector/)
+  - Battery: [BatteryCollector](https://gitfront.io/r/user-1539181/hwXyyojNNRZC/BatteryCollector/)
   - Location: [LocationCollector](https://gitfront.io/r/user-1539181/xWBJSKXRPMnP/CLAIDLocationCollector/)
+  - Microphone: [MicrophoneCollector](https://gitfront.io/r/user-1539181/4h1ZvxV6PUGm/MicrophoneCollector/)
   - Connectivity: [ConnectivityCollector](https://gitfront.io/r/user-1539181/NRjp84zon5Rs/ConnectivityStateCollector/)
   - Polar Wearables: [Polar](https://gitfront.io/r/user-1539181/XGqAh7iKKaU3/PolarCollector/)
   - GreenTEG Core Body Temperature: [GreenTEGCollector](https://gitfront.io/r/user-1539181/FDWH4L9JBzat/GreenTegCORECollector/)
