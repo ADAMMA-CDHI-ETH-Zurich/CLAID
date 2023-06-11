@@ -4,12 +4,12 @@ from install import install_package
 from create import create
 from build import build 
 from run import run
- 
+from my_ip import my_ip 
+
 args = ""
 
 
 def init():
-    print("claid manager init")
     parser = argparse.ArgumentParser()
     parser.add_argument("command")
     parser.add_argument("vars", nargs="*")
@@ -20,7 +20,8 @@ def init():
            ("install", install_package),
            ("create", create),
            ("build", build),
-           ("run", run)
+           ("run", run),
+           ("my_ip", my_ip)
            ]
 
     for entry in map:

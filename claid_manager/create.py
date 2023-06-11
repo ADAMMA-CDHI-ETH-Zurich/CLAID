@@ -25,7 +25,6 @@ def create_application_folder(path):
         pass
 def create(type, path, *args):
 
-    print(type,  path)
     if(path == ""):
         raise Exception("Error, no path specified for create. Please specify a path where to create an application or package."
                         "You can also use \"here\", to create it in the current directory, e.g.: claid create application here.")
@@ -52,10 +51,14 @@ def create_application(path):
     create_application_folder(path)
     copy_files_from_template_folder(path, "Cpp")
 
+    print("Application \"{}\" created successfully.".format(path))
+
 def create_java_application(path):
     create_application_folder(path)
     copy_files_from_template_folder(path, "Java")
     
+    print("Application \"{}\" created successfully.".format(path))
+
 def create_android_application(path):
     create_application_folder(path)
     copy_files_from_template_folder(path, "AndroidCLAID")
@@ -72,7 +75,6 @@ def copy_files_from_template_folder(path, application_type):
 
 
     for file in files:
-        print(file, source_path, application_source_path)
         file_source_path = os.path.join(application_source_path, file)
         file_destination_path = os.path.join(path, file)
 
