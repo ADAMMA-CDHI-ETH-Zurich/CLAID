@@ -9,4 +9,5 @@ This repository contains the implementation of the CLAID middleware layer.
 - Data Collection Modules: 
   - Accelerometer: [AccelerometerCollector](https://gitfront.io/r/user-1539181/42xcLcbhFhvY/AccelerometerCollector/)
   - Microphone: [MicrophoneCollector](https://gitfront.io/r/user-1539181/4h1ZvxV6PUGm/MicrophoneCollector/)
+  - Location: [LocationCollector](https://gitfront.io/r/user-1539181/xWBJSKXRPMnP/CLAIDLocationCollector/)
   - Polar Wearables: [Polar](https://gitfront.io/r/user-1539181/XGqAh7iKKaU3/PolarCollector/)
