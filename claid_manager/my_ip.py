@@ -9,7 +9,7 @@ def my_ip(*args):
     print("Trying to query IP Address.")
     try:
         ip_address = get_ip_address()
-        print("Found IP address of network facing interface:", ip_address)
+        print("Found IP address of external network interface:", ip_address)
     except:
         print("Failed to look up local IP address for host. Try using \"ifconfig\" or \"ipconfig\" instead.")
 
