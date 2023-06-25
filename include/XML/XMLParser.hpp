@@ -168,6 +168,8 @@ namespace claid
                 bool insideString = false;
                 bool insideComment = false;
 
+                int numberOfUnclosedTags = 0;
+
                 for(size_t index = 0; index < xmlContent.size(); index++)
                 {
                     const char& currentCharacter = xmlContent[index];
@@ -196,6 +198,16 @@ namespace claid
                         if(currentCharacter == ' ' || currentCharacter == '\t')
                         {
                             insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
+                            
+                            if(numberOfUnclosedTags == 0)
+                            {
+                                // This means we are currently not inside of any tag, but between tags.
+                                // Between tags, there could be strings, e.g.: <Module>This is just a test.</Module>
+                                // Thus, we also store the tabs and whitespaces as tokens.
+                                std::string t(1, currentCharacter);
+                                tokens.push_back(TokenElement(t, lineNumber, characterIndexInLine));
+                            }
+                            
                             continue;
                         }
                     
@@ -229,6 +241,7 @@ namespace claid
 
                         if(currentCharacter == '<')
                         {
+                            numberOfUnclosedTags++;
                             insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
                             tokens.push_back(TokenElement("<", lineNumber, characterIndexInLine));
                             continue;
@@ -236,6 +249,7 @@ namespace claid
 
                         if(currentCharacter == '>')
                         {
+                            numberOfUnclosedTags--;
                             insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
                             tokens.push_back(TokenElement(">", lineNumber, characterIndexInLine));
                             continue;
