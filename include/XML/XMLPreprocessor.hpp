@@ -22,7 +22,6 @@ namespace claid
         public:
             void preprocess(std::string& xmlString, std::string parentFilePath="")
             {
-                printf("XML String before %s\n\n", xmlString.c_str());
                 removeComments(xmlString);
                 StringUtils::stringReplaceAll(xmlString, "\n", "");
                 StringUtils::stringReplaceAll(xmlString, "> ", ">");
@@ -32,7 +31,6 @@ namespace claid
 
                 removeWhiteSpacesBetweenTabs(xmlString);
                 removeWhiteSpacesAtBeginning(xmlString);
-                printf("XML String after %s\n\n", xmlString.c_str());
 
 
                 if(xmlString.size() == 0)
