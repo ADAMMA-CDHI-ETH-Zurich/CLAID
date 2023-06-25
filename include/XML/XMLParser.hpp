@@ -16,6 +16,24 @@ namespace claid
             std::shared_ptr<XMLNode> root = nullptr;
             std::string xmlFilePath = "TestDocument.xml";
 
+            struct TokenElement
+            {
+                size_t lineNumber;
+                size_t characterIndexInLine;
+                std::string token;
+
+                TokenElement()
+                {
+
+                }
+
+                TokenElement(const std::string& token, size_t lineNumber, size_t characterIndexInLine) :
+                    token(token), lineNumber(lineNumber), characterIndexInLine(characterIndexInLine)
+                {
+
+                }
+            };
+
             enum XMLElementType
             {
                 OPENING,
@@ -33,6 +51,26 @@ namespace claid
             bool isAlphaNumericCharacter(char character)
             {
                 return std::isalnum(character);
+            }
+
+            bool isValidXMLElementCharacter(char character)
+            {
+                std::vector<char> supportedCharacters = {'_', '-', '.'};
+
+                return isAlphaNumericCharacter(character) || 
+                    std::find(supportedCharacters.begin(), supportedCharacters.end(), character) != supportedCharacters.end();
+            }
+
+            bool isValidXMLElementName(const std::string& str)
+            {
+                for(const char& character : str)
+                {
+                    if(!isValidXMLElementCharacter(character))
+                    {
+                        return false;
+                    }
+                }
+                return true;
             }
 
             bool isCommentStart(const std::string& xmlContent, size_t& index)
@@ -105,207 +143,27 @@ namespace claid
                 }   
             }
 
-            void parseTag(const std::string& xmlContent, size_t& index, size_t& lineNumber, size_t& characterIndexInLine, std::vector<XMLElement>& elementStack)
+
+            void insertAndClearTokenIfNotEmpty(std::vector<TokenElement>& tokens, TokenElement& token, const size_t lineNumber, const size_t characterIndexInLine)
             {
-                std::string tagContent = "";
-                
-                // Current index is < 
-                index += 1;
-
-                const size_t originalLineNumber = lineNumber;
-                const size_t originalCharacterIndexInLine = characterIndexInLine;
-
-                for(; index < xmlContent.size(); index++)
-                {
-                    characterIndexInLine++;
-                     
-                    const char& character = xmlContent[index];
-
-                  
-                    if(character == '\n')
-                    {
-                        lineNumber++;
-                        characterIndexInLine = 0;
-                        continue;
-                    }
-                    if(character == '<')
-                    {
-                        // Is it a comment?
-                        if(isCommentStart(xmlContent, index))
-                        {
-                            handleComment(xmlContent, index, lineNumber, characterIndexInLine);
-                        }
-                        else
-                        {
-                            // If not, it is an error.
-                            CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << ",\n"
-                            << "Found unexpected \'<\' inside opening tag at line " << lineNumber << " index " << characterIndexInLine);
-                        }
-
-                        
-                    }
-                    else if(character == '>')
-                    {
-                        // Found end of tag!
-                        break;
-                    }
-               
-                 
-
-                    tagContent += character;
-                }
-
-                if(tagContent.size() == 0)
-                {
-                    CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
-                    "Found empty tag <> at line " << lineNumber << " index " << characterIndexInLine);
-                }
-
-                
-                XMLElement xmlTagElement;
-        
-                xmlTagElement.element = tagContent;
-                this->splitElementIntoElementAndAttributes(xmlTagElement, originalLineNumber, originalCharacterIndexInLine);
-                
-                removeWhiteSpaces(xmlTagElement.element);
-                removeTabs(xmlTagElement.element);
-
-                if(xmlTagElement.element.size() == 0)
-                {
-                    CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
-                    "Found empty tag <> or tag that only contains attributes at line " << lineNumber << " index " << characterIndexInLine);
-                }
-
-
-
-                xmlTagElement.elementType = XMLElementType::OPENING;     
-
-                if(isOpenTag(xmlTagElement.element))
-                {
-                    xmlTagElement.elementType = XMLElementType::OPENING;   
-                    elementStack.push_back(xmlTagElement);  
-                }
-                else if(isCloseTag(xmlTagElement.element))
-                {
-                    // Remove the / from the beginning of the elemment content.
-                    xmlTagElement.element = xmlTagElement.element.substr(1, xmlTagElement.element.size());
-                    xmlTagElement.elementType = XMLElementType::CLOSING;     
-                    elementStack.push_back(xmlTagElement);
-                }
-                else if(isOpenCloseTag(xmlTagElement.element))
-                {
-                    // Remove the / from the end of the element content.
-                    xmlTagElement.element = xmlTagElement.element.substr(0, xmlTagElement.element.size() - 1);
-
-                    xmlTagElement.elementType = XMLElementType::OPENING;
-                    elementStack.push_back(xmlTagElement);  
-
-                    XMLElement closingElement;
-                    closingElement.element = xmlTagElement.element;
-                    closingElement.elementType = XMLElementType::CLOSING;
-                    elementStack.push_back(closingElement);     
-                }
-
-                printf("%s\n", xmlTagElement.element.c_str());
-
-
-            }
-
-            void splitElementIntoElementAndAttributes(XMLElement& element, size_t lineNumber, size_t characterIndexInLine)
-            {
-                std::vector<std::string> tokens;
-                std::string currentToken = "";
-                bool insideString = false;
-                printf("element %s\n", element.element.c_str());
-                for(size_t index = 0; index < element.element.size(); index++)
-                {
-                    characterIndexInLine++;
-                    const char& currentCharacter = element.element[index];
-
-                    if(currentCharacter == '\n')
-                    {
-                        lineNumber += 1;
-                        characterIndexInLine = 0;
-                        continue;
-                    }
-
-                    if(!insideString)
-                    {
-                        if(currentCharacter == ' ' || currentCharacter == '\t')
-                        {
-                            if(currentToken.size() > 0)
-                            {
-                                tokens.push_back(currentToken);
-                            }
-                            currentToken = "";
-                            continue;
-                        }
-
-                        if(currentCharacter == '\"')
-                        {
-                            insideString = true;
-                            printf("inside string\n");
-                            if(currentToken.size() > 0)
-                            {
-                                tokens.push_back(currentToken);
-                            }
-                            tokens.push_back("\"");
-                            currentToken = "";
-                            continue;
-                        }
-
-                        if(currentCharacter == '=')
-                        {
-                            if(currentToken.size() > 0)
-                            {
-                                tokens.push_back(currentToken);
-                            }
-                            tokens.push_back("=");
-                            currentToken = "";
-                            continue;
-                        }
-
-                        if(!isAlphaNumericCharacter(currentCharacter) && currentCharacter != '/')
-                        {
-                            CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
-                            "Found non-alphanumeric character \'" << currentCharacter << "\' at line " << lineNumber << " index " << characterIndexInLine);
-                        }
-                    }
-                    else
-                    {
-                        if(currentCharacter == '\"')
-                        {
-                            insideString = false;
-                            tokens.push_back(currentToken);
-                            tokens.push_back("\"");
-                            currentToken = "";
-                        }
-                    }
-                    currentToken += currentCharacter;
-                }
-
-                for(const std::string& t : tokens)
-                {
-                    printf("token %s\n", t.c_str());
-                }
-            }
-
-            void insertAndClearTokenIfNotEmpty(std::vector<std::string>& tokens, std::string& token)
-            {
-                if(token.size() > 0 )
+                if(token.token.size() > 0 )
                 {
                     tokens.push_back(token);
-                    token = "";
+                    token = TokenElement("", lineNumber, characterIndexInLine);
                 }
             }
 
-            void tokenize(const std::string& xmlContent)
+            int numTokensLeft(size_t index, std::vector<TokenElement>& tokens)
+            {
+                return tokens.size() - index - 1;
+            }
+
+            void tokenize(const std::string& xmlContent, std::vector<TokenElement>& tokens)
             {
                 size_t lineNumber = 1; 
                 size_t characterIndexInLine = 0;
 
-                std::vector<std::string> tokens;
-                std::string currentToken = "";
+                TokenElement currentToken("", lineNumber, characterIndexInLine);
 
                 bool insideString = false;
                 bool insideComment = false;
@@ -320,72 +178,70 @@ namespace claid
                         lineNumber++;
                         characterIndexInLine = 0;
                         continue;
-                    }
-
-                    if(currentCharacter == ' ' || currentCharacter == '\t')
-                    {
-                        insertAndClearTokenIfNotEmpty(tokens, currentToken);
-                        continue;
-                    }
+                    }                   
 
                     if(insideString)
                     {
                         if(currentCharacter == '\"')
                         {
                             tokens.push_back(currentToken);
-                            tokens.push_back("\"");
-                            currentToken = "";
+                            tokens.push_back(TokenElement("\"", lineNumber, characterIndexInLine));
+                            currentToken = TokenElement("", lineNumber, characterIndexInLine);
                             insideString = false;
                             continue;
                         }
                     }
                     else
                     {   
+                        if(currentCharacter == ' ' || currentCharacter == '\t')
+                        {
+                            insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
+                            continue;
+                        }
+                    
                         if(isCommentStart(xmlContent, index))
                         {
-                            printf("is comment start %d %d %d\n", index, lineNumber, characterIndexInLine);
                             handleComment(xmlContent, index, lineNumber, characterIndexInLine);
-                            printf("is comment start %d %d %d\n", index, lineNumber, characterIndexInLine);
                             continue;
                         }
 
                         if(currentCharacter == '\"')
                         {
-                            insertAndClearTokenIfNotEmpty(tokens, currentToken);
-                            tokens.push_back("\"");
+                            insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
+                            tokens.push_back(TokenElement("\"", lineNumber, characterIndexInLine));
                             insideString = true;
                             continue;
                         }
 
                         if(currentCharacter == '=')
                         {
-                            insertAndClearTokenIfNotEmpty(tokens, currentToken);
-                            tokens.push_back("=");
+                            insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
+                            tokens.push_back(TokenElement("=", lineNumber, characterIndexInLine));
                             continue;
                         }
 
                         if(currentCharacter == '/')
                         {
-                            insertAndClearTokenIfNotEmpty(tokens, currentToken);
-                            tokens.push_back("/");
+                            insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
+                            tokens.push_back(TokenElement("/", lineNumber, characterIndexInLine));
                             continue;
                         }
 
                         if(currentCharacter == '<')
                         {
-                            insertAndClearTokenIfNotEmpty(tokens, currentToken);
-                            tokens.push_back("<");
+                            insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
+                            tokens.push_back(TokenElement("<", lineNumber, characterIndexInLine));
                             continue;
                         }
 
                         if(currentCharacter == '>')
                         {
-                            insertAndClearTokenIfNotEmpty(tokens, currentToken);
-                            tokens.push_back(">");
+                            insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
+                            tokens.push_back(TokenElement(">", lineNumber, characterIndexInLine));
                             continue;
                         }
 
-                        if(!isAlphaNumericCharacter(currentCharacter))
+                        if(!isValidXMLElementCharacter(currentCharacter))
                         {
                             CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
                             "Found non-alphanumeric character \'" << currentCharacter << "\' at line " << lineNumber << " index " << characterIndexInLine);
@@ -397,86 +253,191 @@ namespace claid
                     
 
 
-                    currentToken += currentCharacter;
+                    currentToken.token += currentCharacter;
                 }
 
-                for(const std::string& t : tokens)
+                for(const TokenElement& t : tokens)
                 {
-                    printf("token %s\n", t.c_str());
+                    printf("token %s\n", t.token.c_str());
+                }
+            }
+
+    
+
+            void buildXMLElementsStackFromTokens(std::vector<TokenElement>& tokens, std::vector<XMLElement>& xmlElements)
+            {
+                std::vector<std::string> openingTokens;
+                for(size_t i = 0; i < tokens.size(); i ++)
+                {
+                    if(tokens[i].token == "<")
+                    {
+                        // Its closing token
+                        if(numTokensLeft(i, tokens) == 0)
+                        {
+                            CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                            "Found opening token \'<\' at the end of file, but no other tokens afterward (unclosed tag) at line " << tokens[i].lineNumber << " index " << tokens[i].characterIndexInLine);
+                        }
+                        if(tokens[i + 1].token == "/")
+                        {
+                            if(numTokensLeft(i + 1, tokens) < 2)
+                            {
+                                 CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                                "Found closing token \'</\' at the end of file, but no other tokens afterward (unclosed tag) at line " << tokens[i].lineNumber << " index " << tokens[i].characterIndexInLine);
+                            }
+
+
+                            if(tokens[i + 3].token != ">")
+                            {
+                                CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                                "Found \'" << tokens[i + 3].token << "\' but expected \">\" (closing tag)" << "\' at line " << tokens[i + 3].lineNumber << " index " << tokens[i + 3].characterIndexInLine);
+                            }
+
+                            XMLElement element;
+                            element.element = tokens[i + 2].token;
+                            element.elementType = XMLElementType::CLOSING;
+                            xmlElements.push_back(element);
+                        }
+                        else
+                        {
+                            // Its opening token
+
+                            // Next should be the token name e.g., Module (<Module>)
+
+                            if(numTokensLeft(i, tokens) == 0)
+                            {
+                                CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                                "Found opening token \'<\' at the end of file, but no other tokens afterward (unclosed tag) at line " << tokens[i].lineNumber << " index " << tokens[i].characterIndexInLine);
+                            }
+                            i++;
+
+                            std::string elementName = tokens[i].token;
+                            if(!isValidXMLElementName(elementName))
+                            {
+                                // This should have been checked by XML tokenizer already.. but trust no one! Not even yourself!
+                                CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                                "XML tag \"" << elementName << "\" contains invalid characters, see line " << tokens[i].lineNumber << " index " << tokens[i].characterIndexInLine);
+                            }
+                            i++;
+
+                            XMLElement openingElement;
+                            openingElement.element = elementName;
+                            
+                            while(i < tokens.size())
+                            {
+                                printf("%s\n", tokens[i].token.c_str());
+                                if(tokens[i].token == "/")
+                                {
+                                    // Is open close tag, e.g.: <Module/>
+                                    if(numTokensLeft(i, tokens) == 0)
+                                    {
+                                        CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                                        "Found standalone token token \'<.../' at the end of file, but no other tokens afterward (unclosed tag), missing '>' at line " << tokens[i].lineNumber << " index " << tokens[i].characterIndexInLine);
+                                    }
+
+                                    if(tokens[i + 1].token != ">")
+                                    {
+                                        CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                                        "Found unexpected token '" << tokens[i + 1].token << "', expected '>' " << tokens[i].lineNumber << " index " << tokens[i].characterIndexInLine);
+                                    }
+
+                                    // We found something like <Module/> which is equivalent to <Module></Module>, hence we add both to the stack
+
+                                    openingElement.elementType = XMLElementType::OPENING;
+                                    xmlElements.push_back(openingElement);
+
+                                    XMLElement closingElement;
+                                    closingElement.element = elementName;
+                                    closingElement.elementType = XMLElementType::CLOSING;
+                                    xmlElements.push_back(closingElement);
+                                    break;
+                                }
+                                else if(tokens[i].token == ">")
+                                {
+                                    // is regular close tag
+                                    printf("Pushing %s\n", openingElement.element.c_str());
+                                    openingElement.elementType = XMLElementType::OPENING;
+                                    xmlElements.push_back(openingElement);
+                                    break;
+                                }
+                                else
+                                {
+                                    // Must be attributes
+                                    // We must have at least 4 tokens, after the current one:
+                                    // e.g. class="TestModule" would be tokens: class, =, ", TestModule, "
+                                    std::string attributeName = tokens[i].token;
+                                    if(numTokensLeft(i, tokens) < 4)
+                                    {
+                                        CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                                        "Tried to parse attribute \"" << tokens[i].token << "\"  of tag \"" << elementName << "\", but attribute content was not specified, or missing quotation marks.\n"
+                                        << "At line "  << tokens[i].lineNumber << " index " << tokens[i].characterIndexInLine);
+                                    }
+
+                                    std::string equalSign = tokens[i + 1].token;
+                                    std::string openingQuotationMark = tokens[i + 2].token;
+                                    std::string attributeContent = tokens[i + 3].token;
+                                    std::string closingQuotationMark = tokens[i + 4].token;
+
+                                    if(equalSign != "=")
+                                    {
+                                        CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                                        "Tried to parse attribute \"" << tokens[i].token << "\"  of tag \"" << elementName << "\". Expected '=' but found '" << equalSign << "'"
+                                        << "At line "  << tokens[i + 1].lineNumber << " index " << tokens[i + 1].characterIndexInLine);
+                                    }
+
+                                    if(openingQuotationMark != "\"")
+                                    {
+                                        CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                                        "Tried to parse attribute \"" << tokens[i].token << "\"  of tag \"" << elementName << "\". Expected '\"' but found '" << openingQuotationMark << "'"
+                                        << "At line"  << tokens[i + 2].lineNumber << " index " << tokens[i + 2].characterIndexInLine);
+                                    }
+
+                                    if(closingQuotationMark != "\"")
+                                    {
+                                        CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                                        "Tried to parse attribute \"" << tokens[i].token << "\"  of tag \"" << elementName << "\". Expected '\"' but found '" << closingQuotationMark << "'"
+                                        << "At line"  << tokens[i + 3].lineNumber << " index " << tokens[i + 3].characterIndexInLine);
+                                    }
+                                    openingElement.attributes.insert(make_pair(attributeName, attributeContent));
+                                    i += 5;
+                                    continue;
+                                }
+                                i++;
+                            }
+                         
+                        }
+                        
+                    }
+                    else
+                    {
+
+                    }
+                
+                }
+                for(XMLElement& element : xmlElements)
+                {
+                    std::cout << "Element: " << element.element << " type " << element.elementType << "\n";
+                    std::cout << "\tAttributes:\n";
+                    for(auto& entry : element.attributes)
+                    {
+                        std::cout << entry.first << "=" << entry.second << "\n";
+                    }
                 }
             }
 
         public:
 
-            void parseXMLString(const std::string& xmlContent)
-            {
-                size_t lineNumber =  1;
-                size_t characterIndexInLine = 0;
-
-                std::vector<XMLElement> stack;
-
-                for(size_t i = 0; i < xmlContent.size(); i++)
-                {
-                    const char& character = xmlContent[i];
-                    
-
-                    characterIndexInLine++;
-                    // Those characters are always to be ignored, except if we are inside a string
-                    if(character == '\t' || character == ' ')
-                    {
-                        continue;
-                    }
-
-                    if(character == '\n')
-                    {
-                        characterIndexInLine = 0;
-                        lineNumber++;
-                        continue;
-                    }
-
-                    
-
-                    if(character == '<')
-                    {
-                        // There can only be 3 cases:
-                        // <node>
-                        // </node>
-                        // Or comments.
-
-                        const char& nextCharacter = xmlContent[i + 1];
-
-                        if(isCommentStart(xmlContent, i))
-                        {
-                            handleComment(xmlContent, i, lineNumber, characterIndexInLine);
-                            continue;
-                        }
-                        else
-                        {
-                            // We are in a tag
-                            parseTag(xmlContent, i, lineNumber, characterIndexInLine, stack);
-                        }
-                        
-                    }
-                    else if(character == '>')
-                    {
-                        CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
-                        "Found end symbol \'>\' but there was no open symbol \'<\' before at line " << lineNumber << " index " << characterIndexInLine);
-                    }
-                    else if(!isAlphaNumericCharacter(character))
-                    {
-                        CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
-                        "Found non-alphanumeric character \'" << character << "\' at line " << lineNumber << " index " << characterIndexInLine);
-                    }
-                    
-
-
-                    
-                }
-            }
+            
 
             bool parseFromString(const std::string& string, std::shared_ptr<XMLNode>& rootNode, std::string parentFilePath = "")
             {
-                tokenize(string);
+                std::vector<TokenElement> tokens;
+                tokenize(string, tokens);
+
+                std::vector<XMLElement> stack;
+                buildXMLElementsStackFromTokens(tokens, stack);
+
+
+
                 //this->parseXMLString(string);
                 return true;
                 std::string filtered = string;
