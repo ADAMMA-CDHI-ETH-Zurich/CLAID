@@ -38,7 +38,8 @@ namespace claid
             {
                 OPENING,
                 VALUE,
-                CLOSING
+                CLOSING,
+                EMPTY
             };
 
             struct XMLElement
@@ -46,6 +47,8 @@ namespace claid
                 XMLElementType elementType;
                 std::string element;
                 std::map<std::string, std::string> attributes;
+                size_t lineNumber;
+                size_t characterIndexInLine;
             };
 
             bool isAlphaNumericCharacter(char character)
@@ -55,7 +58,7 @@ namespace claid
 
             bool isValidXMLElementCharacter(char character)
             {
-                std::vector<char> supportedCharacters = {'_', '-', '.'};
+                std::vector<char> supportedCharacters = {'_', '-'};
 
                 return isAlphaNumericCharacter(character) || 
                     std::find(supportedCharacters.begin(), supportedCharacters.end(), character) != supportedCharacters.end();
@@ -104,6 +107,18 @@ namespace claid
             {
                 // e.g. <Module class="..."/>
                 return tagContent[tagContent.size() - 1] == '/';
+            }
+
+            bool doesOnlyContainTabsOrWhitespace(const std::string& str)
+            {
+                for(size_t i = 0; i < str.size(); i++)
+                {
+                    if(str[i] != ' ' && str[i] != '\t')
+                    {
+                        return false;
+                    }
+                }
+                return true;
             }
 
             void removeWhiteSpaces(std::string& element)
@@ -195,49 +210,6 @@ namespace claid
                     }
                     else
                     {   
-                        if(currentCharacter == ' ' || currentCharacter == '\t')
-                        {
-                            insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
-                            
-                            if(numberOfUnclosedTags == 0)
-                            {
-                                // This means we are currently not inside of any tag, but between tags.
-                                // Between tags, there could be strings, e.g.: <Module>This is just a test.</Module>
-                                // Thus, we also store the tabs and whitespaces as tokens.
-                                std::string t(1, currentCharacter);
-                                tokens.push_back(TokenElement(t, lineNumber, characterIndexInLine));
-                            }
-                            
-                            continue;
-                        }
-                    
-                        if(isCommentStart(xmlContent, index))
-                        {
-                            handleComment(xmlContent, index, lineNumber, characterIndexInLine);
-                            continue;
-                        }
-
-                        if(currentCharacter == '\"')
-                        {
-                            insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
-                            tokens.push_back(TokenElement("\"", lineNumber, characterIndexInLine));
-                            insideString = true;
-                            continue;
-                        }
-
-                        if(currentCharacter == '=')
-                        {
-                            insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
-                            tokens.push_back(TokenElement("=", lineNumber, characterIndexInLine));
-                            continue;
-                        }
-
-                        if(currentCharacter == '/')
-                        {
-                            insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
-                            tokens.push_back(TokenElement("/", lineNumber, characterIndexInLine));
-                            continue;
-                        }
 
                         if(currentCharacter == '<')
                         {
@@ -255,11 +227,57 @@ namespace claid
                             continue;
                         }
 
-                        if(!isValidXMLElementCharacter(currentCharacter))
+                        if(numberOfUnclosedTags == 0)
                         {
-                            CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
-                            "Found non-alphanumeric character \'" << currentCharacter << "\' at line " << lineNumber << " index " << characterIndexInLine);
-                        }            
+                            // This means we are currently not inside of any tag, but between tags.
+                            // Between tags, there could be strings, e.g.: <Module>This is just a test.</Module>
+                            // Thus, we astore all elements into one token until we find < or >
+                            
+                        }
+                        else
+                        {
+                            if(currentCharacter == ' ' || currentCharacter == '\t')
+                            {
+                                insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
+                                continue;                            
+                            }
+                        
+                            if(isCommentStart(xmlContent, index))
+                            {
+                                handleComment(xmlContent, index, lineNumber, characterIndexInLine);
+                                continue;
+                            }
+
+                            if(currentCharacter == '\"')
+                            {
+                                insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
+                                tokens.push_back(TokenElement("\"", lineNumber, characterIndexInLine));
+                                insideString = true;
+                                continue;
+                            }
+
+                            if(currentCharacter == '=')
+                            {
+                                insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
+                                tokens.push_back(TokenElement("=", lineNumber, characterIndexInLine));
+                                continue;
+                            }
+
+                            if(currentCharacter == '/')
+                            {
+                                insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
+                                tokens.push_back(TokenElement("/", lineNumber, characterIndexInLine));
+                                continue;
+                            }
+                        }
+
+                          
+
+                        // if(!isValidXMLElementCharacter(currentCharacter))
+                        // {
+                        //     CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                        //     "Found non-alphanumeric character \'" << currentCharacter << "\' at line " << lineNumber << " index " << characterIndexInLine);
+                        // }            
 
 
 
@@ -272,7 +290,7 @@ namespace claid
 
                 for(const TokenElement& t : tokens)
                 {
-                    printf("token %s\n", t.token.c_str());
+                    printf("token %s (%lu)\n", t.token.c_str(), t.token.size());
                 }
             }
 
@@ -283,6 +301,8 @@ namespace claid
                 std::vector<std::string> openingTokens;
                 for(size_t i = 0; i < tokens.size(); i ++)
                 {
+                                                    printf("%s\n", tokens[i].token.c_str());
+
                     if(tokens[i].token == "<")
                     {
                         // Its closing token
@@ -296,9 +316,8 @@ namespace claid
                             if(numTokensLeft(i + 1, tokens) < 2)
                             {
                                  CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
-                                "Found closing token \'</\' at the end of file, but no other tokens afterward (unclosed tag) at line " << tokens[i].lineNumber << " index " << tokens[i].characterIndexInLine);
+                                "Found closing token \'</\' at the end of file which has not been closed or is empty, at line " << tokens[i].lineNumber << " index " << tokens[i].characterIndexInLine);
                             }
-
 
                             if(tokens[i + 3].token != ">")
                             {
@@ -309,7 +328,10 @@ namespace claid
                             XMLElement element;
                             element.element = tokens[i + 2].token;
                             element.elementType = XMLElementType::CLOSING;
+                            element.lineNumber = tokens[i].lineNumber; // i and not i + 2, because we take line number of opening tag
+                            element.characterIndexInLine = tokens[i].characterIndexInLine;
                             xmlElements.push_back(element);
+                            i += 3;
                         }
                         else
                         {
@@ -338,7 +360,6 @@ namespace claid
                             
                             while(i < tokens.size())
                             {
-                                printf("%s\n", tokens[i].token.c_str());
                                 if(tokens[i].token == "/")
                                 {
                                     // Is open close tag, e.g.: <Module/>
@@ -357,19 +378,25 @@ namespace claid
                                     // We found something like <Module/> which is equivalent to <Module></Module>, hence we add both to the stack
 
                                     openingElement.elementType = XMLElementType::OPENING;
+                                    openingElement.lineNumber = tokens[i].lineNumber; // i and not i + 2, because we take line number of opening tag
+                                    openingElement.characterIndexInLine = tokens[i].characterIndexInLine;
                                     xmlElements.push_back(openingElement);
 
                                     XMLElement closingElement;
                                     closingElement.element = elementName;
                                     closingElement.elementType = XMLElementType::CLOSING;
+                                    closingElement.lineNumber = tokens[i].lineNumber; // i and not i + 2, because we take line number of opening tag
+                                    closingElement.characterIndexInLine = tokens[i].characterIndexInLine;
                                     xmlElements.push_back(closingElement);
                                     break;
                                 }
                                 else if(tokens[i].token == ">")
                                 {
-                                    // is regular close tag
+                                    // is regular open tag
                                     printf("Pushing %s\n", openingElement.element.c_str());
                                     openingElement.elementType = XMLElementType::OPENING;
+                                    openingElement.lineNumber = tokens[i].lineNumber; // i and not i + 2, because we take line number of opening tag
+                                    openingElement.characterIndexInLine = tokens[i].characterIndexInLine;
                                     xmlElements.push_back(openingElement);
                                     break;
                                 }
@@ -423,6 +450,30 @@ namespace claid
                     }
                     else
                     {
+                        // We are between tags, hence we have an XML value or empty space.
+                 
+                        XMLElement xmlValueElement;
+                        xmlValueElement.element = tokens[i].token;
+                        xmlValueElement.lineNumber = tokens[i].lineNumber; 
+                        xmlValueElement.characterIndexInLine = tokens[i].characterIndexInLine;
+
+                        if(!doesOnlyContainTabsOrWhitespace(xmlValueElement.element))
+                        {
+                            xmlValueElement.elementType = XMLElementType::VALUE;
+                            xmlElements.push_back(xmlValueElement);
+                        }
+                        else
+                        {
+                            xmlValueElement.elementType = XMLElementType::EMPTY;
+
+                            // We do not need to store any empty elements at the beginning of the file.
+                            if(xmlElements.size() > 0)
+                            {
+                                xmlElements.push_back(xmlValueElement);
+                            }
+                        }
+                     
+                      
 
                     }
                 
@@ -434,6 +485,22 @@ namespace claid
                     for(auto& entry : element.attributes)
                     {
                         std::cout << entry.first << "=" << entry.second << "\n";
+                    }
+                }
+
+                for(XMLElement& element : xmlElements)
+                {
+                    if(element.elementType == XMLElementType::OPENING)
+                    {
+                        std::cout << "<" << element.element << ">\n";
+                    }
+                    else if(element.elementType == XMLElementType::CLOSING)
+                    {
+                        std::cout << "</" << element.element << ">\n";
+                    }
+                    else
+                    {
+                        std::cout << element.element << "\n";
                     }
                 }
             }
@@ -450,200 +517,134 @@ namespace claid
                 std::vector<XMLElement> stack;
                 buildXMLElementsStackFromTokens(tokens, stack);
 
-
-
-                //this->parseXMLString(string);
-                return true;
-                std::string filtered = string;
-
-                XMLPreprocessor preprocessor;
-
-                // Removes unnecessary whitespaces and tabs and resolves include directives.
-                preprocessor.preprocess(filtered, parentFilePath);
-
-                if(!this->parseNode(filtered, rootNode))
-                {
-                    return false;
-                }
-                
-                return true;   
+                return generateXMLTreeFromElementsStack(stack, rootNode);
             }
 
-            bool parseNode(const std::string& nodeBegin, std::shared_ptr<XMLNode>& rootNode)
+            bool generateXMLTreeFromElementsStack(std::vector<XMLElement>& stack, std::shared_ptr<XMLNode>& rootNode)
             {
-                // Should be end of data.
-                if(nodeBegin == "")
+                rootNode = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
+                
+                if(stack.size() == 0)
                 {
                     return true;
                 }
 
-                std::vector<XMLElement> stack;
-                std::vector<std::shared_ptr<XMLNode>> parentStack;
-                //parseToStack(nodeBegin, stack);
-
-                // if(stack[0].element != "root")
-                // {
-                //     CLAID_THROW(claid::Exception, "Expected first element in XML to be <root>. Root node missing!");
-                // }
-
-                rootNode = std::shared_ptr<XMLNode>(new XMLNode(nullptr, "root"));
-                
                 std::shared_ptr<XMLNode> currentNode = rootNode;
-                
 
-                
+                // Stores previous parents.
+                // If we spawn a child, it becomes the current parent.
+                // If the child ends, we have to be able to retrieve the previous parent (of that child).
+                // Since XMLNodes have do NOT store a reference to the parent internally (to avoid cyclic dependencies of the shared_ptrs),
+                // we use this stack instead, to retrieve the parents. 
+                std::stack<std::shared_ptr<XMLNode>> parentStack;
+
+                // We use this to keep track of opened and closed tags.
+                // This allows us to identify unclosed tags.
+                std::stack<XMLElement> openAndCloseTagsStack;
+
+
+                const XMLElement& firstElement = stack[0];
+                // Check that firstElement is an opening tag "root"
+                // Note, that we have ensured before that the first element of the 
+                // stack is not an empty element. 
+                if(firstElement.elementType != XMLElementType::OPENING || firstElement.element != "root")
+                {
+                    CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                    << "Expected first tag in document to be opening tag <root>, but found \"" << firstElement.element << "\"\n" 
+                    << "At line"  << firstElement.lineNumber << " index " << firstElement.characterIndexInLine);
+                }
+
+
+
+
+                // Start at 1, because first is <root>
                 for(size_t i = 1; i < stack.size() - 1; i++)
                 {
                     const XMLElement& element = stack[i];
+                    printf("Element %s %d\n", element.element.c_str(), element.elementType);
 
                     if(element.elementType == XMLElementType::OPENING)
                     {
+                        std::shared_ptr<XMLNode> newNode;
 
-                        XMLElement nextXmlElement = stack[i + 1];
-                       
+                        openAndCloseTagsStack.push(element);
+                        parentStack.push(currentNode);
 
-                        if(nextXmlElement.elementType == XMLElementType::OPENING)
+                        // Check if next XMLElement is a value element.
+                        // This means that newNode wll be a XMLVal node.
+                        if(i + 1 < stack.size())
                         {
-                            // Means we have a child.
+                            const XMLElement& nextElement = stack[i + 1];
+                            if(nextElement.elementType == XMLElementType::VALUE)
+                            {
+                                newNode = std::static_pointer_cast<XMLNode>(std::shared_ptr<XMLVal>(new XMLVal(currentNode, element.element, nextElement.element)));
+                                newNode->attributes = element.attributes;
+                                currentNode->addChild(newNode);
+                                i ++;
+                            }
+                            else if(nextElement.elementType == XMLElementType::EMPTY)
+                            {
+                                // EMPTY can become a value, if the previous tag was an opening tag, and the next tag is a matching closing tag.
+                                // E.g.:
+                                // <Module>         </Module>
+                                // Otherwise, EMPTY elements are ignored.
 
-                            parentStack.push_back(currentNode);
+                                // Currently, i is an opening tag and i + 1 is an empty element.
+                                // Empty can only become a value, if the element after it is a closing tag to fullfill the case described in the comment above.
+                                if(i + 2 < stack.size())
+                                {
+                                    const XMLElement& nextNextElement = stack[i + 2];
 
-                            std::shared_ptr<XMLNode> newNode = std::shared_ptr<XMLNode>(new XMLNode(currentNode, element.element));
+                                    if(nextElement.elementType == XMLElementType::OPENING && nextNextElement.elementType == XMLElementType::CLOSING)
+                                    {
+                                        if(nextElement.element == nextNextElement.element)
+                                        {
+                                            // The element is a string containing only whitespaces or tabs, hence insert a node.
+                                            newNode = std::static_pointer_cast<XMLNode>(std::shared_ptr<XMLVal>(new XMLVal(currentNode, element.element, nextElement.element)));
+                                            newNode->attributes = element.attributes;
+                                            currentNode->addChild(newNode);
+                                            i ++;
+                                        }
+                                    }
+                                }
+                                
+                            }
+                        }
+                        
+                        if(newNode.get() == nullptr)
+                        {
+                            newNode = std::shared_ptr<XMLNode>(new XMLNode(currentNode, element.element));
                             newNode->attributes = element.attributes;
                             currentNode->addChild(newNode);
                             currentNode = newNode;
                         }
-                        else if(nextXmlElement.elementType == XMLElementType::VALUE)
-                        {
-                            parentStack.push_back(currentNode);
 
-                            // We are a value.
-                            std::shared_ptr<XMLNode> newNode = std::static_pointer_cast<XMLNode>(std::shared_ptr<XMLVal>(new XMLVal(currentNode, element.element, nextXmlElement.element)));
-                            currentNode->addChild(newNode);
-                            i++;
-                        }
-                        else if (nextXmlElement.elementType == XMLElementType::CLOSING)
-                        {
-                            // TODO: Check if matches previous open tag
 
-                            // This means we are an empty node.
-                            parentStack.push_back(currentNode);
-
-                            std::shared_ptr<XMLNode> newNode = std::shared_ptr<XMLNode>(new XMLNode(currentNode, element.element));
-                            newNode->attributes = element.attributes;
-                            currentNode->addChild(newNode);
-                            currentNode = newNode;
-                        }
                     }
+            
                     else if (element.elementType == XMLElementType::CLOSING)
                     {
-                        // TODO: Check if matches previous open tag
+                        const XMLElement& previousOpeningOrClosingElement = openAndCloseTagsStack.top();
+                        if(element.element != previousOpeningOrClosingElement.element)
+                        {
+                            CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                            "Found closing tag \"" << element.element << "\", but expected closing tag \"" << previousOpeningOrClosingElement.element << "\".\n" 
+                            << "At line"  << element.lineNumber << " index " << element.characterIndexInLine);
+                        }
 
+                        currentNode = parentStack.top();
+                        parentStack.pop();
 
-                        currentNode = parentStack.back();
-                        parentStack.pop_back();
+                        openAndCloseTagsStack.pop();
                     }
-                    else
-                    {
-                        CLAID_THROW(claid::Exception, "Invalid XML! Found a value where a tag (opening or closing) was expected.");
-                    }
-                }
-                return true;
-            }
-
-            // void parseToStack(const std::string& xml, std::vector<XMLElement>& stack)
-            // {
-            //     size_t index = 0;
-
-            //     while(index < xml.size())
-            //     {
-        
-            //         XMLElement xmlElement;
-            //         if(xml.at(index) == '<')
-            //         {   
-            //             if(!(index + 1 < xml.size()))
-            //             {
-            //                 CLAID_THROW(claid::Exception, "Error while parsing XML, unexpected < at end of file.");
-            //             }
-
-            //             size_t indexTmp = xml.find(">", index);
                     
-            //             if(xml.at(index + 1) == '/')
-            //             {
-            //                 xmlElement.elementType = XMLElementType::CLOSING;
-            //                 xmlElement.element = xml.substr(index + 2, indexTmp - index - 2);
-            //             }
-            //             else
-            //             {
-            //                 xmlElement.elementType = XMLElementType::OPENING;     
-            //                 xmlElement.element = xml.substr(index + 1, indexTmp - index - 1);
-
-            //                 if (xmlElement.element.find("=") != std::string::npos)
-            //                 {
-            //                     this->splitElementIntoElementAndAttributes(xmlElement);
-            //                 }
-            //             }
-            //             index = indexTmp + 1;
-
-            //         }
-            //         else
-            //         {   
-            //             xmlElement.elementType = XMLElementType::VALUE;
-            //             size_t indexTmp = xml.find("</", index);
-            //             xmlElement.element = xml.substr(index, indexTmp - index);
-            //             index = indexTmp;
-            //         }
-
-            //         stack.push_back(xmlElement);
-
-            //     }
-
-                
-            // }
-
-            
-
-            void getNextElementAndReduce(const std::string& begin, XMLElement& xmlElement, std::string& reduced)
-            {
-            
-                size_t index;
-                if(begin.at(0) == '<' && begin.at(1) == '/')
-                {
-                    xmlElement.elementType = XMLElementType::CLOSING;
-                    index = begin.find(">");
-                    xmlElement.element = begin.substr(2, index + 1 - 2);
-                }
-                else if(begin.at(0) == '<')
-                {   
-                    xmlElement.elementType = XMLElementType::OPENING;
-                    index = begin.find(">");
-                    xmlElement.element = begin.substr(1, index + 1 - 1);
-                }
-                else
-                {   
-                    xmlElement.elementType = XMLElementType::VALUE;
-                    index = begin.find("<");
-                    reduced = begin.substr(0, index);
-                }
-            }
-
-
-            bool getOpeningTag(const std::string& tagBegin, std::string& tag)
-            {
-                if(tagBegin.at(0) != '<')
-                {
-                    CLAID_THROW(Exception, "Error, expected opening tag.");
-                    return false;
                 }
 
-                size_t index = tagBegin.find(">");
-                tag = tagBegin.substr(0, index + 1);
-
+                std::string str;
+                rootNode->toString(str);
+                printf("%s\n", str.c_str());
                 return true;
-
-
             }
-
 
 
 
@@ -651,3 +652,16 @@ namespace claid
         
     };
 }
+
+// while(i < tokens.size())
+// {
+//     xmlValue += tokens[i].token;
+//     i++;
+
+//     if(tokens[i].token == "<")
+//     {
+//         // Because we are in the for loop above, i will be increased again.
+//         i--;
+//         break;
+//     }
+// }

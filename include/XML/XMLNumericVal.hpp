@@ -47,7 +47,7 @@ namespace claid
        
 
         #define XMLNUMERICVAL_GENERATE_PARSE_FROM_STRING(type, func) \
-        static void parseFromString(type& member, const std::string& string) \
+        static void parseFromString(const char* property, type& member, const std::string& string) \
         { \
             try\
             {\
@@ -55,7 +55,7 @@ namespace claid
             }\
             catch(const std::exception& e) \
             {\
-                CLAID_THROW(claid::Exception, "Failed to parse value from XML node. Cannot convert " << string << " to variable of type " << std::string(#type) << ". " \
+                CLAID_THROW(claid::Exception, "Failed to parse value from XML node \"" << property << "\". Cannot convert " << string << " to variable of type " << std::string(#type) << ". " \
                 << "Possibly, the specified string is invalid or the value is too big for the specified data type.\n" \
                 << "Original exception was: " << e.what()); \
             }\
