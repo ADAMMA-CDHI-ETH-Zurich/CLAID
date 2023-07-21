@@ -6,6 +6,7 @@
 #include "Reflection/RecursiveReflector.hpp"
 #include "Exception/Exception.hpp"
 #include "Utilities/StringUtils.hpp"
+#include "Utilities/Path.hpp"
 #include <deque>
 
 namespace claid
@@ -287,11 +288,13 @@ namespace claid
 
                     currentToken.token += currentCharacter;
                 }
+                
+                // If there is a token at the end of a file, we also have to insert it.
+                // This is the case if currentToken is not empty after we finished the loop.
+                insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
 
-                for(const TokenElement& t : tokens)
-                {
-                    printf("token %s (%lu)\n", t.token.c_str(), t.token.size());
-                }
+
+        
             }
 
     
@@ -301,7 +304,6 @@ namespace claid
                 std::vector<std::string> openingTokens;
                 for(size_t i = 0; i < tokens.size(); i ++)
                 {
-                                                    printf("%s\n", tokens[i].token.c_str());
 
                     if(tokens[i].token == "<")
                     {
@@ -393,7 +395,6 @@ namespace claid
                                 else if(tokens[i].token == ">")
                                 {
                                     // is regular open tag
-                                    printf("Pushing %s\n", openingElement.element.c_str());
                                     openingElement.elementType = XMLElementType::OPENING;
                                     openingElement.lineNumber = tokens[i].lineNumber; // i and not i + 2, because we take line number of opening tag
                                     openingElement.characterIndexInLine = tokens[i].characterIndexInLine;
@@ -429,14 +430,14 @@ namespace claid
                                     {
                                         CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
                                         "Tried to parse attribute \"" << tokens[i].token << "\"  of tag \"" << elementName << "\". Expected '\"' but found '" << openingQuotationMark << "'"
-                                        << "At line"  << tokens[i + 2].lineNumber << " index " << tokens[i + 2].characterIndexInLine);
+                                        << "At line "  << tokens[i + 2].lineNumber << " index " << tokens[i + 2].characterIndexInLine);
                                     }
 
                                     if(closingQuotationMark != "\"")
                                     {
                                         CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
                                         "Tried to parse attribute \"" << tokens[i].token << "\"  of tag \"" << elementName << "\". Expected '\"' but found '" << closingQuotationMark << "'"
-                                        << "At line"  << tokens[i + 3].lineNumber << " index " << tokens[i + 3].characterIndexInLine);
+                                        << "At line "  << tokens[i + 3].lineNumber << " index " << tokens[i + 3].characterIndexInLine);
                                     }
                                     openingElement.attributes.insert(make_pair(attributeName, attributeContent));
                                     i += 5;
@@ -465,12 +466,7 @@ namespace claid
                         else
                         {
                             xmlValueElement.elementType = XMLElementType::EMPTY;
-
-                            // We do not need to store any empty elements at the beginning of the file.
-                            if(xmlElements.size() > 0)
-                            {
-                                xmlElements.push_back(xmlValueElement);
-                            }
+                            xmlElements.push_back(xmlValueElement);
                         }
                      
                       
@@ -478,44 +474,195 @@ namespace claid
                     }
                 
                 }
-                for(XMLElement& element : xmlElements)
+
+            }
+
+            void resolveIncludes(const std::vector<XMLElement>& xmlElements, std::vector<XMLElement>& updatedXMLElements)
+            {
+                // This will always iterate over all elements, even if there is no include statement.
+                // However, it will resolve includes in linear time, since include statements found in included
+                // files will also be resolved within this loop. 
+
+                for(size_t i = 0; i < xmlElements.size(); i++)
                 {
-                    std::cout << "Element: " << element.element << " type " << element.elementType << "\n";
-                    std::cout << "\tAttributes:\n";
-                    for(auto& entry : element.attributes)
+                    const XMLElement& element = xmlElements[i];
+                    if(element.elementType == XMLElementType::OPENING && element.element == "include")
                     {
-                        std::cout << entry.first << "=" << entry.second << "\n";
+                        if(i + 2 >= xmlElements.size())
+                        {
+                            CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                            <<"Failed to resolve include statement. Found <include>, but were either missing include path or </include> tag.\n"
+                            << "Specify include statements as follows: <include>PATH/TO/FILE</include>"
+                            << "At line " << element.lineNumber << " index " << element.characterIndexInLine);
+                        }
+                        const XMLElement includeValue = xmlElements[i + 1];
+                        const XMLElement includeCloseTag = xmlElements[i + 2];
+
+                        if(includeValue.elementType != XMLElementType::VALUE)
+                        {
+                            CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                            <<"Failed to resolve include statement. Found <include>, but no include path afterward was provided\n"
+                            << "Specify include statements as follows: <include>PATH/TO/FILE</include>"
+                            << "At line " << element.lineNumber << " index " << element.characterIndexInLine);
+                        }
+
+                        if(includeCloseTag.elementType != XMLElementType::CLOSING || includeCloseTag.element != "include")
+                        {
+                            CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                            <<"Failed to resolve include statement. Found <include>, but no corresponding closing tag </include>\n"
+                            << "Specify include statements as follows: <include>PATH/TO/FILE</include>"
+                            << "At line " << element.lineNumber << " index " << element.characterIndexInLine);
+                        }
+
+                        std::string includePath = includeValue.element;
+                        std::string folderPathOfCurrentFile = Path(this->xmlFilePath).getFolderPath();
+                        if(!this->isAbsolutePath(includePath))
+                        {
+                            if(folderPathOfCurrentFile != "")
+                            {
+                                includePath = Path::join(folderPathOfCurrentFile, includePath).toString();
+                            }
+                        }
+
+                    
+
+                        std::string includedContent;
+                        if(!this->loadFileToString(includePath, includedContent))
+                        {
+                            CLAID_THROW(Exception, "Failed to resolve include directive in XML document. File \"" << includePath << "\" cannot be read.");
+                        }
+                        printf("Included content: %s\n", includedContent.c_str());
+
+                        std::vector<XMLElement> tmpElements;
+
+                        XMLParser subParser(includePath);
+                        subParser.xmlContentToXMLElements(includedContent, tmpElements);
+                        updatedXMLElements.insert(updatedXMLElements.end(), tmpElements.begin(), tmpElements.end());
+                        i += 2;
+                    }   
+                    else
+                    {
+                        updatedXMLElements.push_back(element);
                     }
                 }
 
-                for(XMLElement& element : xmlElements)
+                
+            }
+
+
+            bool loadFileToString(const std::string& filePath, std::string& fileContent)
+            {
+                std::ifstream file(filePath);
+                fileContent = "";
+
+                printf("Loading file %s\n", filePath.c_str());
+                if (!file.is_open())
                 {
-                    if(element.elementType == XMLElementType::OPENING)
+                    Logger::printfln("Error! Could not open file \"%s\".", filePath.c_str());
+                    return false;
+                }
+
+                file.seekg(0, std::ios::end);
+                fileContent.reserve(file.tellg());
+                file.seekg(0, std::ios::beg);
+
+                fileContent.assign((std::istreambuf_iterator<char>(file)),
+			        std::istreambuf_iterator<char>());
+            
+                return true;
+            }
+
+
+            bool isAbsolutePath(const std::string& path)
+            {
+                if(path.size() == 0)
+                {
+                    return false;
+                }
+
+                #ifdef _WIN32
+                    if(path.size() < 4)
                     {
-                        std::cout << "<" << element.element << ">\n";
+                        return false;
                     }
-                    else if(element.elementType == XMLElementType::CLOSING)
+                    
+                    return (path[1] == ':' && path[2] == '/' && path[3] == '/');
+                #else
+                    return path[0] == '/';
+                #endif
+
+            }
+
+            void getDirectoryPathFromFilePath(std::string& path)
+            {
+                printf("Get folder from path %s\n", path.c_str());
+                size_t index = path.size() - 1;
+                bool pathSeparatorFound = false;
+                while(index > 0)
+                {
+                    if(path[index] == '/' || path[index] == '\\')
                     {
-                        std::cout << "</" << element.element << ">\n";
+                        pathSeparatorFound = true;
+                        break;
                     }
-                    else
-                    {
-                        std::cout << element.element << "\n";
-                    }
+                    index--;
+                }
+
+                if(pathSeparatorFound)
+                {
+                    path = path.substr(0, index);
+                }
+                else
+                {
+
+                    // Must be a relative path?
+                    path = ".";
                 }
             }
 
-        public:
+            // Returns true if any of the XMLElements in elements is of type XMLValue.
+            // In this case, the first found element will be copied to foundElement.
+            bool getValueElement(const std::vector<XMLElement>& elements, XMLElement& foundElement)
+            {
+                for(const XMLElement& element : elements)
+                {
+                    if(element.elementType == XMLElementType::VALUE)
+                    {
+                        foundElement = element;
+                        return true;
+                    }
+                }
+                return false;
+            }
 
-            
+        public:
+            XMLParser()
+            {
+
+            }
+
+            XMLParser(const std::string& xmlFilePath) : xmlFilePath(xmlFilePath)
+            {
+
+            }
+
+            void xmlContentToXMLElements(const std::string& xmlContent, std::vector<XMLElement>& xmlElements)
+            {
+                // Exceptioins will be thrown by the functions used in the following, if XML content is invalid.
+
+                std::vector<TokenElement> tokens;
+                tokenize(xmlContent, tokens);
+
+                std::vector<XMLElement> tmpElements;
+                buildXMLElementsStackFromTokens(tokens, tmpElements);
+
+                resolveIncludes(tmpElements, xmlElements);
+            }
 
             bool parseFromString(const std::string& string, std::shared_ptr<XMLNode>& rootNode, std::string parentFilePath = "")
             {
-                std::vector<TokenElement> tokens;
-                tokenize(string, tokens);
-
                 std::vector<XMLElement> stack;
-                buildXMLElementsStackFromTokens(tokens, stack);
+                xmlContentToXMLElements(string, stack);
 
                 return generateXMLTreeFromElementsStack(stack, rootNode);
             }
@@ -542,107 +689,141 @@ namespace claid
                 // This allows us to identify unclosed tags.
                 std::stack<XMLElement> openAndCloseTagsStack;
 
-
-                const XMLElement& firstElement = stack[0];
-                // Check that firstElement is an opening tag "root"
-                // Note, that we have ensured before that the first element of the 
-                // stack is not an empty element. 
-                if(firstElement.elementType != XMLElementType::OPENING || firstElement.element != "root")
+                size_t startIndex = 0;
+                for(; startIndex < stack.size(); startIndex++)
                 {
-                    CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
-                    << "Expected first tag in document to be opening tag <root>, but found \"" << firstElement.element << "\"\n" 
-                    << "At line"  << firstElement.lineNumber << " index " << firstElement.characterIndexInLine);
+                    const XMLElement& element = stack[startIndex];
+                    if(element.elementType == XMLElementType::EMPTY)
+                    {
+                        continue;
+                    }
+
+                    // Check that first non-empty element is an opening tag "root"
+
+                    if(element.elementType == XMLElementType::OPENING && element.element == "root")
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                        << "Expected first tag in document to be opening tag <root>, but found \"" << element.element << "\"\n" 
+                        << "At line "  << element.lineNumber << " index " << element.characterIndexInLine);
+                    }
                 }
+                startIndex++;
 
 
+                std::vector<XMLElement> intermediateElements;
 
+                const XMLElement* lastOpeningNode = nullptr;
 
-                // Start at 1, because first is <root>
-                for(size_t i = 1; i < stack.size() - 1; i++)
+                // Start at index after root
+                for(size_t i = startIndex; i < stack.size() - 1; i++)
                 {
                     const XMLElement& element = stack[i];
-                    printf("Element %s %d\n", element.element.c_str(), element.elementType);
 
                     if(element.elementType == XMLElementType::OPENING)
                     {
-                        std::shared_ptr<XMLNode> newNode;
-
                         openAndCloseTagsStack.push(element);
-                        parentStack.push(currentNode);
 
-                        // Check if next XMLElement is a value element.
-                        // This means that newNode wll be a XMLVal node.
-                        if(i + 1 < stack.size())
+                        // Whenever we encounter an opening node, the node can either become a 
+                        // node having a value, such as <MyInt>42</MyInt>, or a node having children like
+                        // <MyObject><MyInt>42</MyInt></MyObject>.
+                        // Hence, whether we have to create a XMLNode or a XMLValueNode can only be decided the next time
+                        // when we enocunter an opening or closing tag.
+                        // Why do we need to do it this way, that we have to wait for the next element?
+                        // Because our XMLTree is not well implemented..
+                        // A node in an XML tree should have a member "value", this value could either be a (list of) children, or a int, float, string etc. value.
+                        // However, here our XML tree works a bit different. Each XMLNode has a list of children (vector), and the XMLNodes are polymorphic.
+                        // If a XMLNode is a value, it has no Children but is of type XMLVal. 
+                        // Hence, in the algorithm below, we have to distinguish whether we have to create a node that has children, or a node that is a XMLVal.
+                        // We can only deduce that if we look at the element after the current element..
+                        // Maybe this needs improvement in the future. The reason the XML tree was implemented this way is because this makes the implementation of XMLSerializer
+                        // and XMLDeserializer a bit easier, as we can check whether a node is a value or not.
+
+                        if(lastOpeningNode != nullptr)
                         {
-                            const XMLElement& nextElement = stack[i + 1];
-                            if(nextElement.elementType == XMLElementType::VALUE)
+                            XMLElement foundValueElement;
+                            if(getValueElement(intermediateElements, foundValueElement))
                             {
-                                newNode = std::static_pointer_cast<XMLNode>(std::shared_ptr<XMLVal>(new XMLVal(currentNode, element.element, nextElement.element)));
-                                newNode->attributes = element.attributes;
+                                CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                                << "Unexpected element " << foundValueElement.element << "inside of XML element \"<" << lastOpeningNode->element << ">\n" 
+                                << "At line "  << foundValueElement.lineNumber << " index " << foundValueElement.characterIndexInLine);
+                            }
+                            else
+                            {
+                                std::shared_ptr<XMLNode> newNode(new XMLNode(currentNode, lastOpeningNode->element));
+                                newNode->attributes = lastOpeningNode->attributes;
                                 currentNode->addChild(newNode);
-                                i ++;
-                            }
-                            else if(nextElement.elementType == XMLElementType::EMPTY)
-                            {
-                                // EMPTY can become a value, if the previous tag was an opening tag, and the next tag is a matching closing tag.
-                                // E.g.:
-                                // <Module>         </Module>
-                                // Otherwise, EMPTY elements are ignored.
-
-                                // Currently, i is an opening tag and i + 1 is an empty element.
-                                // Empty can only become a value, if the element after it is a closing tag to fullfill the case described in the comment above.
-                                if(i + 2 < stack.size())
-                                {
-                                    const XMLElement& nextNextElement = stack[i + 2];
-
-                                    if(nextElement.elementType == XMLElementType::OPENING && nextNextElement.elementType == XMLElementType::CLOSING)
-                                    {
-                                        if(nextElement.element == nextNextElement.element)
-                                        {
-                                            // The element is a string containing only whitespaces or tabs, hence insert a node.
-                                            newNode = std::static_pointer_cast<XMLNode>(std::shared_ptr<XMLVal>(new XMLVal(currentNode, element.element, nextElement.element)));
-                                            newNode->attributes = element.attributes;
-                                            currentNode->addChild(newNode);
-                                            i ++;
-                                        }
-                                    }
-                                }
-                                
+                                parentStack.push(currentNode);  
+                                currentNode = newNode;
                             }
                         }
-                        
-                        if(newNode.get() == nullptr)
-                        {
-                            newNode = std::shared_ptr<XMLNode>(new XMLNode(currentNode, element.element));
-                            newNode->attributes = element.attributes;
-                            currentNode->addChild(newNode);
-                            currentNode = newNode;
-                        }
-
-
+                        lastOpeningNode = &element;
+                        intermediateElements.clear();
                     }
-            
-                    else if (element.elementType == XMLElementType::CLOSING)
+                    else if(element.elementType == XMLElementType::CLOSING)
                     {
                         const XMLElement& previousOpeningOrClosingElement = openAndCloseTagsStack.top();
                         if(element.element != previousOpeningOrClosingElement.element)
                         {
                             CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
                             "Found closing tag \"" << element.element << "\", but expected closing tag \"" << previousOpeningOrClosingElement.element << "\".\n" 
-                            << "At line"  << element.lineNumber << " index " << element.characterIndexInLine);
+                            << "At line "  << element.lineNumber << " index " << element.characterIndexInLine);
                         }
 
+                        if(lastOpeningNode != nullptr)
+                        {
+                            // lastOpeningNode should be the same as openAndCloseTagsStack.top(), but just to make sure:
+                            if(element.element != lastOpeningNode->element)
+                            {
+                                CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                                "Found closing tag \"" << element.element << "\", but expected closing tag \"" << lastOpeningNode->element << "\".\n" 
+                                << "At line "  << element.lineNumber << " index " << element.characterIndexInLine);
+                            }
+
+                            // We opened a node before, and now we found the matching closing tag.
+                            // Therefore, the elements between the openingNode and the current element have
+                            // to be of type EMPTY or VALUE, hence we have to create a ValueNode for the lastOpeningNode.
+
+                            // Merge all empty or value elements into one string.
+                            std::string elementString;
+                            for(const XMLElement& intermediateElement : intermediateElements)
+                            {
+                                if(intermediateElement.elementType != XMLElementType::VALUE && 
+                                        intermediateElement.elementType != XMLElementType::EMPTY)
+                                {
+                                    CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                                    "Found unexpected tag \"" << intermediateElement.element << "\", inside of XML element <" << lastOpeningNode->element << ">.\n" 
+                                    << "At line "  << intermediateElement.lineNumber << " index " << intermediateElement.characterIndexInLine);
+                                }
+
+                                elementString += intermediateElement.element;
+                            }
+
+                            // Insert value node.
+                            std::shared_ptr<XMLNode> newNode = std::static_pointer_cast<XMLNode>(std::shared_ptr<XMLVal>(new XMLVal(currentNode, lastOpeningNode->element, elementString)));
+                            newNode->attributes = lastOpeningNode->attributes;
+                            currentNode->addChild(newNode);
+                            parentStack.push(currentNode);  
+                            currentNode = newNode;
+
+                            intermediateElements.clear();
+                        }
+                    
                         currentNode = parentStack.top();
                         parentStack.pop();
-
                         openAndCloseTagsStack.pop();
+
+                        lastOpeningNode = nullptr;
                     }
-                    
+                    else if(element.elementType == XMLElementType::VALUE || XMLElementType::EMPTY)
+                    {
+                        intermediateElements.push_back(element);
+                    }                    
                 }
 
-                std::string str;
-                rootNode->toString(str);
-                printf("%s\n", str.c_str());
                 return true;
             }
 
