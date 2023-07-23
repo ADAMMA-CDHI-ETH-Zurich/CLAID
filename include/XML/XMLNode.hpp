@@ -83,6 +83,17 @@ namespace claid
                 return false;
             }
 
+            virtual void contentAsString(std::string& string)
+            {
+                string = "";
+                for(std::shared_ptr<XMLNode> child : children)
+                {
+                    std::string tmp;
+                    child->contentAsString(tmp);
+                    string += tmp + "\n";
+                }
+            }
+
             void addChild(std::shared_ptr<XMLNode> child)
             {
                 this->children.push_back(child);
