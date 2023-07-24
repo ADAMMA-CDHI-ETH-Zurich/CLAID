@@ -211,6 +211,12 @@ namespace claid
                     }
                     else
                     {   
+                        if(isCommentStart(xmlContent, index))
+                        {
+                            handleComment(xmlContent, index, lineNumber, characterIndexInLine);
+                            index--;
+                            continue;
+                        }
 
                         if(currentCharacter == '<')
                         {
@@ -228,6 +234,8 @@ namespace claid
                             continue;
                         }
 
+                        
+
                         if(numberOfUnclosedTags == 0)
                         {
                             // This means we are currently not inside of any tag, but between tags.
@@ -243,11 +251,7 @@ namespace claid
                                 continue;                            
                             }
                         
-                            if(isCommentStart(xmlContent, index))
-                            {
-                                handleComment(xmlContent, index, lineNumber, characterIndexInLine);
-                                continue;
-                            }
+                            
 
                             if(currentCharacter == '\"')
                             {
