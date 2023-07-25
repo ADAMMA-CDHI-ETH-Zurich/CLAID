@@ -240,8 +240,7 @@ namespace claid
                         {
                             // This means we are currently not inside of any tag, but between tags.
                             // Between tags, there could be strings, e.g.: <Module>This is just a test.</Module>
-                            // Thus, we astore all elements into one token until we find < or >
-                            
+                            // Thus, we astore all elements into one token until we find < or >   
                         }
                         else
                         {
@@ -251,8 +250,6 @@ namespace claid
                                 continue;                            
                             }
                         
-                            
-
                             if(currentCharacter == '\"')
                             {
                                 insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
@@ -296,9 +293,6 @@ namespace claid
                 // If there is a token at the end of a file, we also have to insert it.
                 // This is the case if currentToken is not empty after we finished the loop.
                 insertAndClearTokenIfNotEmpty(tokens, currentToken, lineNumber, characterIndexInLine);
-
-
-        
             }
 
     
@@ -618,7 +612,6 @@ namespace claid
                 }
                 else
                 {
-
                     // Must be a relative path?
                     path = ".";
                 }
