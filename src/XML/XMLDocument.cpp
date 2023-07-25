@@ -38,7 +38,7 @@ namespace claid
 		fileContent.assign((std::istreambuf_iterator<char>(file)),
 			std::istreambuf_iterator<char>());
 
-		XMLParser xmlParser;
+		XMLParser xmlParser(filePath);
 
 		return (xmlParser.parseFromString(fileContent, this->xmlNode, filePath));
 		
