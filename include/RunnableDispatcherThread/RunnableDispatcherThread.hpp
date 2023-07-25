@@ -2,6 +2,8 @@
 
 #include "Utilities/ITCChannel.hpp"
 #include "Runnable.hpp"
+#include "ScheduledRunnable.hpp"
+#include "RunnableDispatcher.hpp"
 
 #include <thread>
 #include <memory.h>
@@ -13,17 +15,21 @@ namespace claid
     {
         private:
             std::thread thread;
-            ITCChannel<Runnable*> runnablesChannel;
+            RunnableDispatcher runnableDispatcher;
 
             bool active = false;
+            
+            
 
             void run();
+
 
         public:
             void start();
             void stop();
             void join();
-            void addRunnable(Runnable* runnable);
+            void addRunnable(ScheduledRunnable scheduledRunnable);
+            void addRunnable(std::shared_ptr<Runnable> runnable, std::shared_ptr<ScheduleDescription> schedule);
 
             bool isRunning() const;
 

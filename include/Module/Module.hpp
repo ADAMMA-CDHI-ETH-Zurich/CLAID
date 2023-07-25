@@ -86,8 +86,7 @@ namespace claid
 
             // sequential execution means that the next execution of this function is only rescheduled if the previous execution was finished.
             void registerPeriodicFunction(const std::string& name, std::function<void()> function, size_t periodInMs, bool sequentialExecution = false)
-            {
-                
+            {   
                 if(periodInMs == 0)
                 {
                     CLAID_THROW(Exception, "Error in registerPeriodicFunction: Cannot register periodic function \"" << name << "\" (in Module \"" << this->getModuleName() << "\")"

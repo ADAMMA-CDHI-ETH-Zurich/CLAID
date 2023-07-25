@@ -10,6 +10,8 @@ namespace claid
         {
             return;
         }
+        this->runnableDispatcher.init();
+
         this->active = true;
         this->thread = std::thread(&RunnableDispatcherThread::run, this);
     }
@@ -21,10 +23,7 @@ namespace claid
             return;
         }
         this->active = false;
-        // Insert dummy runnable, to force the thread to get active (otherwise it's blocked on runnablesChannel.get
-        Runnable* runnable = static_cast<Runnable*>(new DummyRunnable());
-        runnable->deleteAfterRun = true;
-        this->runnablesChannel.put(runnable);
+        this->runnableDispatcher.stop();
     }
 
     bool RunnableDispatcherThread::isRunning() const
@@ -39,48 +38,7 @@ namespace claid
 
     void RunnableDispatcherThread::run()
     {
-        while(this->active)
-        {
-            Runnable* runnable;
-
-            runnablesChannel.get(runnable);
-
-            if(runnable->isValid())
-            {
-                if(runnable->catchExceptions)
-                {
-                    try
-                    {
-                        runnable->run();
-                    }
-                    catch(std::exception& e)
-                    {
-                        runnable->setException(e.what());
-                    }
-                }
-                else
-                {
-                    runnable->run();
-                }
-            }
-
-            runnable->wasExecuted = true;
-            
-            if(runnable->stopDispatcherAfterThisRunnable)
-            {
-                // No more runnables will be executed after this one !
-                this->active = false;
-            }
-            
-            if(runnable->deleteAfterRun)
-            {
-                delete runnable;
-            }
-
-            // Yield
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-                
+        this->runnableDispatcher.runScheduling();
     }
 
     void RunnableDispatcherThread::addRunnable(Runnable* runnable)
@@ -89,9 +47,21 @@ namespace claid
         this->runnablesChannel.put(runnable);
     }
 
+    void RunnableDispatcherThread::addRunnable(ScheduledRunnable scheduledRunnable)
+    {
+        this->runnableDispatcher.addRunnable(scheduledRunnable);
+    }
+
+    void RunnableDispatcherThread::addRunnable(
+            std::shared_ptr<Runnable> runnable, std::shared_ptr<ScheduleDescription> schedule)
+    [
+        this->runnableDispatcher.addRunnable(ScheduledRunnable(runnable, schedule));
+    ]
+
     std::thread::id RunnableDispatcherThread::getThreadID()
     {
         return this->thread.get_id();
     }
 
 }
+

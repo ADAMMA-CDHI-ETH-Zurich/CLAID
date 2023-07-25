@@ -14,7 +14,6 @@ namespace claid
             virtual ~Runnable() {}
 
             virtual void run() = 0;
-            bool deleteAfterRun = false;
             bool wasExecuted = false;
             bool catchExceptions = false;
             bool stopDispatcherAfterThisRunnable = false;

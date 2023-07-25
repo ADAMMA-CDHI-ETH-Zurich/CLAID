@@ -75,7 +75,7 @@ class ITCChannel
 			return true;
 		}
 };
-
+	
 
 
 #endif
