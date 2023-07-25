@@ -72,7 +72,7 @@ namespace claid
                     {
                         CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
-                    XMLNumericVal::parseFromString(member, value->getValue());
+                    XMLNumericVal::parseFromString(property, member, value->getValue());
                 }
             }   
 
@@ -98,7 +98,7 @@ namespace claid
                     {
                         CLAID_THROW(claid::Exception, "Error during deserialization from XML. XML Node \"" << property << "\" was expected to be an XMLVal, but apparently it's not. This should be a programming error.");
                     }
-                    XMLNumericVal::parseFromString(member, value->getValue());
+                    XMLNumericVal::parseFromString(property, member, value->getValue());
                 }
             }
 

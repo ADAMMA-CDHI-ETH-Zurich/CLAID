@@ -52,11 +52,14 @@ namespace claid
 
 			std::vector<claid::Module*> executeAppropriateLoaders(std::shared_ptr<XMLNode> xmlNode)
 			{
+				if(xmlNode.get() == nullptr)
+				{
+					CLAID_THROW(claid::Exception, "Error, cannot invoke XMLLoaders to load Modules, the provided XMLNode is empty.");
+				}
 				//std::cout << "EXECUTE LOADER " << loaders.size() << "\n";
 				std::vector<claid::Module*> loadedModules;
 
 				std::map<std::string, std::vector<std::shared_ptr<XMLNode>>> nodesForEachTag;
-
 
 				for (std::shared_ptr<XMLNode> child : xmlNode->children)
 				{
