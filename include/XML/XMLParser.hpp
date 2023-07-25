@@ -15,7 +15,7 @@ namespace claid
     {
         private:
             std::shared_ptr<XMLNode> root = nullptr;
-            std::string xmlFilePath = "TestDocument.xml";
+            std::string xmlFilePath = "";
 
             struct TokenElement
             {
@@ -522,8 +522,6 @@ namespace claid
                             }
                         }
 
-                    
-
                         std::string includedContent;
                         if(!this->loadFileToString(includePath, includedContent))
                         {
@@ -542,9 +540,7 @@ namespace claid
                     {
                         updatedXMLElements.push_back(element);
                     }
-                }
-
-                
+                }                
             }
 
 
@@ -588,7 +584,6 @@ namespace claid
                 #else
                     return path[0] == '/';
                 #endif
-
             }
 
             void getDirectoryPathFromFilePath(std::string& path)
@@ -822,12 +817,7 @@ namespace claid
                 }
 
                 return true;
-            }
-
-
-
-            
-        
+            }        
     };
 }
 
