@@ -31,6 +31,7 @@ namespace claid
             void addRunnable(ScheduledRunnable scheduledRunnable);
             void addRunnable(std::shared_ptr<Runnable> runnable, std::shared_ptr<ScheduleDescription> schedule);
 
+
             bool isRunning() const;
 
             std::thread::id getThreadID();

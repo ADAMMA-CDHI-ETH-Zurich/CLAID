@@ -11,7 +11,10 @@ namespace claid
             bool exceptionThrown = false;
             std::string exceptionMessage;
         public:
-            virtual ~Runnable() {}
+            virtual ~Runnable() 
+            {
+                this->invalidate();
+            }
 
             virtual void run() = 0;
             bool wasExecuted = false;

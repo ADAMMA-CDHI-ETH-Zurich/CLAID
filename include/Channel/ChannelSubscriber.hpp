@@ -78,22 +78,12 @@ namespace claid
             ChannelSubscriber(std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread,
                       std::function<void (ChannelData<T>)> function) : ChannelSubscriberBase(runnableDispatcherThread), function(function)
             {
-                std::shared_ptr<
-                    FunctionRunnableWithParams<void>> functionRunnable =
-                            std::make_shared<FunctionRunnableWithParams<void>>();
-
-
-                functionRunnable->bind(&ChannelSubscriber::run, this);
-
-                this->runnable = std::static_pointer_cast<Runnable>(functionRunnable);
+                
             }
 
             ~ChannelSubscriber()
             {
-                if(this->runnable.get() != nullptr)
-                {
-                    this->runnable->invalidate();
-                }
+                
             }
 
             void setChannel(TypedChannel<T>* channel)
@@ -116,9 +106,16 @@ namespace claid
                 this->unlockMutex();
             }
 
-            virtual std::shared_ptr<Runnable> getRunnable()
+            std::shared_ptr<Runnable> getRunnable()
             {
-                return this->runnable;
+                std::shared_ptr<
+                    FunctionRunnableWithParams<void>> functionRunnable =
+                            std::make_shared<FunctionRunnableWithParams<void>>();
+
+
+                functionRunnable->bind(&ChannelSubscriber::run, this);
+
+                return std::static_pointer_cast<Runnable>(functionRunnable);
             }
 
 

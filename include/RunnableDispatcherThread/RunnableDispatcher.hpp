@@ -52,14 +52,11 @@ namespace claid
 
             void waitUntilRunnableIsDueOrRescheduleIsRequired()
             {
-                                    printf("Running scheduling 8\n");
-                    printf("Running scheduling 9\n");
                 // If there is no runnable added, this will be infinity.
                 // Hence, we will wait forever and wake up if a reschedule is required.
                 std::chrono::microseconds waitTime = getWaitDurationUntilNextRunnableIsDue();
-                                    printf("Running scheduling 10\n");
 
-                std::cout << "wait time: %u ms" << waitTime.count() / 1000 << "\n";
+                // std::cout << "wait time: %u ms" << waitTime.count() / 1000 << "\n";
                 // The return value of wait_for can be used to determine whether the wait exited because time passed (false),
                 // or because the predicate (this->scheduleRequired) evaluates to true (true).
                 // However, we are not interested in distinguishing the two cases.
@@ -71,6 +68,11 @@ namespace claid
 
             void processRunnable(ScheduledRunnable& scheduledRunnable)
             {
+                if(this->stopped)
+                {
+                    return;
+                }
+
                 if(scheduledRunnable.runnable->isValid())
                 {
                     if(scheduledRunnable.runnable->catchExceptions)
@@ -91,8 +93,18 @@ namespace claid
 
                     scheduledRunnable.runnable->wasExecuted = true;
 
+                    if(scheduledRunnable.runnable->stopDispatcherAfterThisRunnable)
+                    {
+                        // No more runnables will be executed after this one !
+                        this->stop();
+                        printf("STOPPED DISPATCHER!");
+                        return;
+                    }
+
                     if(scheduledRunnable.schedule->doesRunnableHaveToBeRepeated())
                     {
+                        std::unique_lock<std::mutex> lock(this->mutex);
+
                         scheduledRunnable.schedule->updateExecutionTime();
 
                         Time newExecutionTime = scheduledRunnable.schedule->getExecutionTime();
@@ -128,6 +140,15 @@ namespace claid
                     if(now >= dueTime)
                     {
                         runnables.push_back(iterator->second);
+                    }
+                    else
+                    {
+                        // Since the map is ordered in increasing order,
+                        // all subsequent entries have a time 
+                        // which is greater than the time of the current entry.
+                        // Hence, no need to keep iterating. We found the latest-most runnable
+                        // which is due. 
+                        break;
                     }
 
                     iterator++;
@@ -169,29 +190,22 @@ namespace claid
             void runScheduling()
             {
                 std::vector<ScheduledRunnable> dueRunnables;
-                printf("Running scheduling\n");
                 while(!stopped)
                 {   
-                    printf("Running scheduling 2\n");
                     do
                     {
-                        printf("Running scheduling 3\n");
 
                         // While we process runnables, it is possible
                         // that another runnable becomes due in the meantime.
                         // Hence, we repeat this loop until there are no more
                         // runnables that are due.
                         getAndRemoveDueRunnables(dueRunnables);
-                        printf("Running scheduling 4\n");
 
                         processRunnables(dueRunnables);
-                    printf("Running scheduling 5\n");
                     }
                     while(dueRunnables.size() != 0);
                     rescheduleRequired = false;
-                    printf("Running scheduling 6\n");
                     waitUntilRunnableIsDueOrRescheduleIsRequired();
-                    printf("Running scheduling 7\n");
                 }
             }
     };

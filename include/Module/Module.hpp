@@ -108,7 +108,7 @@ namespace claid
 
                 this->timers.insert(std::make_pair(name, runnable));
                 this->runnableDispatcherThread->addRunnable(ScheduledRunnable(runnable, 
-                    ScheduleRepeatedIntervall(startTime, Duration(std::chrono::milliseconds(periodInMs)))));
+                    ScheduleRepeatedIntervall(startTime +  Duration(std::chrono::milliseconds(periodInMs)), Duration(std::chrono::milliseconds(periodInMs)))));
             }
 
             template<typename Class>
@@ -120,21 +120,16 @@ namespace claid
 
             void unregisterPeriodicFunction(const std::string& name)
             {
-                // auto it = this->timers.find(name);
+                auto it = this->timers.find(name);
 
-                // if(it == this->timers.end())
-                // {
-                //     CLAID_THROW(Exception, "Error, tried to unregister periodic function \"" << name << "\" in Module \"" << this->getModuleName() << "\", but function was not found in list of registered functions."
-                //     << "Was a function with this name ever registered before?" );
-                // }
+                if(it == this->timers.end())
+                {
+                    CLAID_THROW(Exception, "Error, tried to unregister periodic function \"" << name << "\" in Module \"" << this->getModuleName() << "\", but function was not found in list of registered functions."
+                    << "Was a function with this name ever registered before?" );
+                }
 
 
-                // DispatcherThreadTimer* timer = it->second;
-
-                // timer->stop();
-                // this->timers.erase(it);
-                
-                // delete timer;
+                it->second->invalidate();
             }
 
             bool isPeriodicFunctionRegistered(const std::string& name) const
@@ -300,12 +295,11 @@ namespace claid
 
                 
 
-                // for(auto it : this->timers)
-                // {
-                //     // Will block until the timer is stopped.
-                //     it.second->stop();
-                //     delete it.second;
-                // }
+                for(auto it : this->timers)
+                {
+                    // Will block until the timer is stopped.
+                    it.second->invalidate();
+                }
 
                 // Should we ? That means when restarting the module,
                 // timers need to be registered again.. Which seems fine though.

@@ -28,6 +28,7 @@ namespace claid
             // A ScheduledRunnable with ScheduleDescription
             // of type ScheduleOnce is not supposed to be repeated.
             executionTime += intervall;
+            // std::cout << executionTime.strftime("Next schedule %H:%M:%S\n") << "\n";
         }
 
         Time getExecutionTime()

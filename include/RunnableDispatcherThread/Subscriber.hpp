@@ -12,8 +12,6 @@ namespace claid
             {
                 std::shared_ptr<Runnable> runnable = this->getRunnable();
 
-                
-
                 runnableDispatcherThread->addRunnable(ScheduledRunnable(runnable, ScheduleOnce(Time::now())));
             }
 
