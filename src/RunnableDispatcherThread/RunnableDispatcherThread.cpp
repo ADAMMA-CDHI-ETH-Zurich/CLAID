@@ -41,12 +41,7 @@ namespace claid
         this->runnableDispatcher.runScheduling();
     }
 
-    void RunnableDispatcherThread::addRunnable(Runnable* runnable)
-    {
-        // ITCChannel is thread safe !
-        this->runnablesChannel.put(runnable);
-    }
-
+  
     void RunnableDispatcherThread::addRunnable(ScheduledRunnable scheduledRunnable)
     {
         this->runnableDispatcher.addRunnable(scheduledRunnable);
@@ -54,9 +49,9 @@ namespace claid
 
     void RunnableDispatcherThread::addRunnable(
             std::shared_ptr<Runnable> runnable, std::shared_ptr<ScheduleDescription> schedule)
-    [
+    {
         this->runnableDispatcher.addRunnable(ScheduledRunnable(runnable, schedule));
-    ]
+    }   
 
     std::thread::id RunnableDispatcherThread::getThreadID()
     {

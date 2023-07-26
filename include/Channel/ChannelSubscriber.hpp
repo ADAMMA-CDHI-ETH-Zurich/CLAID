@@ -79,7 +79,7 @@ namespace claid
                       std::function<void (ChannelData<T>)> function) : ChannelSubscriberBase(runnableDispatcherThread), function(function)
             {
                 std::shared_ptr<
-                    FunctionRunnableWithParams<void> functionRunnable =
+                    FunctionRunnableWithParams<void>> functionRunnable =
                             std::make_shared<FunctionRunnableWithParams<void>>();
 
 
@@ -92,7 +92,7 @@ namespace claid
             {
                 if(this->runnable.get() != nullptr)
                 {
-                    this->runnable->valid = false;
+                    this->runnable->invalidate();
                 }
             }
 

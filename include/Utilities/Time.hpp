@@ -23,6 +23,7 @@ struct Duration
 	{
 	}
 
+
 	// bool isValid() const
 	// {
 	// 	// TODO
@@ -246,12 +247,18 @@ public:
 
 		Time operator+(const Duration& d) const
 		{
-			return this->timePoint + d.val;
+			return this->timePoint + std::chrono::microseconds(d.val);
+		}
+
+		Time operator+=(const Duration& d) 
+		{
+			this->timePoint += std::chrono::microseconds(d.val);
+			return *this;
 		}
 		
 		Time operator-(const Duration& d) const
 		{
-			return this->timePoint - d.val;
+			return this->timePoint - std::chrono::microseconds(d.val);
 		}
 
 		bool operator==(const Time& other) const

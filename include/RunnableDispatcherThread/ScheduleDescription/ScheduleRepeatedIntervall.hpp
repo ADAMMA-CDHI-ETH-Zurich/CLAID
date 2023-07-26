@@ -4,21 +4,22 @@
 
 namespace claid
 {
-    struct ScheduleOnce : public ScheduleDescription
+    struct ScheduleRepeatedIntervall : public ScheduleDescription
     {
         private:
             Time executionTime;
+            Duration intervall;
 
         public:
 
-        ScheduleOnce(const Time& executionTime) : executionTime(executionTime)
+        ScheduleRepeatedIntervall(const Time& startTime, Duration intervall) : executionTime(startTime), intervall(intervall)
         {
 
         }
 
         bool doesRunnableHaveToBeRepeated()
         {
-            return false;
+            return true;
         }
 
         void updateExecutionTime()
@@ -26,6 +27,7 @@ namespace claid
             // Does not exist for ScheduleOnce. 
             // A ScheduledRunnable with ScheduleDescription
             // of type ScheduleOnce is not supposed to be repeated.
+            executionTime += intervall;
         }
 
         Time getExecutionTime()

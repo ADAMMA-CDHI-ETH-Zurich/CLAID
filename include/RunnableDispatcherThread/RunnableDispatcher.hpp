@@ -3,6 +3,8 @@
 #include <mutex>
 #include <chrono>
 #include <map>
+#include <vector>
+#include <iostream>
 
 #include "Utilities/Time.hpp"
 #include "ScheduledRunnable.hpp"
@@ -50,17 +52,20 @@ namespace claid
 
             void waitUntilRunnableIsDueOrRescheduleIsRequired()
             {
-                std::unique_lock<std::mutex> lock(this->mutex);
-
+                                    printf("Running scheduling 8\n");
+                    printf("Running scheduling 9\n");
                 // If there is no runnable added, this will be infinity.
                 // Hence, we will wait forever and wake up if a reschedule is required.
                 std::chrono::microseconds waitTime = getWaitDurationUntilNextRunnableIsDue();
+                                    printf("Running scheduling 10\n");
 
+                std::cout << "wait time: %u ms" << waitTime.count() / 1000 << "\n";
                 // The return value of wait_for can be used to determine whether the wait exited because time passed (false),
                 // or because the predicate (this->scheduleRequired) evaluates to true (true).
                 // However, we are not interested in distinguishing the two cases.
                 // In any case, when we wake up, we see if we need to execute anything.
                 // wait_for will atomically release the mutex and sleep, and will atomically lock the mutex after waiting.
+                std::unique_lock<std::mutex> lock(this->mutex);
                 this->conditionVariable.wait_for(lock, waitTime, [&]{return this->rescheduleRequired || this->stopped;});
             }
 
@@ -154,30 +159,39 @@ namespace claid
             void addRunnable(ScheduledRunnable runnable)
             {
                 std::unique_lock<std::mutex> lock(this->mutex);
-                this->scheduledRunnables.insert(std::make_pair(runnable.schedule->getExecutionTime(), runnable.runnable));
+                this->scheduledRunnables.insert(std::make_pair(runnable.schedule->getExecutionTime(), runnable));
 
                 // This will lead to a wake up, so we can reschedule.
                 this->rescheduleRequired = true;
-                cv.notify_all();
+                this->conditionVariable.notify_all();
             }
 
             void runScheduling()
             {
-                std::vector<std::shared_ptr<ScheduledRunnable>> dueRunnables;
+                std::vector<ScheduledRunnable> dueRunnables;
+                printf("Running scheduling\n");
                 while(!stopped)
                 {   
+                    printf("Running scheduling 2\n");
                     do
                     {
+                        printf("Running scheduling 3\n");
+
                         // While we process runnables, it is possible
                         // that another runnable becomes due in the meantime.
                         // Hence, we repeat this loop until there are no more
                         // runnables that are due.
                         getAndRemoveDueRunnables(dueRunnables);
-                        processRunnables(dueRunnables);
-                    }
-                    while(dueRunnables.size() != 0)
+                        printf("Running scheduling 4\n");
 
+                        processRunnables(dueRunnables);
+                    printf("Running scheduling 5\n");
+                    }
+                    while(dueRunnables.size() != 0);
+                    rescheduleRequired = false;
+                    printf("Running scheduling 6\n");
                     waitUntilRunnableIsDueOrRescheduleIsRequired();
+                    printf("Running scheduling 7\n");
                 }
             }
     };

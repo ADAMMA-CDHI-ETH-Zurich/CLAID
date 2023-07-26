@@ -1,4 +1,5 @@
 #include "RunnableDispatcherThread/RunnableDispatcherThread.hpp"
+#include "RunnableDispatcherThread/ScheduleDescription/ScheduleOnce.hpp"
 
 namespace claid
 {

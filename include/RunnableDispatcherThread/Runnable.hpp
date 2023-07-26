@@ -18,17 +18,22 @@ namespace claid
             bool catchExceptions = false;
             bool stopDispatcherAfterThisRunnable = false;
             
-            bool isValid()
+            void invalidate()
+            {
+                this->valid = false;
+            }
+
+            bool isValid() const
             {
                 return this->valid;
             }
 
-            bool wasExceptionThrown()
+            bool wasExceptionThrown() const
             {
                 return this->exceptionThrown;
             }
 
-            const std::string& getExceptionMessage()
+            const std::string& getExceptionMessage() const
             {
                 return this->exceptionMessage;
             }
