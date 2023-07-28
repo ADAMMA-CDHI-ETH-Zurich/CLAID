@@ -121,6 +121,7 @@ namespace claid
                 {
                     std::string test = TypeChecking::getCompilerSpecificRunTimeNameOfObject(member);
                     std::string test2 = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
+                    Logger::printfln("CLASSINVOKER");
                     ClassInvoker<Derived, T>::call(r, property, member);
                 }
             };
@@ -267,7 +268,7 @@ namespace claid
             template<typename T>
             void member(const char* property, Getter<T> getter, Setter<T> setter, const T& defaultValue)
             {
-                VariableWithGetterSetter<T> var(property, getter, setter);
+                VariableWithGetterSetter<T> var(property, getter, setter, &defaultValue);
                 this->currentDefaultValue = const_cast<T*>(&defaultValue);
 
                 // This will invoke the reflector invoker for classes, which therefore will call the reflect function of VariableWithGetterSetter,
