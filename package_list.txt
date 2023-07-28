@@ -1,5 +1,7 @@
 ModuleAPI;https://github.com/ADAMMA-CDHI-ETH-Zurich/ModuleAPI;main
-CollectorAPI;https://github.com/RealLast/CollectorAPI;main
+DataCollection;https://github.com/ADAMMA-CDHI-ETH-Zurich/DataCollection.git;main
 JavaCLAID;https://github.com/ADAMMA-CDHI-ETH-Zurich/JavaCLAID;main
 PyCLAID;https://github.com/ADAMMA-CDHI-ETH-Zurich/PyCLAID.git;main
 Permissions;https://github.com/ADAMMA-CDHI-ETH-Zurich/Permissions;main
+MobileDataTypes;https://github.com/ADAMMA-CDHI-ETH-Zurich/MobileDataTypes;main
+MobileDataCollectors;https://github.com/ADAMMA-CDHI-ETH-Zurich/MobileDataTypes;main
