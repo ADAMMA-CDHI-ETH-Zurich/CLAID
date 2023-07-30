@@ -14,6 +14,7 @@ namespace claid
             Getter<T> getter;
             Setter<T> setter;
             std::string variableName;
+            const T* defaultValue;
 
      
 
@@ -23,7 +24,9 @@ namespace claid
             typedef T ValueType;
            
 
-            VariableWithGetterSetter(std::string variableName, Getter<T> getter, Setter<T> setter) : variableName(variableName), getter(getter), setter(setter)
+            VariableWithGetterSetter(std::string variableName, 
+            Getter<T> getter, Setter<T> setter,
+            const T* defaultValue = nullptr) : variableName(variableName), getter(getter), setter(setter), defaultValue(defaultValue)
             {
                 
             }
@@ -54,7 +57,14 @@ namespace claid
             void reflectRead(Reflector& r)
             {
                 T tmp;
-                r.member(this->variableName.c_str(), tmp, "");
+                if(defaultValue != nullptr)
+                {   
+                    r.member(this->variableName.c_str(), tmp, "", *defaultValue);
+                }
+                else
+                {
+                    r.member(this->variableName.c_str(), tmp, "");
+                }
                 setter(tmp);
             }
 
@@ -62,7 +72,14 @@ namespace claid
             void reflectWrite(Reflector& r)
             {
                 T tmp = getter;
-                r.member(this->variableName.c_str(), tmp, "");
+                if(defaultValue != nullptr)
+                {   
+                    r.member(this->variableName.c_str(), tmp, "", *defaultValue);
+                }
+                else
+                {
+                    r.member(this->variableName.c_str(), tmp, "");
+                }            
             }
 
           

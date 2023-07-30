@@ -1,4 +1,5 @@
 #include "RunnableDispatcherThread/RunnableDispatcherThread.hpp"
+#include "RunnableDispatcherThread/ScheduleDescription/ScheduleOnce.hpp"
 
 namespace claid
 {
@@ -9,10 +10,12 @@ namespace claid
         public:
             virtual void signalNewDataIsAvailable()
             {
-                runnableDispatcherThread->addRunnable(this->asRunnable());
+                std::shared_ptr<Runnable> runnable = this->getRunnable();
+
+                runnableDispatcherThread->addRunnable(ScheduledRunnable(runnable, ScheduleOnce(Time::now())));
             }
 
-            virtual Runnable* asRunnable() = 0;
+            virtual std::shared_ptr<Runnable> getRunnable() = 0;
 
             Subscriber()
             {

@@ -11,25 +11,32 @@ namespace claid
             bool exceptionThrown = false;
             std::string exceptionMessage;
         public:
-            virtual ~Runnable() {}
+            virtual ~Runnable() 
+            {
+                this->invalidate();
+            }
 
             virtual void run() = 0;
-            bool deleteAfterRun = false;
             bool wasExecuted = false;
             bool catchExceptions = false;
             bool stopDispatcherAfterThisRunnable = false;
             
-            bool isValid()
+            void invalidate()
+            {
+                this->valid = false;
+            }
+
+            bool isValid() const
             {
                 return this->valid;
             }
 
-            bool wasExceptionThrown()
+            bool wasExceptionThrown() const
             {
                 return this->exceptionThrown;
             }
 
-            const std::string& getExceptionMessage()
+            const std::string& getExceptionMessage() const
             {
                 return this->exceptionMessage;
             }

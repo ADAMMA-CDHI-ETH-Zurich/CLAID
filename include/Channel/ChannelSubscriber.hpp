@@ -1,7 +1,9 @@
 #include "RunnableDispatcherThread/RunnableDispatcherThread.hpp"
+#include "RunnableDispatcherThread/FunctionRunnableWithParams.hpp"
+#include "RunnableDispatcherThread/Subscriber.hpp"
+
 #include <functional>
 
-#include "RunnableDispatcherThread/Subscriber.hpp"
 #include "ChannelData.hpp"
 #include "mutex"
 #include <iostream>
@@ -15,7 +17,7 @@ namespace claid
 
 
 
-    class ChannelSubscriberBase : public Subscriber, public Runnable
+    class ChannelSubscriberBase : public Subscriber
     {
         private:
             // ChannelSubscriber has to be copyable, but mutex is non copyable.
@@ -52,6 +54,8 @@ namespace claid
         private: 
             std::function<void(ChannelData<T>)> function;
             TypedChannel<T>* channel;
+            
+            std::shared_ptr<Runnable> runnable;
 
             
             std::deque<ChannelData<T>> channelDataQueue;
@@ -67,7 +71,6 @@ namespace claid
                 this->channelDataQueue.pop_front();
                 this->unlockMutex();
 
-        
                 this->function(channelData);
              }
 
@@ -75,6 +78,12 @@ namespace claid
             ChannelSubscriber(std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread,
                       std::function<void (ChannelData<T>)> function) : ChannelSubscriberBase(runnableDispatcherThread), function(function)
             {
+                
+            }
+
+            ~ChannelSubscriber()
+            {
+                
             }
 
             void setChannel(TypedChannel<T>* channel)
@@ -97,10 +106,18 @@ namespace claid
                 this->unlockMutex();
             }
 
-            Runnable* asRunnable()
+            std::shared_ptr<Runnable> getRunnable()
             {
-                return static_cast<Runnable*>(this);
+                std::shared_ptr<
+                    FunctionRunnableWithParams<void>> functionRunnable =
+                            std::make_shared<FunctionRunnableWithParams<void>>();
+
+
+                functionRunnable->bind(&ChannelSubscriber::run, this);
+
+                return std::static_pointer_cast<Runnable>(functionRunnable);
             }
+
 
              
     };  

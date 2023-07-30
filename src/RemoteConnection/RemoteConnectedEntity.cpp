@@ -20,11 +20,14 @@ namespace RemoteConnection
 
     void RemoteConnectedEntity::setup()
     {
+        printf("RemoteConnectedEntity::setup\n");
         this->connectionModule->startModule();
         this->connectionModule->waitForInitialization();
-        
+                printf("RemoteConnectedEntity::setup1\n");
+
         this->remoteModule.startModule();
         this->remoteModule.waitForInitialization();
+                printf("RemoteConnectedEntity::setup2\n");
         this->link.link(this->connectionModule, &this->remoteModule);
     }
 

@@ -199,10 +199,7 @@ namespace claid
         }
 
         runnable->wasExecuted = true;
-        if(runnable->deleteAfterRun)
-        {
-            delete runnable;
-        }
+       
     }
 
     void RunTime::connectTo(std::string ip, int port)

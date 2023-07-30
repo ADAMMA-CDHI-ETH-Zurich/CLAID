@@ -33,6 +33,7 @@ namespace claid
                 
                 void setSendMessageChannel(Channel<RemoteConnection::Message> sendMessageChannel) 
                 {
+                    printf("SendMessageChannelSet %s\n", this->getModuleName().c_str());
                     this->sendMessageChannel = sendMessageChannel;
                     this->sendMessageChannelSet = true;
                 }

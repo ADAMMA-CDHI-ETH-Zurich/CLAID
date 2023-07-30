@@ -400,7 +400,7 @@ namespace claid
                 else
                 {
 
-                    int64_t difference = closest.timestamp.toUnixNS() - timestamp.toUnixNS();
+                    int64_t difference = closest.timestamp.toUnixNanoseconds() - timestamp.toUnixNanoseconds();
                     // TODO are data types correct ? Is time/duration implementation correct ? 
                     if(abs(difference) <= tolerance.getNanoSeconds())
                     {

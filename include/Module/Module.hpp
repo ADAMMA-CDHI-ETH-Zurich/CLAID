@@ -8,8 +8,9 @@
 #include "RunnableDispatcherThread/RunnableDispatcherThread.hpp"
 #include "Channel/Channel.hpp"
 #include "Channel/ChannelData.hpp"
-#include "RunnableDispatcherThread/DispatcherThreadTimer.hpp"
 #include "RunnableDispatcherThread/FunctionRunnableWithParams.hpp"
+#include "RunnableDispatcherThread/ScheduleDescription/ScheduleOnce.hpp"
+#include "RunnableDispatcherThread/ScheduleDescription/ScheduleRepeatedIntervall.hpp"
 
 #include "RunnableDispatcherThread/FunctionRunnable.hpp"
 #include "ClassFactory/ClassFactory.hpp"
@@ -26,6 +27,8 @@
 
 #include "Channel/ChannelManager.hpp"
 #include "Namespace/Namespace.hpp"
+
+
 namespace claid
 {
     // Base class for any type of module.
@@ -52,7 +55,7 @@ namespace claid
             ChannelManager* channelManager;
             std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread = nullptr;
 
-            std::map<std::string, DispatcherThreadTimer*> timers;
+            std::map<std::string, std::shared_ptr<Runnable>> timers;
             std::vector<Namespace> namespaces;
 
             std::string id;
@@ -82,18 +85,17 @@ namespace claid
             }
 
 
-            std::vector<DispatcherThreadTimer*> timer;
 
             // sequential execution means that the next execution of this function is only rescheduled if the previous execution was finished.
-            void registerPeriodicFunction(const std::string& name, std::function<void()> function, size_t periodInMs, bool sequentialExecution = false)
-            {
-                
+            void registerPeriodicFunction(const std::string& name, std::function<void()> function, size_t periodInMs, const Time& startTime = Time::invalidTime())
+            {   
                 if(periodInMs == 0)
                 {
                     CLAID_THROW(Exception, "Error in registerPeriodicFunction: Cannot register periodic function \"" << name << "\" (in Module \"" << this->getModuleName() << "\")"
                     << " with a period of 0 milliseconds.\n"
-                    << "Period needs to be at least 1ms in order to allow a yield for the thread. Otherwise, this can result in memory leaks.");
+                    << "Period needs to be at least 1ms in order to allow a yield for the thread. Otherwise, this can result in memory leaks on some platforms.");
                 }
+
                 auto it = this->timers.find(name);
 
                 if(it != this->timers.end())
@@ -101,17 +103,22 @@ namespace claid
                     CLAID_THROW(Exception, "Error in Module " << this->getModuleName() << ". Tried to register function with name \"" << name << "\", but a periodic function with the same name was already registered before.");
                 }
 
-                FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(function);
-                DispatcherThreadTimer* dispatcherThreadTimer = new DispatcherThreadTimer(this->runnableDispatcherThread, static_cast<Runnable*>(functionRunnable), periodInMs, sequentialExecution);
-                dispatcherThreadTimer->start();
-                this->timers.insert(std::make_pair(name, dispatcherThreadTimer));
+                std::shared_ptr<FunctionRunnable<void>> functionRunnable(new FunctionRunnable<void>(function));
+                std::shared_ptr<Runnable> runnable = std::static_pointer_cast<Runnable>(functionRunnable);
+
+                Time firstExecutionTime = startTime.isValid() ? 
+                    startTime : Time::now() + Duration(std::chrono::milliseconds(periodInMs));
+
+                this->timers.insert(std::make_pair(name, runnable));
+                this->runnableDispatcherThread->addRunnable(ScheduledRunnable(runnable, 
+                    ScheduleRepeatedIntervall(firstExecutionTime, Duration(std::chrono::milliseconds(periodInMs)))));
             }
 
             template<typename Class>
-            void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, size_t periodInMs, bool sequentialExecution = false)
+            void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, size_t periodInMs, const Time& startTime = Time::invalidTime())
             {
                 std::function<void()> function = std::bind(f, obj);
-                this->registerPeriodicFunction(name, function, periodInMs, sequentialExecution);
+                this->registerPeriodicFunction(name, function, periodInMs, startTime);
             }
 
             void unregisterPeriodicFunction(const std::string& name)
@@ -121,16 +128,11 @@ namespace claid
                 if(it == this->timers.end())
                 {
                     CLAID_THROW(Exception, "Error, tried to unregister periodic function \"" << name << "\" in Module \"" << this->getModuleName() << "\", but function was not found in list of registered functions."
-                    << "Was a function with this name ever registered before?" );
+                    << "Was a function with this name ever registered before?");
                 }
 
 
-                DispatcherThreadTimer* timer = it->second;
-
-                timer->stop();
-                this->timers.erase(it);
-                
-                delete timer;
+                it->second->invalidate();
             }
 
             bool isPeriodicFunctionRegistered(const std::string& name) const
@@ -211,11 +213,11 @@ namespace claid
                 }
                 //std::function<void(Ts...)> function = std::bind(f, obj, std::placeholders::_1, std::placeholders::_2);
 
-                FunctionRunnableWithParams<void, Ts...>* functionRunnable = new FunctionRunnableWithParams<void, Ts...>();
+                std::shared_ptr<FunctionRunnableWithParams<void, Ts...>> functionRunnable(new FunctionRunnableWithParams<void, Ts...>());
                 functionRunnable->bind(f, obj);
                 functionRunnable->setParams(params...);
-                functionRunnable->deleteAfterRun = true;
-                this->runnableDispatcherThread->addRunnable(functionRunnable);
+                this->runnableDispatcherThread->addRunnable(
+                    ScheduledRunnable(std::static_pointer_cast<Runnable>(functionRunnable), ScheduleOnce(Time::now())));
             }
 
             void setID(const std::string& id)
@@ -277,13 +279,12 @@ namespace claid
                     this->runnableDispatcherThread->start();
                 }
                 std::function<void ()> initFunc = std::bind(&BaseModule::initializeInternal, this);
-                FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(initFunc);
-
-                functionRunnable->deleteAfterRun = true;
+                std::shared_ptr<void> functionRunnable(new FunctionRunnable<void>(initFunc));
 
                 this->isRunning = true;
 
-                this->runnableDispatcherThread->addRunnable(functionRunnable);
+                this->runnableDispatcherThread->addRunnable(
+                        ScheduledRunnable(std::static_pointer_cast<Runnable>(functionRunnable), ScheduleOnce(Time::now())));
             }
 
             void stopModule(bool isForkedSubModule = false)
@@ -300,8 +301,7 @@ namespace claid
                 for(auto it : this->timers)
                 {
                     // Will block until the timer is stopped.
-                    it.second->stop();
-                    delete it.second;
+                    it.second->invalidate();
                 }
 
                 // Should we ? That means when restarting the module,
@@ -309,8 +309,7 @@ namespace claid
                 this->timers.clear();
 
                 std::function<void ()> terminateFunc = std::bind(&BaseModule::terminateInternal, this);
-                FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(terminateFunc);
-                functionRunnable->deleteAfterRun = true;
+                std::shared_ptr<FunctionRunnable<void>> functionRunnable(new FunctionRunnable<void>(terminateFunc));
 
                 if(!isForkedSubModule)
                 {
@@ -320,8 +319,8 @@ namespace claid
                     functionRunnable->stopDispatcherAfterThisRunnable = true;
                 }
 
-                this->runnableDispatcherThread->addRunnable(functionRunnable);
-
+                this->runnableDispatcherThread->addRunnable(
+                        ScheduledRunnable(std::static_pointer_cast<Runnable>(functionRunnable), ScheduleOnce(Time::now())));
 
                 // Wait for termination
                 while(!this->terminated)
@@ -365,13 +364,13 @@ namespace claid
             void onAllModulesHaveBeenInitialized()
             {
                 std::function<void ()> postInitFunc = std::bind(&BaseModule::postInitializeInternal, this);
-                FunctionRunnable<void>* functionRunnable = new FunctionRunnable<void>(postInitFunc);
+                std::shared_ptr<FunctionRunnable<void>> functionRunnable(new FunctionRunnable<void>(postInitFunc));
 
-                functionRunnable->deleteAfterRun = true;
 
                 this->isRunning = true;
 
-                this->runnableDispatcherThread->addRunnable(functionRunnable);
+                this->runnableDispatcherThread->addRunnable(
+                        ScheduledRunnable(std::static_pointer_cast<Runnable>(functionRunnable), ScheduleOnce(Time::now())));
             }
 
             void prependNamespace(const Namespace& namespaceName)

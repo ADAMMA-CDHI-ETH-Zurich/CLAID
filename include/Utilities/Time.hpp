@@ -23,17 +23,18 @@ struct Duration
 	{
 	}
 
-	bool isValid() const
-	{
-		// TODO
-		return true;
-	}
 
-	bool isInfinity() const
-	{
-		// TODO
-		return false;
-	}
+	// bool isValid() const
+	// {
+	// 	// TODO
+	// 	return true;
+	// }
+
+	// bool isInfinity() const
+	// {
+	// 	// TODO
+	// 	return false;
+	// }
 
 	uint64_t getNanoSeconds() const
 	{
@@ -58,7 +59,7 @@ struct Duration
 
 	static Duration infinity()
 	{
-		std::chrono::milliseconds inf(std::numeric_limits<int>::infinity());
+		std::chrono::milliseconds inf(std::numeric_limits<int>::max());
 		return Duration(inf);
 	}
 
@@ -98,21 +99,31 @@ class Time : public std::chrono::time_point<std::chrono::system_clock>
 
 private:
     typedef std::chrono::time_point<std::chrono::system_clock>  Base;
+	bool valid = false;
 
 public:
     std::chrono::time_point<std::chrono::system_clock> timePoint;
 
 
-    Time()
-    {
+    Time() : valid(true)
+    { 
 
     }
 
-    Time(std::chrono::time_point<std::chrono::system_clock> timePoint) : Base(timePoint), timePoint(timePoint)
+	Time(bool valid) : valid(valid)
+	{
+
+	}
+
+    Time(std::chrono::time_point<std::chrono::system_clock> timePoint) : Base(timePoint), timePoint(timePoint), valid(true)
     {
 		
     }
 
+	static Time invalidTime()
+	{
+		return Time(false);
+	}
 
 	static Time now()
 	{
@@ -183,7 +194,7 @@ public:
 	}
 
 
-	uint64_t toUnixNS() const
+	uint64_t toUnixNanoseconds() const
 	{
 		return std::chrono::duration_cast<std::chrono::nanoseconds>(*this - Time::unixEpoch()).count();
 	}
@@ -234,6 +245,10 @@ public:
 		return ss.str();
 	}
      
+	bool isValid() const
+	{
+		return this->valid;
+	}
 
 public:
 
@@ -246,17 +261,38 @@ public:
 
 		Time operator+(const Duration& d) const
 		{
-			return this->timePoint + d.val;
+			return this->timePoint + std::chrono::microseconds(d.val);
+		}
+
+		Time operator+=(const Duration& d) 
+		{
+			this->timePoint += std::chrono::microseconds(d.val);
+			return *this;
 		}
 		
 		Time operator-(const Duration& d) const
 		{
-			return this->timePoint - d.val;
+			return this->timePoint - std::chrono::microseconds(d.val);
 		}
 
-		bool operator==(const Time& d) const
+		bool operator==(const Time& other) const
 		{
-			return this->toUnixNS() == d.toUnixNS();
+			return this->toUnixNanoseconds() == other.toUnixNanoseconds();
+		}
+
+		bool operator<(const Time& other) const 
+		{
+			return this->toUnixNanoseconds() < other.toUnixNanoseconds();
+		}
+
+		bool operator>(const Time& other) const 
+		{
+			return this->toUnixNanoseconds() > other.toUnixNanoseconds();
+		}
+
+		bool operator>=(const Time& other) const 
+		{
+			return this->toUnixNanoseconds() >= other.toUnixNanoseconds();
 		}
 
 		template<typename Reflector>

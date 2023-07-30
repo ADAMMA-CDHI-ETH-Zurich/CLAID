@@ -9,7 +9,7 @@ namespace claid
     namespace RemoteConnection
     {
         const std::string RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG = "REMOTE_OBSERVER_IS_DATA_RECEIVED_FROM_REMOTE";
-        const uint32_t RemoteObserver::KEEP_ALIVE_INTERVAL_MILLISECONDS = 200000;
+        const uint32_t RemoteObserver::KEEP_ALIVE_INTERVAL_MILLISECONDS = 3000;
 
         RemoteObserver::RemoteObserver(ChannelManager* globalChannelManager) : globalChannelManager(globalChannelManager)
         {
@@ -357,6 +357,7 @@ namespace claid
 
         void RemoteObserver::sendPeriodicKeepAliveMessage()
         {
+      
             if(this->hasKeepAliveMessageBeenSend)
             {
                 if(!this->keepAliveResponseReceived)

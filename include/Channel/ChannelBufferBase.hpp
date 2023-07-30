@@ -245,12 +245,12 @@ namespace claid
                     // uint64_t a = x.count();
                     // uint64_t = minimalDifference.getNanoSeconds();
 
-                    if(taggedData.getTimestamp().toUnixNS() > timestamp.toUnixNS())
+                    if(taggedData.getTimestamp().toUnixNanoseconds() > timestamp.toUnixNanoseconds())
                     {
                         continue;
                     }
 
-                    int64_t diff = abs(static_cast<long>(taggedData.getTimestamp().toUnixNS() - timestamp.toUnixNS()));
+                    int64_t diff = abs(static_cast<long>(taggedData.getTimestamp().toUnixNanoseconds() - timestamp.toUnixNanoseconds()));
                     if(diff <= minimalDifference)
                     {
                         minimalDifference = diff;

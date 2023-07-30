@@ -6,6 +6,7 @@ namespace RemoteConnection
 {
     void ConnectionLink::link(ConnectionModule* connection, RemoteModule* module)
     {
+        printf("ConnectionLink::link");
         if(connection == nullptr)
         {
             CLAID_THROW(Exception, "Error, tried to link ConnectionModule and RemoteModule, but ConnectionModule is null.");
