@@ -87,7 +87,7 @@ namespace claid
 
 
             // sequential execution means that the next execution of this function is only rescheduled if the previous execution was finished.
-            void registerPeriodicFunction(const std::string& name, std::function<void()> function, size_t periodInMs, const Time& startTime = Time::now())
+            void registerPeriodicFunction(const std::string& name, std::function<void()> function, size_t periodInMs, const Time& startTime = Time::invalidTime())
             {   
                 if(periodInMs == 0)
                 {
@@ -106,13 +106,16 @@ namespace claid
                 std::shared_ptr<FunctionRunnable<void>> functionRunnable(new FunctionRunnable<void>(function));
                 std::shared_ptr<Runnable> runnable = std::static_pointer_cast<Runnable>(functionRunnable);
 
+                Time firstExecutionTime = startTime.isValid() ? 
+                    startTime : Time::now() + Duration(std::chrono::milliseconds(periodInMs));
+
                 this->timers.insert(std::make_pair(name, runnable));
                 this->runnableDispatcherThread->addRunnable(ScheduledRunnable(runnable, 
-                    ScheduleRepeatedIntervall(startTime +  Duration(std::chrono::milliseconds(periodInMs)), Duration(std::chrono::milliseconds(periodInMs)))));
+                    ScheduleRepeatedIntervall(firstExecutionTime, Duration(std::chrono::milliseconds(periodInMs)))));
             }
 
             template<typename Class>
-            void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, size_t periodInMs, const Time& startTime = Time::now())
+            void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, size_t periodInMs, const Time& startTime = Time::invalidTime())
             {
                 std::function<void()> function = std::bind(f, obj);
                 this->registerPeriodicFunction(name, function, periodInMs, startTime);
@@ -125,7 +128,7 @@ namespace claid
                 if(it == this->timers.end())
                 {
                     CLAID_THROW(Exception, "Error, tried to unregister periodic function \"" << name << "\" in Module \"" << this->getModuleName() << "\", but function was not found in list of registered functions."
-                    << "Was a function with this name ever registered before?" );
+                    << "Was a function with this name ever registered before?");
                 }
 
 

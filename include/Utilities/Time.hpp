@@ -99,21 +99,31 @@ class Time : public std::chrono::time_point<std::chrono::system_clock>
 
 private:
     typedef std::chrono::time_point<std::chrono::system_clock>  Base;
+	bool valid = false;
 
 public:
     std::chrono::time_point<std::chrono::system_clock> timePoint;
 
 
-    Time()
-    {
+    Time() : valid(true)
+    { 
 
     }
 
-    Time(std::chrono::time_point<std::chrono::system_clock> timePoint) : Base(timePoint), timePoint(timePoint)
+	Time(bool valid) : valid(valid)
+	{
+
+	}
+
+    Time(std::chrono::time_point<std::chrono::system_clock> timePoint) : Base(timePoint), timePoint(timePoint), valid(true)
     {
 		
     }
 
+	static Time invalidTime()
+	{
+		return Time(false);
+	}
 
 	static Time now()
 	{
@@ -235,6 +245,10 @@ public:
 		return ss.str();
 	}
      
+	bool isValid() const
+	{
+		return this->valid;
+	}
 
 public:
 
