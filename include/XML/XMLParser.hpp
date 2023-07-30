@@ -59,7 +59,7 @@ namespace claid
 
             bool isValidXMLElementCharacter(char character)
             {
-                std::vector<char> supportedCharacters = {'_', '-'};
+                std::vector<char> supportedCharacters = {'_', '-', '.'};
 
                 return isAlphaNumericCharacter(character) || 
                     std::find(supportedCharacters.begin(), supportedCharacters.end(), character) != supportedCharacters.end();
@@ -690,27 +690,24 @@ namespace claid
                         continue;
                     }
 
-                    // Check that first non-empty element is an opening tag "root"
-
-                    if(element.elementType == XMLElementType::OPENING && element.element == "root")
+                    // Check that first non-empty element is an opening tag 
+                    if(element.elementType == XMLElementType::OPENING)
                     {
                         break;
                     }
                     else
                     {
                         CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
-                        << "Expected first tag in document to be opening tag <root>, but found \"" << element.element << "\"\n" 
+                        << "Expected first tag in document to be an opening tag, but found closing tag or element \"" << element.element << "\"\n" 
                         << "At line "  << element.lineNumber << " index " << element.characterIndexInLine);
                     }
                 }
-                startIndex++;
 
 
                 std::vector<XMLElement> intermediateElements;
 
                 const XMLElement* lastOpeningNode = nullptr;
 
-                // Start at index after root
                 for(size_t i = startIndex; i < stack.size() - 1; i++)
                 {
                     const XMLElement& element = stack[i];

@@ -119,9 +119,6 @@ namespace claid
             {
                 static void call(const char* property, Derived& r, T& member) 
                 {
-                    std::string test = TypeChecking::getCompilerSpecificRunTimeNameOfObject(member);
-                    std::string test2 = TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>();
-                    Logger::printfln("CLASSINVOKER");
                     ClassInvoker<Derived, T>::call(r, property, member);
                 }
             };
