@@ -1,6 +1,7 @@
 #include "Network/SocketConnectionModule.hpp"
 #include "Binary/BinarySerializer.hpp"
 #include "RemoteConnection/Message/MessageHeader/MessageHeaderChannelData.hpp"
+#include "Logger/Logger.hpp"
 namespace claid
 {
 namespace Network
@@ -64,7 +65,12 @@ namespace Network
 
     void SocketConnectionModule::sendMessage(RemoteConnection::Message message)
     {
-
+        Logger::printfln("SocketConnectionModule::sendMessage");
+        if(message.header->is<RemoteConnection::MessageHeaderChannelData>())
+        {
+            Logger::printfln("SocketConnectionModule::sendMessage cancelled");
+            return;
+        }
         // if(message.header->is<RemoteConnection::MessageHeaderChannelData>())
         // {
         //     Logger::printfln("Skipping message");

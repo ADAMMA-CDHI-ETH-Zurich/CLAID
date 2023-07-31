@@ -708,7 +708,7 @@ namespace claid
 
                 const XMLElement* lastOpeningNode = nullptr;
 
-                for(size_t i = startIndex; i < stack.size() - 1; i++)
+                for(size_t i = startIndex; i < stack.size(); i++)
                 {
                     const XMLElement& element = stack[i];
 
@@ -775,6 +775,7 @@ namespace claid
                             // We opened a node before, and now we found the matching closing tag.
                             // Therefore, the elements between the openingNode and the current element have
                             // to be of type EMPTY or VALUE, hence we have to create a ValueNode for the lastOpeningNode.
+                        
 
                             // Merge all empty or value elements into one string.
                             std::string elementString;
@@ -812,6 +813,15 @@ namespace claid
                         intermediateElements.push_back(element);
                     }                    
                 }
+
+                if(openAndCloseTagsStack.size() != 0)
+                {   
+                     CLAID_THROW(Exception, "Error while parsing XML document \"" << xmlFilePath << "\".\n"
+                        << "Found unclosed node \"<" << openAndCloseTagsStack.top().element << ">\".\n"
+                        << "At line "  << openAndCloseTagsStack.top().lineNumber << " index " << openAndCloseTagsStack.top().characterIndexInLine);
+
+                }
+
 
                 return true;
             }        

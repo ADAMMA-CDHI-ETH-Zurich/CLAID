@@ -145,6 +145,7 @@ namespace claid
 
             TaggedData<BinaryData> getBinaryData()
             {
+                std::unique_lock<std::mutex> (this->mutex);
                 if(!this->dataAvailable)
                 {
                     CLAID_THROW(Exception, "Error! Tried to get binary data from ChannelBufferElement<T> (type \"" << TypeChecking::getCompilerSpecificCompileTypeNameOfClass<T>() << "\"), but no data was never set (no data available).");
