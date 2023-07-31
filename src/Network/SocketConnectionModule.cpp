@@ -66,11 +66,7 @@ namespace Network
     void SocketConnectionModule::sendMessage(RemoteConnection::Message message)
     {
         Logger::printfln("SocketConnectionModule::sendMessage");
-        if(message.header->is<RemoteConnection::MessageHeaderChannelData>())
-        {
-            Logger::printfln("SocketConnectionModule::sendMessage cancelled");
-            return;
-        }
+      
         // if(message.header->is<RemoteConnection::MessageHeaderChannelData>())
         // {
         //     Logger::printfln("Skipping message");
