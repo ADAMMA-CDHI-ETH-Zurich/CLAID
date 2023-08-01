@@ -173,26 +173,15 @@ namespace claid
 
             void insert(TaggedData<T> data)
             {
-
                 this->lockMutex();
-                Logger::printfln("Inserting typed data (ChannelBuffer) at index %d %s", this->currentIndex, this->dataTypeName.c_str());
-                Logger::printfln("Inserting typed data 2");
                 // Is this thread safe?
                 // Yes.. as long as we create copies in getLatest, getClosest and getDataInterval.
-                     Logger::printfln("Inserting typed data 3");
 
                 this->channelBufferElements[this->currentIndex] = newChannelBufferElementFromTypedData(data);
-                Logger::printfln("Inserting typed data 4");
-
-        
-                // Do not convert to binary data / serialize. It might not be needed.
-
+                // Do not convert to binary data / serialize here. It might not be needed.
                 increaseIndex();
-                                Logger::printfln("Inserting typed data 5");
 
                 this->unlockMutex();
-                Logger::printfln("Inserting typed data 6");
-
             }
 
          

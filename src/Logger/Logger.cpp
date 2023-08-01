@@ -36,43 +36,55 @@ std::mutex fileAccessMutex;
  */
 void claid::Logger::printfln(const char *format, ...)
 {
-	va_list vargs;
+	va_list args, args_copy ;
+    va_start( args, format ) ;
+    va_copy( args_copy, args ) ;
 
-	va_start(vargs, format);
-
-
-	// Size 500 was too small.
-	const int BUFF_SIZE = 10240;
-    char buffer[BUFF_SIZE] = "";
-	// If number of character is > BUFF_SIZE, the remaining characters will not be written
-	// by using vsnprintf (in contrast to vsprintf). Therefore, should not yield a segfault.
-	std::vsnprintf(buffer, BUFF_SIZE, format, vargs);
-
-
-	va_end(vargs);
-	std::stringstream ss;
-	std::string timeString = claid::Logger::getTimeString();
-
-	ss << "[" << claid::Logger::logTag << " | "
-			<< timeString << "] " << buffer;
-
-	// This is not thread safe....
-	// Leads to segfault if multiple threads access it at the same time.
-	//claid::Logger::lastLogMessage = ss.str().c_str();
 	
-	#ifdef __ANDROID__
-		LOGCAT(ss.str().c_str(), __LINE__);
-	#else
-		std::cout << ss.str().c_str() << "\n" << std::flush;
-	#endif
 
-	if(claid::Logger::loggingToFileEnabled && claid::Logger::file != nullptr)
-	{
-		fileAccessMutex.lock();
-		(*file) << ss.str() << "\n";
-		file->flush();
-		fileAccessMutex.unlock();
-	}
+    const auto sz = std::vsnprintf( nullptr, 0, format, args ) + 1 ;
+
+    try
+    {
+        std::string result( sz, ' ' ) ;
+        std::vsnprintf( &result.front(), sz, format, args_copy ) ;
+
+        va_end(args_copy) ;
+        va_end(args) ;
+
+		std::stringstream ss;
+		std::string timeString = claid::Logger::getTimeString();
+
+		ss << "[" << claid::Logger::logTag << " | "
+				<< timeString << "] " << result;
+
+		// This is not thread safe....
+		// Leads to segfault if multiple threads access it at the same time.
+		//claid::Logger::lastLogMessage = ss.str().c_str();
+		
+		#ifdef __ANDROID__
+			LOGCAT(ss.str().c_str(), __LINE__);
+		#else
+			std::cout << ss.str().c_str() << "\n" << std::flush;
+		#endif
+
+		if(claid::Logger::loggingToFileEnabled && claid::Logger::file != nullptr)
+		{
+			fileAccessMutex.lock();
+			(*file) << ss.str() << "\n";
+			file->flush();
+			fileAccessMutex.unlock();
+		}
+    }
+
+    catch( const std::bad_alloc& )
+    {
+        va_end(args_copy) ;
+        va_end(args) ;
+        throw ;
+    }
+
+
 }
 
 /**
@@ -150,7 +162,7 @@ bool claid::Logger::enableLoggingToFile(const std::string& path)
 		claid::Logger::disableLoggingToFile();
 	}
 
-	claid::Logger::file = new std::ofstream(path);
+	claid::Logger::file = new std::ofstream(path, std::ios::app);
 
 	if(!file->is_open())
 	{

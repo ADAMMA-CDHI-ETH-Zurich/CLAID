@@ -69,7 +69,6 @@ namespace claid
 
             void processRunnable(ScheduledRunnable& scheduledRunnable)
             {
-                Logger::printfln("RunnableDispatcher processing runnable \n");
                 if(this->stopped)
                 {
                     return;
@@ -81,19 +80,15 @@ namespace claid
                     {
                         try
                         {
-                            Logger::printfln("RunnableDispatcher running runnable \n");
                             scheduledRunnable.runnable->run();
-                            Logger::printfln("RunnableDispatcher running runnable dun \n");    
                         }
                         catch(std::exception& e)
                         {
-                            Logger::printfln("RunnableDispatcher running runnable exception \n");
                             scheduledRunnable.runnable->setException(e.what());
                         }
                     }
                     else
                     {
-                        Logger::printfln("RunnableDispatcher running runnable 2 \n"); 
                         scheduledRunnable.runnable->run();
                     }
 
@@ -120,7 +115,6 @@ namespace claid
                         this->scheduledRunnables.insert(std::make_pair(newExecutionTime, scheduledRunnable));
                     }
                 }
-                Logger::printfln("RunnableDispatcher processing runnable done \n");
             }
 
             void processRunnables(std::vector<ScheduledRunnable>& runnables)
