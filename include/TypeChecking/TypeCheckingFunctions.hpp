@@ -1,8 +1,10 @@
 #pragma once
 #include "CompileTimeTypeNameDemangling.hpp"
 #include "TypeChecking/Invokers/TypeNameInvoker.hpp"
-#include <cstring>
 #include "Utilities/StringUtils.hpp"
+
+#include <cstring>
+#include <regex>
 namespace claid
 {
     namespace TypeChecking
@@ -18,10 +20,12 @@ namespace claid
             // }
         }
 
-        static void removeKnownTypeNamePrefixes(std::string& name)
+        static void removeKnownPlatformDependentTokens(std::string& name)
         {   
             removePrefix(name, "struct ");
             removePrefix(name, "class ");
+            name = std::regex_replace(name, std::regex(",std::allocator<[^>]+>"), "");
+            StringUtils::stringReplaceAll(name, " ", "");
         }
 
         // Use extern to make sure the adress of this function is always the same no matter where it is used within the code.
@@ -59,7 +63,7 @@ namespace claid
             #else
                 // Otherwise we return the mangled string.
       
-                removeKnownTypeNamePrefixes(name);
+                removeKnownPlatformDependentTokens(name);
 
                 return name;
             #endif
@@ -85,7 +89,7 @@ namespace claid
             #else
                 std::string name = compileTimeTypeNameByUsingFunctionName<T>().toStdString();
             #endif
-            removeKnownTypeNamePrefixes(name);
+            removeKnownPlatformDependentTokens(name);
 
             return name;
         }
@@ -94,7 +98,7 @@ namespace claid
         static std::string getCompilerIndependentTypeNameOfClass()
         {
             std::string name = TypeNameInvoker<T>::call();
-            removeKnownTypeNamePrefixes(name);
+            removeKnownPlatformDependentTokens(name);
 
             return name;
         }
