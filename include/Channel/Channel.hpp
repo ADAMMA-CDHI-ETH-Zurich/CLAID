@@ -226,6 +226,7 @@ namespace claid
                 {
                     channelSubscriber->signalNewDataIsAvailable();
                 } 
+                Logger::printfln("Signal new data to subs end");
             }
 
             // Templated helper functions to solve redundant dependencies:

@@ -9,7 +9,7 @@ namespace claid
     namespace RemoteConnection
     {
         const std::string RemoteObserver::IS_DATA_RECEIVED_FROM_REMOTE_TAG = "REMOTE_OBSERVER_IS_DATA_RECEIVED_FROM_REMOTE";
-        const uint32_t RemoteObserver::KEEP_ALIVE_INTERVAL_MILLISECONDS = 6000;
+        const uint32_t RemoteObserver::KEEP_ALIVE_INTERVAL_MILLISECONDS = 60000;
 
         RemoteObserver::RemoteObserver(ChannelManager* globalChannelManager) : globalChannelManager(globalChannelManager)
         {
@@ -244,7 +244,6 @@ namespace claid
         // Called, if a local Module (of this process) posted data to a channel, that has a subscriber in a remote run time.
         void RemoteObserver::onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo(std::string channelID, ChannelData<Untyped> data)
         {
-            	
             Logger::printfln("RemoteObserver %u: onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo %s %d", this, channelID.c_str(), this->getUniqueIdentifier());
             // When there is a channel, that was subscribed to in the local RunTime AND the remote RunTime,
             // then it can happen that data get's send back and forth and a loop happens.
@@ -315,7 +314,7 @@ namespace claid
 
         void RemoteObserver::initialize()
         {
-            Logger::printfln("RemoteObserver initialize");
+            Logger::printfln("RemoteObserver initialize, keepalive intervall is: %lu", KEEP_ALIVE_INTERVAL_MILLISECONDS);
             this->registerPeriodicFunction("KeepAliveTimer", &RemoteObserver::sendPeriodicKeepAliveMessage, this, KEEP_ALIVE_INTERVAL_MILLISECONDS);
         }
 
