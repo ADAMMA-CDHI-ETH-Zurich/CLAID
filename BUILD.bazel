@@ -1,0 +1,15 @@
+# cc_library(
+#     name = "claid_lib",
+#     srcs = glob(["src/Buffer/*.cpp"]),
+#     hdrs = glob(["include/Buffer/*.hpp"]) + glob(["src/**/*.hpp"]),
+#     # deps = [
+#     # ],
+# )
+
+# cc_library(
+#     name = "claid_lib",
+#     srcs = glob(["src/**/*.cpp"]),
+#     hdrs = glob(["include/**/*.hpp"]) + glob(["src/**/*.hpp"]),
+#     # deps = [
+#     # ],
+# )

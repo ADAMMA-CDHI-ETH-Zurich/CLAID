@@ -1,0 +1,17 @@
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "claid_dispatcher",
+    srcs = [
+        "claid_dispatcher.cc",
+    ],
+    hdrs = [
+        "claid_dispatcher.hh",
+    ],
+    deps = [
+        "@com_github_grpc_grpc//:grpc++",
+        "//dispatch/proto:claidservice_cc_proto",
+        "//dispatch/proto:claidservice_cc_grpc",
+    ],
+)
