@@ -84,8 +84,6 @@ namespace claid
 
             }
 
-
-
             // sequential execution means that the next execution of this function is only rescheduled if the previous execution was finished.
             void registerPeriodicFunction(const std::string& name, std::function<void()> function, size_t periodInMs, const Time& startTime = Time::invalidTime())
             {   
@@ -142,7 +140,13 @@ namespace claid
             }
 
             template<typename Class>
-            void scheduleFunctionAtTime(const std::string& name, void (Class::* f)(), Class* obj, int hour = 0, int minute = 0, int second = 0, int millisecond = 0)
+            void scheduleFunctionAtTime(const std::string& name, void (Class::* f)(), Class* obj, int32_t hour = 0, int32_t minute = 0, int32_t second = 0, int32_t millisecond = 0)
+            {
+                std::function<void()> function = std::bind(f, obj);
+                this->scheduleFunctionAtTime(name, function, hour, minute, second, millisecond);
+            }
+
+            void scheduleFunctionAtTime(const std::string& name, std::function<void()> function, int32_t hour = 0, int32_t minute = 0, int32_t second = 0, int32_t millisecond = 0)
             {
                 if(hour < 0 || hour > 23)
                 {
@@ -175,58 +179,92 @@ namespace claid
                     scheduledTime + Duration::days(1);
                 }
 
-                this->scheduleFunctionAtTime(name, f, obj, scheduledTime);
+                this->scheduleFunctionAtTime(name, function, scheduledTime);
             }
 
             template<typename Class>
             void scheduleFunctionAtTime(const std::string& name, void (Class::* f)(), Class* obj, const Time& time)
             {
+                std::function<void()> function = std::bind(f, obj);
+                this->scheduleFunctionAtTime(name, function, time);
+            }
+
+            void scheduleFunctionAtTime(const std::string& name, std::function<void()> function, const Time& time)
+            {
                 if(time < Time::now())
                 {
                     CLAID_THROW(claid::Exception, "Error, cannot schedule function \"" << name << "\", scheduled time is in the past.");
                 }
-                
-                std::function<void()> function = std::bind(f, obj);
+
                 std::shared_ptr<FunctionRunnable<void>> functionRunnable(new FunctionRunnable<void>(function));
                 std::shared_ptr<Runnable> runnable = std::static_pointer_cast<Runnable>(functionRunnable);
 
-                this->runnableDispatcherThread->addRunnable(ScheduledRunnable(runnable, 
-                    ScheduleOnce(time)));
+                this->runnableDispatcherThread->addRunnable(ScheduledRunnable(runnable, ScheduleOnce(time)));
             }
 
             template<typename Class>
-            void scheduleFunctionInXDays(const std::string& name, void (Class::* f)(), Class* obj, const size_t days)
+            void scheduleFunctionInXDays(const std::string& name, void (Class::* f)(), Class* obj, const int32_t days)
             {
                 Time time = Time::now() + Duration::days(days);
                 this->scheduleFunctionAtTime(name, f, obj, time);
             }
 
+            void scheduleFunctionInXDays(const std::string& name, std::function<void()> function, const int32_t days)
+            {
+                Time time = Time::now() + Duration::days(days);
+                this->scheduleFunctionAtTime(name, function, time);
+            }
+
             template<typename Class>
-            void scheduleFunctionInXHours(const std::string& name, void (Class::* f)(), Class* obj, const size_t hours)
+            void scheduleFunctionInXHours(const std::string& name, void (Class::* f)(), Class* obj, const int32_t hours)
             {
                 Time time = Time::now() + Duration::hours(hours);
                 this->scheduleFunctionAtTime(name, f, obj, time);
             }
 
+            void scheduleFunctionInXHours(const std::string& name, std::function<void()> function, const int32_t hours)
+            {
+                Time time = Time::now() + Duration::hours(hours);
+                this->scheduleFunctionAtTime(name, function, time);
+            }
+
             template<typename Class>
-            void scheduleFunctionInXMinutes(const std::string& name, void (Class::* f)(), Class* obj, const size_t minutes)
+            void scheduleFunctionInXMinutes(const std::string& name, void (Class::* f)(), Class* obj, const int32_t minutes)
             {
                 Time time = Time::now() + Duration::minutes(minutes);
                 this->scheduleFunctionAtTime(name, f, obj, time);
             }
+            
+            void scheduleFunctionInXMinutes(const std::string& name, std::function<void()> function, const int32_t minutes)
+            {
+                Time time = Time::now() + Duration::minutes(minutes);
+                this->scheduleFunctionAtTime(name, function, time);
+            }
 
             template<typename Class>
-            void scheduleFunctionInXSeconds(const std::string& name, void (Class::* f)(), Class* obj, const size_t seconds)
+            void scheduleFunctionInXSeconds(const std::string& name, void (Class::* f)(), Class* obj, const int32_t seconds)
             {
                 Time time = Time::now() + Duration::seconds(seconds);
                 this->scheduleFunctionAtTime(name, f, obj, time);
             }
 
+            void scheduleFunctionInXSeconds(const std::string& name, std::function<void()> function, const int32_t seconds)
+            {
+                Time time = Time::now() + Duration::seconds(seconds);
+                this->scheduleFunctionAtTime(name, function, time);
+            }
+
             template<typename Class>
-            void scheduleFunctionInXMilliSeconds(const std::string& name, void (Class::* f)(), Class* obj, const size_t milliseconds)
+            void scheduleFunctionInXMilliSeconds(const std::string& name, void (Class::* f)(), Class* obj, const int32_t milliseconds)
             {
                 Time time = Time::now() + Duration::milliseconds(milliseconds);
                 this->scheduleFunctionAtTime(name, f, obj, time);
+            }
+
+            void scheduleFunctionInXMilliSeconds(const std::string& name, std::function<void()> function, const int32_t milliseconds)
+            {
+                Time time = Time::now() + Duration::milliseconds(milliseconds);
+                this->scheduleFunctionAtTime(name, function, time);
             }
             
             template<typename Class>
