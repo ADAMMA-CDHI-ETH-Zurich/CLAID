@@ -89,6 +89,24 @@ struct Duration
 		std::chrono::seconds s(seconds);
 		return Duration(std::chrono::duration_cast<std::chrono::microseconds>(s));
 	}
+
+	static Duration days(int days)
+	{
+		std::chrono::hours d(days * 24);
+		return Duration(std::chrono::duration_cast<std::chrono::microseconds>(d));
+	}
+
+	static Duration hours(int hours)
+	{
+		std::chrono::hours h(hours);
+		return Duration(std::chrono::duration_cast<std::chrono::microseconds>(h));
+	}
+
+	static Duration minutes(int minutes)
+	{
+		std::chrono::minutes m(minutes);
+		return Duration(std::chrono::duration_cast<std::chrono::microseconds>(m));
+	}
 };
 
 #include "Reflection/SplitReflectInType.hpp"
