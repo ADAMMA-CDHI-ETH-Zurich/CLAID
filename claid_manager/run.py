@@ -1,5 +1,6 @@
 import os
 import subprocess
+import platform
 
 def extract_excutable_name(string):
     
@@ -25,16 +26,27 @@ def extract_excutable_name(string):
     return executable_name
         
 
-def run_application(application_name, arguments):
+def run_application_windows(application_name, arguments):
+    command = list()
+    command.append("Debug\\{}".format(application_name))
+      
+    for arg in arguments:
+        command.append(arg)
 
+    try:
+        # Do we have to change cwd here ? 
+        make_process = subprocess.Popen(command, stderr=subprocess.STDOUT)
+        if make_process.wait() != 0:
+            print("claid run failed")
+    except:
+        pass
 
+def run_application_unixoids(application_name, arguments):
     command = list()
     command.append("./{}".format(application_name))
       
     for arg in arguments:
         command.append(arg)
-
-    print(command)
 
     try:
         make_process = subprocess.Popen(command, stderr=subprocess.STDOUT)
@@ -42,6 +54,13 @@ def run_application(application_name, arguments):
             print("claid run failed")
     except:
         pass
+
+def run_application(application_name, arguments):
+    if(platform.system() == "Windows"):
+        run_application_windows(application_name, arguments)
+    else:
+        run_application_unixoids(application_name, arguments)
+    
 
 def run(*args):
     
