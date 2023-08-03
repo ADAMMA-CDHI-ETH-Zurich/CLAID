@@ -133,6 +133,7 @@ namespace claid
 
 
                 it->second->invalidate();
+                this->timers.erase(it);
             }
 
             bool isPeriodicFunctionRegistered(const std::string& name) const
