@@ -27,13 +27,12 @@ namespace claid
 
             }
 
-            ReflectedList(std::string identifier, T& val) : identifier(identifier), val(val)
+            ReflectedList(std::string identifier) : identifier(identifier)
             {
             }
 
-            ReflectedList(T& val) : identifier("item"), val(val)
+            ReflectedList(std::string identifier, T& val) : identifier(identifier), val(val)
             {
-
             }
 
             Reflect(ReflectedList<T>,
@@ -117,6 +116,16 @@ namespace claid
             }
 
             T getList()
+            {
+                return this->val;
+            }
+
+            T& getListRef()
+            {
+                return this->val;
+            }
+
+            const T& getListRef() const
             {
                 return this->val;
             }

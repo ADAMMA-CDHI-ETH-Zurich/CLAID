@@ -74,6 +74,12 @@ class ITCChannel
 			queue.pop_front();
 			return true;
 		}
+
+		size_t size()
+		{
+			std::unique_lock<std::mutex> lock(m);
+			return queue.size();
+		}
 };
 	
 

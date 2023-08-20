@@ -42,7 +42,6 @@ namespace claid
             void loadAndStart();
             void callPostInitialize(std::vector<Module*> modules);
 
-
             // Used to run runnables on the frameworks main thread (i.e., thread the framework was started from).
             // Generally, is not required. It can be benefical, however, if the thread that started the RunTime is the main
             // thread, and some operations shall specifically be performed in that thread. E.g., this sometimes might be necessary
@@ -139,6 +138,7 @@ namespace claid
 
             bool isRunning() const;
             bool isInHiddenNamespace(const std::string& channelID) const;
+            bool allConfigsLoaded();
 
             void executeRunnableInRunTimeThread(Runnable* runnable);
             ITCChannel<Runnable*>* getMainRunnablesChannel();
@@ -151,6 +151,8 @@ namespace claid
 
             void enableLoggingToFile(const std::string& path);
             void disableLoggingToFile();
+
+            std::vector<Module*> getRegisteredModulesByIdentifier(const std::string& moduleIdentifier);
 
     };
 }
