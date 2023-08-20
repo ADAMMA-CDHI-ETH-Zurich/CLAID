@@ -24,6 +24,8 @@ def install_package_from_package_name(package_name):
     CLAID_PATH = common.get_claid_path()
     output_path = CLAID_PATH + "/packages/" + package_name
 
+    print("Installing package ", package_name)
+
     clone_package_from_git(git_path, branch, output_path)
 
     print("Successfully installed package", package_name)
@@ -44,15 +46,18 @@ def install_package_from_git_link(git_link):
     CLAID_PATH = common.get_claid_path()
     output_path = CLAID_PATH + "/packages/" + package_name
     branch = "main"
+    
+    print("Installing package ", package_name)
 
     clone_package_from_git(git_link, branch, output_path)
+    
     print("Successfully installed package", package_name)
 
 
-def install_package(package_name, *args):
-    print("Installing package", package_name)
+def install_package(*package_names):
 
-    if(is_git_repo_link(package_name)):
-        install_package_from_git_link(package_name)
-    else:
-        install_package_from_package_name(package_name)
+    for package_name in package_names:
+        if(is_git_repo_link(package_name)):
+            install_package_from_git_link(package_name)
+        else:
+            install_package_from_package_name(package_name)
