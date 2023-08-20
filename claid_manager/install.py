@@ -1,8 +1,16 @@
 from git import Repo
 import common
 
-def install_package(package_name, *args):
-    print("Installing package", package_name)
+def is_git_repo_link(package_name):
+
+    return package_name.endswith(".git")
+
+def clone_package_from_git(git_path, branch, output_path):
+    repo = Repo.clone_from(git_path, output_path, branch=branch, multi_options=["--recurse-submodules"])
+    repo.submodule_update(recursive=True)
+
+def install_package_from_package_name(package_name):
+    
     packages = common.parse_package_list()
 
     if package_name == "":
@@ -11,11 +19,40 @@ def install_package(package_name, *args):
     if package_name not in packages:
         raise Exception("Error, cannot install package {}. The package is unknown to CLAID.".format(package_name))
     
-    repo_path, branch = packages[package_name]
-
+    git_path, branch = packages[package_name]
+    
     CLAID_PATH = common.get_claid_path()
+    output_path = CLAID_PATH + "/packages/" + package_name
 
-    repo = Repo.clone_from(repo_path, CLAID_PATH + "/packages/" + package_name, branch=branch, multi_options=["--recurse-submodules"])
-    repo.submodule_update(recursive=True)
+    clone_package_from_git(git_path, branch, output_path)
 
     print("Successfully installed package", package_name)
+
+def get_package_name_from_git_link(git_link):
+
+    # Fix windows path delimiters..
+    git_link = git_link.replace("\\", "/")
+    name = git_link.split("/")[-1]
+    name = name.replace(".git", "")
+
+    return name
+    
+
+def install_package_from_git_link(git_link):
+
+    package_name = get_package_name_from_git_link(git_link)
+    CLAID_PATH = common.get_claid_path()
+    output_path = CLAID_PATH + "/packages/" + package_name
+    branch = "main"
+
+    clone_package_from_git(git_link, branch, output_path)
+    print("Successfully installed package", package_name)
+
+
+def install_package(package_name, *args):
+    print("Installing package", package_name)
+
+    if(is_git_repo_link(package_name)):
+        install_package_from_git_link(package_name)
+    else:
+        install_package_from_package_name(package_name)
