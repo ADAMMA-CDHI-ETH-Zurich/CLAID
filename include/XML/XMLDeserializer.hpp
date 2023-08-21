@@ -211,13 +211,7 @@ namespace claid
             {
                 std::string xmlStr;
                 currentXMLNode->toString(xmlStr);
-                Logger::printfln("XML %s %s", currentXMLNode->name.c_str(), xmlStr.c_str());
-
-                for(std::shared_ptr<XMLNode> child : currentXMLNode->children)
-                {
-                    Logger::printfln("Child %s", child->name.c_str());
-                }
-
+      
                 std::shared_ptr<XMLNode> node = this->getChildNode(property);
 
                  

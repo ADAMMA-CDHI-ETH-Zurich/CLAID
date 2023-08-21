@@ -648,11 +648,6 @@ namespace claid
                 std::vector<XMLElement> tmpElements;
                 buildXMLElementsStackFromTokens(tokens, tmpElements);
 
-                // for(XMLElement element : tmpElements)
-                // {
-                //     Logger::printfln("%s", element.element.c_str());
-                // }
-
                 resolveIncludes(tmpElements, xmlElements);
             }
 

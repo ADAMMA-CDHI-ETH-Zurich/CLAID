@@ -46,7 +46,6 @@ namespace claid
             {
                 for(std::shared_ptr<XMLNode> child : children)
                 {
-                    Logger::printfln("Find child %s\n", child->name.c_str());
                     if(child->name == name)
                     {
                         return child;
