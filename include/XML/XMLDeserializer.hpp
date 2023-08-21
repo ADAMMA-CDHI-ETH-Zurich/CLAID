@@ -209,8 +209,19 @@ namespace claid
             template<typename T>
             void callPointer(const char* property, T*& member)
             {
+                std::string xmlStr;
+                currentXMLNode->toString(xmlStr);
+                Logger::printfln("XML %s %s", currentXMLNode->name.c_str(), xmlStr.c_str());
+
+                for(std::shared_ptr<XMLNode> child : currentXMLNode->children)
+                {
+                    Logger::printfln("Child %s", child->name.c_str());
+                }
+
                 std::shared_ptr<XMLNode> node = this->getChildNode(property);
 
+                 
+               
                 if (node.get() == nullptr)
                 {
                     if (!this->defaultValueCurrentlySet())
@@ -245,7 +256,12 @@ namespace claid
                 }
                 std::shared_ptr<XMLNode> parent = this->currentXMLNode;
                 this->currentXMLNode = node;
-                untypedReflector->invoke(static_cast<void*>(this), static_cast<void*>(member));               
+
+                bool isSequenceTmp = this->isSequence;
+                this->isSequence = false;
+
+                untypedReflector->invoke(static_cast<void*>(this), static_cast<void*>(member));  
+                this->isSequence = isSequenceTmp;             
                 this->currentXMLNode = parent;
             }
             
@@ -300,10 +316,12 @@ namespace claid
                 
                 if(!this->isSequence)
                 {
+                    Logger::printfln("Is no sequence");
                     return this->currentXMLNode->findChild(property);
                 }
                 else
                 {
+                    Logger::printfln("Is sequence");
                     size_t ctr = 0;
                     for(std::shared_ptr<XMLNode> child : this->currentXMLNode->children)
                     {

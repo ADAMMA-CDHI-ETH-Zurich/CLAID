@@ -4,7 +4,7 @@
 #include <map>
 #include <memory>
 #include <algorithm>
-
+#include "Logger/Logger.hpp"
 namespace claid
 {
     class XMLNode 
@@ -46,6 +46,7 @@ namespace claid
             {
                 for(std::shared_ptr<XMLNode> child : children)
                 {
+                    Logger::printfln("Find child %s\n", child->name.c_str());
                     if(child->name == name)
                     {
                         return child;
