@@ -61,13 +61,13 @@ namespace claid
 
     void RunTime::loadAndStart()
     {
+        Logger::printfln("load and start");
 
         // First, we parse all configs that already have been added.
         // These are configs that were registered before CLAID->start(); was called
         // Hence, we assume that the user wants to start all those modules (+ the ones added using addModule) simultaneously.
         // Therefore, at startup we process all configs already pushed to the channel and only switch to blocking mode after we are done.
         std::shared_ptr<XMLNode> xmlNode;
-        Logger::printfln("load and start");
 
         // Returns false when no more data on the channel.
         while(loadedXMLConfigsChannel.get(xmlNode, false))
@@ -114,7 +114,7 @@ namespace claid
         {
             CLAID_THROW(Exception, "Error in RunTime::start(), start was called twice !");
         }
-        printf("Starting loading thread\n");
+        Logger::printfln("Starting loading thread\n");
         // Some Modules, such as PythonModules, need to execute functions on the main thread of the RunTime during loading and initialization.
         // To do so, they insert Runnables to the runnablesChannel of the RunTime, which is processed below (see while loop).
         // Therefore, a deadlock would occur, if we call startModules from this thread, and the Modules would need to call functions
@@ -259,6 +259,11 @@ namespace claid
         return false;
     }
 
+    bool RunTime::allConfigsLoaded()
+    {
+        return this->loadedXMLConfigsChannel.size() == 0;
+    }
+
     void RunTime::executeRunnableInRunTimeThread(Runnable* runnable)
     {
         this->runnablesChannel.put(runnable);
@@ -296,5 +301,19 @@ namespace claid
     void RunTime::disableLoggingToFile()
     {
         Logger::disableLoggingToFile();
+    }
+
+    std::vector<Module*> RunTime::getRegisteredModulesByIdentifier(const std::string& moduleIdentifier)
+    {
+        std::vector<Module*> modules;
+        for(Module* module : this->modules)
+        {
+            Logger::printfln("MODULE NAME %s\n", module->getModuleName().c_str());
+            if(module->getModuleName() == moduleIdentifier)
+            {
+                modules.push_back(module);
+            }
+        }
+        return modules;
     }
 }

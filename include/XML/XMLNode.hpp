@@ -4,7 +4,7 @@
 #include <map>
 #include <memory>
 #include <algorithm>
-
+#include "Logger/Logger.hpp"
 namespace claid
 {
     class XMLNode 

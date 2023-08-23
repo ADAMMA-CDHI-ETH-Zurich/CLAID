@@ -3,6 +3,8 @@
 #include "Reflection/Reflect.hpp"
 #include <initializer_list>
 
+#include "CLAID.hpp"
+
 namespace claid
 {
     // Can be used to easily implement lists using a custom item identifier.
@@ -25,13 +27,12 @@ namespace claid
 
             }
 
-            ReflectedList(std::string identifier, T& val) : identifier(identifier), val(val)
+            ReflectedList(std::string identifier) : identifier(identifier)
             {
             }
 
-            ReflectedList(T& val) : identifier("item"), val(val)
+            ReflectedList(std::string identifier, T& val) : identifier(identifier), val(val)
             {
-
             }
 
             Reflect(ReflectedList<T>,
@@ -39,6 +40,14 @@ namespace claid
                 splitReflectInType(reflector, *this);
             )
 
+
+            #ifdef __PYTHON_WRAPPERS__
+            CustomReflectForReflector(ReflectedList<T>, claid::PythonWrapper::PybindWrapperGenerator<ReflectedList<T>>,
+                reflectFunction(getList);
+            )
+            #endif
+
+            
        
 
             template<typename Reflector>
@@ -107,6 +116,16 @@ namespace claid
             }
 
             T getList()
+            {
+                return this->val;
+            }
+
+            T& getListRef()
+            {
+                return this->val;
+            }
+
+            const T& getListRef() const
             {
                 return this->val;
             }
