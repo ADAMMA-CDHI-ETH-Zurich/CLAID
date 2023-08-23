@@ -22,11 +22,39 @@ public class MainActivity extends Activity {
 
         mTextView = binding.text;
 
-
-        CLAID.loadFromAssets("CLAID.xml");
         CLAID.setContext(this.getBaseContext());
+        CLAID.registerExceptionHandler(exception -> onCLAIDException(exception));
+        CLAID.loadFromAssets("CLAID.xml");
+        
         CLAID.startInSeparateThread();
 
         // CLAIDForegroundServiceManager.startService(getApplicationContext());
+    }
+
+    private void onCLAIDException(String exception)
+    {
+        runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+            // Code here will run in UI thread
+            AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
+            builder1.setMessage("CLAID encountered an exception:\n\"" + exception + "\"\n" +
+            "Press Ok to exit the application.");
+            builder1.setCancelable(true);
+
+            builder1.setPositiveButton(
+                    "Ok",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            System.exit(0);
+                        }
+                    });
+
+            AlertDialog alert11 = builder1.create();
+            alert11.show();
+        }
+        });
+
+        while(true);
     }
 }
