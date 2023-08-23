@@ -43,9 +43,12 @@ def create(type, path, *args):
         create_java_application(path)
     elif(type == "android_application"):
         create_android_application(path)
+    elif(type == "wearos_application"):
+        create_wearos_application(path)
     else:
         raise Exception("Keyword {} is unknown for claid create. Options are: [application, java_application].".format(type))
 
+    print("Created application \"{}\" successfully.".format(path))
 
 def create_application(path):
     create_application_folder(path)
@@ -62,6 +65,10 @@ def create_java_application(path):
 def create_android_application(path):
     create_application_folder(path)
     copy_files_from_template_folder(path, "AndroidCLAID")
+
+def create_wearos_application(path):
+    create_application_folder(path)
+    copy_files_from_template_folder(path, "WearOSCLAID")
 
 def copy_files_from_template_folder(path, application_type):
     path = resolve_path(path)

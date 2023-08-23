@@ -7,6 +7,7 @@ string(REPLACE ":" ";" CMAKE_PREFIX_PATH_TMP "$ENV{CMAKE_PREFIX_PATH}")
 list(APPEND CMAKE_MODULE_PATH $ENV{CLAID_CMAKE_MODULE_PATH})
 
 find_package(CLAID REQUIRED)
+
 include(${CMAKE_CURRENT_LIST_DIR}/CLAIDPackages.cmake)
 
 file(WRITE ${CMAKE_CURRENT_LIST_DIR}/CLAIDJavaDirectories.txt)
@@ -36,7 +37,7 @@ find_library( # Sets the name of the path variable.
         # Specifies the name of the NDK library that
         # you want CMake to locate.
         android )
-set(ABI ${ANDROID_ABI})
+ set(ABI ${ANDROID_ABI})
 
 target_link_libraries( # Specifies the target library.
         JavaCLAID
