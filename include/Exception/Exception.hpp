@@ -11,7 +11,6 @@
 #include <chrono>
 #include <thread>
 #include "Logger/Logger.hpp"
-#include "ExceptionHandler/ExceptionHandler.hpp"
 
 #define CLAID_THROW(ex, msg)\
 {\
@@ -20,11 +19,6 @@
     claid::Logger::printfln("%s", ex_str.str().c_str());\
 	claid::Logger::printfln("\n");\
 	std::this_thread::sleep_for(std::chrono::milliseconds(500));\
-	if(claid::ExceptionHandler::isExeceptionHandlerRegistered())\
-	{\
-		claid::ExceptionHandler::invokeExceptionHandler(ex_str.str(), __FILE__, __LINE__);\
-		std::this_thread::sleep_for(std::chrono::seconds(500000));\
-	}\
 	throw ex(ex_str.str(), __FILE__, __LINE__);\
 }
 // std::this_thread::sleep_for(std::chrono::milliseconds(1000));

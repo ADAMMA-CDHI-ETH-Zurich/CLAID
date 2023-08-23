@@ -1,5 +1,6 @@
 
 #include "Exception/Exception.hpp"
+#include "ExceptionHandler/ExceptionHandler.hpp"
 
 namespace claid {
 
@@ -34,7 +35,10 @@ const char* Exception::what() const noexcept
 			mMessage += i->what(maxMessageSize);
 
 	}
-
+	if(claid::ExceptionHandler::isExeceptionHandlerRegistered())
+	{
+		claid::ExceptionHandler::invokeExceptionHandler(mMessage, __FILE__, __LINE__);
+	}
 	return mMessage.c_str();
 }
 
