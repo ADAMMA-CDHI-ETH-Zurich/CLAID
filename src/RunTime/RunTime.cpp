@@ -189,6 +189,8 @@ namespace claid
                 }
                 catch(std::exception& e)
                 {
+                    					Logger::printfln("runnable cought\n");
+
                     runnable->setException(e.what());
                 }
             }
