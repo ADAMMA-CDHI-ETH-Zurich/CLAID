@@ -8,19 +8,21 @@ cc_binary(
         "claid_main.hh",
     ],
     deps = [
-        ":claid_dispatcher",
+        ":local_dispatching",
         ":claid_config",
     ]
-
 )
 
 cc_library(
-    name = "claid_dispatcher",
+    name = "local_dispatching",
     srcs = [
-        "claid_dispatcher.cc",
+        "module_table.cc",
+        "local_dispatching.cc",
     ],
     hdrs = [
-        "claid_dispatcher.hh",
+        "shared_queue.hh",
+        "module_table.hh",
+        "local_dispatching.hh",
     ],
     deps = [
         "@com_github_grpc_grpc//:grpc++",
@@ -28,6 +30,23 @@ cc_library(
         "//dispatch/proto:claidservice_cc_grpc",
     ],
 )
+
+# cc_library(
+#     name = "module_table",
+#     srcs = [
+#         "module_table.cc",
+#     ],
+#     hdrs = [
+#         "shared_queue.hh",
+#         "module_table.hh",
+#     ],
+#     deps = [
+#         "@com_github_grpc_grpc//:grpc++",
+#         "//dispatch/proto:claidservice_cc_proto",
+#         "//dispatch/proto:claidservice_cc_grpc",
+#     ],
+# )
+
 
 cc_library(
     name = "claid_config",

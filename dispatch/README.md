@@ -38,3 +38,14 @@ to control this by configuring a toolchain. See:
 
 https://bazel.build/extending/toolchains
 
+## Testing 
+
+Currently we are using the 'googletest' testing framework. 
+See: http://google.github.io/googletest/
+This could easily be switched out for a different framework. 
+
+To (build and) run a test target execute: 
+
+bazel test :local_dispatching_test 
+
+This assumes you are in the directory that defines that test target. 
