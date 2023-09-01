@@ -15,3 +15,16 @@ cc_library(
         "//dispatch/proto:claidservice_cc_grpc",
     ],
 )
+
+cc_library(
+    name = "claid_config",
+    srcs = [
+        "claid_config.cc",
+    ],
+    hdrs = [
+        "claid_config.hh",
+    ],
+    deps = [
+        "//dispatch/proto:claidservice_cc_proto",
+    ],
+)

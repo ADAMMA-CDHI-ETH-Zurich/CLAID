@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package claidservice;
+
+// Container for the central CLAID config file. 
+// TODO (patrick): change as you see fit, this just a starting point. 
+message ClaidConfig {
+  repeated HostConfig host_config = 1; 
+}
+
+message HostConfig {
+  string id = 1; 
+}
