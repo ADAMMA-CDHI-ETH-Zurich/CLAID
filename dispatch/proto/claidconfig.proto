@@ -10,4 +10,17 @@ message ClaidConfig {
 
 message HostConfig {
   string id = 1; 
+  string type = 2;
+  bool is_server = 3;
+  string server_address = 4;
+  repeated ModuleConfig modules = 5;
+}
+
+message ModuleConfig
+{
+  string id = 1; 
+  string type = 2;
+  repeated string input_channels = 3;
+  repeated string output_channels = 4;
+  map<string, string> properties = 5;
 }
