@@ -5,6 +5,7 @@ from create import create
 from build import build 
 from run import run
 from my_ip import my_ip 
+from patch import patch
 
 args = ""
 
@@ -21,7 +22,8 @@ def init():
            ("create", create),
            ("build", build),
            ("run", run),
-           ("my_ip", my_ip)
+           ("my_ip", my_ip),
+           ("patch", patch),
            ]
 
     for entry in map:

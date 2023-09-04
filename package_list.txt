@@ -1,4 +1,4 @@
-ModuleAPI;https://github.com/ADAMMA-CDHI-ETH-Zurich/ModuleAPI;main
+ModuleAPI;https://github.com/ADAMMA-CDHI-ETH-Zurich/ModuleAPI;legacy
 DataCollection;https://github.com/ADAMMA-CDHI-ETH-Zurich/DataCollection.git;main
 JavaCLAID;https://github.com/ADAMMA-CDHI-ETH-Zurich/JavaCLAID;main
 PyCLAID;https://github.com/ADAMMA-CDHI-ETH-Zurich/PyCLAID.git;main
