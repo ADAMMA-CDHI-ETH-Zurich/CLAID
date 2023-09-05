@@ -1,0 +1,10 @@
+
+cc_test(
+  name = "local_dispatching_test",
+  size = "small",
+  srcs = ["local_dispatching_test.cc"],
+  deps = [
+    "//dispatch/core:local_dispatching",
+    "@com_google_googletest//:gtest_main",
+  ],
+)

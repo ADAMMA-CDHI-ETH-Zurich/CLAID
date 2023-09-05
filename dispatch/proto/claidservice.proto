@@ -5,6 +5,7 @@ package claidservice;
 option go_package = "claid.ethz.ch/claidservice";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 // Service for modules to talk to the CLAID middleware.
 service ClaidService {
@@ -13,6 +14,9 @@ service ClaidService {
 
   // Get the modules to set up during initialization.
   rpc GetModuleList(ModuleListRequest) returns (ModuleListResponse) {}
+
+  // Init Modules 
+  rpc InitRuntime(InitRuntimeRequest) returns (google.protobuf.Empty) {}
 }
 
 message DataPackage {
@@ -41,26 +45,21 @@ message DataPackage {
 
 enum CtrlType {
   CTRL_UNSPECIFIED  = 0;
-  CTRL_MODULE_PING  = 1;  // module ping sent to local claid server. 
-  CTRL_MODULE_INIT  = 2;  // sent by module to advertise its readyness and i/o channels
-  CTRL_MODULE_READY = 3;  // sent to module when the local middleware is ready 
-  CTRL_STATUS       = 4;  // Sent from a middleware client up the tree 
-  CTRL_ACTION       = 5;  // sent to module when the local middleware is ready 
-  CTRL_ERROR        = 6;  // Error occured   
+  CTRL_RUNTIME_PING = 1;  // Client sends this upon connect and periodically if no packages have been sent
+  // CTRL_MODULE_PING  = 2;  // module ping sent to local claid server. 
+  // CTRL_MODULE_READY = 4;  // sent to module when the local middleware is ready 
+  // CTRL_STATUS       = 5;  // Sent from a middleware client up the tree 
+  // CTRL_ACTION       = 6;  // sent to module when the local middleware is ready 
+  CTRL_ERROR        = 7;  // Error occured   
 }
 
 message ControlPackage {
   CtrlType ctrl_type                    = 1;
-  optional ChannelMap channel_map       = 2; // CTRL_MODULE_INIT: list of input/output channels
-  optional AccumulatedStatus status     = 3; // CTRL_STATUS: status sent towards root server 
-  optional ErrorMsg error_msg           = 4; // CTRL_ERROR: Error report sent towards root server
-  optional ActionRequest action_request = 5; // CTRL_ACTION: action request sent to all children 
+  optional Runtime runtime              = 2; // CTRL_RUNTIME_PING 
+  optional AccumulatedStatus status     = 4; // CTRL_STATUS: status sent towards root server 
+  optional ErrorMsg error_msg           = 5; // CTRL_ERROR: Error report sent towards root server
+  optional ActionRequest action_request = 6; // CTRL_ACTION: action request sent to all children 
                                              // of the claid instance
-}
-
-message ChannelMap {
-  repeated DataPackage input_channels = 1; 
-  repeated DataPackage output_channels = 2;
 }
 
 message AccumulatedStatus {
@@ -119,18 +118,35 @@ message TracePoint {
  string node_id = 2;  // full module id:  host_id:module_type
 }
 
+// Sent by the client to get the list of desired modules. 
 message ModuleListRequest {
-  Runtime runtime = 1; 
+  Runtime runtime = 1;
 }
 
+// List of modules that the runtime client is expected to instantiate. 
 message ModuleListResponse {
+  message ModuleDescriptor {
+    string module_id = 1;
+    string module_class = 2;
+    map<string, string> properties = 3;
+  }
+  
   repeated ModuleDescriptor descriptors = 1;
 }
 
-message ModuleDescriptor {
-  string module_id = 1; 
-  string params = 2;  
+// Sent by the client after the modules have been instantiated 
+// to inform the server what channels will be sent. 
+message InitRuntimeRequest {
+  message ModuleChannels {
+    string module_id = 1;
+    map<string, DataPackage> channels = 2; // key is channel ID, 
+                                         // the data packages contain the src&target modules 
+  }
+
+  Runtime runtime = 1;
+  repeated ModuleChannels modules = 2;
 }
+
 
 enum Runtime {
   RUNTIME_UNSPECIFIED = 0;
@@ -139,3 +155,20 @@ enum Runtime {
   RUNTIME_JAVA = 3;
   RUNTIME_PYTHON = 4;
 }
+
+// message AppConfig {
+//   repeated HostConfig hosts = 1;
+// }
+
+// message HostConfig {
+//   string host_id = 1;
+//   repeated ModuleConfig modules = 2;  
+// }
+
+// message ModuleConfig {
+//   string mod_id = 1; 
+//   string mod_type = 2;
+//   repeated string in_channels = 3;
+//   repeated string out_channels = 4;
+//   map<string, string> properties = 5;
+// }
