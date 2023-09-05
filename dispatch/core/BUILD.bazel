@@ -3,9 +3,14 @@ package(default_visibility = ["//visibility:public"])
 
 cc_binary(
     name = "claid_test",
-    srcs = glob(["**/*.cc", "**/*.hh"]),
+    srcs = glob(["CLAIDConfig/*.cc", "CLAIDConfig/*.hh",
+    "Exception/*.cc", "Exception/*.hh",
+    "ExceptionHandler/*.cc", "ExceptionHandler/*.hh",
+    "Logger/*.cc", "Logger/*.hh",
+    "Router/*.cc", "Router/*.hh",
+    "claid_main.cc", "claid_main.hh",
+    "shared_queue.hh"]),
     deps = [
-        ":local_dispatching",
         ":claid_config",
         "@com_google_protobuf//:protobuf",
     ]

@@ -26,7 +26,6 @@ namespace claid
 
         std::cout << str << "\n";
 
-        return;
         this->buildRoutingTableFromTree(claidConfig, currentHost);
     }
 
