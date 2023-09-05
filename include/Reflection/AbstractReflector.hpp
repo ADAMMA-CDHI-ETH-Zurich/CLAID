@@ -1,7 +1,7 @@
 #pragma once
 
-#include "MemberDetector.h"
-#include "NonMemberDetector.h"
+#include "Reflection/MemberDetector.hpp"
+#include "Reflection/NonMemberDetector.hpp"
 #include "NonIntrusiveReflectors/all.hpp"
 
 HAS_MEM_DETECTOR(reflect)

@@ -3,13 +3,11 @@ package(default_visibility = ["//visibility:public"])
 
 cc_binary(
     name = "claid_test",
-    srcs = [
-        "claid_main.cc",
-        "claid_main.hh",
-    ],
+    srcs = glob(["**/*.cc", "**/*.hh"]),
     deps = [
         ":claid_dispatcher",
         ":claid_config",
+        "@com_google_protobuf//:protobuf",
     ]
 
 )
@@ -32,12 +30,13 @@ cc_library(
 cc_library(
     name = "claid_config",
     srcs = [
-        "claid_config.cc",
+        "CLAIDConfig/CLAIDConfig.cc",
     ],
     hdrs = [
-        "claid_config.hh",
+        "CLAIDConfig/CLAIDConfig.hh",
     ],
     deps = [
         "//dispatch/proto:claidservice_cc_proto",
+        "@com_google_protobuf//:protobuf",
     ],
 )

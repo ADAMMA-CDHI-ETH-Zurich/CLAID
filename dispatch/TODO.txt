@@ -1,4 +1,4 @@
-Middleware Components
+mMiddleware Components
 
 Composition: ClaidMiddleware owns
             * Router owns
@@ -14,7 +14,7 @@ Composition: ClaidMiddleware owns
 
 * Router: 
         - routes between modules (both local and global)
-          maintains a mapping of module_id --> dispatcher
+          maintains a mapping of host:module_id --> dispatcher
 
 * DispatcherServer ({unix socket|tcp} server mode) implements Dispatcher interface
         - send/receive packages to/from modules (== DispatcherClient) 

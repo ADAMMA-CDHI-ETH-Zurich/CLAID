@@ -1,4 +1,4 @@
-#include "XMLModules/XMLReceiverModule.hpp"
+#include "include/XMLModules/XMLReceiverModule.hpp"
 #include "XML/XMLDocument.hpp"
 
 namespace claid
