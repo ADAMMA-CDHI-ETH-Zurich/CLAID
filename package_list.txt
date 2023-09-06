@@ -7,3 +7,4 @@ MobileDataTypes;https://github.com/ADAMMA-CDHI-ETH-Zurich/MobileDataTypes.git;ma
 MobileDataCollectors;https://github.com/ADAMMA-CDHI-ETH-Zurich/MobileDataCollectors.git;main
 GalaxyWatchCollector;https://github.com/ADAMMA-CDHI-ETH-Zurich/GalaxyWatchCollectorDDB.git;main
 CROCOStudy;https://github.com/ADAMMA-CDHI-ETH-Zurich/CROCOStudy.git;main
+AndroidServices;https://github.com/ADAMMA-CDHI-ETH-Zurich/AndroidServices.git;main
