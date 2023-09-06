@@ -16,13 +16,15 @@ namespace claid {
 // Channel key is tuple(channelId, source, target).
 typedef std::tuple<std::string, std::string, std::string> ChannelKey;
 inline ChannelKey make_chan_key(const std::string& chanId, const std::string& src, const std::string& tgt) {
-  return (src < tgt) ? std::make_tuple(chanId, src, tgt) : std::make_tuple(chanId,tgt, src);
+  return std::make_tuple(chanId, src, tgt);
 }
 
 class ChannelMap {
   public:
     // Initializes the channel map with the expected set of channels. 
     void setExpectedChannels(const std::set<ChannelKey>& expectedChannels);
+
+    void setChannel(const ChannelKey& channelKey);
 
     // Verifies that the given channels are expected and sets their 
     // data types. 
@@ -43,14 +45,24 @@ typedef std::map<claidservice::Runtime, std::shared_ptr<SharedQueue<claidservice
 
 class ModuleTable {
   public:
-    virtual ~ModuleTable() {} 
+    virtual ~ModuleTable() {}
+    inline SharedQueue<claidservice::DataPackage>& inputQueue() {return fromModuleQueue;}
+    void setModule(const std::string& moduleId, 
+        const std::string& moduleClass, 
+        const claidservice::Runtime runtime, 
+        const std::map<std::string, std::string>& properties);
+    void setChannel(const std::string& channelId, const std::string& source, const std::string& target);
+    SharedQueue<claidservice::DataPackage>* lookupOutputQueue(const std::string& moduleId);
 
-  public:
+  private:
     SharedQueue<claidservice::DataPackage> fromModuleQueue;   
     std::map<std::string, claidservice::Runtime>  moduleRuntimeMap;  // map module ==> runtime
+    std::map<std::string, std::map<std::string, std::string>> moduleProperties;  // properties for each module 
     std::map<claidservice::Runtime, std::unordered_set<std::string>> runtimeModuleMap;  // map runtime to set of modules 
     RuntimeQueueMap runtimeQueueMap; // map from runtime to outgoing queue 
     ChannelMap channelMap; // map from <channel_id, src, tgt> to DataPacket (= data type of channel )
+
+  friend class ServiceImpl;
 };
 
 }  // namespace claid  

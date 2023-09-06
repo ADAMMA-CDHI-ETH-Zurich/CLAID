@@ -1,12 +1,13 @@
 #ifndef SYNC_UTIL_HH_
 #define SYNC_UTIL_HH_
 
+
+#include <condition_variable>
 #include <list>
 #include <memory>
 #include <mutex>
 
 namespace claid {
-
 
 template<class T>
 class SharedQueue
