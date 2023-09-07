@@ -46,7 +46,12 @@ class ModuleTable {
     virtual ~ModuleTable() {} 
 
   public:
-    SharedQueue<claidservice::DataPackage> fromModuleQueue;   
+    ModuleTable(SharedQueue<claidservice::DataPackage>& fromModuleQueue) : fromModuleQueue(fromModuleQueue)
+    {
+
+    }
+
+    SharedQueue<claidservice::DataPackage>& fromModuleQueue;
     std::map<std::string, claidservice::Runtime>  moduleRuntimeMap;  // map module ==> runtime
     std::map<claidservice::Runtime, std::unordered_set<std::string>> runtimeModuleMap;  // map runtime to set of modules 
     RuntimeQueueMap runtimeQueueMap; // map from runtime to outgoing queue 
