@@ -9,9 +9,11 @@ cc_binary(
     "Logger/*.cc", "Logger/*.hh",
     "Router/*.cc", "Router/*.hh",
     "claid_main.cc", "claid_main.hh",
-    "shared_queue.hh"]),
+    "shared_queue.hh", 
+    "module_table.hh"]),
     deps = [
         ":claid_config",
+        ":local_dispatching",
         "@com_google_protobuf//:protobuf",
     ]
 )

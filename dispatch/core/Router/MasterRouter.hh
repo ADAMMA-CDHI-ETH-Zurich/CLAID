@@ -1,11 +1,14 @@
 #pragma once
 
 #include "dispatch/core/Router/Router.hh"
+#include "dispatch/core/Router/LocalRouter.hh"
+#include "dispatch/core/Router/ServerRouter.hh"
+#include "dispatch/core/Router/ClientRouter.hh"
 
 namespace claid
 {
 
-    // Forwards a package to either the LocalRouter, ClientRouter or ServerRouter, depending on the target of a package.
+    // Forwards a package to either the LocalRouter, ClientRouter or ServerRouter, depending on the target of the package.
     class MasterRouter final : public Router
     {
         private:
@@ -35,7 +38,7 @@ namespace claid
             // a direct client of our server dispatcher, or a client of any of the clients of the ServerDispatcher (i.e., route downards).
             // If we cannot reach the host from here (i.e., it is not "below" us in the routing tree), we send it to the ClientDispatcher (meaning we are 
             // a client connected to another server, hence we are routing upwards in the tree).
-            std::map<std::string /* adress = host:module */, SharedQueue<DataPackage>> routingTable;
+            std::map<std::string /* adress = host:module */, SharedQueue<claidservice::DataPackage>*> routingTable;
 
             // The routing tree resulting from the configuration file.
             // This tree will be the same on each host, since they all share the same configuration file.
@@ -51,13 +54,13 @@ namespace claid
             absl::Status buildRoutingTableFromTree(
                 const CLAIDConfig& config, const std::string& currentHost);
 
-            void initialize() override final;
+            absl::Status initialize() override final;
 
         public:
 
-            MasterRouter(SharedQueue<claidservice::DataPackage>& incomingQueue, ModuleTable& moduleTable, ServerTable& serverTable, ClientTable& clienTable);
+            MasterRouter(SharedQueue<claidservice::DataPackage>& incomingQueue, ModuleTable& moduleTable);
             absl::Status buildRoutingTable(std::string currentHost, const CLAIDConfig& config);
 
-            void routePackage(std::shared_ptr<DataPackage> dataPackage) const override final;
+            void routePackage(std::shared_ptr<DataPackage> dataPackage) override final;
     };
 }

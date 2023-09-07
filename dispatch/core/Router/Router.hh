@@ -33,15 +33,13 @@ namespace claid
         protected:
 
             virtual absl::Status initialize();
-            virtual void routePackage(std::shared_ptr<DataPackage> package);
+            virtual void routePackage(std::shared_ptr<DataPackage> package) = 0;
 
             void runRouting();
 
 
         public:
-            Router(SharedQueue<claidservice::DataPackage>& incomingQueue) : incomingQueue(incomingQueue)
-            {
-            }
+            Router(SharedQueue<claidservice::DataPackage>& incomingQueue);
 
             virtual ~Router() {}
 
@@ -66,7 +64,7 @@ namespace claid
         return absl::OkStatus();
     }
 
-    inline void Router::getTargetUser(const DataPackage& package, std::string& user)
+    inline void getTargetUser(const DataPackage& package, std::string& user)
     {
         user = package.target_user_token();    
     }

@@ -1,23 +1,23 @@
 #include "dispatch/core/Router/MasterRouter.hh"
 #include "dispatch/core/Router/RoutingTreeParser.hh"
 #include "dispatch/core/Exception/Exception.hh"
+#include "dispatch/core/Logger/Logger.hh"
 
 namespace claid
 {
 
-    MasterRouter(
+    MasterRouter::MasterRouter(
         SharedQueue<claidservice::DataPackage>& incomingQueue, 
-        ModuleTable& moduleTable, 
-        ServerTable& serverTable, ClientTable& clienTable) : incomingQueue(incomingQueue)
+        ModuleTable& moduleTable) : Router(incomingQueue)
     {
         this->localRouter = 
             std::static_pointer_cast<Router>(std::make_shared<LocalRouter>(this->localRouterQueue, moduleTable));
 
         this->serverRouter = 
-            std::static_pointer_cast<Router>(std::make_shared<ServerRouter>(this->serverRouterQueue, serverTable));
+            std::static_pointer_cast<Router>(std::make_shared<ServerRouter>(this->serverRouterQueue));
         
         this->localRouter 
-            = std::static_pointer_cast<Router>(std::make_shared<ClientRouter>(this->clientRouterQueue, clienTable));
+            = std::static_pointer_cast<Router>(std::make_shared<ClientRouter>(this->clientRouterQueue));
     }
 
     // Parses the host connection information from the config file into a routing tree.
@@ -67,19 +67,19 @@ namespace claid
 
             if(hostname == currentHost)
             {
-                this->routingTable.insert(make_pair(hostname, this->localRouterQueue));
+                this->routingTable.insert(make_pair(hostname, &this->localRouterQueue));
             }
             // If the host is "below" us in the routing tree (one of our children or children's children),
             // we route it via the ServerDispatcher.
             else if(std::find(childHosts.begin(), childHosts.end(), hostname) != childHosts.end())
             {
-                this->routingTable.insert(make_pair(hostname, this->serverRouterQueue));
+                this->routingTable.insert(make_pair(hostname, &this->serverRouterQueue));
             }
             // Else, the host has to be reachable via a host "above" us in the routing tree (a server we connect to either directly or via another server).
             // Hence, we route it via the ClientDispatcher.
             else
             {
-                this->routingTable.insert(make_pair(hostname, this->clientRouterQueue));
+                this->routingTable.insert(make_pair(hostname, &this->clientRouterQueue));
             }
         }
         return absl::OkStatus();
@@ -87,18 +87,17 @@ namespace claid
 
     void MasterRouter::routePackage(std::shared_ptr<DataPackage> dataPackage) 
     {
-        const std::string& target_host_module = dataPackage.target_host_module();
 
         std::string targetHost;
         std::string targetModule;
 
-        absl::Status status = Router::getTargetHostAndModule(dataPackage, targetHost, targetModule);
+        absl::Status status = getTargetHostAndModule(*dataPackage.get(), targetHost, targetModule);
         
         if(!status.ok())
         {
             // Do what? 
             // return status;
-            printf("Error, failed to parse host from data package failed. Host %s is invalid.\n", dataPackage->target_host_module().c_str())
+            Logger::printfln("Error, failed to parse host from data package failed. Host %s is invalid.\n", dataPackage->target_host_module().c_str());
             return;
         }
 
@@ -106,17 +105,35 @@ namespace claid
         if(it == this->routingTable.end())
         {
             // Do what?
-            printf("Routing package failed. Host %s is unknown.\n", targetHost.c_str());
+            Logger::printfln("Routing package failed. Host %s is unknown.\n", targetHost.c_str());
             return;
         }
 
-        it->second.push_back(dataPackage);
+        it->second->push_back(dataPackage);
     }
 
-    void MasterRouter::initialize()
+    absl::Status MasterRouter::initialize()
     {
-        this->localRouter->start();
-        this->serverRouter->start();
-        this->clientRouter->start();
+        absl::Status status;
+        status = this->localRouter->start();
+        if(!status.ok())
+        {
+            return status;
+        }
+
+        status = this->serverRouter->start();
+        if(!status.ok())
+        {
+            return status;
+        }
+
+        status = this->clientRouter->start();
+        if(!status.ok())
+        {
+            return status;
+        }
+
+        return absl::OkStatus();
+
     }
 }

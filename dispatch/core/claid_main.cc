@@ -21,16 +21,16 @@ int main()
     // will all output their received packages to the master queue.
     // The master queue is processed by the MasterRouter, which forwards to
     // the LocalRouter, ServerRouter or ClientRouter as required. 
-    SharedQueue<claidservice::DataPackage> masterQueue;
+    claid::SharedQueue<claidservice::DataPackage> masterQueue;
 
     // Pass the masterQueue to the lookup tables, so they all know where to put packages.
-    ModuleTable localModuleTable(masterQueue);
-    ServerTable serverTable(masterQueue);
-    ClientTable clientTable(masterQueue);
+    claid::ModuleTable localModuleTable(masterQueue);
+   // ServerTable serverTable;//(masterQueue);
+   // ClientTable clientTable;//(masterQueue);
 
 
     
-    claid::MasterRouter router(masterQueue, localModuleTable, serverTable, clientTable);
+    claid::MasterRouter router(masterQueue, localModuleTable);
     router.start();
 
 

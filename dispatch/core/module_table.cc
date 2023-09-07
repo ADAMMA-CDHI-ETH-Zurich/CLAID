@@ -29,8 +29,8 @@ Status ChannelMap::setChannelTypes(const string& moduleId,
             return Status(grpc::INVALID_ARGUMENT, "Invalid packet type for channel");
         }
 
-        const string& src = inputIt->second.source();
-        const string& tgt = inputIt->second.target();
+        const string& src = inputIt->second.source_host_module();
+        const string& tgt = inputIt->second.target_host_module();
 
         // At least source or target has to be the module in question.
         if ((moduleId != src) && (moduleId != tgt)) {
@@ -57,15 +57,15 @@ Status ChannelMap::setChannelTypes(const string& moduleId,
 
 bool claid::compPacketType(const DataPackage& ref, const DataPackage& val) {
     return (ref.channel() == val.channel()) &&
-        (ref.source() == val.source()) && 
-        (ref.target() == val.target()) &&
+        (ref.source_host_module() == val.source_host_module()) && 
+        (ref.target_host_module() == val.target_host_module()) &&
         (ref.payload_oneof_case() == val.payload_oneof_case());
 }
 
 bool claid::validPacketType(const DataPackage& ref) {
     return !(ref.channel().empty() || 
-        ref.source().empty() ||
-        ref.target().empty() ||
+        ref.source_host_module().empty() ||
+        ref.target_host_module().empty() ||
         ref.has_control_val());
 }
 
@@ -73,7 +73,7 @@ bool ChannelMap::isValid(const DataPackage& pkt) const {
     shared_lock<shared_mutex> lock(const_cast<shared_mutex&>(mapMutex));
 
     // look up the channel and make sure it's valid 
-    auto key = ChannelKey(pkt.channel(), pkt.source(), pkt.target());
+    auto key = ChannelKey(pkt.channel(), pkt.source_host_module(), pkt.target_host_module());
     auto it = chanMap.find(key);
     if (it == chanMap.end()) {
         return false; 

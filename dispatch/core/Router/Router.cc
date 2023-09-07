@@ -2,6 +2,9 @@
 
 namespace claid
 {
+    Router::Router(SharedQueue<claidservice::DataPackage>& incomingQueue) : incomingQueue(incomingQueue)
+    {
+    }
 
     absl::Status Router::initialize()
     {
@@ -13,7 +16,7 @@ namespace claid
         while(this->running)
         {
             std::shared_ptr<DataPackage> package;
-            package = this->inputQueue.pop_front();
+            package = this->incomingQueue.pop_front();
             this->routePackage(package);
         }
     }
@@ -35,7 +38,7 @@ namespace claid
 
     void Router::enqueuePackageForRouting(std::shared_ptr<DataPackage> dataPackage)
     {
-        this->inputQueue.push_back(dataPackage);
+        this->incomingQueue.push_back(dataPackage);
     }
 
   
