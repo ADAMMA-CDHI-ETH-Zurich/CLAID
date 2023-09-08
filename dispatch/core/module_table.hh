@@ -49,7 +49,6 @@ class ModuleTable {
     inline SharedQueue<claidservice::DataPackage>& inputQueue() {return fromModuleQueue;}
     void setModule(const std::string& moduleId, 
         const std::string& moduleClass, 
-        const claidservice::Runtime runtime, 
         const std::map<std::string, std::string>& properties);
     void setChannel(const std::string& channelId, const std::string& source, const std::string& target);
     SharedQueue<claidservice::DataPackage>* lookupOutputQueue(const std::string& moduleId);

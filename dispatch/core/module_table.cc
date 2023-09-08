@@ -86,8 +86,9 @@ bool ChannelMap::isValid(const DataPackage& pkt) const {
 }
 
 void ModuleTable::setModule(const string& moduleId, const string& moduleClass, 
-        const Runtime runtime, const map<string, string>& properties) {
+        const map<string, string>& properties) {
     // TODO: verify no module is registered incorreclty multiple times
+    auto runtime = Runtime::RUNTIME_CPP; 
     moduleRuntimeMap[moduleId] = runtime;
     moduleProperties[moduleId] = properties; 
     runtimeModuleMap[runtime].insert(moduleId);

@@ -122,6 +122,7 @@ message TracePoint {
 // Sent by the client to get the list of desired modules. 
 message ModuleListRequest {
   Runtime runtime = 1;
+  // add supported modules  
 }
 
 // List of modules that the runtime client is expected to instantiate. 
