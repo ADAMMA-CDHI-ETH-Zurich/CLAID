@@ -12,6 +12,10 @@ void ChannelMap::setExpectedChannels(const set<ChannelKey>& expectedChannels) {
     }
 }
 
+void ChannelMap::setChannel(const ChannelKey& channelKey) {
+    chanMap[channelKey] = nullptr;
+}
+
 Status ChannelMap::setChannelTypes(const string& moduleId, 
             const google::protobuf::Map<string, DataPackage>& channels) {
 
@@ -79,5 +83,32 @@ bool ChannelMap::isValid(const DataPackage& pkt) const {
         return false; 
     }
     return compPacketType(*it->second, pkt);
+}
+
+void ModuleTable::setModule(const string& moduleId, const string& moduleClass, 
+        const map<string, string>& properties) {
+    // TODO: verify no module is registered incorreclty multiple times
+    auto runtime = Runtime::RUNTIME_CPP; 
+    moduleRuntimeMap[moduleId] = runtime;
+    moduleProperties[moduleId] = properties; 
+    runtimeModuleMap[runtime].insert(moduleId);
+    if (!runtimeQueueMap[runtime]) {
+        runtimeQueueMap[runtime] = make_shared<SharedQueue<DataPackage>>(); 
+    } 
+}
+
+void ModuleTable::setChannel(const string& channelId, const string& source, const string& target) {
+    channelMap.setChannel(make_chan_key(channelId, source, target));
+}
+
+SharedQueue<DataPackage>* ModuleTable:: lookupOutputQueue(const string& moduleId) {
+    auto rt = moduleRuntimeMap[moduleId];
+    if (rt != Runtime::RUNTIME_UNSPECIFIED) {
+        auto outQueue = runtimeQueueMap[rt];
+        if (outQueue) {
+            return outQueue.get(); 
+        }
+    }
+    return nullptr;
 }
 

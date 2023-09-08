@@ -71,6 +71,7 @@ class DispatcherServer {
     DispatcherServer(const std::string& addr, claid::ModuleTable& modTable);
     virtual ~DispatcherServer() {};
     bool start();
+    void shutdown();
 
   private:
     void buildAndStartServer();

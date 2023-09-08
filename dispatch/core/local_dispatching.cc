@@ -98,6 +98,22 @@ ServiceImpl::ServiceImpl(ModuleTable& modTable)
 
 Status ServiceImpl::GetModuleList(ServerContext* context, 
         const ModuleListRequest* req, ModuleListResponse* resp) {
+    // Iterate over the modules and copy them over. 
+    for(auto it : moduleTable.moduleRuntimeMap) {
+        if (it.second == req->runtime()) {
+            auto desc = resp->add_descriptors();
+            desc->set_module_id(it.first);
+
+            // google::protobuf::Map<std::string, std::string> propCopy(
+            //     moduleTable.moduleProperties.begin(), 
+            //     moduleTable.moduleProperties.end());
+
+            desc->mutable_properties()->insert(
+                moduleTable.moduleProperties[it.first].begin(), 
+                moduleTable.moduleProperties[it.first].end()); 
+        }
+    }
+
     return Status::OK;
 }
 
@@ -189,17 +205,22 @@ DispatcherServer::DispatcherServer(const string& addr, ModuleTable& modTable)
 
 bool DispatcherServer::start() {
     buildAndStartServer(); 
+    if (server) {
+        std::cout << "Server listening on " << addr << std::endl;
+    }
+    return bool(server);
+}
 
-    std::cout << "Server listening on " << addr << std::endl;
+void DispatcherServer::shutdown() {
+    server->Shutdown();
     server->Wait();
-    return true; 
 }
 
 void DispatcherServer::buildAndStartServer() {
   ServerBuilder builder;
   builder.AddListeningPort(addr, grpc::InsecureServerCredentials());
   builder.RegisterService(&serviceImpl);
-  std::unique_ptr<Server> server(builder.BuildAndStart());
+  server = builder.BuildAndStart();
 }
 
 DispatcherClient::DispatcherClient(const string& socketPath,

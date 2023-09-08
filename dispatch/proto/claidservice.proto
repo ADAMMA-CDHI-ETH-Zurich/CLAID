@@ -21,7 +21,7 @@ service ClaidService {
 
 message DataPackage {
   string id = 1;     // Unique ID of this package 
-  string channel = 2; 
+  string channel = 2;
   string source_host_module = 3; // originating module in the format host_id:module_id
   string target_host_module = 4; // target module in the format host_id:module_id
   string source_user_token = 5;  // id token of the user / system entity that created this package. 
@@ -122,6 +122,7 @@ message TracePoint {
 // Sent by the client to get the list of desired modules. 
 message ModuleListRequest {
   Runtime runtime = 1;
+  // add supported modules  
 }
 
 // List of modules that the runtime client is expected to instantiate. 
