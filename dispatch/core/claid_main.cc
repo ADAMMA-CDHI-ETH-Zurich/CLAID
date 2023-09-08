@@ -23,24 +23,24 @@ int main()
     // the LocalRouter, ServerRouter or ClientRouter as required. 
     claid::SharedQueue<claidservice::DataPackage> masterQueue;
 
-    // Pass the masterQueue to the lookup tables, so they all know where to put packages.
-    claid::ModuleTable localModuleTable(masterQueue);
-   // ServerTable serverTable;//(masterQueue);
-   // ClientTable clientTable;//(masterQueue);
+//     // Pass the masterQueue to the lookup tables, so they all know where to put packages.
+//     claid::ModuleTable localModuleTable(masterQueue);
+//    // ServerTable serverTable;//(masterQueue);
+//    // ClientTable clientTable;//(masterQueue);
 
 
     
-    claid::MasterRouter router(masterQueue, localModuleTable);
-    router.start();
+//     claid::MasterRouter router(masterQueue, localModuleTable);
+//     router.start();
 
 
-    if(!router.buildRoutingTable("alex_client", *configPtr.get()).ok())
-    {
-        if(!claid::configToJson(configPtr, output).ok())
-        {
-            printf("Failed to build routing table\n");
-            exit(0);
-        }
-    }
+//     if(!router.buildRoutingTable("alex_client", *configPtr.get()).ok())
+//     {
+//         if(!claid::configToJson(configPtr, output).ok())
+//         {
+//             printf("Failed to build routing table\n");
+//             exit(0);
+//         }
+//     }
     
 }

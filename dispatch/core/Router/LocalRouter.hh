@@ -55,15 +55,15 @@ namespace claid
 
             bool getRuntimeOfModule(const std::string& moduleName, claidservice::Runtime& runtime)
             {
-                auto it = this->moduleTable.moduleRuntimeMap.find(moduleName);
+                // auto it = this->moduleTable.moduleRuntimeMap.find(moduleName);
 
-                if(it == this->moduleTable.moduleRuntimeMap.end())
-                {
-                    runtime = claidservice::Runtime::RUNTIME_UNSPECIFIED;
-                    return false;
-                }
+                // if(it == this->moduleTable.moduleRuntimeMap.end())
+                // {
+                //     runtime = claidservice::Runtime::RUNTIME_UNSPECIFIED;
+                //     return false;
+                // }
 
-                runtime = it->second;
+                // runtime = it->second;
 
                 return true;
             }
@@ -72,15 +72,15 @@ namespace claid
                 claidservice::Runtime runtime, 
                 std::shared_ptr<SharedQueue<claidservice::DataPackage>>& queue)
             {
-                auto it = this->moduleTable.runtimeQueueMap.find(runtime);
+                // auto it = this->moduleTable.runtimeQueueMap.find(runtime);
 
-                if(it == this->moduleTable.runtimeQueueMap.end())
-                {
-                    queue = nullptr;
-                    return false;
-                }
+                // if(it == this->moduleTable.runtimeQueueMap.end())
+                // {
+                //     queue = nullptr;
+                //     return false;
+                // }
                 
-                queue = it->second;
+                // queue = it->second;
 
                 return true;
             }
