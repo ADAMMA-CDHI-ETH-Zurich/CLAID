@@ -1,4 +1,4 @@
-#include "CLAID.hh"
+#include "dispatch/core/CLAID.hh"
 #include "dispatch/core/Router/RoutingQueueMerger.hh"
 #include "dispatch/core/Router/MasterRouter.hh"
 #include "dispatch/core/Configuration/Configuration.hh"
@@ -25,7 +25,7 @@ namespace claid
 
         status = config.getHostDescriptions(hostDescriptions);
         CHECK_STATUS(status);
-        
+
         status = config.getModuleDescriptions(moduleDescriptions);
         CHECK_STATUS(status);
 
@@ -66,7 +66,7 @@ namespace claid
     }
 
     absl::Status populateModuleTable(
-        const ModuleDescriptionMap& moduleDescriptions, 
+        const ModuleDescriptionMap& moduleDescriptions,
         const ChannelDescriptionMap& channelDescriptions,
         ModuleTable& moduleTable)
     {
@@ -74,8 +74,8 @@ namespace claid
         {
             const ModuleDescription& moduleDescription = entry.second;
 
-            moduleTable.setModule(moduleDescription.id, 
-                moduleDescription.moduleClass, 
+            moduleTable.setModule(moduleDescription.id,
+                moduleDescription.moduleClass,
                 moduleDescription.properties);
         }
 

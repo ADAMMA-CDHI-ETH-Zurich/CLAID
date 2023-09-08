@@ -1,4 +1,5 @@
 
+package(default_visibility = ["//visibility:public"])
 
 FRAMEWORK_DEPS = [
     "@com_google_googletest//:gtest_main",
@@ -9,15 +10,23 @@ cc_test(
   size = "small",
   srcs = ["local_dispatching_test.cc"],
   deps = [
+    ":testmessages_cc_proto",
     "//dispatch/core:local_dispatching",
-  ] + FRAMEWORK_DEPS, 
+  ] + FRAMEWORK_DEPS,
 )
 
-# cc_test(
-#   name = "shared_queue_test",
-#   size = "small",
-#   srcs = ["shared_queue_test.cc"],
-#   deps = [
-#     "//dispatch/core:shared_queue",
-#   ] + FRAMEWORK_DEPS, 
-# )
+proto_library(
+    name = "testmessages_proto",
+    srcs = [
+        "testmessages.proto",
+    ],
+    # deps = [
+    #     "@com_google_protobuf//:empty_proto",
+    #     "@com_google_protobuf//:timestamp_proto",
+    # ],
+)
+
+cc_proto_library(
+    name = "testmessages_cc_proto",
+    deps = [":testmessages_proto"],
+)
