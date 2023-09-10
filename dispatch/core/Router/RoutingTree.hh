@@ -87,7 +87,7 @@ namespace claid
                 
                 // Int of the pair is the "intendation" (i.e., level in the tree).
                 std::stack<std::pair<int, RoutingNode*>> nodesToCheck;
-                nodesToCheck.push(make_pair(0, this->rootNode));
+                nodesToCheck.push(std::make_pair(0, this->rootNode));
 
                 std::pair<int, RoutingNode*> currentEntry;
 
@@ -108,7 +108,7 @@ namespace claid
 
                     for(RoutingNode* child : currentNode->children)
                     {
-                        nodesToCheck.push(make_pair(level + 1, child));
+                        nodesToCheck.push(std::make_pair(level + 1, child));
                     }
                 }
             }

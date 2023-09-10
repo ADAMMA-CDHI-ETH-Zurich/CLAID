@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <map>
 
 namespace claid
 {
@@ -11,4 +12,6 @@ namespace claid
         std::string hostServerAddress;
         std::string connectTo;
     };
+
+    typedef std::map<std::string, HostDescription> HostDescriptionMap;
 }

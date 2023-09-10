@@ -7,8 +7,8 @@ namespace claid
     class ClientRouter final : public Router
     {
         public:
-        
-        ClientRouter(SharedQueue<claidservice::DataPackage>& incomingQueue) : Router(incomingQueue)
+
+        ClientRouter()
         {
             
         }
