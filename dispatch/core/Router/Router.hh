@@ -1,18 +1,19 @@
 #pragma once
 
-#include "dispatch/core/CLAIDConfig/CLAIDConfig.hh"
 #include "dispatch/proto/claidservice.pb.h"
+#include "dispatch/proto/claidconfig.pb.h"
+
 #include "dispatch/core/Router/DispatcherStub.hh"
 #include "dispatch/core/Router/RoutingNode.hh"
 #include "dispatch/core/Router/RoutingTree.hh"
 #include "dispatch/core/shared_queue.hh"
 
 #include "absl/strings/str_split.h"
+#include "absl/status/status.h"
 
 #include <map>
 #include <thread>
 
-using claidservice::CLAIDConfig;
 using claidservice::HostConfig;
 using claidservice::DataPackage;
 
@@ -20,34 +21,16 @@ using claidservice::DataPackage;
 
 namespace claid
 {
-    // A Router has one input queue and N output queues.
-    // The input queue is implemented by this Router base class, the output queues are realized separately by the LocalRouter, ClienRouter and ServerRouter classes.
-    // A Router runs in a separate thread and waits for data packages to arrive on the input queue. It then forwards the package to the output queue accordingly.
+    // A Router takes in data packages and routes it to N output queues.
+    // The incoming package might be routed to only one, multiple or all output queues.
     class Router
     {
-        protected:
-            bool running = false;
-            SharedQueue<claidservice::DataPackage>& incomingQueue;
-            std::unique_ptr<std::thread> routingThread;
-
-        protected:
-
-            virtual absl::Status initialize();
-            virtual void routePackage(std::shared_ptr<DataPackage> package) = 0;
-
-            void runRouting();
-
-
         public:
-            Router(SharedQueue<claidservice::DataPackage>& incomingQueue);
-
+            Router() {}
             virtual ~Router() {}
 
-            absl::Status start() ;
-            void enqueuePackageForRouting(std::shared_ptr<DataPackage> dataPackage);
-
-            
-            
+            virtual absl::Status start();
+            virtual void routePackage(std::shared_ptr<DataPackage> package) = 0;
     };
 
     inline absl::Status getTargetHostAndModule(const DataPackage& package, std::string& host, std::string& module)

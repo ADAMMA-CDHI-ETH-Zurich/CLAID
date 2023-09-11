@@ -2,22 +2,23 @@
 #include "dispatch/core/Router/RoutingTreeParser.hh"
 #include "dispatch/core/Exception/Exception.hh"
 #include "dispatch/core/Logger/Logger.hh"
+#include "dispatch/core/Configuration/HostDescription.hh"
 
 namespace claid
 {
 
     MasterRouter::MasterRouter(
         SharedQueue<claidservice::DataPackage>& incomingQueue, 
-        ModuleTable& moduleTable) : Router(incomingQueue)
+        ModuleTable& moduleTable) : incomingQueue(incomingQueue)
     {
         this->localRouter = 
-            std::static_pointer_cast<Router>(std::make_shared<LocalRouter>(this->localRouterQueue, moduleTable));
+            std::static_pointer_cast<Router>(std::make_shared<LocalRouter>(moduleTable));
 
         this->serverRouter = 
-            std::static_pointer_cast<Router>(std::make_shared<ServerRouter>(this->serverRouterQueue));
+            std::static_pointer_cast<Router>(std::make_shared<ServerRouter>());
         
-        this->localRouter 
-            = std::static_pointer_cast<Router>(std::make_shared<ClientRouter>(this->clientRouterQueue));
+        this->clientRouter 
+            = std::static_pointer_cast<Router>(std::make_shared<ClientRouter>());
     }
 
     // Parses the host connection information from the config file into a routing tree.
@@ -25,28 +26,27 @@ namespace claid
     // Hosts that are connected to the current host either directly or by subsequent servers are being routed by the serverDispatcher.
     // Hosts that the current host connects to either directly or by intermediate servers are being routed by the clientDispatcher.
     // Packages within the currentHost itself will be routed by the localDispatcher.
-    absl::Status MasterRouter::buildRoutingTable(std::string currentHost, const CLAIDConfig& claidConfig)
+    absl::Status MasterRouter::buildRoutingTable(std::string currentHost, const HostDescriptionMap& hostDescriptions)
     {
         RoutingTreeParser parser;
-        RoutingNode* rootNode = parser.parseConfig(claidConfig);
+        
+        absl::Status status = parser.buildRoutingTree(hostDescriptions, this->routingTree);
 
-        if(rootNode == nullptr)
+        if(!status.ok())
         {
-            return absl::InvalidArgumentError("Error while parsing configuration file. Tried to parse routing tree from configuration file,\n"
-            "but failed to determine root node of the tree.");
+            return status;
         }
 
-        this->routingTree = RoutingTree(rootNode);
         std::string str;
         this->routingTree.toString(str);
 
         std::cout << str << "\n";
 
-        return this->buildRoutingTableFromTree(claidConfig, currentHost);
+        return this->buildRoutingTableFromTree(currentHost, hostDescriptions);
     }
 
     absl::Status MasterRouter::buildRoutingTableFromTree(
-            const CLAIDConfig& claidConfig, const std::string& currentHost)
+            const std::string& currentHost, const HostDescriptionMap& hostDescriptions)
     {
         RoutingNode* hostNode = this->routingTree.lookupHost(currentHost);
 
@@ -60,26 +60,26 @@ namespace claid
 
         hostTree.getChildHostRecursively(childHosts);
 
-        for(size_t i = 0; i < claidConfig.hosts_size(); i++)
+        for(const auto& entry : hostDescriptions)
         {
-            const HostConfig& host = claidConfig.hosts(i);
-            const std::string& hostname = host.hostname();
+            const HostDescription& host = entry.second;
+            const std::string& hostname = host.hostname;
 
             if(hostname == currentHost)
             {
-                this->routingTable.insert(make_pair(hostname, &this->localRouterQueue));
+                this->routingTable.insert(make_pair(hostname, this->localRouter));
             }
             // If the host is "below" us in the routing tree (one of our children or children's children),
             // we route it via the ServerDispatcher.
             else if(std::find(childHosts.begin(), childHosts.end(), hostname) != childHosts.end())
             {
-                this->routingTable.insert(make_pair(hostname, &this->serverRouterQueue));
+                this->routingTable.insert(make_pair(hostname, this->serverRouter));
             }
             // Else, the host has to be reachable via a host "above" us in the routing tree (a server we connect to either directly or via another server).
             // Hence, we route it via the ClientDispatcher.
             else
             {
-                this->routingTable.insert(make_pair(hostname, &this->clientRouterQueue));
+                this->routingTable.insert(make_pair(hostname, this->clientRouter));
             }
         }
         return absl::OkStatus();
@@ -87,7 +87,6 @@ namespace claid
 
     void MasterRouter::routePackage(std::shared_ptr<DataPackage> dataPackage) 
     {
-
         std::string targetHost;
         std::string targetModule;
 
@@ -109,11 +108,26 @@ namespace claid
             return;
         }
 
-        it->second->push_back(dataPackage);
+        it->second->routePackage(dataPackage);
     }
 
-    absl::Status MasterRouter::initialize()
+    void MasterRouter::processQueue()
     {
+        while(this->active)
+        {
+            std::shared_ptr<DataPackage> package;
+            package = this->incomingQueue.pop_front();
+            this->routePackage(package);
+        }
+    }
+
+    absl::Status MasterRouter::start() 
+    {
+        if(this->active || this->processingThread.get() != nullptr)
+        {
+            return absl::AlreadyExistsError("MasterRouter: Start was called twice.");
+        }
+
         absl::Status status;
         status = this->localRouter->start();
         if(!status.ok())
@@ -133,7 +147,9 @@ namespace claid
             return status;
         }
 
-        return absl::OkStatus();
+        this->active = true;
+        this->processingThread = make_unique<std::thread>(&MasterRouter::processQueue, this);
 
+        return absl::OkStatus();
     }
 }
