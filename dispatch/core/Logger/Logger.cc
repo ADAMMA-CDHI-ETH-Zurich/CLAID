@@ -108,6 +108,8 @@ std::string claid::Logger::getTimeString()
 
 	std::stringstream ss;
 
+	ss << now->tm_mday << "." << now->tm_mon << "." << now->tm_year + 1900 << " ";
+
 	if (now->tm_hour < 10)
 		ss << "0" << now->tm_hour << ":";
 	else
