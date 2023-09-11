@@ -5,6 +5,10 @@
 
 namespace claid
 {
-    absl::Status populateModuleTable(const ModuleDescriptionMap& moduleDescriptions, const ChannelDescriptionMap& channelDescriptions);
+    absl::Status populateModuleTable(
+        const ModuleDescriptionMap& moduleDescriptions,
+        const ChannelDescriptionMap& channelDescriptions, 
+        claid::ModuleTable& moduleTable);
+
     absl::Status start(const std::string& configurationPath, const std::string& currentHost);
 }

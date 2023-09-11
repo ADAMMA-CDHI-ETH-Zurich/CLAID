@@ -30,7 +30,7 @@ namespace claid
 
         // Populate module table
         claid::ModuleTable moduleTable;
-        status = populateModuleTable(moduleDescriptions, channelDescriptions);
+        status = populateModuleTable(moduleDescriptions, channelDescriptions, moduleTable);
         CHECK_STATUS(status);
 
         // Set up the routing queues
@@ -55,12 +55,41 @@ namespace claid
 
         status = router.start();
         CHECK_STATUS(status);
-        
+
+        std::cout << "CLAID started successfully\n";
+
         while(true);
     }
 
-    absl::Status populateModuleTable(const ModuleDescriptionMap& moduleDescriptions, const ChannelDescriptionMap& channelDescriptions)
+    absl::Status populateModuleTable(
+        const ModuleDescriptionMap& moduleDescriptions, 
+        const ChannelDescriptionMap& channelDescriptions,
+        ModuleTable& moduleTable)
     {
+        for(const auto& entry : moduleDescriptions)
+        {
+            const ModuleDescription& moduleDescription = entry.second;
+
+            moduleTable.setModule(moduleDescription.id, 
+                moduleDescription.moduleClass, 
+                moduleDescription.properties);
+        }
+
+        for(const auto& entry : channelDescriptions)
+        {
+            const ChannelDescription& channelDescription = entry.second;
+
+            const std::string& channelName = channelDescription.channelName;
+
+            for(const std::string& publisher : channelDescription.publisherModules)
+            {
+                for(const std::string& subscriber : channelDescription.subscriberModules)
+                {
+                    moduleTable.setChannel(channelName, publisher, subscriber);
+                }
+            }
+        }
+
         return absl::OkStatus();
     }
 }

@@ -1,5 +1,59 @@
 {
 	"hosts": [{
-	}		
+			"hostname": "alex_client",
+			"type": "android",
+			"is_server": false,
+			"connect_to": "claid.ethz.ch:1337",
+			"modules": [{
+					"type": "MicrophoneCollector",
+					"id": "AudioRecorder1",
+					"input_channels": [],
+					"output_channels": ["AudioData"],
+					"properties": {
+						"samplingRate": "44100",
+						"channels": "MONO",
+						"encoding": "PCM",
+						"startRecording": "now",
+						"length": "6s"
+					}
+				},
+				{
+					"type": "DataSaverModule",
+					"id": "AudioSaver",
+					"input_channels": ["AudioData"],
+					"output_channels": [],
+					"properties": {
+						"storagePath": "/sdcard/CLAID/AudioData",
+						"fileNameFormat": "Data_%d-%m-%y_%M.wav",
+						"fileSerializer": "RawBinary"
+					}
+				},
+				{
+					"type": "DataSyncModule",
+					"id": "FileSyncer",
+					"input_channels": ["RequestedFiles"],
+					"output_channels": ["AvailableFiles", "FileChannel"],
+					"properties": {
+						"folderToSynchronize": "/sdcard/CLAID/AudioData"
+					}
+				}
+
+			]
+		},
+		{
+			"hostname": "alex_server",
+			"type": "linux",
+			"is_server": true,
+			"host_server_address": "claid.ethz.ch:1337",
+			"modules": [{
+				"type": "DataReceiverModule",
+				"id": "DataReceiver",
+				"input_channels": ["AvailableFiles", "FileChannel"],
+				"output_channels": ["RequestedFiles"],
+				"properties": {
+					"outputFolder": "/srv/ALEX/${user_hash}/"
+				}
+			}]
+		}
 	]
 }
