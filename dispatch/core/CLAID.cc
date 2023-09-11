@@ -8,6 +8,10 @@
 
 namespace claid
 {
+    // This function is currently only meant for testing.
+    // The function currently does not return and either results in an endless loop (if CLAID was started successfull),
+    // or in a termination of the app (if an error occured while starting).
+    // Otherwise, a segfault might occur when exiting the function, since all variables are only locally.
     absl::Status start(const std::string& configurationPath, const std::string& currentHost)
     {
         // Parse configuration
