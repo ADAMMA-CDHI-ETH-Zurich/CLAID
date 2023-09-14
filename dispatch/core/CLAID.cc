@@ -53,8 +53,8 @@ namespace claid
         CHECK_STATUS(status);
     
         std::shared_ptr<LocalRouter> localRouter = std::make_shared<LocalRouter>(moduleTable);
-        std::shared_ptr<ClientRouter> clientRouter = std::make_shared<ClientRouter>(moduleTable);
-        std::shared_ptr<ServerRouter> serverRouter = std::make_shared<ServerRouter>(moduleTable);
+        std::shared_ptr<ClientRouter> clientRouter = std::make_shared<ClientRouter>();
+        std::shared_ptr<ServerRouter> serverRouter = std::make_shared<ServerRouter>();
 
         // Setup the router
         MasterRouter router(masterQueue, localRouter, clientRouter, serverRouter);

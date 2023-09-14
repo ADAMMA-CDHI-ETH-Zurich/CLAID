@@ -121,17 +121,3 @@ cc_library(
 #         "//dispatch/proto:claidservice_cc_grpc",
 #     ],
 # )
-
-<<<<<<< HEAD
-
-=======
-cc_library(
-    name = "claid_config",
-    srcs = glob(["Configuration/*.cc"]),
-    hdrs = glob(["Configuration/*.hh"]),
-    deps = [
-        "//dispatch/proto:claidservice_cc_proto",
-        "@com_google_protobuf//:protobuf",
-    ],
-)
->>>>>>> refs/remotes/origin/main

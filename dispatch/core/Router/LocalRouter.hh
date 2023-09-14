@@ -24,23 +24,23 @@ namespace claid
             {
                 const std::string& targetHostModule = dataPackage->target_host_module();
 
-                std::string targetHost;
-                std::string targetModule;
+                // std::string targetHost;
+                // std::string targetModule;
 
-                absl::Status status = getTargetHostAndModule(*dataPackage.get(), targetHost, targetModule);
+                // absl::Status status = getTargetHostAndModule(*dataPackage.get(), targetHost, targetModule);
 
-                if(!status.ok())
-                {
-                    return absl::InvalidArgumentError(absl::StrCat("LocalRouter: Failed to route package to local Module.\n"
-                    "Unable to split target address \"", targetHostModule, "\" into host and module.\n"
-                    "Make sure that target address is in format host:module."));
-                }
+                // if(!status.ok())
+                // {
+                //     return absl::InvalidArgumentError(absl::StrCat("LocalRouter: Failed to route package to local Module.\n"
+                //     "Unable to split target address \"", targetHostModule, "\" into host and module.\n"
+                //     "Make sure that target address is in format host:module."));
+                // }
 
-                SharedQueue<DataPackage>* runtimeInputQueue = this->moduleTable.lookupOutputQueue(targetModule);
+                SharedQueue<DataPackage>* runtimeInputQueue = this->moduleTable.lookupOutputQueue(targetHostModule);
 
                 if(runtimeInputQueue == nullptr)
                 {
-                    return absl::InvalidArgumentError(absl::StrCat("LocalRouter: Failed to route package to local Module \"", targetModule,"\".\n"
+                    return absl::InvalidArgumentError(absl::StrCat("LocalRouter: Failed to route package to local Module \"", targetHostModule,"\".\n"
                     "Unable to get input queue of the Runtime the Module is running in. Possibly, the Runtime was not registered."));
                 }
 
