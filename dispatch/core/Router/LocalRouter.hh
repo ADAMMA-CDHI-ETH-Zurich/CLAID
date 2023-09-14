@@ -12,7 +12,15 @@ namespace claid
     class LocalRouter final : public Router
     {
         private:
-            void routePackage(std::shared_ptr<DataPackage> dataPackage) override final
+            ModuleTable& moduleTable;
+
+        public:
+            LocalRouter(ModuleTable& moduleTable) : moduleTable(moduleTable)
+            {
+
+            }
+
+            absl::Status routePackage(std::shared_ptr<DataPackage> dataPackage) override final
             {
                 const std::string& targetHostModule = dataPackage->target_host_module();
 
@@ -23,30 +31,21 @@ namespace claid
 
                 if(!status.ok())
                 {
-                    Logger::printfln("LocalRouter: Failed to route package to local Module.\n"
-                    "Unable to split target address \"%s\" into host and module.\n"
-                    "Make sure that target address is in format host:module.", targetHostModule.c_str());
-                    return;
+                    return absl::InvalidArgumentError(absl::StrCat("LocalRouter: Failed to route package to local Module.\n"
+                    "Unable to split target address \"", targetHostModule, "\" into host and module.\n"
+                    "Make sure that target address is in format host:module."));
                 }
 
                 SharedQueue<DataPackage>* runtimeInputQueue = this->moduleTable.lookupOutputQueue(targetModule);
 
                 if(runtimeInputQueue == nullptr)
                 {
-                    Logger::printfln("LocalRouter: Failed to route package to local Module \"%s\".\n"
-                    "Unable to get input queue of the Runtime the Module is running in. Possibly, the Runtime was not registered.", targetModule.c_str());
-                    return;
+                    return absl::InvalidArgumentError(absl::StrCat("LocalRouter: Failed to route package to local Module \"", targetModule,"\".\n"
+                    "Unable to get input queue of the Runtime the Module is running in. Possibly, the Runtime was not registered."));
                 }
 
                 runtimeInputQueue->push_back(dataPackage);
-            }
-
-            ModuleTable& moduleTable;
-
-        public:
-            LocalRouter(ModuleTable& moduleTable) : moduleTable(moduleTable)
-            {
-
+                return absl::OkStatus();
             }
         
     };

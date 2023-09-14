@@ -1,24 +1,25 @@
 #include "dispatch/core/Router/MasterRouter.hh"
 #include "dispatch/core/Router/RoutingTreeParser.hh"
-#include "dispatch/core/Exception/Exception.hh"
 #include "dispatch/core/Logger/Logger.hh"
 #include "dispatch/core/Configuration/HostDescription.hh"
+#include <sstream>
 
 namespace claid
 {
-
     MasterRouter::MasterRouter(
-        SharedQueue<claidservice::DataPackage>& incomingQueue, 
-        ModuleTable& moduleTable) : incomingQueue(incomingQueue)
+                SharedQueue<claidservice::DataPackage>& incomingQueue, 
+                std::shared_ptr<LocalRouter> localRouter,
+                std::shared_ptr<ClientRouter> clientRouter,
+                std::shared_ptr<ServerRouter> serverRouter) : incomingQueue(incomingQueue)
     {
         this->localRouter = 
-            std::static_pointer_cast<Router>(std::make_shared<LocalRouter>(moduleTable));
+            std::static_pointer_cast<Router>(localRouter);
 
-        this->serverRouter = 
-            std::static_pointer_cast<Router>(std::make_shared<ServerRouter>());
+        this->clientRouter = 
+            std::static_pointer_cast<Router>(clientRouter);
         
-        this->clientRouter 
-            = std::static_pointer_cast<Router>(std::make_shared<ClientRouter>());
+        this->serverRouter 
+            = std::static_pointer_cast<Router>(serverRouter);
     }
 
     // Parses the host connection information from the config file into a routing tree.
@@ -85,7 +86,7 @@ namespace claid
         return absl::OkStatus();
     }
 
-    void MasterRouter::routePackage(std::shared_ptr<DataPackage> dataPackage) 
+    absl::Status MasterRouter::routePackage(std::shared_ptr<DataPackage> dataPackage) 
     {
         std::string targetHost;
         std::string targetModule;
@@ -96,19 +97,21 @@ namespace claid
         {
             // Do what? 
             // return status;
-            Logger::printfln("Error, failed to parse host from data package failed. Host %s is invalid.\n", dataPackage->target_host_module().c_str());
-            return;
+            return absl::InvalidArgumentError(
+                absl::StrCat("Error, failed to parse host from data package failed. Host \"", 
+                dataPackage->target_host_module(), "\" is invalid.\n"));
         }
 
         auto it = this->routingTable.find(targetHost);
         if(it == this->routingTable.end())
         {
             // Do what?
-            Logger::printfln("Routing package failed. Host %s is unknown.\n", targetHost.c_str());
-            return;
+            return absl::InvalidArgumentError(absl::StrCat("Routing package failed. Host \"", targetHost, "\" is unknown.\n"));
         }
 
-        it->second->routePackage(dataPackage);
+        status = it->second->routePackage(dataPackage);
+
+        return status;
     }
 
     void MasterRouter::processQueue()
@@ -117,7 +120,14 @@ namespace claid
         {
             std::shared_ptr<DataPackage> package;
             package = this->incomingQueue.pop_front();
-            this->routePackage(package);
+            absl::Status status = this->routePackage(package);
+            if(!status.ok())
+            {
+                std::stringstream ss;
+                ss << status;
+                Logger::printfln("MasterRouter: Failed to route package with error %s", ss.str().c_str());
+                return;
+            }
         }
     }
 

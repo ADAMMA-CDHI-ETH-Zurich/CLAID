@@ -15,7 +15,7 @@ namespace claid
     absl::Status start(const std::string& configurationPath, const std::string& currentHost)
     {
         // Parse configuration
-        claid::Configuration config;
+        Configuration config;
         absl::Status status = config.parseFromJSONFile(configurationPath);
 
         CHECK_STATUS(status);
@@ -33,14 +33,14 @@ namespace claid
         CHECK_STATUS(status);
 
         // Populate module table
-        claid::ModuleTable moduleTable;
+        ModuleTable moduleTable;
         status = populateModuleTable(moduleDescriptions, channelDescriptions, moduleTable);
         CHECK_STATUS(status);
 
         // Set up the routing queues
-        claid::SharedQueue<DataPackage>& localQueue = moduleTable.inputQueue();
-        claid::SharedQueue<DataPackage> clientQueue;
-        claid::SharedQueue<DataPackage> serverQueue;
+        SharedQueue<DataPackage>& localQueue = moduleTable.inputQueue();
+        SharedQueue<DataPackage> clientQueue;
+        SharedQueue<DataPackage> serverQueue;
 
         // Input queue for the MasterRouter
         claid::SharedQueue<DataPackage> masterQueue;
@@ -48,12 +48,16 @@ namespace claid
         // Start the queue merger
         // Merges the localQueue, clientQueue and serverQueue into the masterQueue.
         // (Spawns 3 threads that forward data from the 3 queues to the one masterQueue).
-        claid::RoutingQueueMerger merger(masterQueue, localQueue, clientQueue, serverQueue);
+        RoutingQueueMerger merger(masterQueue, localQueue, clientQueue, serverQueue);
         status = merger.start();
         CHECK_STATUS(status);
+    
+        std::shared_ptr<LocalRouter> localRouter = std::make_shared<LocalRouter>(moduleTable);
+        std::shared_ptr<ClientRouter> clientRouter = std::make_shared<ClientRouter>(moduleTable);
+        std::shared_ptr<ServerRouter> serverRouter = std::make_shared<ServerRouter>(moduleTable);
 
         // Setup the router
-        claid::MasterRouter router(masterQueue, moduleTable);
+        MasterRouter router(masterQueue, localRouter, clientRouter, serverRouter);
         status = router.buildRoutingTable(currentHost, hostDescriptions);
         CHECK_STATUS(status);
 

@@ -2,7 +2,6 @@
 #include "dispatch/core/Configuration/Configuration.hh"
 #include "dispatch/core/Configuration/HostDescription.hh"
 #include "dispatch/core/Router/RoutingNode.hh"
-#include "dispatch/core/Exception/Exception.hh"
 
 #include <memory>
 
@@ -69,6 +68,12 @@ namespace claid
                     const std::string& connectToAddress = host.connectTo;
                     RoutingNode* hostNode = routingNodes[host.hostname];
 
+                    if(host.isServer && host.hostServerAddress.empty())
+                    {
+                        return absl::NotFoundError(absl::StrCat("Host \"", host.hostname, "\" was configured to be a server, ",
+                            "however, no hostServerAddress was specified.s"));
+                    }
+
                     if(connectToAddress == "")
                     {
                         // This host does not connect to any other node, hence it has to be the root node.
@@ -125,8 +130,8 @@ namespace claid
                 if(hostDescriptions.empty())
                 {
                     return absl::InvalidArgumentError(
-                        absl::StrCat("RoutingTreeParser: Failed to build routing tree, because no hosts were specified",
-                        ("host description map is empty, i.e., no host were specified in the configuration file.")));
+                        absl::StrCat("RoutingTreeParser: Failed to build routing tree, because no hosts were specified.",
+                        ("Host description map is empty, i.e., no hosts were specified.")));
                 }
 
                 // For each host that is a server, this maps the server's address to it's host name.

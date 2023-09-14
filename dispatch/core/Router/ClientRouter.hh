@@ -1,3 +1,5 @@
+#pragma once
+
 #include "dispatch/core/Router/Router.hh"
 
 namespace claid
@@ -13,9 +15,9 @@ namespace claid
             
         }
 
-        void routePackage(std::shared_ptr<DataPackage> dataPackage) override final
+        absl::Status routePackage(std::shared_ptr<DataPackage> dataPackage) override final
         {
-            
+            return absl::OkStatus();
         }
     };
 }

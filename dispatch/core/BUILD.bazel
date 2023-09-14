@@ -29,6 +29,29 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "routing",
+    srcs = glob(["Router/*.cc", "Logger/*.cc", "module_table.cc"]),
+    hdrs = glob(["Router/*.hh", "Logger/*.hh", "shared_queue.hh",
+        "module_table.hh",]),
+    deps = [
+        "//dispatch/core:claid_config",
+        "//dispatch/proto:claidservice_cc_proto",
+        "//dispatch/proto:claidservice_cc_grpc",
+    ],
+)
+
+
+cc_library(
+    name = "claid_config",
+    srcs = glob(["Configuration/*.cc"]),
+    hdrs = glob(["Configuration/*.hh"]),
+    deps = [
+        "//dispatch/proto:claidservice_cc_proto",
+        "@com_google_protobuf//:protobuf",
+    ],
+)
+
 # cc_library(
 #     name = "module_table",
 #     srcs = [
@@ -46,12 +69,3 @@ cc_library(
 # )
 
 
-cc_library(
-    name = "claid_config",
-    srcs = glob(["Configuration/*.cc"]),
-    hdrs = glob(["Configuration/*.hh"]),
-    deps = [
-        "//dispatch/proto:claidservice_cc_proto",
-        "@com_google_protobuf//:protobuf",
-    ],
-)

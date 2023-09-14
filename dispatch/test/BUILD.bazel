@@ -13,6 +13,34 @@ cc_test(
   ] + FRAMEWORK_DEPS, 
 )
 
+cc_test(
+  name = "router_test",
+  size = "small",
+  srcs = ["router_test.cc"],
+  deps = [
+    "//dispatch/core:routing",
+  ] + FRAMEWORK_DEPS, 
+)
+
+
+
+filegroup(
+  name = "routing_tree_test_data",
+  srcs = ["test_config.json"],
+)
+
+cc_test(
+  name = "routing_tree_test",
+  size = "small",
+  srcs = ["routing_tree_test.cc"],
+  data = ["test_config.json"],
+  deps = [
+    "//dispatch/core:routing",
+    "@bazel_tools//tools/cpp/runfiles",
+  ] + FRAMEWORK_DEPS, 
+)
+
+
 # cc_test(
 #   name = "shared_queue_test",
 #   size = "small",

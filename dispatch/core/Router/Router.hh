@@ -30,7 +30,7 @@ namespace claid
             virtual ~Router() {}
 
             virtual absl::Status start();
-            virtual void routePackage(std::shared_ptr<DataPackage> package) = 0;
+            virtual absl::Status routePackage(std::shared_ptr<DataPackage> package) = 0;
     };
 
     inline absl::Status getTargetHostAndModule(const DataPackage& package, std::string& host, std::string& module)

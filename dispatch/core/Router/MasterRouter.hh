@@ -4,7 +4,7 @@
 #include "dispatch/core/Router/LocalRouter.hh"
 #include "dispatch/core/Router/ServerRouter.hh"
 #include "dispatch/core/Router/ClientRouter.hh"
-#include "dispatch/core/Configuration/Configuration.hh"
+#include "dispatch/core/Configuration/HostDescription.hh"
 namespace claid
 {
 
@@ -60,11 +60,15 @@ namespace claid
         public:
         
 
-            MasterRouter(SharedQueue<claidservice::DataPackage>& incomingQueue, ModuleTable& moduleTable);
+            MasterRouter(
+                SharedQueue<claidservice::DataPackage>& incomingQueue, 
+                std::shared_ptr<LocalRouter> localRouter,
+                std::shared_ptr<ClientRouter> clientRouter,
+                std::shared_ptr<ServerRouter> serverRouter);
 
             absl::Status buildRoutingTable(std::string currentHost, const HostDescriptionMap& hostDescriptions);
 
             absl::Status start() override final;
-            void routePackage(std::shared_ptr<DataPackage> dataPackage) override final;
+            absl::Status routePackage(std::shared_ptr<DataPackage> dataPackage) override final;
     };
 }
