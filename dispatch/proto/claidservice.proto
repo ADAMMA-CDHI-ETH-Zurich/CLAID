@@ -9,37 +9,37 @@ import "google/protobuf/empty.proto";
 
 // Service for modules to talk to the CLAID middleware.
 service ClaidService {
-  // Continuous stream of DataPackage's between client and server. 
+  // Continuous stream of DataPackage's between client and server.
   rpc SendReceivePackages(stream DataPackage) returns (stream DataPackage) {}
 
   // Get the modules to set up during initialization.
   rpc GetModuleList(ModuleListRequest) returns (ModuleListResponse) {}
 
-  // Init Modules 
+  // Init Modules
   rpc InitRuntime(InitRuntimeRequest) returns (google.protobuf.Empty) {}
 }
 
 message DataPackage {
-  string id = 1;     // Unique ID of this package 
+  string id = 1;     // Unique ID of this package
   string channel = 2;
   string source_host_module = 3; // originating module in the format host_id:module_id
   string target_host_module = 4; // target module in the format host_id:module_id
-  string source_user_token = 5;  // id token of the user / system entity that created this package. 
-  string target_user_token = 6; // id of the user / system that this package is intended for, if it is intended to send data to a module of a specific user.  
+  string source_user_token = 5;  // id token of the user / system entity that created this package.
+  string target_user_token = 6; // id of the user / system that this package is intended for, if it is intended to send data to a module of a specific user.
                                 // typically, this will be *, meaning that the package will be forwarded to all users that run the corresponding host.
   string device_id = 7;    // unique ID for this device / host, e.g. MAC id
   repeated TracePoint trace_points = 8;
 
   // To add another message type add it below.
   oneof payload_oneof {
-    ControlPackage control_val = 30; 
+    ControlPackage control_val = 30;
     double number_val = 31;
     string string_val = 32;
-    bool bool_val = 33; 
+    bool bool_val = 33;
     NumberArray number_array_val = 34;
     StringArray string_array_val = 35;
     NumberMap number_map = 36;
-    StringMap string_map = 37; 
+    StringMap string_map = 37;
     Blob blob_val = 38;
   }
 }
@@ -47,24 +47,24 @@ message DataPackage {
 enum CtrlType {
   CTRL_UNSPECIFIED  = 0;
   CTRL_RUNTIME_PING = 1;  // Client sends this upon connect and periodically if no packages have been sent
-  // CTRL_MODULE_PING  = 2;  // module ping sent to local claid server. 
-  // CTRL_MODULE_READY = 4;  // sent to module when the local middleware is ready 
-  // CTRL_STATUS       = 5;  // Sent from a middleware client up the tree 
-  // CTRL_ACTION       = 6;  // sent to module when the local middleware is ready 
-  CTRL_ERROR        = 7;  // Error occured   
+  // CTRL_MODULE_PING  = 2;  // module ping sent to local claid server.
+  // CTRL_MODULE_READY = 4;  // sent to module when the local middleware is ready
+  // CTRL_STATUS       = 5;  // Sent from a middleware client up the tree
+  // CTRL_ACTION       = 6;  // sent to module when the local middleware is ready
+  CTRL_ERROR        = 7;  // Error occured
 }
 
 message ControlPackage {
   CtrlType ctrl_type                    = 1;
-  optional Runtime runtime              = 2; // CTRL_RUNTIME_PING 
-  optional AccumulatedStatus status     = 4; // CTRL_STATUS: status sent towards root server 
+  optional Runtime runtime              = 2; // CTRL_RUNTIME_PING
+  optional AccumulatedStatus status     = 4; // CTRL_STATUS: status sent towards root server
   optional ErrorMsg error_msg           = 5; // CTRL_ERROR: Error report sent towards root server
-  optional ActionRequest action_request = 6; // CTRL_ACTION: action request sent to all children 
+  optional ActionRequest action_request = 6; // CTRL_ACTION: action request sent to all children
                                              // of the claid instance
 }
 
 message AccumulatedStatus {
-  // TBD 
+  // TBD
 }
 
 message ErrorMsg {
@@ -77,11 +77,11 @@ message ActionRequest {
 }
 
 message NumberArray {
-  repeated double val = 1; 
+  repeated double val = 1;
 }
 
 message StringArray {
-  repeated string val = 1; 
+  repeated string val = 1;
 }
 
 message NumberMap {
@@ -89,27 +89,29 @@ message NumberMap {
 }
 
 message StringMap {
-  map<string, string> val = 1; 
+  map<string, string> val = 1;
 }
 
 message Blob {
-  // The byte blob containing the payload data. 
-  bytes payload = 1;
+  Codec codec = 1;
 
-  string name = 2;  // local name of the blob (e.g. file name)
+  // The byte blob containing the payload data.
+  bytes payload = 2;
 
-  // type and subtype contains meta information to decode the bytes contained above. 
+  string name = 3;  // local name of the blob (e.g. file name)
+
+  // type and subtype contains meta information to decode the bytes contained above.
   // See this list of common mime types
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-  // 
-  string type = 3;      // mime type, protobuf type (to decode payload)
-  string sub_type = 4;  // mime subtype, etc. 
+  //
+  string message_type = 4;  // mime type, protobuf type (to decode payload)
+  string sub_type = 5;      // mime subtype, etc.
 }
 
 enum Codec {
   CODEC_UNSPECIFIED = 0;
   CODEC_BYTES       = 1;   // Just a bytes blob (no-op codec)
-  CODEC_FILE        = 2;    // File blob 
+  CODEC_FILE        = 2;    // File blob
   CODEC_JSON        = 3;    // JSON data (maybe decode)
   CODEC_PROTO       = 4;   // Decode based on registry
 }
@@ -119,41 +121,39 @@ message TracePoint {
  string node_id = 2;  // full module id:  host_id:module_type
 }
 
-// Sent by the client to get the list of desired modules. 
+// Sent by the client to get the list of desired modules.
 message ModuleListRequest {
   Runtime runtime = 1;
-  // add supported modules  
+  repeated string supported_module_classes = 2;
 }
 
-// List of modules that the runtime client is expected to instantiate. 
+// List of modules that the runtime client is expected to instantiate.
 message ModuleListResponse {
   message ModuleDescriptor {
     string module_id = 1;
     string module_class = 2;
     map<string, string> properties = 3;
   }
-  
+
   repeated ModuleDescriptor descriptors = 1;
 }
 
-// Sent by the client after the modules have been instantiated 
-// to inform the server what channels will be sent. 
+// Sent by the client after the modules have been instantiated
+// to inform the server what channels will be sent.
 message InitRuntimeRequest {
   message ModuleChannels {
     string module_id = 1;
-    map<string, DataPackage> channels = 2; // key is channel ID, 
-                                         // the data packages contain the src&target modules 
+    repeated DataPackage channel_packets = 2; // channel, source, target, payload => define the channel
   }
 
   Runtime runtime = 1;
   repeated ModuleChannels modules = 2;
 }
 
-
 enum Runtime {
   RUNTIME_UNSPECIFIED = 0;
   RUNTIME_CPP = 1;
-  RUNTIME_DART = 2; 
+  RUNTIME_DART = 2;
   RUNTIME_JAVA = 3;
   RUNTIME_PYTHON = 4;
 }
@@ -164,11 +164,11 @@ enum Runtime {
 
 // message HostConfig {
 //   string host_id = 1;
-//   repeated ModuleConfig modules = 2;  
+//   repeated ModuleConfig modules = 2;
 // }
 
 // message ModuleConfig {
-//   string mod_id = 1; 
+//   string mod_id = 1;
 //   string mod_type = 2;
 //   repeated string in_channels = 3;
 //   repeated string out_channels = 4;

@@ -2,13 +2,67 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_binary(
+    name = "claid_capi",
+    linkshared = True,
+    srcs = [
+        ":capi",
+    ],
+)
+
+cc_library(
+    name = "capi",
+    srcs = [
+        "capi.cc",
+        "middleware.cc",
+    ],
+    hdrs = [
+        "capi.h",
+        "middleware.hh",
+    ],
+    deps = [
+        ":CLAID",
+    ],
+    linkstatic = True,   # only create a static lib
+    alwayslink = True,   # include everything in dependents
+)
+
+cc_binary(
     name = "claid_test",
-    srcs = glob(["**/*.cc", "**/*.hh"]),
+    srcs = [
+        "claid_main.cc",
+        "claid_main.hh",
+    ],
+    deps = [
+        ":CLAID",
+        # ":claid_config",
+        # ":local_dispatching",
+        # "@com_google_protobuf//:protobuf",
+    ],
+)
+
+cc_library(
+    name = "CLAID",
+    srcs = [
+        "CLAID.cc",
+    ] + glob([
+        "Router/*.cc",
+        "Logger/*.cc",
+        "Exception/*.cc",
+        "ExceptionHandler/*.cc",
+    ]),
+    hdrs = [
+        "CLAID.hh",
+    ] + glob([
+        "Router/*.hh",
+        "Logger/*.hh",
+        "Exception/*.hh",
+        "ExceptionHandler/*.hh",
+    ]),
     deps = [
         ":claid_config",
         ":local_dispatching",
         "@com_google_protobuf//:protobuf",
-    ]
+    ],
 )
 
 cc_library(
@@ -68,4 +122,16 @@ cc_library(
 #     ],
 # )
 
+<<<<<<< HEAD
 
+=======
+cc_library(
+    name = "claid_config",
+    srcs = glob(["Configuration/*.cc"]),
+    hdrs = glob(["Configuration/*.hh"]),
+    deps = [
+        "//dispatch/proto:claidservice_cc_proto",
+        "@com_google_protobuf//:protobuf",
+    ],
+)
+>>>>>>> refs/remotes/origin/main
