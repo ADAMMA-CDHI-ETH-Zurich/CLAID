@@ -36,15 +36,15 @@ namespace claid
                     "Make sure that target address is in format host:module."));
                 }
 
-                SharedQueue<DataPackage>* runtimeInputQueue = this->moduleTable.lookupOutputQueue(targetHostModule);
+                SharedQueue<DataPackage>* inputQueueForRuntime = this->moduleTable.lookupOutputQueue(targetModule);
 
-                if(runtimeInputQueue == nullptr)
+                if(inputQueueForRuntime == nullptr)
                 {
                     return absl::InvalidArgumentError(absl::StrCat("LocalRouter: Failed to route package to local Module \"", targetModule,"\".\n"
                     "Unable to get input queue of the Runtime the Module is running in. Possibly, the Runtime was not registered."));
                 }
 
-                runtimeInputQueue->push_back(dataPackage);
+                inputQueueForRuntime->push_back(dataPackage);
                 return absl::OkStatus();
             }
         

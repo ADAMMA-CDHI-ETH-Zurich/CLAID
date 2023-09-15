@@ -133,7 +133,18 @@ void ModuleTable::setChannel(const string& channelId, const string& source, cons
     channelMap.setChannel(make_chan_key(channelId, source, target));
 }
 
-SharedQueue<DataPackage>* ModuleTable:: lookupOutputQueue(const string& moduleId) {
+// ONLY FOR TESTING REMOVE LATER
+void ModuleTable::addModuleToRuntime(const std::string& moduleID, claidservice::Runtime runtime)
+{
+    moduleRuntimeMap[moduleID] = runtime;
+    auto outQueue = runtimeQueueMap[runtime];
+    if(!outQueue)
+    {
+        runtimeQueueMap[runtime] = make_shared<SharedQueue<DataPackage>>();
+    }
+}
+
+SharedQueue<DataPackage>* ModuleTable::lookupOutputQueue(const string& moduleId) {
     auto rt = moduleRuntimeMap[moduleId];
     if (rt != Runtime::RUNTIME_UNSPECIFIED) {
         auto outQueue = runtimeQueueMap[rt];

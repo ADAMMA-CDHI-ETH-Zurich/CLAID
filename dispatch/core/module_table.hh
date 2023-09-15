@@ -53,7 +53,8 @@ class ModuleTable {
         const std::map<std::string, std::string>& properties);
     void setChannel(const std::string& channelId, const std::string& source, const std::string& target);
 
-
+    // ONLY FOR TESTING REMOVE LATER
+    void addModuleToRuntime(const std::string& Module, claidservice::Runtime runtime);
 
   private:
     SharedQueue<claidservice::DataPackage> fromModuleQueue;
