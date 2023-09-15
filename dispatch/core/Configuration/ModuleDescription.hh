@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "dispatch/core/Configuration/UniqueKeyMap.hh"
+
 namespace claid
 {
     struct ModuleDescription
@@ -28,5 +30,5 @@ namespace claid
         }
     };
 
-    typedef std::map<std::string, ModuleDescription> ModuleDescriptionMap;
+    typedef UniqueKeyMap<ModuleDescription> ModuleDescriptionMap;
 }

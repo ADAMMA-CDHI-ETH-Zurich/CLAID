@@ -53,6 +53,8 @@ class ModuleTable {
         const std::map<std::string, std::string>& properties);
     void setChannel(const std::string& channelId, const std::string& source, const std::string& target);
 
+
+
   private:
     SharedQueue<claidservice::DataPackage> fromModuleQueue;
     // These two maps capture the target configuration.  

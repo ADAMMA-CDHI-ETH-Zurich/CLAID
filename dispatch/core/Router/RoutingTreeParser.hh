@@ -12,22 +12,27 @@ namespace claid
     {
         private:
 
-            void getAddressToHostMap(const HostDescriptionMap& hostDescriptions,
-                    std::map<std::string, std::string>& addressToHostMap)
+            absl::Status checkUniqueAddresses(const HostDescriptionMap& hostDescriptions) const
             {
-                addressToHostMap.clear();
-
+                
                 for(const auto& entry : hostDescriptions)
                 {
                     const HostDescription& host = entry.second;
 
                     if(host.isServer)
                     {
-                        addressToHostMap.insert(
-                                make_pair(host.hostServerAddress, 
-                                host.hostname));
+                        // Check if a server with this address already exists.
+                        if(hostDescriptions.find(host.hostServerAddress) != hostDescriptions.end())
+                        {
+                            return absl::AlreadyExistsError(
+                                absl::StrCat(
+                                    "Multiple hosts were configured to be a server with address \"",
+                                    host.hostServerAddress, "\". Each host that is a server needs to have a unique address."));
+                        }
                     }
                 }
+
+                return absl::OkStatus();
             }
 
             absl::Status createRoutingNodesForEachHost(
@@ -57,7 +62,6 @@ namespace claid
             absl::Status combineRoutingNodesToTree(
                     std::map<std::string, RoutingNode*>& routingNodes,
                     const HostDescriptionMap& hostDescriptions,
-                    const std::map<std::string, std::string>& addressToHostMap,
                     RoutingNode*& routingTreeRoot)
             {
                 routingTreeRoot = nullptr;
@@ -65,16 +69,16 @@ namespace claid
                 for(const auto& entry : hostDescriptions)
                 {
                     const HostDescription& host = entry.second;
-                    const std::string& connectToAddress = host.connectTo;
+                    const std::string& connectToHostname = host.connectTo;
                     RoutingNode* hostNode = routingNodes[host.hostname];
 
                     if(host.isServer && host.hostServerAddress.empty())
                     {
                         return absl::NotFoundError(absl::StrCat("Host \"", host.hostname, "\" was configured to be a server, ",
-                            "however, no hostServerAddress was specified.s"));
+                            "however, no hostServerAddress was specified."));
                     }
 
-                    if(connectToAddress == "")
+                    if(connectToHostname == "")
                     {
                         // This host does not connect to any other node, hence it has to be the root node.
 
@@ -82,7 +86,7 @@ namespace claid
                         {
                             // Root node was already set, but we found another node that doesnt connect to another host.
                             // Two unconnected nodes -> error.
-                            return absl::InvalidArgumentError(absl::StrCat("Error while parsing CLAID config to routing tree.\n",
+                            return absl::InvalidArgumentError(absl::StrCat("Error while building routing tree.\n",
                                         "Host \"", host.hostname, "\" does not connect to any other host,\n",
                                         "hence we assume it is the root node of the routing tree.\n",
                                         "However, host \"", routingTreeRoot->name, "\" was already set as routing tree root node.\n",
@@ -92,21 +96,29 @@ namespace claid
                     }
                     else
                     {
-                        auto addressToHostIterator = addressToHostMap.find(connectToAddress);
-                        if(addressToHostIterator == addressToHostMap.end())
+                        auto hostIterator = hostDescriptions.find(connectToHostname);
+                        if(hostIterator == hostDescriptions.end())
                         {
-                            return absl::NotFoundError(absl::StrCat("Error while parsing CLAID config to routing tree.\n",
-                                        "Host \"", host.hostname, "\" is configured to connect to a host with address \"", connectToAddress, "\",\n",
+                            return absl::NotFoundError(absl::StrCat("Error while building routing tree.\n",
+                                        "Host \"", host.hostname, "\" is configured to connect to a host with address \"", connectToHostname, "\",\n",
                                         "however a host with this address was not found.\n",
-                                        "Make sure that that a host with a host_server_address set as \"", connectToAddress, "\" exists and is a server."));
+                                        "Make sure that that a host with a host_server_address set as \"", connectToHostname, "\" exists and is a server."));
                         }
 
-                        const std::string& connectToHostname = addressToHostIterator->second; 
+                        const HostDescription& connectToHostDescription = hostIterator->second;
+
+                        if(!connectToHostDescription.isServer)
+                        {
+                            return absl::NotFoundError(absl::StrCat("Error while building routing tree.\n",
+                                        "Host \"", host.hostname, "\" is configured to connect to a host with address \"", connectToHostname, "\",\n",
+                                        "However host\"", connectToHostname, "\" is not configured as server."));
+                        }
+
 
                         auto routingNodesIterator = routingNodes.find(connectToHostname);
                         if(routingNodesIterator == routingNodes.end())
                         {
-                            return absl::InvalidArgumentError(absl::StrCat("Error while parsing CLAID config to routing tree.\n",
+                            return absl::InvalidArgumentError(absl::StrCat("Error while building routing tree.\n",
                                         "Host \"", host.hostname, "\" is configured to connect to host \"", connectToHostname, ",\"\n",
                                         "however a RoutingNode for that host was not found"));
                         }
@@ -134,12 +146,14 @@ namespace claid
                         ("Host description map is empty, i.e., no hosts were specified.")));
                 }
 
-                // For each host that is a server, this maps the server's address to it's host name.
-                std::map<std::string /* address */, std::string /* host */> addresToHostMap;
-                getAddressToHostMap(hostDescriptions, addresToHostMap);
+                absl::Status status = checkUniqueAddresses(hostDescriptions);
+                if(!status.ok())
+                {
+                    return status;
+                }
 
                 std::map<std::string /* host */, RoutingNode*> routingNodes;
-                absl::Status status = createRoutingNodesForEachHost(hostDescriptions, routingNodes);
+                status = createRoutingNodesForEachHost(hostDescriptions, routingNodes);
 
                 if(!status.ok()) { 
                     return status; 
@@ -147,7 +161,7 @@ namespace claid
 
                 RoutingNode* routingTreeRoot = nullptr;
                 status = 
-                    combineRoutingNodesToTree(routingNodes, hostDescriptions, addresToHostMap, routingTreeRoot);
+                    combineRoutingNodesToTree(routingNodes, hostDescriptions, routingTreeRoot);
                                 
                 
                 if(!status.ok())

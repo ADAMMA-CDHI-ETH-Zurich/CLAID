@@ -8,10 +8,10 @@ namespace claid
     class RoutingTree
     {
         private:
-            RoutingNode* rootNode;
+            RoutingNode* rootNode = nullptr;
 
         public:
-            RoutingTree()
+            RoutingTree() : rootNode(nullptr)
             {
 
             }
@@ -57,6 +57,10 @@ namespace claid
             // of all children and the children of the children (etc.).
             void getChildHostRecursively(std::vector<std::string>& childHosts) const
             {
+                if(this->rootNode == nullptr)
+                {
+                    return;
+                }
                 childHosts.clear();
 
                 std::stack<const RoutingNode*> nodesStack;
@@ -84,6 +88,10 @@ namespace claid
             void toString(std::string& output)
             {
                 output.clear();
+                if(this->rootNode == nullptr)
+                {
+                    return;
+                }
                 
                 // Int of the pair is the "intendation" (i.e., level in the tree).
                 std::stack<std::pair<int, RoutingNode*>> nodesToCheck;

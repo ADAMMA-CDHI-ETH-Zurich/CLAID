@@ -15,7 +15,6 @@ cc_test(
   ] + FRAMEWORK_DEPS,
 )
 
-<<<<<<< HEAD
 cc_test(
   name = "router_test",
   size = "small",
@@ -52,7 +51,6 @@ cc_test(
 #     "//dispatch/core:shared_queue",
 #   ] + FRAMEWORK_DEPS, 
 # )
-=======
 proto_library(
     name = "testmessages_proto",
     srcs = [
@@ -68,4 +66,3 @@ cc_proto_library(
     name = "testmessages_cc_proto",
     deps = [":testmessages_proto"],
 )
->>>>>>> refs/remotes/origin/main

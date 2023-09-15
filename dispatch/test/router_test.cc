@@ -39,6 +39,7 @@ TEST(RouterTestSuite, LocalRouterTest)
     const std::string channel32 = "TestChannel32";
     const std::string channel33 = "TestChannel33";
 
+    // Register Modules to different runtimes to simulate routing to different queues.
     table.setModule(mod1, "TestModuleClass1", {});
     table.setModule(mod2, "TestModuleClass2", {});
     table.setModule(mod3, "TestModuleClass3", {});

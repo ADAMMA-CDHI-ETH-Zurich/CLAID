@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include "dispatch/core/Configuration/UniqueKeyMap.hh"
+
 namespace claid
 {
     struct ChannelDescription
@@ -13,5 +15,5 @@ namespace claid
         std::vector<std::string> subscriberModules;
     };
 
-    typedef std::map<std::string, ChannelDescription> ChannelDescriptionMap;
+    typedef UniqueKeyMap<ChannelDescription> ChannelDescriptionMap;
 }

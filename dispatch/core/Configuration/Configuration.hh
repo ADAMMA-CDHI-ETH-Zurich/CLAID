@@ -33,9 +33,9 @@ namespace claid
 
             absl::Status parseFromJSONFile(const std::string& path);
 
-            absl::Status getHostDescriptions(std::map<std::string, HostDescription>& hostDescriptions) const;
-            absl::Status getModuleDescriptions(std::map<std::string, ModuleDescription>& moduleDescriptions) const;
-            absl::Status getChannelDescriptions(std::map<std::string, ChannelDescription>& channelDescriptions) const;
+            absl::Status getHostDescriptions(HostDescriptionMap& hostDescriptions) const;
+            absl::Status getModuleDescriptions(ModuleDescriptionMap& moduleDescriptions) const;
+            absl::Status getChannelDescriptions(ChannelDescriptionMap& channelDescriptions) const;
     
     };
 

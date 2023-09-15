@@ -119,7 +119,15 @@ namespace claid
         while(this->active)
         {
             std::shared_ptr<DataPackage> package;
+
             package = this->incomingQueue.pop_front();
+
+            if(!package)
+            {
+                Logger::printfln("MasterRouter: Failed to route package, package is null.");
+                return;
+            }
+
             absl::Status status = this->routePackage(package);
             if(!status.ok())
             {

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <map>
+#include "dispatch/core/Configuration/UniqueKeyMap.hh"
 
 namespace claid
 {
@@ -11,7 +12,22 @@ namespace claid
         bool isServer;
         std::string hostServerAddress;
         std::string connectTo;
+
+        HostDescription()
+        {
+
+        }
+
+        HostDescription(const std::string& hostname, 
+            bool isServer, 
+            const std::string& hostServerAddress, 
+            const std::string& connectTo) : hostname(hostname), isServer(isServer), 
+                                            hostServerAddress(hostServerAddress), connectTo(connectTo)
+        {
+
+        }
     };
 
-    typedef std::map<std::string, HostDescription> HostDescriptionMap;
+    typedef UniqueKeyMap<HostDescription> HostDescriptionMap;
+
 }

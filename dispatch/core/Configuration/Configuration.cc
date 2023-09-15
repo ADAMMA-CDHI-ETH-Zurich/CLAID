@@ -61,7 +61,7 @@ namespace claid
         return absl::OkStatus();
     }
 
-    absl::Status Configuration::getHostDescriptions(std::map<std::string, HostDescription>& hostDescriptions) const
+    absl::Status Configuration::getHostDescriptions(HostDescriptionMap& hostDescriptions) const
     {
         hostDescriptions.clear();
         for(int i = 0; i < config.hosts_size(); i++)
@@ -81,12 +81,16 @@ namespace claid
                     hostDescription.hostname, "\" was defined more than once."));
             }
 
-            hostDescriptions.insert(make_pair(hostDescription.hostname, hostDescription));
+            absl::Status status = hostDescriptions.insert(make_pair(hostDescription.hostname, hostDescription));
+            if(!status.ok())
+            {
+                return status;
+            }
         }
         return absl::OkStatus();
     }
 
-    absl::Status Configuration::getModuleDescriptions(std::map<std::string, ModuleDescription>& moduleDescriptions) const
+    absl::Status Configuration::getModuleDescriptions(ModuleDescriptionMap& moduleDescriptions) const
     {
         moduleDescriptions.clear();
         for(int i = 0; i < config.hosts_size(); i++)
@@ -119,13 +123,17 @@ namespace claid
                         moduleDescription.id, "\" was defined more than once."));
                 }
 
-                moduleDescriptions.insert(make_pair(moduleDescription.id, moduleDescription));
+                absl::Status status = moduleDescriptions.insert(make_pair(moduleDescription.id, moduleDescription));
+                if(!status.ok())
+                {
+                    return status;
+                }
             }
         }
         return absl::OkStatus();
     }
             
-    absl::Status Configuration::getChannelDescriptions(std::map<std::string, ChannelDescription>& channelDescriptions) const
+    absl::Status Configuration::getChannelDescriptions(ChannelDescriptionMap& channelDescriptions) const
     {
         channelDescriptions.clear();
         for(int i = 0; i < config.hosts_size(); i++)
