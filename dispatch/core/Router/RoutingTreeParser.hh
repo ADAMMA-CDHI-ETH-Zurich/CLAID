@@ -78,6 +78,12 @@ namespace claid
                             "however, no hostServerAddress was specified."));
                     }
 
+                    if(host.connectTo == host.hostname)
+                    {
+                        return absl::InvalidArgumentError(
+                            absl::StrCat("Host \"", host.hostname, "\" was configured to connect to itself. Loops are not allowed in the routing graph!"));
+                    }
+
                     if(connectToHostname == "")
                     {
                         // This host does not connect to any other node, hence it has to be the root node.

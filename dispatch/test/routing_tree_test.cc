@@ -121,7 +121,7 @@ TEST(RoutingTreeTestSuite, RoutingTreeTest)
 // If a host is declared as server and does not have a connectTo address specified,
 // it has to be the root of the tree as it does not connect to another server.
 // This is only allowed for ONE host. Only the root server is allowed to not connect to other servers.
-TEST(RoutingTreeTestSuite, TwoMasterHostsTest)
+TEST(RoutingTreeTestSuite, NoTwoMasterHostsTest)
 {
     RoutingTree routingTree;
     RoutingTreeParser parser;  
@@ -139,16 +139,42 @@ TEST(RoutingTreeTestSuite, TwoMasterHostsTest)
     ASSERT_NE(status.ok(), true) << status;
 } 
 
-// Tests that no two server-hosts have the same address.
-TEST(RoutingTreeTestSuite, UniqueAddressTest)
+// Verifies that it is not allowed to add two Hosts with the same name to the HostDescriptionMap
+TEST(RoutingTreeTestSuite, UniqueHostNameTest)
 {
-    RoutingTree routingTree;
-    RoutingTreeParser parser;  
-
     HostDescriptionMap hostDescriptions;
     absl::Status status = hostDescriptions.insert(std::make_pair("Host1", HostDescription("Host1", true, "claid.ethz.ch", "")));
     status.Update(hostDescriptions.insert(std::make_pair("Host2", HostDescription("Host2", true, "1.claid.ethz.ch", "claid.ethz.ch"))));
     status.Update(hostDescriptions.insert(std::make_pair("Host2", HostDescription("Host2", true, "claid.ethz.ch", "claid.ethz.ch"))));
 
-    ASSERT_NE(status.ok(), true) << "Adding two hosts with the same name to the HostDescriptionMap should yield an error, but it did not.";
+    ASSERT_NE(status.ok(), true) << "Adding two hosts to the HostDescriptionMap did not yield an error.";
 } 
+
+// Verifies that the RoutingTreeParser rejects hosts that are a server and have the same address..
+TEST(RoutingTreeTestSuite, UniqueAddressTest)
+{
+    HostDescriptionMap hostDescriptions;
+    absl::Status status = hostDescriptions.insert(std::make_pair("Host1", HostDescription("Host1", true, "claid.ethz.ch", "")));
+    status.Update(hostDescriptions.insert(std::make_pair("Host2", HostDescription("Host2", true, "1.claid.ethz.ch", "claid.ethz.ch"))));
+    status.Update(hostDescriptions.insert(std::make_pair("Host3", HostDescription("Host3", true, "claid.ethz.ch", "claid.ethz.ch"))));
+
+    RoutingTree routingTree;
+    RoutingTreeParser parser;  
+    status.Update(parser.buildRoutingTree(hostDescriptions, routingTree));
+
+
+    ASSERT_NE(status.ok(), true) << "RoutingTreeParser accepted to build a routing tree containing two hosts with the same address.";
+} 
+
+// Verifies that the RoutingTreeParser rejects hosts that connect to themselves.
+TEST(RoutingTreeTestSuite, NoSelfLoopTest)
+{
+    HostDescriptionMap hostDescriptions;
+    absl::Status status = hostDescriptions.insert(std::make_pair("Host1", HostDescription("Host1", true, "claid.ethz.ch", "Host1")));
+
+    RoutingTree routingTree;
+    RoutingTreeParser parser;  
+    status.Update(parser.buildRoutingTree(hostDescriptions, routingTree));
+
+    ASSERT_NE(status.ok(), true) << "A host that connects to itself should be rejected by the RoutingTreeParser, but it was not.";
+}

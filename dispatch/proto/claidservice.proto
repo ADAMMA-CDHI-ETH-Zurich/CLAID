@@ -19,6 +19,13 @@ service ClaidService {
   rpc InitRuntime(InitRuntimeRequest) returns (google.protobuf.Empty) {}
 }
 
+// Service for two instances of the CLAID middleware to talk to each other over a TCP connection.
+service ClaidRemoteService
+{
+  rpc SendReceivePackages(stream DataPackage) returns (stream DataPackage) {}
+  rpc RegisterRemoteClient(RemoteClientInitRequest) returns (google.protobuf.Empty) {}
+}
+
 message DataPackage {
   string id = 1;     // Unique ID of this package
   string channel = 2;
@@ -158,6 +165,12 @@ enum Runtime {
   RUNTIME_PYTHON = 4;
 }
 
+message RemoteClientInitRequest
+{
+  string user_token = 1;
+  string device_id = 2;
+}
+
 // message AppConfig {
 //   repeated HostConfig hosts = 1;
 // }
@@ -174,3 +187,4 @@ enum Runtime {
 //   repeated string out_channels = 4;
 //   map<string, string> properties = 5;
 // }
+
