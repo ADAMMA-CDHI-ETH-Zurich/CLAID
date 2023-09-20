@@ -27,9 +27,9 @@ namespace claid
             MiddleWare(
                 const std::string& socketPath,
                 const std::string& configurationPath,
-                const std::string& currentHost,
-                const std::string& currentUser,
-                const std::string& currentDeviceId
+                const std::string& hostId,
+                const std::string& userId,
+                const std::string& deficeId
             );
 
             absl::Status start();
@@ -46,9 +46,9 @@ namespace claid
             // TODO: Incorporate all variables into the code if necessary.
             std::string socketPath;
             std::string configurationPath;
-            std::string currentHost;
-            std::string currentUser;
-            std::string currentDeviceId;
+            std::string hostId;
+            std::string userId;
+            std::string deviceId;
 
             ModuleTable moduleTable;
             HostUserTable hostUserTable;

@@ -7,14 +7,16 @@ import 'claid_core_bindings_generated.dart';
 const String _libName = 'claid_capi';
 final String _platform = Platform.isAndroid ? 'android' : 'linux';
 
-class MiddleWare {
+class MiddleWareBindings {
   var _coreHandle = ffi.Pointer<ffi.Void>.fromAddress(0);
   var _ready = false;
 
-  MiddleWare(String socketPath, configFile, userId, deviceId) {
+  MiddleWareBindings(String socketPath, String configFile, String hostId,
+      String userId, String deviceId) {
     _coreHandle = _bindings.start_core(
         toCharPointer(socketPath),
         toCharPointer(configFile),
+        toCharPointer(hostId),
         toCharPointer(userId),
         toCharPointer(deviceId));
     _ready = _coreHandle.address != 0;
@@ -36,7 +38,9 @@ final ffi.DynamicLibrary _dylib = () {
     return ffi.DynamicLibrary.open('$_libName.framework/$_libName');
   }
   if (Platform.isAndroid || Platform.isLinux) {
-    return ffi.DynamicLibrary.open('lib${_libName}_$_platform.so');
+    final path = 'blobs/lib${_libName}_$_platform.so';
+    print('path: $path');
+    return ffi.DynamicLibrary.open('blobs/lib${_libName}_$_platform.so');
   }
   if (Platform.isWindows) {
     return ffi.DynamicLibrary.open('$_libName.dll');

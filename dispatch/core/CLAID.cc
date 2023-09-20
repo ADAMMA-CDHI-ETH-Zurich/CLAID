@@ -51,7 +51,7 @@ namespace claid
         RoutingQueueMergerGeneric merger(masterQueue, localQueue, clientQueue, serverQueue);
         status = merger.start();
         CHECK_STATUS(status);
-    
+
         HostUserTable hostUserTable;
         std::shared_ptr<LocalRouter> localRouter = std::make_shared<LocalRouter>(moduleTable);
         std::shared_ptr<ClientRouter> clientRouter = std::make_shared<ClientRouter>();

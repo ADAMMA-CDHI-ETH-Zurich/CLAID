@@ -1,11 +1,20 @@
 #include <string>
 
-#include "dispatch/core/capi.h"
 #include "dispatch/core/middleware.hh"
+#include "dispatch/core/capi.h"
 
-void* start_core(const char* socket_path, const char* config_file, const char* user_id, const char* device_id) {
-    auto middleWare = new claid::MiddleWare(socket_path, config_file,
-        "this_hostname", user_id, device_id);
+extern "C"
+{
+
+__attribute__((visibility("default"))) __attribute__((used))
+void* start_core(const char* socket_path, const char* config_file, const char* host_id, const char* user_id, const char* device_id) {
+    auto socketPath = std::string(socket_path);
+    if (socketPath.find("unix://") != 0) {
+        socketPath = "unix://" + socketPath;
+    }
+
+    auto middleWare = new claid::MiddleWare(socketPath, config_file,
+        host_id, user_id, device_id);
 
     auto status = middleWare->start();
     if (!status.ok()) {
@@ -15,15 +24,17 @@ void* start_core(const char* socket_path, const char* config_file, const char* u
     return middleWare;
 }
 
+__attribute__((visibility("default"))) __attribute__((used))
 void shutdown_core(void* handle) {
     if (handle) {
         auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
         auto status = middleWare->shutdown();
         if (!status.ok()) {
             // TODO: replace with proper logging.
-            std::cout << "Error shutind down middleware" << std::endl;
+            std::cout << "Error shuting down middleware" << std::endl;
         }
         delete middleWare;
     }
 }
 
+}

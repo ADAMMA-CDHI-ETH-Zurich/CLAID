@@ -146,6 +146,7 @@ message ModuleListResponse {
     string module_id = 1;
     string module_class = 2;
     map<string, string> properties = 3;
+    repeated DataPackage channels = 4;
   }
 
   repeated ModuleDescriptor descriptors = 1;
@@ -156,7 +157,7 @@ message ModuleListResponse {
 message InitRuntimeRequest {
   message ModuleChannels {
     string module_id = 1;
-    repeated DataPackage channel_packets = 2; // channel, source, target, payload => define the channel
+    repeated DataPackage channel_packets = 2; // channel, source | target, payload => define the channel
   }
 
   Runtime runtime = 1;

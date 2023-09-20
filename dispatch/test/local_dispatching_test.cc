@@ -165,7 +165,7 @@ const vector<shared_ptr<DataPackage>> testChannels = {
 
 TEST(LocalDispatcherTestSuit, SocketBasedDispatcherTest) {
     // TODO: remove this from being hard coded
-    string addr = "unix:///tmp/claidtest/grpc.socket";
+    string addr = "unix:///tmp/claidtest-local-grpc.socket";
 
     // TODO: The module table needs to be populated.
     ModuleTable modTable;

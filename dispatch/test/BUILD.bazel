@@ -5,6 +5,13 @@ FRAMEWORK_DEPS = [
     "@com_google_googletest//:gtest_main",
 ]
 
+filegroup(
+    name = "test_configs",
+    srcs = [
+        "test_config.json",
+    ],
+)
+
 cc_test(
   name = "local_dispatching_test",
   size = "small",
@@ -43,6 +50,17 @@ cc_binary(
   ] + FRAMEWORK_DEPS,
 )
 
+cc_test(
+  name = "capi_test",
+  size = "small",
+  srcs = ["capi_test.cc"],
+  deps = [
+    "//dispatch/core:capi",
+  ] + FRAMEWORK_DEPS,
+  data = [
+    ":test_configs",
+  ]
+)
 
 cc_test(
   name = "router_test",
@@ -50,7 +68,7 @@ cc_test(
   srcs = ["router_test.cc"],
   deps = [
     "//dispatch/core:routing",
-  ] + FRAMEWORK_DEPS, 
+  ] + FRAMEWORK_DEPS,
 )
 
 
@@ -68,27 +86,14 @@ cc_test(
   deps = [
     "//dispatch/core:routing",
     "@bazel_tools//tools/cpp/runfiles",
-  ] + FRAMEWORK_DEPS, 
+  ] + FRAMEWORK_DEPS,
 )
 
-
-# cc_test(
-#   name = "shared_queue_test",
-#   size = "small",
-#   srcs = ["shared_queue_test.cc"],
-#   deps = [
-#     "//dispatch/core:shared_queue",
-#   ] + FRAMEWORK_DEPS, 
-# )
 proto_library(
     name = "testmessages_proto",
     srcs = [
         "testmessages.proto",
     ],
-    # deps = [
-    #     "@com_google_protobuf//:empty_proto",
-    #     "@com_google_protobuf//:timestamp_proto",
-    # ],
 )
 
 cc_proto_library(

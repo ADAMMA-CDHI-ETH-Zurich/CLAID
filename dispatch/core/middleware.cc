@@ -6,16 +6,15 @@ using namespace claid;
 using namespace std;
 
 MiddleWare::MiddleWare(const string& socketPath, const string& configurationPath,
-    const string& currentHost, const string& currentUser, const string& currentDeviceId)
+    const string& hostId, const string& userId, const string& deviceId)
         : socketPath(socketPath), configurationPath(configurationPath),
-          currentHost(currentHost), currentUser(currentUser), currentDeviceId(currentDeviceId)
-          {}
+          hostId(hostId), userId(userId), deviceId(deviceId) {}
 
 MiddleWare::~MiddleWare() {
     auto status = shutdown();
-    if (status.ok()) {
+    if (!status.ok()) {
         // TODO: replace with proper logging
-        cout << "Error running shutdown in MiddleWare destructore." << endl;
+        cout << "Error running shutdown in MiddleWare destructor: " << status.message() << endl;
     }
 }
 
@@ -24,12 +23,13 @@ absl::Status MiddleWare::start() {
     Configuration config;
     auto status = config.parseFromJSONFile(configurationPath);
     if (!status.ok()) {
+        cout << "Unable to parse config file: " << status.message() << endl;
         return status;
     }
 
     ModuleDescriptionMap moduleDescriptions;
     ChannelDescriptionMap channelDescriptions;
-    status = config.getModuleDescriptions(moduleDescriptions);
+    status = config.getModulesForHost(hostId, moduleDescriptions);
     if (!status.ok()) {
         return status;
     }
@@ -43,6 +43,11 @@ absl::Status MiddleWare::start() {
     if (!status.ok()) {
         return status;
     }
+
+    cout << "------------------------------------------" << endl;
+    cout << "Module Table:" << endl;
+    cout << moduleTable.toString() << endl;
+    cout << "------------------------------------------" << endl;
 
     localDispatcher = make_unique<DispatcherServer>(socketPath, moduleTable);
     if (!localDispatcher->start()) {

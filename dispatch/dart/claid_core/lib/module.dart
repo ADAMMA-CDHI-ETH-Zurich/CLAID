@@ -1,11 +1,17 @@
 import 'dart:async';
-import 'dart:io';
-
 import './src/module_impl.dart' as impl;
-
-typedef Callback = void Function();
+import './dispatcher.dart';
 
 typedef FactoryFunc = Module Function();
+
+Future<void> initModules(
+    {required ModuleDispatcher dispatcher,
+    required Map<String, FactoryFunc> moduleFactories}) async {
+  final manager = impl.ModuleManager(dispatcher, moduleFactories);
+  await manager.start();
+}
+
+typedef RegisteredCallback = void Function();
 
 ///  Lifecycle of modules
 /// * Factory function is registered together with a module_class name
@@ -18,8 +24,6 @@ typedef FactoryFunc = Module Function();
 
 // Modules is the base class of all modules.
 abstract class Module {
-  static void registerModule(String moduleClassName, FactoryFunc factoryFn) {}
-
   // initialize is called after the Module is created.
   // It must do the following:
   //         - parse properties to extract module params
@@ -32,19 +36,39 @@ abstract class Module {
 
   // Register a function that is called periodically.
   void registerPeriodicFunction(
-      String name, Duration period, Callback callback) {}
+      String name, Duration period, RegisteredCallback callback) {}
+
   void unregisterPeriodicFunction(String name) {}
   void registerScheduledFunction(
-      String name, DateTime dateTime, Callback callback) {}
+      String name, DateTime dateTime, RegisteredCallback callback) {}
   void unregisterScheduledFunction(String name) {}
 
-  SubscribeChannel<T> subscribe<T>(String channelId) {
-    return impl.SubChannelImpl<T>();
+  SubscribeChannel<T> subscribe<T>(String channelId, T instance) {
+    _assertLifeCycle(impl.Lifecycle.initializing);
+    return impl.ModuleManager.instance
+        .getSubscribChannel<T>(_modId, channelId, instance);
   }
 
-  PublishChannel<T> publish<T>(String channelId) {
-    return impl.PubChannelImpl<T>();
+  PublishChannel<T> publish<T>(String channelId, T instance) {
+    _assertLifeCycle(impl.Lifecycle.initializing);
+    return impl.ModuleManager.instance
+        .getPublishChannel<T>(_modId, channelId, instance);
   }
+
+  set moduleId(String id) {
+    _modId = id;
+    _assertLifeCycle(impl.Lifecycle.initializing);
+  }
+
+  void _assertLifeCycle(impl.Lifecycle lc) {
+    final actual = impl.ModuleManager.instance.lifecycleFor(_modId);
+    if (actual != lc) {
+      throw AssertionError(
+          'invalid lifecycle ${impl.ModuleManager.instance.lifecycleFor(_modId)}');
+    }
+  }
+
+  String _modId = "";
 }
 
 typedef ChannelCallback<T> = void Function(ChannelData<T> payload);
@@ -58,6 +82,7 @@ abstract class PublishChannel<T> {
 }
 
 class ChannelData<T> {
-  late T value;
-  late DateTime timestamp;
+  final T value;
+  final DateTime timestamp;
+  const ChannelData(this.value, this.timestamp);
 }

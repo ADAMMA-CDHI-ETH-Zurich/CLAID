@@ -1,4 +1,38 @@
+import 'package:claid_core/generated/claidservice.pb.dart';
+
 import 'module.dart';
+import 'dispatcher.dart';
+
+// MockDispatcher allows to test higher level functions without
+// instantiating the 'real' dispatcher, thus making tests hermetic.
+class MockDispatcher implements ModuleDispatcher {
+  @override
+  Future<List<ModDescriptor>> getModuleList(List<String> moduleClasses) {
+    // TODO: implement getModuleList
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> initRuntime(Map<String, List<DataPackage>> modules) {
+    // TODO: implement initRuntime
+    throw UnimplementedError();
+  }
+
+  @override
+  void shutdown() {
+    // TODO: implement shutdown
+  }
+
+  @override
+  // TODO: implement socketPath
+  String get socketPath => throw UnimplementedError();
+
+  @override
+  bool start() {
+    // TODO: implement start
+    throw UnimplementedError();
+  }
+}
 
 // Sensor
 // Spirometer "Spirobank Smart™" (MIR company) will be used every day in the morning and in the evening to measure lung function of patients.
@@ -29,7 +63,7 @@ class MockInhalerSensor extends Module {
 
 // Sensor
 // Smartphone sensor data will include a microphone (for cough detection), GPS, connection status, and battery status, which are all collected continuously.
-class MockSmartphoneSensors extends Module {
+class MockSmartphoneSensor extends Module {
   @override
   void initialize(Map<String, String> properties) {
     // TODO: implement initialize

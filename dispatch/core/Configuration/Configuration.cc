@@ -16,7 +16,7 @@ namespace claid
     {
         google::protobuf::util::JsonParseOptions options2;
         absl::Status status = JsonStringToMessage(json, &this->config, options2);
-        
+
         return status;
     }
 
@@ -42,7 +42,7 @@ namespace claid
 
         return this->fromJSONString(jsonContent);
     }
-    
+
     absl::Status Configuration::loadFileToString(const std::string& filePath, std::string& buffer)
     {
         std::ifstream file(filePath);
@@ -56,7 +56,7 @@ namespace claid
         size_t size = file.tellg();
         buffer = std::string(size, ' ');
         file.seekg(0);
-        file.read(&buffer[0], size); 
+        file.read(&buffer[0], size);
 
         return absl::OkStatus();
     }
@@ -77,7 +77,7 @@ namespace claid
             if(hostDescriptions.find(hostDescription.hostname) != hostDescriptions.end())
             {
                 return absl::AlreadyExistsError(
-                    absl::StrCat("Configuration: Host \"", 
+                    absl::StrCat("Configuration: Host \"",
                     hostDescription.hostname, "\" was defined more than once."));
             }
 
@@ -110,16 +110,16 @@ namespace claid
                     moduleDescription.properties.insert(make_pair(entry.first, entry.second));
                 }
 
-                moduleDescription.inputChannels = 
+                moduleDescription.inputChannels =
                     std::vector<std::string>(moduleDescription.inputChannels.begin(), moduleDescription.inputChannels.end());
-                
-                moduleDescription.outputChannels = 
+
+                moduleDescription.outputChannels =
                     std::vector<std::string>(moduleDescription.outputChannels.begin(), moduleDescription.outputChannels.end());
 
                 if(moduleDescriptions.find(moduleDescription.id) != moduleDescriptions.end())
                 {
                     return absl::AlreadyExistsError(
-                        absl::StrCat("Configuration: A Module with id \"", 
+                        absl::StrCat("Configuration: A Module with id \"",
                         moduleDescription.id, "\" was defined more than once."));
                 }
 
@@ -132,7 +132,53 @@ namespace claid
         }
         return absl::OkStatus();
     }
-            
+
+    absl::Status Configuration::getModulesForHost(const string& hostId, ModuleDescriptionMap& moduleDescriptions) const {
+        // TODO: remove this duplicate call that is only made to verify the correctness
+        // of the modules.
+        ModuleDescriptionMap fake;
+        auto status = getModuleDescriptions(fake);
+        if (!status.ok()) {
+            return status;
+        }
+
+        moduleDescriptions.clear();
+        for(auto& hostIt : config.hosts()) {
+            if (hostIt.hostname() != hostId) {
+                continue;
+            }
+
+            for(auto& modIt : hostIt.modules()) {
+                if (moduleDescriptions.find(modIt.id()) != moduleDescriptions.end()) {
+                    return absl::AlreadyExistsError(
+                        absl::StrCat("Configuration: A Module with id \"",
+                        modIt.id(), "\" was defined more than once."));
+                }
+
+                ModuleDescription moduleDescription;
+                moduleDescription.id = modIt.id();
+                moduleDescription.moduleClass = modIt.type();
+                for(auto entry : modIt.properties())
+                {
+                    moduleDescription.properties.insert(make_pair(entry.first, entry.second));
+                }
+
+                auto& inCh = modIt.input_channels();
+                moduleDescription.inputChannels = std::vector<std::string>(inCh.begin(), inCh.end());
+
+                auto& outCh = modIt.output_channels();
+                moduleDescription.outputChannels = std::vector<std::string>(outCh.begin(), outCh.end());
+
+                status = moduleDescriptions.insert(make_pair(moduleDescription.id, moduleDescription));
+                if (!status.ok()) {
+                    return status;
+                }
+            }
+        }
+        return absl::OkStatus();
+    }
+
+
     absl::Status Configuration::getChannelDescriptions(ChannelDescriptionMap& channelDescriptions) const
     {
         channelDescriptions.clear();
@@ -166,11 +212,11 @@ namespace claid
             if(channelDescription.publisherModules.empty())
             {
                 return absl::InvalidArgumentError(
-                        absl::StrCat("Configuration: Channel \"", 
-                        channelDescription.channelName, 
+                        absl::StrCat("Configuration: Channel \"",
+                        channelDescription.channelName,
                         "\" has no publishers, therefore the subscribers would never receive data."));
             }
-            
+
         }
         return absl::OkStatus();
     }

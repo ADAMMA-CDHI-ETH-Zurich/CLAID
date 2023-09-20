@@ -6,13 +6,8 @@ extern "C"
 {
 #endif
 
-    void*
-     __attribute__((visibility("default"))) __attribute__((used))
-    start_core(const char* socket_path, const char* config_file, const char* user_id, const char* device_id);
-
-    void
-    __attribute__((visibility("default")))   __attribute__((used))
-    shutdown_core(void* handle);
+    void* start_core(const char* socket_path, const char* config_file, const char* host_id, const char* user_id, const char* device_id);
+    void shutdown_core(void* handle);
 
 #ifdef __cplusplus
 }

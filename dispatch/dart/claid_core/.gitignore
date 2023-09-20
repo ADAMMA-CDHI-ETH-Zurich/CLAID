@@ -31,4 +31,5 @@ build/
 
 # code generated running ./make
 lib/generated/**
-lib/blobs/**
+test/generated/**
+blobs/**

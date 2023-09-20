@@ -17,7 +17,7 @@
 using namespace std;
 
 
-namespace claid 
+namespace claid
 {
     class Configuration
     {
@@ -25,7 +25,7 @@ namespace claid
             claidservice::CLAIDConfig config;
 
             absl::Status loadFileToString(const std::string& path, std::string& content);
-            
+
         public:
 
             absl::Status fromJSONString(const std::string& json);
@@ -36,10 +36,10 @@ namespace claid
             absl::Status getHostDescriptions(HostDescriptionMap& hostDescriptions) const;
             absl::Status getModuleDescriptions(ModuleDescriptionMap& moduleDescriptions) const;
             absl::Status getChannelDescriptions(ChannelDescriptionMap& channelDescriptions) const;
-    
+            absl::Status getModulesForHost(const std::string& hostId, ModuleDescriptionMap& moduleDescriptions) const;
     };
 
 
-}  // namespace claid 
+}  // namespace claid
 
 #endif  // CLAID_CONFIG_H_

@@ -29,12 +29,14 @@ class ClaidCoreBindings {
   ffi.Pointer<ffi.Void> start_core(
     ffi.Pointer<ffi.Char> socket_path,
     ffi.Pointer<ffi.Char> config_file,
+    ffi.Pointer<ffi.Char> host_id,
     ffi.Pointer<ffi.Char> user_id,
     ffi.Pointer<ffi.Char> device_id,
   ) {
     return _start_core(
       socket_path,
       config_file,
+      host_id,
       user_id,
       device_id,
     );
@@ -46,9 +48,11 @@ class ClaidCoreBindings {
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>)>>('start_core');
   late final _start_core = _start_corePtr.asFunction<
       ffi.Pointer<ffi.Void> Function(
+          ffi.Pointer<ffi.Char>,
           ffi.Pointer<ffi.Char>,
           ffi.Pointer<ffi.Char>,
           ffi.Pointer<ffi.Char>,

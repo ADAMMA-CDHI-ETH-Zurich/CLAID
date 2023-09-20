@@ -9,6 +9,9 @@ class MyTestModule extends Module {
   void initialize(Map<String, String> properties) {
     // TODO: implement initialize
   }
+
+  @override
+  String get className => 'MyTestModuleClass';
 }
 
 void main() {

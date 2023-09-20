@@ -107,8 +107,11 @@ void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
             cerr << msgToStringx(pkt) << "---------------------------" << endl;
             return;
         }
-       incomingQueue.push_back(make_shared<DataPackage>(pkt));
-       return;
+        auto cpPkt = make_shared<DataPackage>(pkt);
+        auto srcTgt = chanMap.lookupChannel(pkt.channel());
+
+        incomingQueue.push_back(cpPkt);
+        return;
     }
 
     // Process the control values
