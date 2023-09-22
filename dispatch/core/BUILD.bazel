@@ -49,6 +49,7 @@ cc_library(
         "Logger/*.cc",
         "Exception/*.cc",
         "ExceptionHandler/*.cc",
+        "RemoteDispatching/*.cc",
     ]),
     hdrs = [
         "CLAID.hh",
@@ -61,6 +62,7 @@ cc_library(
     deps = [
         ":claid_config",
         ":local_dispatching",
+        ":remote_dispatching",
         "@com_google_protobuf//:protobuf",
     ],
 )
@@ -76,6 +78,22 @@ cc_library(
         "module_table.hh",
         "local_dispatching.hh",
     ],
+    deps = [
+        "@com_github_grpc_grpc//:grpc++",
+        "//dispatch/proto:claidservice_cc_proto",
+        "//dispatch/proto:claidservice_cc_grpc",
+    ],
+)
+
+cc_library(
+    name = "remote_dispatching",
+    srcs = glob([
+        "RemoteDispatching/*.cc",
+    ]),
+    hdrs = glob([
+        "RemoteDispatching/*.hh",
+        "shared_queue.hh",
+    ]),
     deps = [
         "@com_github_grpc_grpc//:grpc++",
         "//dispatch/proto:claidservice_cc_proto",

@@ -22,8 +22,11 @@ service ClaidService {
 // Service for two instances of the CLAID middleware to talk to each other over a TCP connection.
 service ClaidRemoteService
 {
+  // Continuous stream of DataPackage's between remote client and remote server.
   rpc SendReceivePackages(stream DataPackage) returns (stream DataPackage) {}
-  rpc RegisterRemoteClient(RemoteClientInitRequest) returns (google.protobuf.Empty) {}
+
+  // Registers the client (identified by user_token and device_id) with the server.
+  // rpc RegisterRemoteClient(RemoteClientInitRequest) returns (google.protobuf.Empty) {}
 }
 
 message DataPackage {
@@ -52,22 +55,25 @@ message DataPackage {
 }
 
 enum CtrlType {
-  CTRL_UNSPECIFIED  = 0;
-  CTRL_RUNTIME_PING = 1;  // Client sends this upon connect and periodically if no packages have been sent
-  // CTRL_MODULE_PING  = 2;  // module ping sent to local claid server.
+  CTRL_UNSPECIFIED     = 0;
+  CTRL_RUNTIME_PING    = 1;  // Client sends this upon connect and periodically if no packages have been sent
+  CTRL_REMOTE_PING     = 2;  // RemoteClient sends this upon connect to a RemoteDispatcherServer upon connect.
+  // CTRL_MODULE_PING  = 3;  // module ping sent to local claid server.
   // CTRL_MODULE_READY = 4;  // sent to module when the local middleware is ready
   // CTRL_STATUS       = 5;  // Sent from a middleware client up the tree
   // CTRL_ACTION       = 6;  // sent to module when the local middleware is ready
-  CTRL_ERROR        = 7;  // Error occured
+  CTRL_ERROR           = 7;  // Error occured
 }
 
 message ControlPackage {
   CtrlType ctrl_type                    = 1;
   optional Runtime runtime              = 2; // CTRL_RUNTIME_PING
+  optional RemoteClientInfo remote_client_info             = 3; // CTRL_REMOTE_PING
   optional AccumulatedStatus status     = 4; // CTRL_STATUS: status sent towards root server
   optional ErrorMsg error_msg           = 5; // CTRL_ERROR: Error report sent towards root server
   optional ActionRequest action_request = 6; // CTRL_ACTION: action request sent to all children
                                              // of the claid instance
+
 }
 
 message AccumulatedStatus {
@@ -165,7 +171,7 @@ enum Runtime {
   RUNTIME_PYTHON = 4;
 }
 
-message RemoteClientInitRequest
+message RemoteClientInfo
 {
   string user_token = 1;
   string device_id = 2;

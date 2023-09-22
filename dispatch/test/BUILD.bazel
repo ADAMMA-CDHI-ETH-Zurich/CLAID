@@ -16,6 +16,16 @@ cc_test(
 )
 
 cc_test(
+  name = "remote_dispatching_test",
+  size = "small",
+  srcs = ["remote_dispatching_test.cc"],
+  deps = [
+    ":testmessages_cc_proto",
+    "//dispatch/core:remote_dispatching",
+  ] + FRAMEWORK_DEPS,
+)
+
+cc_test(
   name = "router_test",
   size = "small",
   srcs = ["router_test.cc"],
