@@ -30,10 +30,15 @@ namespace claid
             grpc::ServerReaderWriter<claidservice::DataPackage, claidservice::DataPackage>* stream) override;
 
 
+        void shutdown();
+
     private:
 
-        RemoteClientHandler* addRemoteClientHandler(DataPackage& pkt, grpc::Status& status);
-        
+        RemoteClientHandler* addRemoteClientHandler(const RemoteClientInfo& remoteClientInfo, grpc::Status& status);
+        void stopAndRemoveRemoteClientHandler(const RemoteClientInfo& remoteClientInfo);
+
+        grpc::Status getRemoteClientInfoFromHandshakePackage(const DataPackage& package, RemoteClientInfo& info);
+
     private:
         // claid::ModuleTable& moduleTable;
         std::map<RemoteClientKey, std::unique_ptr<RemoteClientHandler>> remoteClientHandlers;   

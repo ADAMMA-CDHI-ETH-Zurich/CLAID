@@ -9,7 +9,7 @@ namespace claid
         incomingQueue(inQueue), outgoingQueue(outQueue),
         userToken(userToken), deviceID(deviceID)
     {
-
+        this->active = false;
     }
 
     bool RemoteClientHandler::alreadyRunning() 
@@ -20,17 +20,18 @@ namespace claid
 
     grpc::Status RemoteClientHandler::startWriterThread(grpc::ServerReaderWriter<DataPackage, DataPackage>* stream) 
     {
-        std::cout << "RemoteClientHandler startWriterThread ckpt 1\n";
+        this->active = true;
+
         std::lock_guard<std::mutex> lock(this->writeThreadMutex);
         if (this->writeThread) 
         {
             return grpc::Status(grpc::INVALID_ARGUMENT, "Thread already running.");
         }
-        std::cout << "RemoteClientHandler startWriterThread ckpt 2\n";
+
         this->writeThread = std::make_unique<std::thread>([this, stream]() {
             processWriting(stream);
         });
-        std::cout << "RemoteClientHandler startWriterThread ckpt 3\n";
+
         return grpc::Status::OK;
     }
 
@@ -52,9 +53,9 @@ namespace claid
 
     void RemoteClientHandler::processWriting(grpc::ServerReaderWriter<DataPackage, DataPackage>* stream) 
     {
-        while(true) 
+        while(this->active) 
         {
-            auto pkt = outgoingQueue.pop_front();
+            auto pkt = this->outgoingQueue.pop_front();
 
             // If we got a null pointer we are done
             if (!pkt) 
@@ -65,7 +66,7 @@ namespace claid
             if (!stream->Write(*pkt)) 
             {
                 // Re-enqueue package.
-                outgoingQueue.push_front(pkt);
+                this->outgoingQueue.push_front(pkt);
                 break;
             }
         }
@@ -74,21 +75,17 @@ namespace claid
 
     grpc::Status RemoteClientHandler::processReading(grpc::ServerReaderWriter<DataPackage, DataPackage>* stream) 
     {
-        std::cout << "RemoteClientHandler reading 1 \n";
         DataPackage inPkt;
         grpc::Status status;
-        while(stream->Read(&inPkt)) 
+        while(stream->Read(&inPkt) && this->active) 
         {
-            std::cout << "RemoteClientHandler reading 2 \n";
             processPacket(inPkt, status);
             if (!status.ok()) 
             {
-                std::cout << "RemoteClientHandler reading 3 " << status.error_message() << "\n";
                 // TODO: remove once we have a cleanup function added.
                 return status;
             }
         }
-        std::cout << "RemoteClientHandler reading end \n";
         return grpc::Status::OK;
     }
 
@@ -101,7 +98,7 @@ namespace claid
         // the package accordingly.
         if (!pkt.has_control_val())
         {
-            this->outgoingQueue.push_back(std::make_shared<DataPackage>(pkt));
+            this->incomingQueue.push_back(std::make_shared<DataPackage>(pkt));
             return;
         }
         // Process the control values
@@ -114,6 +111,13 @@ namespace claid
                 break;
             }
         }
+    }
+
+    void RemoteClientHandler::shutdown()
+    {
+        std::cout << "Shutting down RemoteClientHandler\n";
+        this->active = false;
+        this->shutdownWriterThread();
     }
 
 }

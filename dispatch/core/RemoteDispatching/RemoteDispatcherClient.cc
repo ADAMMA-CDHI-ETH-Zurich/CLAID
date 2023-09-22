@@ -7,10 +7,9 @@ namespace claid
                     const std::string& userToken,
                     const std::string& deviceID,
                     SharedQueue<DataPackage>& incomingQueue, 
-                    SharedQueue<DataPackage>& outgoingQueue) :  
-                                                            userToken(userToken), deviceID(deviceID),
-                                                            incomingQueue(incomingQueue), 
-                                                            outgoingQueue(outgoingQueue)
+                    SharedQueue<DataPackage>& outgoingQueue) :  userToken(userToken), deviceID(deviceID),
+                                                                incomingQueue(incomingQueue), 
+                                                                outgoingQueue(outgoingQueue)
     {
         // Set up the gRCP channel
         grpcChannel = grpc::CreateChannel(addressToConnectTo, grpc::InsecureChannelCredentials());
@@ -19,19 +18,24 @@ namespace claid
 
     void RemoteDispatcherClient::shutdown() 
     {
+        std::cout << "Shutting down client 1\n";
         // Closing the outgoing queue will end the writer thread.
+        // The writer thread will invoke stream->WritesDone() after the outgoingQueue was closed.
+        // This will close the stream and also abort stream->Read() for the reader thread.
         outgoingQueue.close();
         if (this->writeThread) 
         {
             this->writeThread->join();
             this->writeThread = nullptr;
         }
+        std::cout << "Shutting down client 2\n";
 
         if (this->readThread) 
         {
             this->readThread->join();
             this->readThread = nullptr;
         }
+        std::cout << "Shutting down client 3\n";
     }
 
     void makeRemoteRuntimePing(ControlPackage& pkt, const std::string& userToken, const std::string& deviceID) 
@@ -42,7 +46,7 @@ namespace claid
         pkt.mutable_remote_client_info()->set_device_id(deviceID);
     }
 
-    absl::Status RemoteDispatcherClient::registerAtServer() 
+    absl::Status RemoteDispatcherClient::registerAtServerAndStartStreaming() 
     {
         // Setup stream and send ping package, containg the user_token and device_id.
         // if (true)
@@ -55,83 +59,76 @@ namespace claid
             streamContext = std::make_shared<grpc::ClientContext>();
             stream = stub->SendReceivePackages(streamContext.get());
 
-            std::cout << "checkpoint 15" << std::endl;
 
-            claidservice::DataPackage pingReq;
+            claidservice::DataPackage pingRequestPackage;
+            makeRemoteRuntimePing(*pingRequestPackage.mutable_control_val(), this->userToken, this->deviceID);
 
-            std::cout << "checkpoint 16" << std::endl;
-
-            makeRemoteRuntimePing(*pingReq.mutable_control_val(), this->userToken, this->deviceID);
-
-            std::cout << "checkpoint 17" << std::endl;
-
-            if (!stream->Write(pingReq)) 
+            if (!stream->Write(pingRequestPackage)) 
             {
                 grpc::Status status = stream->Finish();
                 return absl::InvalidArgumentError(absl::StrCat(
-                    "RemoteDispatcherClient failed to send ping package to server. Received error \"", status.error_message(), "\"\n";
+                    "RemoteDispatcherClient failed to send ping package to server. Received error \"", status.error_message(), "\"\n"
                 ));
             }
 
-            std::cout << "Sent ping package to server !" << std::endl;
 
             // Wait for the valid response ping
             DataPackage pingResp;
             if (!stream->Read(&pingResp)) {
                 auto status = stream->Finish();
-                std::cout << "Did not receive a ping package from server. Error: \"" << status.error_message() << "\"" << std::endl;
                 return absl::InvalidArgumentError(absl::StrCat(
                     "RemoteDispatcherClient failed to receive a ping package from the server. Received error \"", status.error_message(), "\"."
                 ));
             }
 
-            if (pingReq.control_val().ctrl_type() != CtrlType::CTRL_RUNTIME_PING) 
+            if (pingResp.control_val().ctrl_type() != CtrlType::CTRL_REMOTE_PING) 
             {
-                return false;
+                return absl::InvalidArgumentError(absl::StrCat(
+                    "RemoteDispatcherClient received ControlPackage package from server during handshake, however the package has an unexpected ControlType.\n",
+                    "Expected ControlType \"", CtrlType_Name(CtrlType::CTRL_REMOTE_PING), "\", but got \"", CtrlType_Name(pingResp.control_val().ctrl_type()), "\""
+                ));
             }
 
             // Start the threads to service the input/output queues.
-            std::cout << "Starting i/o threads !" << std::endl;
             writeThread = std::make_unique<std::thread>([this]() { processWriting(); });
             readThread = std::make_unique<std::thread>([this]() { processReading(); });
 
-            std::cout << "Checkpoint 199" << std::endl;
-            return true;
+            return absl::OkStatus();
         }
     }
 
-    void RemoteDispatcherClient::processReading() {
+    void RemoteDispatcherClient::processReading() 
+    {
         DataPackage dp;
-        std::cout << "Before reading" << std::endl;
-        while(stream->Read(&dp)) {
-            std::cout << "Read Packet " << std::endl;
+        while(stream->Read(&dp)) 
+        {
             incomingQueue.push_back(std::make_shared<DataPackage>(dp));
         }
-        std::cout << "After reading" << std::endl;
+        std::cout << "RemoteDispatcherClient: Finished reading\n";
     }
 
     void RemoteDispatcherClient::processWriting() 
     {
-        std::cout << "Before writing" << std::endl;
-
         while(true) 
         {
             auto pkt = outgoingQueue.pop_front();
-            std::cout << "Writing packet to " << pkt << std::endl;
             if (!pkt) 
             {
-                if (outgoingQueue.is_closed()) {
+                if (outgoingQueue.is_closed()) 
+                {
                     break;
                 }
-            } else {
-                if (!stream->Write(*pkt)) {
+            } 
+            else 
+            {
+                if (!stream->Write(*pkt)) 
+                {
                     // Server is down?
-                    std::cout << "Error writing " << std::endl;
                     break;
                 }
             }
         }
-        std::cout << "After writing" << std::endl;
         stream->WritesDone();
+        std::cout << "RemoteDispatcherClient processWriting done";
     }
 }

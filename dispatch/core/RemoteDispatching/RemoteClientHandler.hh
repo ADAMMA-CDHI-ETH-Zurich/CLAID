@@ -31,12 +31,18 @@ namespace claid
         grpc::Status startWriterThread(grpc::ServerReaderWriter<claidservice::DataPackage, claidservice::DataPackage>* stream);
         grpc::Status processReading(grpc::ServerReaderWriter<claidservice::DataPackage, claidservice::DataPackage>* stream);
 
+        void shutdown();
+
     private:
         void processWriting(grpc::ServerReaderWriter<claidservice::DataPackage, claidservice::DataPackage>* stream);
         void processPacket(claidservice::DataPackage& pkt, grpc::Status& status);
     
     private:
+
+        // Incoming from client -> router (packages we receive from external connection, i.e., connected client).
         SharedQueue<claidservice::DataPackage>& incomingQueue;
+
+        // Outgoing from router -> client (packages we send to external connection, i.e., connected client).
         SharedQueue<claidservice::DataPackage>& outgoingQueue;
 
         std::mutex writeThreadMutex; // protects the write thread
@@ -44,6 +50,8 @@ namespace claid
 
         const std::string userToken;
         const std::string deviceID;
+
+        bool active = false;
 
         friend class RemoteServiceImpl;
     };

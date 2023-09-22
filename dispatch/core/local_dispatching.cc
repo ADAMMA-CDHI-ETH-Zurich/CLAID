@@ -394,6 +394,7 @@ bool DispatcherClient::startRuntime(const InitRuntimeRequest& req) {
             return false;
         }
 
+        // TODO: @Stephan, shouldn't this here be pingResp ? 
         if (pingReq.control_val().ctrl_type() != CtrlType::CTRL_RUNTIME_PING) {
             return false;
         }

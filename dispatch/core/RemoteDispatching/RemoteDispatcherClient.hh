@@ -28,7 +28,7 @@ namespace claid
             void shutdown();
             virtual ~RemoteDispatcherClient() { shutdown(); };
 
-            absl::Status registerAtServer();
+            absl::Status registerAtServerAndStartStreaming();
 
         private:
             void processReading();
@@ -40,7 +40,10 @@ namespace claid
             const std::string userToken;
             const std::string deviceID;
 
+            // Incoming from server -> router (packages we receive from external connection).
             SharedQueue<claidservice::DataPackage>& incomingQueue;
+
+            // Incoming from router -> server (packages we send to external connection).
             SharedQueue<claidservice::DataPackage>& outgoingQueue;
             std::shared_ptr<grpc::Channel> grpcChannel;
             std::unique_ptr< claidservice::ClaidRemoteService::Stub> stub;

@@ -27,8 +27,17 @@ namespace claid
 
     void RemoteDispatcherServer::shutdown() 
     {
+        std::cout << "RemoteDispatcherServer shutdown 1\n";
+        // server->Shutdown() will hang indefintely as long as there are still ongoing RPC calls by any client.
+        // The clients call SendReceivePackages to stream data to/from the server. The SendReceivePackage RPC call
+        // typically never returns, as long as the client is alive.
+        // Hence, we have to forcefully end all client's RPC calls registered in the RemoteService.
+        this->remoteServiceImpl.shutdown();
+        // Now we can safely call server->Shutdown();
         server->Shutdown();
+        std::cout << "RemoteDispatcherServer shutdown 2\n";
         server->Wait();
+        std::cout << "RemoteDispatcherServer shutdown 3\n";
     }
 
     void RemoteDispatcherServer::buildAndStartServer()

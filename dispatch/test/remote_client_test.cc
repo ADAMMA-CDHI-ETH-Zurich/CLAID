@@ -31,11 +31,10 @@ RemoteDispatcherClient(const std::string& addressToConnectTo,
 
 TEST(RemoteDispatcherTestSuite, ServerTest) 
 {
-    std::cout << "=== TEST BEGIN ===\n";
+    std::cout << "=== CLIENT TEST BEGIN ===\n";
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     const std::string address = "localhost:1337";
-    claid::RemoteDispatcherServer server(address);
-    absl::Status status = server.start();
-
+    
     SharedQueue<DataPackage> inQueue;
     SharedQueue<DataPackage> outQueue;
     const std::string userToken = "User01";
@@ -45,11 +44,10 @@ TEST(RemoteDispatcherTestSuite, ServerTest)
 
     std::cout << "Checkpoint 1\n";
 
-    client.registerAtServerAndStartStreaming();
+    absl::Status status = client.registerAtServerAndStartStreaming();
     std::cout << "Checkpoint 2\n";
     ASSERT_TRUE(status.ok()) << status;
     client.shutdown();
     std::cout << "Checkpoint 3\n";
 
-    server.shutdown();
 }

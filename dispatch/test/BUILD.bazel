@@ -25,6 +25,25 @@ cc_test(
   ] + FRAMEWORK_DEPS,
 )
 
+cc_binary(
+  name = "remote_server_test",
+  srcs = ["remote_server_test.cc"],
+  deps = [
+    ":testmessages_cc_proto",
+    "//dispatch/core:remote_dispatching",
+  ] + FRAMEWORK_DEPS,
+)
+
+cc_binary(
+  name = "remote_client_test",
+  srcs = ["remote_client_test.cc"],
+  deps = [
+    ":testmessages_cc_proto",
+    "//dispatch/core:remote_dispatching",
+  ] + FRAMEWORK_DEPS,
+)
+
+
 cc_test(
   name = "router_test",
   size = "small",
