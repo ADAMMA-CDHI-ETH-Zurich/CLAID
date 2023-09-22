@@ -2,22 +2,20 @@
 
 #include "dispatch/proto/claidservice.grpc.pb.h"
 #include "dispatch/core/RemoteDispatching/RemoteClientHandler.hh"
+#include "dispatch/core/RemoteDispatching/RemoteClientKey.hh"
+#include "dispatch/core/RemoteDispatching/HostUserTable.hh"
 
 using claidservice::DataPackage;
 using claidservice::RemoteClientInfo;
 
 namespace claid
 {
-    typedef std::pair<std::string, std::string> RemoteClientKey;
-    inline RemoteClientKey makeRemoteClientKey(const RemoteClientInfo& info)
-    {
-        return std::make_pair(info.user_token(), info.device_id());
-    }
+
 
     class RemoteServiceImpl final : public claidservice::ClaidRemoteService::Service 
     {
     public:
-        explicit RemoteServiceImpl();
+        explicit RemoteServiceImpl(HostUserTable& hostUserTable);
 
         virtual ~RemoteServiceImpl() { };
 
@@ -40,7 +38,8 @@ namespace claid
         grpc::Status getRemoteClientInfoFromHandshakePackage(const DataPackage& package, RemoteClientInfo& info);
 
     private:
-        // claid::ModuleTable& moduleTable;
+        HostUserTable& hostUserTable;
+        
         std::map<RemoteClientKey, std::unique_ptr<RemoteClientHandler>> remoteClientHandlers;   
         std::mutex remoteClientHandlersMutex;    // protects remoteClientHandlers
 

@@ -20,6 +20,7 @@ namespace claid
       
         public: 
             RemoteDispatcherClient(const std::string& addressToConnectTo,
+                    const std::string& host,
                     const std::string& userToken,
                     const std::string& deviceID,
                     SharedQueue<DataPackage>& incomingQueue, 
@@ -36,7 +37,8 @@ namespace claid
             
         private:
 
-
+            // Current host (i.e., the identifier of the current instance/configuration of CLAID).
+            const std::string host;
             const std::string userToken;
             const std::string deviceID;
 

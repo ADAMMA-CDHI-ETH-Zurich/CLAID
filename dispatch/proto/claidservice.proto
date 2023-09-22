@@ -173,8 +173,9 @@ enum Runtime {
 
 message RemoteClientInfo
 {
-  string user_token = 1;
-  string device_id = 2;
+  string host = 1;
+  string user_token = 2;
+  string device_id = 3;
 }
 
 // message AppConfig {

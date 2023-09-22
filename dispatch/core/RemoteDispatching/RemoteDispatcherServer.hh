@@ -10,14 +10,14 @@
 #include "absl/strings/str_split.h"
 #include "absl/status/status.h"
 
-
+#include "dispatch/core/RemoteDispatching/HostUserTable.hh"
 
 namespace claid
 {
   class RemoteDispatcherServer 
   {
     public:
-      RemoteDispatcherServer(const std::string& addr);
+      RemoteDispatcherServer(const std::string& addr, HostUserTable& hostUserTable);
       virtual ~RemoteDispatcherServer() {};
 
       absl::Status start();
@@ -27,10 +27,11 @@ namespace claid
       void buildAndStartServer();
 
     private:
-      const std::string& addr;
+      const std::string addr;
+      HostUserTable& hostUserTable;
+
       RemoteServiceImpl remoteServiceImpl;
       std::unique_ptr<grpc::Server> server;
-
   };
 
 }

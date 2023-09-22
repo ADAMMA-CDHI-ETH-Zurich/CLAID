@@ -3,7 +3,7 @@
 namespace claid
 {
 
-    RemoteServiceImpl::RemoteServiceImpl()
+    RemoteServiceImpl::RemoteServiceImpl(HostUserTable& hostUserTable) : hostUserTable(hostUserTable)
     {
 
     }
@@ -27,6 +27,8 @@ namespace claid
         {
             return status;
         }
+
+        std::cout << "Client \"" << makeRemoteClientIdentifier(remoteClientInfo) << " connected!\n";
 
         // Add a RemoteClientHandler for this particular client and add it to the list of handlers.
         RemoteClientHandler* remoteClientHandler = addRemoteClientHandler(remoteClientInfo, status);
@@ -54,7 +56,7 @@ namespace claid
         // HERE: processReading stopped, which means the client has lost connection.
         // TODO: IMPLEMENT SHUTDOWN
         std::cout << "Reading failed or ended: " << status.error_message() << "\n";
-        std::cout << "Client disconnected or died\n";
+        std::cout << "Client \"" << makeRemoteClientIdentifier(remoteClientInfo) << " disconnected or died!\n";
         std::cout << "Unregistering and forgetting client!\n";
 
         this->stopAndRemoveRemoteClientHandler(remoteClientInfo);
@@ -67,7 +69,6 @@ namespace claid
     {
         // Make sure we got a control package with a CTRL_REMOTE_PING message.
         auto ctrlType = package.control_val().ctrl_type();
-        std::cout << "Got package:" << CtrlType_Name(ctrlType) << "   :    " << remoteClientInfo.user_token() << " " << remoteClientInfo.device_id() << std::endl;
 
         if (ctrlType != claidservice::CtrlType::CTRL_REMOTE_PING) 
         {
@@ -77,6 +78,7 @@ namespace claid
         }
 
         remoteClientInfo = package.control_val().remote_client_info();
+        std::cout << "Got package:" << CtrlType_Name(ctrlType) << "   :    " << remoteClientInfo.user_token() << " " << remoteClientInfo.device_id() << std::endl;
 
         return grpc::Status::OK;   
     }
@@ -103,10 +105,38 @@ namespace claid
         }
 
         // Allocate a RemoteClientHandler
-        SharedQueue<DataPackage>* input = new SharedQueue<DataPackage>();
-        SharedQueue<DataPackage>* output = new SharedQueue<DataPackage>();
-        auto remoteClientHandler = new RemoteClientHandler(*input, *output, remoteClientInfo.user_token(), remoteClientInfo.device_id());
-        this->remoteClientHandlers[remoteClient] = std::unique_ptr<RemoteClientHandler>(remoteClientHandler);
+        absl::Status abslStatus = 
+            this->hostUserTable.addRemoteClient(
+                remoteClientInfo.host(), remoteClientInfo.user_token(), remoteClientInfo.device_id());
+
+        if(!abslStatus.ok())
+        {
+            status = grpc::Status(grpc::CANCELLED, abslStatus.ToString());
+            return nullptr;
+        }
+
+        // TODO: Unify this (normal ptr vs shared ptr).
+        // @Patrick
+        SharedQueue<DataPackage>& fromRemoteClientQueue = this->hostUserTable.inputQueue();
+        std::shared_ptr<SharedQueue<DataPackage>> toRemoteClientQueue;
+        
+        abslStatus = 
+            this->hostUserTable.lookupOutputQueueForHostUser(
+                    remoteClientInfo.host(), remoteClientInfo.user_token(), toRemoteClientQueue);
+
+        if(!abslStatus.ok())
+        {
+            status = grpc::Status(grpc::CANCELLED, abslStatus.ToString());
+            return nullptr;
+        }
+
+        auto remoteClientHandler = 
+            new RemoteClientHandler(
+                    fromRemoteClientQueue, *toRemoteClientQueue.get(), 
+                    remoteClientInfo.user_token(), remoteClientInfo.device_id());
+
+        this->remoteClientHandlers[remoteClient] = 
+            std::unique_ptr<RemoteClientHandler>(remoteClientHandler);
         return remoteClientHandler;
     }
 
@@ -119,7 +149,7 @@ namespace claid
 
         if(it == this->remoteClientHandlers.end())
         {
-            std::cout << "Unable to remove RemoteClient \"" << remoteClient.first << "\" \"" << remoteClient.second << "\".\n"
+            std::cout << "Unable to remove RemoteClient \"" << makeRemoteClientIdentifier(remoteClientInfo) << "\".\n"
             << "A client with these identifiers does not exist.\n"; 
             return;
         }

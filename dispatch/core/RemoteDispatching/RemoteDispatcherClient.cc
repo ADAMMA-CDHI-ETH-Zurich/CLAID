@@ -4,10 +4,11 @@
 namespace claid
 {
     RemoteDispatcherClient::RemoteDispatcherClient(const std::string& addressToConnectTo,
+                    const std::string& host,
                     const std::string& userToken,
                     const std::string& deviceID,
                     SharedQueue<DataPackage>& incomingQueue, 
-                    SharedQueue<DataPackage>& outgoingQueue) :  userToken(userToken), deviceID(deviceID),
+                    SharedQueue<DataPackage>& outgoingQueue) :  host(host), userToken(userToken), deviceID(deviceID),
                                                                 incomingQueue(incomingQueue), 
                                                                 outgoingQueue(outgoingQueue)
     {
@@ -38,11 +39,13 @@ namespace claid
         std::cout << "Shutting down client 3\n";
     }
 
-    void makeRemoteRuntimePing(ControlPackage& pkt, const std::string& userToken, const std::string& deviceID) 
+    void makeRemoteRuntimePing(ControlPackage& pkt, const std::string& host, 
+                                const std::string& userToken, const std::string& deviceID) 
     {
         pkt.set_ctrl_type(CtrlType::CTRL_REMOTE_PING);
 
-        pkt.mutable_remote_client_info()->set_user_token(userToken);
+        pkt.mutable_remote_client_info()->set_host(host);
+        pkt.mutable_remote_client_info()->set_user_token(userToken);    
         pkt.mutable_remote_client_info()->set_device_id(deviceID);
     }
 
@@ -61,7 +64,7 @@ namespace claid
 
 
             claidservice::DataPackage pingRequestPackage;
-            makeRemoteRuntimePing(*pingRequestPackage.mutable_control_val(), this->userToken, this->deviceID);
+            makeRemoteRuntimePing(*pingRequestPackage.mutable_control_val(), this->host, this->userToken, this->deviceID);
 
             if (!stream->Write(pingRequestPackage)) 
             {
