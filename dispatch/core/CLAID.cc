@@ -1,8 +1,8 @@
 #include "dispatch/core/CLAID.hh"
-#include "dispatch/core/Router/RoutingQueueMerger.hh"
+#include "dispatch/core/Router/RoutingQueueMergerGeneric.hh"
 #include "dispatch/core/Router/MasterRouter.hh"
 #include "dispatch/core/Configuration/Configuration.hh"
-
+#include "dispatch/core/RemoteDispatching/HostUserTable.hh"
 
 #define CHECK_STATUS(status) if(!status.ok()) { std::cout << status << "\n"; exit(0); }
 
@@ -48,13 +48,14 @@ namespace claid
         // Start the queue merger
         // Merges the localQueue, clientQueue and serverQueue into the masterQueue.
         // (Spawns 3 threads that forward data from the 3 queues to the one masterQueue).
-        RoutingQueueMerger merger(masterQueue, localQueue, clientQueue, serverQueue);
+        RoutingQueueMergerGeneric merger(masterQueue, localQueue, clientQueue, serverQueue);
         status = merger.start();
         CHECK_STATUS(status);
     
+        HostUserTable hostUserTable;
         std::shared_ptr<LocalRouter> localRouter = std::make_shared<LocalRouter>(moduleTable);
         std::shared_ptr<ClientRouter> clientRouter = std::make_shared<ClientRouter>();
-        std::shared_ptr<ServerRouter> serverRouter = std::make_shared<ServerRouter>();
+        std::shared_ptr<ServerRouter> serverRouter = std::make_shared<ServerRouter>(hostUserTable);
 
         // Setup the router
         MasterRouter router(masterQueue, localRouter, clientRouter, serverRouter);

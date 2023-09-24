@@ -50,7 +50,20 @@ namespace claid
                     return absl::AlreadyExistsError("RoutingQueueForwarder: Start was called twice.");
                 }
                 this->active = true;
-                this->thread = make_unique<std::thread>([this]() { forwardPackages(); });
+                this->thread = std::make_unique<std::thread>([this]() { forwardPackages(); });
+
+                return absl::OkStatus();
+            }
+
+            absl::Status stop()
+            {
+                if(thread.get() == nullptr || !this->active)
+                {
+                    return absl::InvalidArgumentError("RoutingQueueForwarder: Stop failed, forwarder was not started before.");
+                }
+                this->active = false;
+                this->thread->join();
+                this->thread = nullptr;
 
                 return absl::OkStatus();
             }

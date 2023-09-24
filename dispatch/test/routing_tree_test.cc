@@ -31,7 +31,7 @@ inline void addClientsToServer(HostDescriptionMap& map, const std::string& serve
     }
 }
 
-inline void assertChildsMatchExactly(RoutingTree& tree, const std::string& host, const std::vector<std::string>& expectedChilds)
+inline void assertAllChildsMatch(RoutingTree& tree, const std::string& host, const std::vector<std::string>& expectedChilds)
 {
     RoutingNode* node = tree.lookupHost(host);
     ASSERT_NE(node, nullptr) << "Did not find host \"" << host << "\" in routing tree.";
@@ -52,6 +52,16 @@ inline void assertChildsMatchExactly(RoutingTree& tree, const std::string& host,
     for(int i = 0; i < actualChilds.size(); i++)
     {
         ASSERT_EQ(actualChilds[i], expectedChildsCopy[i]) << "Found unexpected child \"" << actualChilds[i] << "\" for host \"" << host << "\"";
+    }
+}
+
+inline void assertVectorMatchExactly(const std::vector<std::string>& first, const std::vector<std::string>& second)
+{
+    ASSERT_EQ(first.size(), second.size()) << "Vectors do not match, different number of elements: " << first.size() << " vs. " << second.size();
+    
+    for(size_t i = 0; i < first.size(); i++)
+    {
+        ASSERT_EQ(first[i], second[i]) << "Vectors do not match, elements at index " << i << " differ: " << first[i] << " vs. " << second[i];
     }
 }
 
@@ -81,6 +91,15 @@ void printChilds(RoutingTree& routingTree, const std::string& targetHost)
     std::cout << out << "\n";
 }
 
+template<typename T>
+void printVector(const std::vector<T> vector)
+{
+    for(const T& val : vector)
+    {
+        std::cout << val << "\n";
+    }
+}
+
 // Tests whether the routing three is build correctly when specifying multiple hosts
 TEST(RoutingTreeTestSuite, RoutingTreeTest)
 {
@@ -106,15 +125,32 @@ TEST(RoutingTreeTestSuite, RoutingTreeTest)
     addClientsToServer(hostDescriptions, "Server4", server4Childs);
     addClientsToServer(hostDescriptions, "Server5", server5Childs);
 
-
     absl::Status status = parser.buildRoutingTree(hostDescriptions, routingTree);
-    assertChildsMatchExactly(routingTree, "Server5", server5Childs);
-    assertChildsMatchExactly(routingTree, "Server4", mergeVectors({{"Server5"}, server4Childs, server5Childs}));
-    assertChildsMatchExactly(routingTree, "Server3", server3Childs);
-    assertChildsMatchExactly(routingTree, "Server2", mergeVectors({{"Server3", "Server4", "Server5"}, server2Childs, server3Childs, server4Childs, server5Childs}));
-    assertChildsMatchExactly(routingTree, "Server1", mergeVectors({{"Server2", "Server3", "Server4", "Server5"}, server1Childs, server2Childs, server3Childs, server4Childs, server5Childs}));
 
     ASSERT_EQ(status.ok(), true) << status;
+
+    assertAllChildsMatch(routingTree, "Server5", server5Childs);
+    assertAllChildsMatch(routingTree, "Server4", mergeVectors({{"Server5"}, server4Childs, server5Childs}));
+    assertAllChildsMatch(routingTree, "Server3", server3Childs);
+    assertAllChildsMatch(routingTree, "Server2", mergeVectors({{"Server3", "Server4", "Server5"}, server2Childs, server3Childs, server4Childs, server5Childs}));
+    assertAllChildsMatch(routingTree, "Server1", mergeVectors({{"Server2", "Server3", "Server4", "Server5"}, server1Childs, server2Childs, server3Childs, server4Childs, server5Childs}));
+
+    std::vector<std::string> path;
+    bool success = routingTree.getPathFromHostToHost("Client6", "Client11", path);
+    ASSERT_TRUE(success) << "Failed to get path from Client6 to Client11";
+    assertVectorMatchExactly(path, {"Server3", "Server2", "Server4", "Server5", "Client11"});
+
+    success = routingTree.getPathFromHostToHost("Server1", "Client14", path);
+    ASSERT_TRUE(success) << "Failed to get path from Server1 to Client14";
+    assertVectorMatchExactly(path, {"Server2", "Server4", "Server5", "Client14"});
+
+    success = routingTree.getPathFromHostToHost("Client8", "Client3", path);
+    ASSERT_TRUE(success) << "Failed to get path from Client8 to Client3";
+    assertVectorMatchExactly(path, {"Server4", "Server2", "Server1", "Client3"});
+
+    success = routingTree.getPathFromHostToHost("Client1", "Client3", path);
+    ASSERT_TRUE(success) << "Failed to get path from Client1 to Client3";
+    assertVectorMatchExactly(path, {"Server1", "Client3"});
 } 
 
 // Tests that no two hosts can become the master host (root of the tree).
@@ -161,7 +197,6 @@ TEST(RoutingTreeTestSuite, UniqueAddressTest)
     RoutingTree routingTree;
     RoutingTreeParser parser;  
     status.Update(parser.buildRoutingTree(hostDescriptions, routingTree));
-
 
     ASSERT_FALSE(status.ok()) << "RoutingTreeParser accepted to build a routing tree containing two hosts with the same address.";
 } 

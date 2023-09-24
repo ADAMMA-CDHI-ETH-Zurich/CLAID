@@ -85,6 +85,63 @@ namespace claid
 
             }
 
+            bool getPathFromHostToHost(const std::string& sourceHost, const std::string& targetHost, std::vector<std::string>& hostToHostPath)
+            {
+                hostToHostPath.clear();
+                if(sourceHost == targetHost)
+                {
+                    hostToHostPath.push_back(targetHost);
+                    return true;
+                }
+
+                RoutingNode* currentNode = this->lookupHost(sourceHost);
+
+                while(currentNode != nullptr)
+                {
+
+                    std::vector<std::string> childHosts;
+                    RoutingTree subTree(currentNode);
+                    subTree.getChildHostRecursively(childHosts);
+
+                    // Can we reach the targetHost from the current host?
+                    // Is the target host one of our childs (or child of a child ?)
+                    if(std::find(childHosts.begin(), childHosts.end(), targetHost) != childHosts.end())
+                    {
+                        // If yes, we just have to go upwards from the childNode until we reach the current host,
+                        // and add the intermediate hosts in reverse order.
+    
+                        RoutingNode* intermediateNode = this->lookupHost(targetHost);
+                        std::vector<std::string> intermediateHosts;
+                        while(intermediateNode != currentNode)
+                        {
+                            intermediateHosts.push_back(intermediateNode->name);
+                            intermediateNode = intermediateNode->parent;
+                            if(intermediateNode == nullptr)
+                            {
+                                // Failed to reach currentNode..
+                                return false;
+                            }
+                        }
+                        // Add intermediate hosts in reverse order.
+                        hostToHostPath.insert( hostToHostPath.end(), intermediateHosts.rbegin(), intermediateHosts.rend() );
+                        return true;
+                    }
+                    else
+                    {
+                        // Go up in the tree and try again.
+                        currentNode = currentNode->parent;
+
+                        // Store the new currentNode in the hostToHostPath.
+                        // That means for the sourceHost to reach the targetHost, it would
+                        // have to send a package "upward" in the tree, 
+                        hostToHostPath.push_back(currentNode->name);
+                    }
+                }
+
+                // currentNode is nullptr, reached top of the tree but did not find host.
+                return false;
+            }
+
             void toString(std::string& output)
             {
                 output.clear();

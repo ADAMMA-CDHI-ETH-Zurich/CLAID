@@ -1,4 +1,3 @@
-
 package(default_visibility = ["//visibility:public"])
 
 cc_binary(
@@ -103,9 +102,9 @@ cc_library(
 
 cc_library(
     name = "routing",
-    srcs = glob(["Router/*.cc", "Logger/*.cc", "module_table.cc"]),
+    srcs = glob(["Router/*.cc", "Logger/*.cc", "module_table.cc", "RemoteDispatching/HostUserTable.cc"]),
     hdrs = glob(["Router/*.hh", "Logger/*.hh", "shared_queue.hh",
-        "module_table.hh",]),
+        "module_table.hh", "RemoteDispatching/HostUserTable.hh", "RemoteDispatching/RemoteClientKey.hh"]),
     deps = [
         "//dispatch/core:claid_config",
         "//dispatch/proto:claidservice_cc_proto",
