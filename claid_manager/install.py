@@ -1,5 +1,6 @@
 from git import Repo
 import common
+import os
 
 def is_git_repo_link(package_name):
 
@@ -8,6 +9,12 @@ def is_git_repo_link(package_name):
 def clone_package_from_git(git_path, branch, output_path):
     repo = Repo.clone_from(git_path, output_path, branch=branch, multi_options=["--recurse-submodules"])
     repo.submodule_update(recursive=True)
+
+def package_exists(package_name):
+    CLAID_PATH = common.get_claid_path()
+    output_path = CLAID_PATH + "/packages/" + package_name
+
+    return os.path.isdir(output_path)
 
 def install_package_from_package_name(package_name):
     
@@ -19,6 +26,11 @@ def install_package_from_package_name(package_name):
     if package_name not in packages:
         raise Exception("Error, cannot install package {}. The package is unknown to CLAID.".format(package_name))
     
+
+    if(package_exists(package_name)):
+        print("Skipping package {}, because it already is installed.".format(package_name))
+        exit(0)
+
     git_path, branch = packages[package_name]
     
     CLAID_PATH = common.get_claid_path()
@@ -43,6 +55,11 @@ def get_package_name_from_git_link(git_link):
 def install_package_from_git_link(git_link):
 
     package_name = get_package_name_from_git_link(git_link)
+
+    if(package_exists(package_name)):
+        print("Skipping package {}, because it already is installed.", package_name)
+        exit(0)
+
     CLAID_PATH = common.get_claid_path()
     output_path = CLAID_PATH + "/packages/" + package_name
     branch = "main"
