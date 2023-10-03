@@ -29,7 +29,7 @@ def install_package_from_package_name(package_name):
 
     if(package_exists(package_name)):
         print("Skipping package {}, because it already is installed.".format(package_name))
-        exit(0)
+        return
 
     git_path, branch = packages[package_name]
     
@@ -58,7 +58,7 @@ def install_package_from_git_link(git_link):
 
     if(package_exists(package_name)):
         print("Skipping package {}, because it already is installed.", package_name)
-        exit(0)
+        return
 
     CLAID_PATH = common.get_claid_path()
     output_path = CLAID_PATH + "/packages/" + package_name
