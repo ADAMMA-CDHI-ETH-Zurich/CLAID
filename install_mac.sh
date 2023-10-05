@@ -20,6 +20,6 @@ else
 
 fi
 source ~/.claidrc
-chmod u+x claid/claid
+chmod u+x claid_manager/claid
 
 echo "Installed CLAID successfully (do not forget to source ~/.zshrc or restart your terminal in order to use CLAID)."
