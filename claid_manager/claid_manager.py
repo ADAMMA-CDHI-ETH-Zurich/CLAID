@@ -6,6 +6,7 @@ from build import build
 from run import run
 from my_ip import my_ip 
 from patch import patch
+from update import update_package
 
 args = ""
 
@@ -17,13 +18,14 @@ def init():
 
     args = parser.parse_args()
 
-    map = [("list_packages", list_packages),
+    map = [
            ("install", install_package),
            ("create", create),
            ("build", build),
            ("run", run),
            ("my_ip", my_ip),
            ("patch", patch),
+           ("update", update_package),
            ]
 
     for entry in map:
