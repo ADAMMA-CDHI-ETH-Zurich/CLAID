@@ -29,8 +29,8 @@ def update_package_from_package_name(package_name):
         print("Uninstalling package {} ({}).".format(package_name, output_path))
         try:
             shutil.rmtree( output_path)
-        except:
-            print("Failed to uninstall package {}: Failed to delete folder {}.".format(package_name, output_path))
+        except Exception as e:
+            print("Failed to uninstall package {}: Failed to delete folder {}.\nError: \"{}\"".format(package_name, output_path, e))
             return
 
     install_package(package_name)
@@ -57,7 +57,7 @@ def update_package_from_git_link(git_link):
         try:
             shutil.rmtree( output_path)
         except:
-            print("Failed to uninstall package {}: Failed to delete folder {}.".format(package_name, output_path))
+            print("Failed to uninstall package {}: Failed to delete folder {}.\nError: \"{}\"".format(package_name, output_path, e))
             return
 
     
