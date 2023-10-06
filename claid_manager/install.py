@@ -12,7 +12,7 @@ def clone_package_from_git(git_path, branch, output_path):
 
 def package_exists(package_name):
     CLAID_PATH = common.get_claid_path()
-    output_path = CLAID_PATH + "/packages/" + package_name
+    output_path = os.path.join(CLAID_PATH, "packages", package_name)
 
     return os.path.isdir(output_path)
 
@@ -61,7 +61,7 @@ def install_package_from_git_link(git_link):
         return
 
     CLAID_PATH = common.get_claid_path()
-    output_path = CLAID_PATH + "/packages/" + package_name
+    output_path = os.path.join(CLAID_PATH, "packages", package_name)
     branch = "main"
     
     print("Installing package ", package_name)

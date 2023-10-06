@@ -22,7 +22,7 @@ def update_package_from_package_name(package_name):
     packages = common.parse_package_list()
 
     CLAID_PATH = common.get_claid_path()
-    output_path = CLAID_PATH + "/packages/" + package_name
+    output_path = os.path.join(CLAID_PATH, "packages", package_name)
 
 
     if(package_exists(package_name)):
@@ -50,7 +50,7 @@ def update_package_from_git_link(git_link):
     package_name = get_package_name_from_git_link(git_link)
 
     CLAID_PATH = common.get_claid_path()
-    output_path = CLAID_PATH + "/packages/" + package_name
+    output_path = os.path.join(CLAID_PATH, "packages", package_name)
 
     if(package_exists(package_name)):
         print("Uninstalling package {} ({}).".format(package_name, output_path))
