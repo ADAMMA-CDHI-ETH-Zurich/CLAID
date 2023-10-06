@@ -36,6 +36,7 @@ namespace claid
 				static std::ofstream* file;
 		public:
 			static void printfln(const char *format, ...);
+			static void println(const std::string& msg);
 			static void setLogTag(std::string logTag);
 			static std::string getLastLogMessage();
 

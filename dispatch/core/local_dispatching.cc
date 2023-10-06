@@ -1,4 +1,6 @@
 #include "dispatch/core/local_dispatching.hh"
+#include "dispatch/core/Logger/Logger.hh"
+#include "dispatch/core/proto_util.hh"
 
 #include <grpcpp/server_builder.h>
 #include <grpcpp/create_channel.h>
@@ -20,10 +22,16 @@ using namespace std;
 using namespace claid;
 using namespace claidservice;
 
+// Validate ControlPackage with runtime ping.
+static bool validCtrlRuntimePingPkt(const DataPackage& pkt) {
+    return (pkt.control_val().ctrl_type() == CTRL_RUNTIME_PING) &&
+            (pkt.control_val().runtime() != RUNTIME_UNSPECIFIED);
+}
+
 RuntimeDispatcher::RuntimeDispatcher(SharedQueue<DataPackage>& inQueue,
                                      SharedQueue<DataPackage>& outQueue,
-                                     const ChannelMap& channelMap) :
-        incomingQueue(inQueue), outgoingQueue(outQueue), chanMap(channelMap) {}
+                                     const ModuleTable& modTable) :
+        incomingQueue(inQueue), outgoingQueue(outQueue), moduleTable(modTable) {}
 
 bool RuntimeDispatcher::alreadyRunning() {
     lock_guard<mutex> lock(wtMutex);
@@ -51,8 +59,10 @@ void RuntimeDispatcher::shutdownWriterThread() {
 
     // Cause the writer thread to terminate and wait for it.
     outgoingQueue.push_front(nullptr);
+    Logger::printfln("Waiting for writer thread to be done.");
     writeThread->join();
     writeThread = nullptr;
+    Logger::printfln("Writer thread is finished.");
 }
 
 void RuntimeDispatcher::processWriting(ServerReaderWriter<DataPackage, DataPackage>* stream) {
@@ -69,7 +79,6 @@ void RuntimeDispatcher::processWriting(ServerReaderWriter<DataPackage, DataPacka
             break;
         }
     }
-    cout << "Done with writer thread of runtime dispatcher !" << endl;
 }
 
 Status RuntimeDispatcher::processReading(ServerReaderWriter<DataPackage, DataPackage>* stream) {
@@ -85,16 +94,6 @@ Status RuntimeDispatcher::processReading(ServerReaderWriter<DataPackage, DataPac
     return Status::OK;
 }
 
-string msgToStringx(const google::protobuf::Message& msg) {
-    string buf;
-    if (google::protobuf::TextFormat::PrintToString(msg, &buf)) {
-        return buf;
-    }
-
-    return "Message not valid (partial content: " +
-            msg.ShortDebugString();
-}
-
 void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
     status = Status::OK;
 
@@ -102,14 +101,19 @@ void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
     if (!pkt.has_control_val()) {
         // filter the messages for consistency
         // check if src & dest are not in that
-        if (!chanMap.isValid(pkt)) {
-            cerr << "Received invalid data packet" << endl;
-            cerr << msgToStringx(pkt) << "---------------------------" << endl;
+        ChannelInfo chanInfo;
+        if (!moduleTable.isValidChannel(pkt, chanInfo)) {
+            // TODO: Figure out how to handle errors without leaving
+            // the read loop.
+            Logger::printfln("Received invalid data packet:");
+            Logger::println(messageToString(pkt));
             return;
         }
-        auto cpPkt = make_shared<DataPackage>(pkt);
-        auto srcTgt = chanMap.lookupChannel(pkt.channel());
 
+        // Make a copy of the package and augment it with the
+        // the fields not set by the client dispatcher.
+        auto cpPkt = make_shared<DataPackage>(pkt);
+        moduleTable.augmentFieldValues(*cpPkt, chanInfo);
         incomingQueue.push_back(cpPkt);
         return;
     }
@@ -187,22 +191,24 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
             moduleTable.runtimeQueueMap[classRt] = make_shared<SharedQueue<DataPackage>>();
         }
 
-    // const unordered_set<string>& expectedMods = it->second;
-    // auto& mods = request->modules();
-    // for(auto it = mods.begin(); it != mods.end(); it++) {
-    //     auto& moduleId = it->module_id();
-    //     if (expectedMods.find(moduleId)==expectedMods.end()) {
-    //         return Status(grpc::INVALID_ARGUMENT, "Unknown module id");
-    //     }
-
         // Add the channels for this module
-        Status status = moduleTable.channelMap.setChannelTypes(moduleId, modChanIt.channel_packets());
+        Status status = moduleTable.setChannelTypes(moduleId, modChanIt.channel_packets());
         if (!status.ok()) {
             return status;
         }
     }
 
     return Status::OK;
+}
+
+static unique_ptr<DataPackage> makeErrorPkt(const string& msg, const bool cancel) {
+    auto pkt = make_unique<DataPackage>();
+    auto ctrlMsg = pkt->mutable_control_val();
+    ctrlMsg->set_ctrl_type(CTRL_ERROR);
+    auto errMsg = ctrlMsg->mutable_error_msg();
+    errMsg->set_message(msg);
+    errMsg->set_cancel(cancel);
+    return pkt;
 }
 
 Status ServiceImpl::SendReceivePackages(ServerContext* context,
@@ -218,43 +224,48 @@ Status ServiceImpl::SendReceivePackages(ServerContext* context,
     // Add the runtime implemenation to the internal list of runtime dispatcher.
     RuntimeDispatcher* rtDispatcher = addRuntimeDispatcher(inPkt, status);
     if (!status.ok()) {
+        claid::Logger::printfln("Returning with error %s \n", status.error_message().c_str());
+        stream->Write(*makeErrorPkt(status.error_message(), true));
         return status;
     }
 
-    cout << "runtime dispatcher created !" << endl;
+    claid::Logger::printfln("Runtime dispatcher created");
 
     // TODO: Add cleanup function to clean up when we leave the scope.
     if (rtDispatcher->alreadyRunning()) {
-        cout << "Writter thread was already running !" << endl;
         return Status(grpc::ALREADY_EXISTS, "Runtime dispatcher already exists");
     }
 
     // Confirm that we are getting ready to write.
-    DataPackage outPkt = inPkt;
+    DataPackage outPkt(inPkt);
     stream->Write(outPkt);
-
-    cout << "Starting writer thread !" << endl;
 
     rtDispatcher->startWriterThread(stream);
     status = rtDispatcher->processReading(stream);
-    // rtDispatcher.shutdownWriter();
+    rtDispatcher->shutdownWriterThread();
 
+    removeRuntimeDispatcher(inPkt.control_val().runtime());
+
+    dumpActiveDispatchers();
     return status;
+}
+
+void ServiceImpl::shutdown() {
+    lock_guard<mutex> lock(adMutex);
+    for(auto& it : activeDispatchers) {
+        it.second->shutdownWriterThread();
+    }
 }
 
 RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& status) {
     status = Status::OK;
+    auto runTime = pkt.control_val().runtime();
 
     // Make sure we got a control package with a CTRL_RUNTIME_PING message.
-    auto ctrlType = pkt.control_val().ctrl_type();
-    auto runTime = pkt.control_val().runtime();
-    cout << "Got package:" << ctrlType << "   :    " << runTime << endl;
-
-    if (ctrlType != CtrlType::CTRL_RUNTIME_PING) {
-        status = Status(grpc::INVALID_ARGUMENT, "Runtime init failed");
+    if (!validCtrlRuntimePingPkt(pkt)) {
+        status = Status(grpc::INVALID_ARGUMENT, "Invalid control type or unspecified runtime");
         return nullptr;
     }
-    cout << "Runtime init confirmed " << endl;
 
     // check if the RuntimeDispatcher exits
     lock_guard<mutex> lock(adMutex);
@@ -264,30 +275,53 @@ RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& s
     }
 
     // Allocate a runtime Disptacher
+    // TODO: avoid implict addition to map through [] operator.
     shared_ptr<SharedQueue<DataPackage>> rtq = moduleTable.runtimeQueueMap[runTime];
-    auto ret = new RuntimeDispatcher(moduleTable.fromModuleQueue, *rtq, moduleTable.channelMap);
+    auto ret = new RuntimeDispatcher(moduleTable.fromModuleQueue, *rtq, moduleTable);
     activeDispatchers[runTime] = unique_ptr<RuntimeDispatcher>(ret);
     return ret;
 }
 
-void ServiceImpl::removeRuntimeDispatcher(RuntimeDispatcher& inst) {
-    // TODO
+void ServiceImpl::removeRuntimeDispatcher(Runtime rt) {
+    lock_guard<mutex> lock(adMutex);
+    activeDispatchers.erase(rt);
+}
+
+void ServiceImpl::dumpActiveDispatchers() {
+    lock_guard<mutex> lock(adMutex);
+    claid::Logger::printfln("Dispatchers: ");
+    for(auto& it : activeDispatchers) {
+        claid::Logger::printfln("     %s", Runtime_Name(it.first).c_str());
+    }
 }
 
 DispatcherServer::DispatcherServer(const string& addr, ModuleTable& modTable)
     : addr(addr), serviceImpl(modTable) {}
 
+DispatcherServer::~DispatcherServer() {
+    shutdown();
+}
+
 bool DispatcherServer::start() {
     buildAndStartServer();
     if (server) {
-        std::cout << "Server listening on " << addr << std::endl;
+        claid::Logger::printfln("Server listening on %s", addr.c_str());
     }
     return bool(server);
 }
 
 void DispatcherServer::shutdown() {
+    if (!server) {
+        return;
+    }
+
+    serviceImpl.shutdown();
+    auto helperTheat = make_unique<thread>([this]() {
+        server->Wait();
+    });
+    std::this_thread::sleep_for(2000ms);
     server->Shutdown();
-    server->Wait();
+    server = nullptr;
 }
 
 void DispatcherServer::buildAndStartServer() {
@@ -345,100 +379,71 @@ void makeControlRuntimePing(ControlPackage& pkt) {
 bool DispatcherClient::startRuntime(const InitRuntimeRequest& req) {
     // Initialize the runtime
     {
-        cout << "checkpoint 10" << endl;
-
         ClientContext context;
-        cout << "checkpoint 11" << endl;
         Empty empty;
-        cout << "checkpoint 12" << endl;
         Status status = stub->InitRuntime(&context,req, &empty);
-
-        cout << "checkpoint 13" << endl;
-
         if (!status.ok()) {
-            cerr << "couldn't init request: " << status.error_message() << endl;
+            claid::Logger::printfln("Couldn't init request: %s", status.error_message().c_str());
             return false;
         }
-        cout << "checkpoint 14" << endl;
     }
 
-    // Send the ping package
-    // if (true)
-    {
-        // Set timeout for API
-        // std::chrono::system_clock::time_point deadline =
-        //     std::chrono::system_clock::now() + std::chrono::seconds(10);
-        // context.set_deadline(deadline);
+    // Start the bidirectional request.
+    streamContext = make_shared<ClientContext>();
+    stream = stub->SendReceivePackages(streamContext.get());
 
-        streamContext = make_shared<ClientContext>();
-        stream = stub->SendReceivePackages(streamContext.get());
-
-        cout << "checkpoint 15" << endl;
-
-        claidservice::DataPackage pingReq;
-
-        cout << "checkpoint 16" << endl;
-
-        makeControlRuntimePing(*pingReq.mutable_control_val());
-
-        cout << "checkpoint 17" << endl;
-
-        if (!stream->Write(pingReq)) {
-            cout << "Failed sending ping package to server !" << endl;
-            return false;
-        }
-
-        cout << "Sent ping package to server !" << endl;
-
-        // Wait for the valid response ping
-        DataPackage pingResp;
-        if (!stream->Read(&pingResp)) {
-            cout << "Did not receive a ping package from server !" << endl;
-            return false;
-        }
-
-        // TODO: @Stephan, shouldn't this here be pingResp ? 
-        if (pingReq.control_val().ctrl_type() != CtrlType::CTRL_RUNTIME_PING) {
-            return false;
-        }
-
-        // Start the threads to service the input/output queues.
-        cout << "Starting i/o threads !" << endl;
-        writeThread = make_unique<thread>([this]() { processWriting(); });
-        readThread = make_unique<thread>([this]() { processReading(); });
-
-        cout << "Checkpoint 199" << endl;
-        return true;
+    // Send the ping message to the server.
+    claidservice::DataPackage pingReq;
+    makeControlRuntimePing(*pingReq.mutable_control_val());
+    if (!stream->Write(pingReq)) {
+        claid::Logger::printfln("Failed sending ping package to server.");
+        return false;
     }
+
+    // Wait for the valid response ping
+    DataPackage pingResp;
+    if (!stream->Read(&pingResp)) {
+        claid::Logger::printfln("Did not receive a ping package from server !");
+        return false;
+    }
+
+    // TODO: @Stephan, shouldn't this here be pingResp ?
+    // @Patrick:
+    // Check whether the package read was a control package with the right type.
+    if (pingReq.control_val().ctrl_type() != CtrlType::CTRL_RUNTIME_PING) {
+        return false;
+    }
+
+    // Start the threads to service the input/output queues.
+    writeThread = make_unique<thread>([this]() { processWriting(); });
+    readThread = make_unique<thread>([this]() { processReading(); });
+    return true;
 }
 
 void DispatcherClient::processReading() {
     DataPackage dp;
-    cout << "Before reading" << endl;
     while(stream->Read(&dp)) {
-        cout << "Read Packet " << endl;
         incomingQueue.push_back(make_shared<DataPackage>(dp));
     }
-    cout << "After reading" << endl;
 }
 
 void DispatcherClient::processWriting() {
-    cout << "Before writing" << endl;
-
     while(true) {
         auto pkt = outgoingQueue.pop_front();
-        cout << "Writing packet to " << pkt << endl;
         if (!pkt) {
             if (outgoingQueue.is_closed()) {
                 break;
             }
         } else {
             if (!stream->Write(*pkt)) {
-                cout << "Error writing " << endl;
+                claid::Logger::printfln("Client: Error writing packet");
                 break;
             }
         }
     }
-    cout << "After writing" << endl;
     stream->WritesDone();
+    auto status = stream->Finish();
+    if (!status.ok()) {
+        claid::Logger::printfln("Got error finishing the writing: %s", status.error_message().c_str());
+    }
 }

@@ -1,4 +1,5 @@
 #include "dispatch/test/testmessages.pb.h"
+#include "dispatch/core/Logger/Logger.hh"
 #include "dispatch/core/local_dispatching.hh"
 #include "gtest/gtest.h"
 #include "google/protobuf/util/message_differencer.h"
@@ -72,17 +73,6 @@ string cmpMsg(const Message& m1, const Message& m2) {
   return diffResult;
 }
 
-
-string msgToString(const Message& msg) {
-    string buf;
-    if (TextFormat::PrintToString(msg, &buf)) {
-        return buf;
-    }
-
-    return "Message not valid (partial content: " +
-            msg.ShortDebugString();
-}
-
 const string
     mod1 = "module_1",
     mod2 = "module_2",
@@ -108,6 +98,11 @@ const map<string, string>
         {"prop31", "val31"}
     };
 
+
+void clearSrcTgt(DataPackage& pkt) {
+    pkt.clear_source_host_module();
+    pkt.clear_target_host_module();
+}
 
 void blobMsgFromProto(const Message& msg, Blob& targetBlob) {
     targetBlob.set_codec(Codec::CODEC_PROTO);
@@ -169,37 +164,16 @@ TEST(LocalDispatcherTestSuit, SocketBasedDispatcherTest) {
 
     // TODO: The module table needs to be populated.
     ModuleTable modTable;
-    cout << "checkpoint 1" << endl;
-
     for(auto& m : testModules) {
         modTable.setModule(get<0>(m), get<1>(m), get<2>(m));
     }
-    cout << "checkpoint 2" << endl;
 
     for(auto pkt : testChannels) {
         modTable.setChannel(pkt->channel(), pkt->source_host_module(), pkt->target_host_module());
     }
-    cout << "checkpoint 3" << endl;
-
-    // modTable.moduleRuntimeMap = modRTMap;
-    // modTable.runtimeModuleMap = rtModMap;
-    // RuntimeQueueMap runtimeQueueMap; // map from runtime to outgoing queue
-    // ChannelMap channelMap; // map from <channel_id, src, tgt> to DataPacket (= data type of channel )
-
-
-    // std::map<std::string, claidservice::Runtime>  moduleRuntimeMap;  // map module ==> runtime
-    // std::map<claidservice::Runtime, std::unordered_set<std::string>> runtimeModuleMap;  // map runtime to set of modules
-    // RuntimeQueueMap runtimeQueueMap; // map from runtime to outgoing queue
-    // ChannelMap channelMap; // map from <channel_id, src, tgt> to DataPacket (= data type of channel )
-
-
-    cout << "checkpoint 4" << endl;
 
     DispatcherServer server(addr, modTable);
     ASSERT_TRUE(server.start()) << "Unable to start server";
-
-
-    cout << "checkpoint 5" << endl;
 
     auto routerThread = make_unique<thread>([&modTable]() {
         while(true) {
@@ -216,7 +190,6 @@ TEST(LocalDispatcherTestSuit, SocketBasedDispatcherTest) {
 
     SharedQueue<claidservice::DataPackage> inQueue;
     SharedQueue<claidservice::DataPackage> outQueue;
-    cout << "checkpoint 6" << endl;
 
     // Create the client.
     DispatcherClient client(addr, inQueue, outQueue, supportedModClasses);
@@ -232,21 +205,11 @@ TEST(LocalDispatcherTestSuit, SocketBasedDispatcherTest) {
     addFn(get<0>(testModules[1]), get<1>(testModules[1]), get<2>(testModules[1]));
     addFn(get<0>(testModules[2]), get<1>(testModules[2]), get<2>(testModules[2]));
 
-    cout << "checkpoint 7" << endl;
-
     auto modListResponse = client.getModuleList();
-    cout << "checkpoint 8" << endl;
-
-    // Print out the proto messages:
-
-    // cout << "expected:" << msgToString(expResp) << endl;
-    // cout << "actual  :" << msgToString(*modListResponse) << endl;
 
     // ASSERT a certain module list
     auto diff = cmpMsg(expResp, *modListResponse);
     ASSERT_TRUE(diff == "") << diff;
-//    ASSERT_TRUE(MessageDifferencer::Equals(expModListResponse, *modListResponse));
-    cout << "checkpoint 9" << endl;
 
     //   !google::protobuf::util::MessageDifferencer::Equals(
     //       *self->message, *reinterpret_cast<CMessage*>(other)->message)) {
@@ -260,76 +223,76 @@ TEST(LocalDispatcherTestSuit, SocketBasedDispatcherTest) {
         auto newMod = modulesRef->Add();
         newMod->set_module_id(modId);
         for(auto pkt : testChannels) {
-            if ((pkt->source_host_module() == modId) || (pkt->target_host_module() == modId)) {
-                *newMod->add_channel_packets() = *pkt;
+            bool isSrc = pkt->source_host_module() == modId;
+            bool isTgt = (pkt->target_host_module() == modId);
+            if (isSrc || isTgt) {
+                DataPackage cpPkt(*pkt);
+                if (!isSrc) {
+                    cpPkt.clear_source_host_module();
+                }
+                if (!isTgt) {
+                    cpPkt.clear_target_host_module();
+                }
+                *newMod->add_channel_packets() = cpPkt;
             }
         }
     }
 
-    cout << "---------------------" << endl
-        << msgToString(initReq) << endl
-        << "-----------------------------" << endl;
+    Logger::printfln("%s", messsageToString(initReq).c_str());
 
     auto clientStarted = client.startRuntime(initReq);
-    cout << "checkpoint 21a" << endl;
-
     ASSERT_TRUE(clientStarted) << "Unable to start client !";
-    cout << "checkpoint 21b" << endl;
 
-    cout << "checkpoint 22" << endl;
+    auto pkt12 = make_shared<DataPackage>(*chan12Pkt);
+    clearSrcTgt(*pkt12);
+    pkt12->mutable_number_array_val()->add_val(101.0);
+    pkt12->mutable_number_array_val()->add_val(102.5);
+    pkt12->mutable_number_array_val()->add_val(12.3);
+    outQueue.push_back(pkt12);
 
-    // // Send packages to the out queue
-    // shared_ptr<DataPackage> pkt;
+    auto pkt13 =  make_shared<DataPackage>(*chan13NumPkt);
+    clearSrcTgt(*pkt13);
+    pkt13->set_number_val(pkt13->number_val()+100.0);
+    outQueue.push_back(pkt13);
 
-    // outQueue.push_back(pkt);
-    cout << "checkpoint 23" << endl;
+    auto pkt23 =  make_shared<DataPackage>(*chan23ProtoPkt);
+    clearSrcTgt(*pkt23);
+    outQueue.push_back(pkt23);
 
-    auto pkt1 = make_shared<DataPackage>(*chan12Pkt);
-    pkt1->mutable_number_array_val()->add_val(101.0);
-    pkt1->mutable_number_array_val()->add_val(102.5);
-    pkt1->mutable_number_array_val()->add_val(12.3);
-    outQueue.push_back(pkt1);
-
-    cout << "checkpoint 24" << endl;
-
-    auto pkt2 =  make_shared<DataPackage>(*chan13NumPkt);
-    pkt2->set_number_val(pkt2->number_val()+100.0);
-    outQueue.push_back(pkt2);
-
-    auto pkt3 =  make_shared<DataPackage>(*chan23ProtoPkt);
-    outQueue.push_back(pkt3);
-
-    cout << "checkpoint 25" << endl;
-
-    cout << "Sleeping for 3000 ms " << endl;
-    std::this_thread::sleep_for(3000ms);
-
-
-    cout << "checkpoint 26" << endl;
+    std::this_thread::sleep_for(1000ms);
 
     // Expect those packages from the input queue.
-    auto gotPkt1 = inQueue.pop_front();
-    diff = cmpMsg(*pkt1, *gotPkt1);
+    auto gotPkt12 = inQueue.pop_front();
+    ASSERT_EQ(gotPkt12->source_host_module(), mod1);
+    ASSERT_EQ(gotPkt12->target_host_module(), mod2);
+    clearSrcTgt(*gotPkt12);
+    diff = cmpMsg(*pkt12, *gotPkt12);
     ASSERT_TRUE(diff == "") << diff;
 
-    auto gotPkt2 = inQueue.pop_front();
-    diff = cmpMsg(*pkt2, *gotPkt2);
+    auto gotPkt13 = inQueue.pop_front();
+    ASSERT_EQ(gotPkt13->source_host_module(), mod1);
+    ASSERT_EQ(gotPkt13->target_host_module(), mod3);
+    clearSrcTgt(*gotPkt13);
+    diff = cmpMsg(*pkt13, *gotPkt13);
     ASSERT_TRUE(diff == "") << diff;
 
-    auto gotPkt3 = inQueue.pop_front();
-    diff = cmpMsg(*pkt3, *gotPkt3);
+    auto gotPkt23 = inQueue.pop_front();
+    ASSERT_EQ(gotPkt23->source_host_module(), mod2);
+    ASSERT_EQ(gotPkt23->target_host_module(), mod3);
+    clearSrcTgt(*gotPkt23);
+    diff = cmpMsg(*pkt23, *gotPkt23);
     ASSERT_TRUE(diff == "") << diff;
 
     ExamplePayload gotExPayload;
-    ASSERT_TRUE(parseFromBlob(gotPkt3->blob_val(), gotExPayload));
+    ASSERT_TRUE(parseFromBlob(gotPkt23->blob_val(), gotExPayload));
 
     diff = cmpMsg(*examplePayload, gotExPayload);
     ASSERT_TRUE(diff == "") << diff;
 
-    cout << "Sleeping some more ! " << endl;
-    std::this_thread::sleep_for(5000ms);
-
     // ASSERT_EQ(pkt3, outQueue.pop_front());
+    client.shutdown();
+
+    // server.shutdown();
     modTable.inputQueue().close();
     routerThread->join();
 }

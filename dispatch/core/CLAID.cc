@@ -3,6 +3,7 @@
 #include "dispatch/core/Router/MasterRouter.hh"
 #include "dispatch/core/Configuration/Configuration.hh"
 #include "dispatch/core/RemoteDispatching/HostUserTable.hh"
+#include "dispatch/core/Logger/Logger.hh"
 
 #define CHECK_STATUS(status) if(!status.ok()) { std::cout << status << "\n"; exit(0); }
 
@@ -65,7 +66,7 @@ namespace claid
         status = router.start();
         CHECK_STATUS(status);
 
-        std::cout << "CLAID started successfully\n";
+        Logger::printfln("CLAID started successfully");
 
         while(true);
     }

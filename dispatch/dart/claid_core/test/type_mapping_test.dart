@@ -3,26 +3,47 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:claid_core/src/type_mapping.dart';
 import './generated/testmessages.pb.dart';
 
+void testMapping<T>(
+    TypeMapping tm, T instance, T testVal, T Function(DataPackage) getDirect) {
+  final mut = tm.getMutator<T>(instance);
+  final pkt = DataPackage();
+  mut.setter(pkt, testVal);
+  expect(testVal, getDirect(pkt));
+  expect(testVal, mut.getter(pkt));
+}
+
 void main() {
   test('test basic type to message mapping', () async {
     final tm = TypeMapping();
-    var pkt = DataPackage();
-    pkt.clearPayloadOneof();
 
-    final mutDouble = tm.getMutator<double>(1.0);
-    mutDouble.setter(pkt, 5);
-    expect(pkt.numberVal, 5.0);
-    expect(mutDouble.getter(pkt), 5.0);
+    // Test double, bool and String
+    testMapping(tm, 0.1, 5.0, (pkt) => pkt.numberVal);
+    testMapping(tm, false, true, (pkt) => pkt.boolVal);
+    testMapping(tm, '', 'something', (pkt) => pkt.stringVal);
 
-    final mutInt = tm.getMutator<int>(0);
-    pkt = DataPackage();
-    mutInt.setter(pkt, 99);
-    expect(pkt.numberVal, 99);
-    expect(mutInt.getter(pkt), 99);
+    // Test double array, String array, Map<String, double>, Map<String, String>
+    testMapping(
+        tm, <double>[], <double>[5, 3.5, 7.9], (pkt) => pkt.numberArrayVal.val);
+    testMapping(tm, <String>[], <String>['hello', 'world'],
+        (pkt) => pkt.stringArrayVal.val);
+    testMapping(
+        tm,
+        <String, double>{},
+        <String, double>{'hello': 5.3, 'world': 42},
+        (pkt) => pkt.numberMap.val);
+    testMapping(
+        tm,
+        <String, String>{},
+        <String, String>{'hello': 'my', 'world': 'friend'},
+        (pkt) => pkt.stringMap.val);
 
-    final mutProto = tm.getMutator<ExamplePayload>(ExamplePayload());
+    expect(() => testMapping<int>(tm, 0, 0, (pkt) => pkt.numberVal.toInt()),
+        throwsArgumentError);
+
+    // Test protobuf payload
     final expPayload = ExamplePayload(name: "john", value: 42);
-    pkt = DataPackage();
+    final mutProto = tm.getMutator<ExamplePayload>(ExamplePayload());
+    final pkt = DataPackage();
     mutProto.setter(pkt, expPayload);
     expect(pkt.blobVal.codec, Codec.CODEC_PROTO);
     expect(pkt.blobVal.messageType, 'examplemsg.ExamplePayload');

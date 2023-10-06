@@ -19,7 +19,7 @@ class RuntimeDispatcher {
   public:
     explicit RuntimeDispatcher(SharedQueue<claidservice::DataPackage>& inQueue,
                                SharedQueue<claidservice::DataPackage>& outQueue,
-                               const claid::ChannelMap& chanMap);
+                               const ModuleTable& moduleMap);
     void shutdownWriterThread();
     bool alreadyRunning();
     grpc::Status startWriterThread(grpc::ServerReaderWriter<claidservice::DataPackage, claidservice::DataPackage>* stream);
@@ -30,7 +30,7 @@ class RuntimeDispatcher {
   private:
     SharedQueue<claidservice::DataPackage>& incomingQueue;
     SharedQueue<claidservice::DataPackage>& outgoingQueue;
-    const claid::ChannelMap& chanMap;
+    const claid::ModuleTable& moduleTable;
     std::mutex wtMutex; // protects the write thread
     std::unique_ptr<std::thread> writeThread;
 
@@ -57,10 +57,13 @@ class ServiceImpl final : public claidservice::ClaidService::Service {
     grpc::Status SendReceivePackages(grpc::ServerContext* context,
         grpc::ServerReaderWriter<claidservice::DataPackage, claidservice::DataPackage>* stream) override;
 
+    void shutdown();
+
   // private methods
   private:
     RuntimeDispatcher* addRuntimeDispatcher(claidservice::DataPackage& pkt, grpc::Status& status);
-    void removeRuntimeDispatcher(RuntimeDispatcher& inst);
+    void removeRuntimeDispatcher(claidservice::Runtime rt);
+    void dumpActiveDispatchers();
 
   // Data members
   private:
@@ -72,7 +75,7 @@ class ServiceImpl final : public claidservice::ClaidService::Service {
 class DispatcherServer {
   public:
     DispatcherServer(const std::string& addr, claid::ModuleTable& modTable);
-    virtual ~DispatcherServer() {};
+    virtual ~DispatcherServer();
     bool start();
     void shutdown();
 

@@ -40,7 +40,7 @@ void claid::Logger::printfln(const char *format, ...)
     va_start( args, format ) ;
     va_copy( args_copy, args ) ;
 
-	
+
 
     const auto sz = std::vsnprintf( nullptr, 0, format, args ) + 1 ;
 
@@ -61,7 +61,7 @@ void claid::Logger::printfln(const char *format, ...)
 		// This is not thread safe....
 		// Leads to segfault if multiple threads access it at the same time.
 		//claid::Logger::lastLogMessage = ss.str().c_str();
-		
+
 		#ifdef __ANDROID__
 			LOGCAT(ss.str().c_str(), __LINE__);
 		#else
@@ -83,14 +83,16 @@ void claid::Logger::printfln(const char *format, ...)
         va_end(args) ;
         throw ;
     }
+}
 
-
+void claid::Logger::println(const std::string& msg) {
+	claid::Logger::printfln("%s", msg.c_str());
 }
 
 /**
  * @brief In-class helper function to get a string containing the current time.
  *
- * Class intern helper function. It provides a string containing
+ * Class intern helper function. It provides a string containingprintfln(
  * the current time as follows: hh:mm::ss
  * hh being the hour
  * mm being the minute
@@ -147,7 +149,7 @@ void claid::Logger::setLogTag(std::string logTag)
  * @brief Returns last log mesage.
  *
  * Returns the last message that was printed.
- * 
+ *
  * @return std::string Last log message that was printed.
  */
 std::string claid::Logger::getLastLogMessage()
@@ -171,7 +173,7 @@ bool claid::Logger::enableLoggingToFile(const std::string& path)
 		delete file;
 		return false;
 	}
-	
+
 	claid::Logger::loggingToFileEnabled = true;
 	return true;
 }

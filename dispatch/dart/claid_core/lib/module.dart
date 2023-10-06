@@ -2,6 +2,24 @@ import 'dart:async';
 import './src/module_impl.dart' as impl;
 import './dispatcher.dart';
 
+// Helpers
+// Duration parseDuration(String? durStr) {
+//   return const Duration(microseconds: 5);
+// }
+
+int parseInt(String? intStr) {
+  return int.parse(intStr!);
+}
+
+double parseDouble(String? floatStr) {
+  return double.parse(floatStr!);
+}
+
+// DateTime dateTimeFromMidnight(Duration delta) {
+//   // TODO: fix
+//   return DateTime.now().add(delta);
+// }
+
 typedef FactoryFunc = Module Function();
 
 Future<void> initModules(
@@ -11,7 +29,7 @@ Future<void> initModules(
   await manager.start();
 }
 
-typedef RegisteredCallback = void Function();
+typedef RegisteredCallback = FutureOr<void> Function();
 
 ///  Lifecycle of modules
 /// * Factory function is registered together with a module_class name
@@ -36,17 +54,23 @@ abstract class Module {
 
   // Register a function that is called periodically.
   void registerPeriodicFunction(
-      String name, Duration period, RegisteredCallback callback) {}
+          String name, Duration period, RegisteredCallback callback) =>
+      _scheduler.registerPeriodicFunction(_modId, name, period, callback);
 
-  void unregisterPeriodicFunction(String name) {}
+  void unregisterPeriodicFunction(String name) =>
+      _scheduler.unregisterPeriodicFunction(_modId, name);
+
   void registerScheduledFunction(
-      String name, DateTime dateTime, RegisteredCallback callback) {}
-  void unregisterScheduledFunction(String name) {}
+          String name, DateTime dateTime, RegisteredCallback callback) =>
+      _scheduler.registerScheduledFunction(_modId, name, dateTime, callback);
+
+  void unregisterScheduledFunction(String name) =>
+      _scheduler.unregisterScheduledFunction(_modId, name);
 
   SubscribeChannel<T> subscribe<T>(String channelId, T instance) {
     _assertLifeCycle(impl.Lifecycle.initializing);
     return impl.ModuleManager.instance
-        .getSubscribChannel<T>(_modId, channelId, instance);
+        .getSubscribeChannel<T>(_modId, channelId, instance);
   }
 
   PublishChannel<T> publish<T>(String channelId, T instance) {
@@ -57,32 +81,34 @@ abstract class Module {
 
   set moduleId(String id) {
     _modId = id;
-    _assertLifeCycle(impl.Lifecycle.initializing);
+    _assertLifeCycle(impl.Lifecycle.created);
   }
 
   void _assertLifeCycle(impl.Lifecycle lc) {
-    final actual = impl.ModuleManager.instance.lifecycleFor(_modId);
+    final actual = impl.ModuleManager.instance.lifecycle(_modId);
     if (actual != lc) {
       throw AssertionError(
-          'invalid lifecycle ${impl.ModuleManager.instance.lifecycleFor(_modId)}');
+          'invalid lifecycle ${impl.ModuleManager.instance.lifecycle(_modId)}');
     }
   }
 
   String _modId = "";
+  final _scheduler = impl.Scheduler();
 }
 
-typedef ChannelCallback<T> = void Function(ChannelData<T> payload);
+typedef ChannelCallback<T> = FutureOr<void> Function(ChannelData<T> payload);
 
 abstract class SubscribeChannel<T> {
   void onMessage(ChannelCallback<T> callback);
 }
 
 abstract class PublishChannel<T> {
-  void post(T payload);
+  Future<void> post(T payload);
 }
 
 class ChannelData<T> {
   final T value;
   final DateTime timestamp;
-  const ChannelData(this.value, this.timestamp);
+  final String userId;
+  const ChannelData(this.value, this.timestamp, this.userId);
 }

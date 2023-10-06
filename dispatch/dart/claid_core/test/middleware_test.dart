@@ -3,8 +3,6 @@ import 'dart:io';
 
 import 'package:claid_core/dispatcher.dart';
 import 'package:claid_core/generated/claidservice.pb.dart';
-import 'package:claid_core/middleware.dart';
-import 'package:flutter/widgets.dart';
 import 'package:path/path.dart';
 
 import 'package:test/test.dart';
@@ -27,78 +25,82 @@ void main() {
   });
 
   tearDown(() async {
-    await tempDir.delete();
+    await tempDir.delete(recursive: true);
   });
-
-  // test('test middleware bindings', () async {
-  //   final socketPath = getSocketPath(tempDir);
-  //   final middleWare =
-  //       MiddleWareBindings(socketPath, configFile, userId, deviceId);
-
-  //   expect(middleWare.ready, true);
-  //   middleWare.shutdown();
-  // });
 
   test('test client dispatcher', () async {
     final socketPath = getSocketPath(tempDir);
     final disp =
         ModuleDispatcher(socketPath, configFile, hostId, userId, deviceId);
     expect(disp.start(), true);
+    const channelID = 'RawNumber';
 
     final moduleClasses = <String>[
       'TestModuleOne',
       'TestModuleTwo',
     ];
     final modDesc = await disp.getModuleList(moduleClasses);
-    print('\nMod Desc: $modDesc\n\n');
 
     // Set the channels
     final channels = <String, List<DataPackage>>{
       'test_mod_1': <DataPackage>[
-        DataPackage(channel: 'RawNumber', sourceHostModule: 'test_mod_1'),
+        DataPackage(
+            channel: channelID, sourceHostModule: 'test_mod_1', numberVal: 99),
       ],
       'test_mod_2': <DataPackage>[
-        DataPackage(channel: 'RawNumber', targetHostModule: 'test_mod_2'),
+        DataPackage(
+            channel: channelID, targetHostModule: 'test_mod_2', numberVal: 99),
       ],
     };
 
     final outputController = StreamController<DataPackage>();
     final inputStream = await disp.initRuntime(channels, outputController);
 
-    const maxPackets = 100;
-    const outChannel = "mychannel";
+    const maxPackets = 5;
+
+    final completer = Completer<void>();
+    final incoming = <DataPackage>[];
+    late StreamSubscription<DataPackage> sub;
+
+    Future<void> shutDown() async {
+      await outputController.close();
+      disp.closeRuntime();
+      completer.complete();
+    }
+
+    sub = inputStream.listen((pkt) async {
+      incoming.add(pkt);
+      if (incoming.length >= maxPackets) {
+        // outputController.add(DataPackage(controlVal))
+        await outputController.close();
+        await Future.delayed(const Duration(milliseconds: 10));
+        await sub.cancel();
+        completer.complete();
+      }
+    }, onError: (err) {
+      fail((err is StreamingError) ? (err.message) : err.toString());
+    });
+
     final outGoingPkts = <DataPackage>[];
     var counter = 0;
 
-    final t = Timer.periodic(const Duration(milliseconds: 2000), (timer) {
+    Timer.periodic(const Duration(milliseconds: 500), (timer) {
       final pkt =
-          DataPackage(channel: outChannel, numberVal: counter.toDouble());
-      counter += 1;
+          DataPackage(channel: channelID, numberVal: counter.toDouble());
       outGoingPkts.add(pkt);
       outputController.add(pkt);
-      print('Package $counter sent.\n');
+      counter += 1;
       if (outGoingPkts.length >= maxPackets) {
         timer.cancel();
       }
     });
 
-    final completer = Completer<void>();
-    final incoming = <DataPackage>[];
-    late StreamSubscription<DataPackage> sub;
-    sub = inputStream.listen((pkt) {
-      print('Received package ${pkt.numberVal}');
-      incoming.add(pkt);
-      if (incoming.length == maxPackets) {
-        sub.cancel();
-        completer.complete();
-      }
-    });
-
     await completer.future;
-    print('Done !');
+    await disp.closeRuntime();
 
     // Compare if the results are correct.
-
-    disp.shutdown();
+    // TODO: shutdown currently hangs indefinitely. But that could be
+    // a problem with gRPC or how it is used in the middleware.
+    // disp.shutdown();
   });
 }

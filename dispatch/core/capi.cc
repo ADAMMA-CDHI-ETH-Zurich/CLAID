@@ -1,6 +1,7 @@
 #include <string>
 
 #include "dispatch/core/middleware.hh"
+#include "dispatch/core/Logger/Logger.hh"
 #include "dispatch/core/capi.h"
 
 extern "C"
@@ -28,10 +29,11 @@ __attribute__((visibility("default"))) __attribute__((used))
 void shutdown_core(void* handle) {
     if (handle) {
         auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
+        claid::Logger::printfln("Shutting down middleware");
         auto status = middleWare->shutdown();
         if (!status.ok()) {
             // TODO: replace with proper logging.
-            std::cout << "Error shuting down middleware" << std::endl;
+            claid::Logger::printfln("Error shuting down middleware: %s", std::string(status.message()).c_str());
         }
         delete middleWare;
     }

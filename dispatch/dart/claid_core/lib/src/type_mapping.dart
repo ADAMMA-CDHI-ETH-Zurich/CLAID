@@ -43,14 +43,6 @@ class ProtoCodec {
   }
 }
 
-final doubleMut =
-    Mutator<double>((p, v) => p.numberVal = v, (p) => p.numberVal);
-
-// final stringMut = Mutator<double>((p, v) { p.numberVal = v; }, (p) => p.numberVal);
-// final doubleMut = Mutator<double>((p, v) { p.numberVal = v; }, (p) => p.numberVal);
-// final doubleMut = Mutator<double>((p, v) { p.numberVal = v; }, (p) => p.numberVal);
-// final doubleMut = Mutator<double>((p, v) { p.numberVal = v; }, (p) => p.numberVal);
-
 class TypeMapping {
   final _protoCodecMap = <String, ProtoCodec>{};
 
@@ -60,53 +52,49 @@ class TypeMapping {
   }
 
   Mutator<T> getMutator<T>(T inst) {
-    if (inst is int) {
-      return Mutator<T>((pkt, val) => pkt.numberVal = (val as int).toDouble(),
-          (pkt) => pkt.numberVal.toInt() as T);
-    }
-
-    //   , double>((pkt, val) => pkt.numberVal = ,)
-    //   return Mutator<T>(
-    //       (p, v) => p.numberVal = v as double, (p) => p.numberVal as T);
-    // }
-
-    if (T == double) {
+    if (inst is double) {
       return Mutator<T>(
           (p, v) => p.numberVal = v as double, (p) => p.numberVal as T);
     }
 
-    if (T == String) {
-      return Mutator.wrap<T, String>((p, v) {
-        p.stringVal = v;
-      }, (p) => p.stringVal);
+    if (inst is bool) {
+      return Mutator<T>((p, v) => p.boolVal = v as bool, (p) => p.boolVal as T);
     }
 
-    if (T == List<double>) {
-      return Mutator.wrap<T, List<double>>((p, v) {
-        p.numberArrayVal = NumberArray(val: v);
-      }, (p) => p.numberArrayVal.val);
+    if (inst is String) {
+      return Mutator<T>(
+          (p, v) => p.stringVal = v as String, (p) => p.stringVal as T);
     }
 
-    if (T == List<String>) {
-      return Mutator.wrap<T, List<String>>((p, v) {
-        p.stringArrayVal = StringArray(val: v);
-      }, (p) => p.stringArrayVal.val);
+    // List double
+    if (inst is List<double>) {
+      return Mutator<T>(
+          (p, v) => p.numberArrayVal = NumberArray(val: v as List<double>),
+          (p) => p.numberArrayVal.val as T);
     }
 
-    if (T == Map<String, double>) {
-      return Mutator.wrap<T, Map<String, double>>((p, v) {
-        p.numberMap = NumberMap(val: v);
-      }, (p) => p.numberMap.val);
+    // List string
+    if (inst is List<String>) {
+      return Mutator<T>(
+          (p, v) => p.stringArrayVal = StringArray(val: v as List<String>),
+          (p) => p.stringArrayVal.val as T);
     }
 
-    if (T == Map<String, String>) {
-      return Mutator.wrap<T, Map<String, String>>((p, v) {
-        p.stringMap = StringMap(val: v);
-      }, (p) => p.stringMap.val);
+    // Map double
+    if (inst is Map<String, double>) {
+      return Mutator<T>(
+          (p, v) => p.numberMap = NumberMap(val: v as Map<String, double>),
+          (p) => p.numberMap.val as T);
     }
 
-    // if (tType <= const TypeHelper<Child>()) ...
+    // Map string
+    if (inst is Map<String, String>) {
+      return Mutator<T>(
+          (p, v) => p.stringMap = StringMap(val: v as Map<String, String>),
+          (p) => p.stringMap.val as T);
+    }
 
+    // Protobuf
     if (inst is GeneratedMessage) {
       final codec = _getProtoCodec(inst);
       return Mutator.wrap<T, GeneratedMessage>((p, v) {
@@ -114,19 +102,6 @@ class TypeMapping {
       }, (p) => codec.decode(p.blobVal));
     }
 
-    throw AssertionError("unknown channel type");
+    throw ArgumentError('Type "${inst.runtimeType}" is not a valid type.');
   }
 }
-
-// bool isSubtype<S, T>() {
-//   final x = <S>[];
-//   return (x is List<T>);
-// }
-
-// class TypeHelper<T> {
-//   const TypeHelper();
-//   bool operator >=(TypeHelper other) => other is TypeHelper<T>;
-//   bool operator <=(TypeHelper other) => other >= this;
-//   bool operator >(TypeHelper other) => this >= other && !(other >= this);
-//   bool operator <(TypeHelper other) => other >= this && !(this >= other);
-// }

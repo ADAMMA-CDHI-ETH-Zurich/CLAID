@@ -38,8 +38,6 @@ final ffi.DynamicLibrary _dylib = () {
     return ffi.DynamicLibrary.open('$_libName.framework/$_libName');
   }
   if (Platform.isAndroid || Platform.isLinux) {
-    final path = 'blobs/lib${_libName}_$_platform.so';
-    print('path: $path');
     return ffi.DynamicLibrary.open('blobs/lib${_libName}_$_platform.so');
   }
   if (Platform.isWindows) {

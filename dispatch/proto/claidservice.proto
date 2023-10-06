@@ -30,8 +30,8 @@ service ClaidRemoteService
 }
 
 message DataPackage {
-  string id = 1;     // Unique ID of this package
-  string channel = 2;
+  string id = 1;      // Unique ID of this package 
+  string channel = 2; 
   string source_host_module = 3; // originating module in the format host_id:module_id
   string target_host_module = 4; // target module in the format host_id:module_id
   string source_user_token = 5;  // id token of the user / system entity that created this package.
@@ -58,7 +58,7 @@ enum CtrlType {
   CTRL_UNSPECIFIED     = 0;
   CTRL_RUNTIME_PING    = 1;  // Client sends this upon connect and periodically if no packages have been sent
   CTRL_REMOTE_PING     = 2;  // RemoteClient sends this upon connect to a RemoteDispatcherServer upon connect.
-  // CTRL_MODULE_PING  = 3;  // module ping sent to local claid server.
+  CTRL_CONN_CANCEL     = 3;  // Signal by the client that it is about to cancel the request.
   // CTRL_MODULE_READY = 4;  // sent to module when the local middleware is ready
   // CTRL_STATUS       = 5;  // Sent from a middleware client up the tree
   // CTRL_ACTION       = 6;  // sent to module when the local middleware is ready
@@ -68,7 +68,7 @@ enum CtrlType {
 message ControlPackage {
   CtrlType ctrl_type                    = 1;
   optional Runtime runtime              = 2; // CTRL_RUNTIME_PING
-  optional RemoteClientInfo remote_client_info             = 3; // CTRL_REMOTE_PING
+  optional RemoteClientInfo remote_client_info = 3; // CTRL_REMOTE_PING
   optional AccumulatedStatus status     = 4; // CTRL_STATUS: status sent towards root server
   optional ErrorMsg error_msg           = 5; // CTRL_ERROR: Error report sent towards root server
   optional ActionRequest action_request = 6; // CTRL_ACTION: action request sent to all children
@@ -82,7 +82,14 @@ message AccumulatedStatus {
 
 message ErrorMsg {
   string message = 1;
+  bool cancel = 2;
 }
+
+// enum ErrorLevel {
+//   ERR_LEVEL_UNSPECIFIED = 0;
+//   ERR_LEVEL_WARNING = 1;
+//   ERR_LEVEL_FATAL = 2;
+// }
 
 message ActionRequest {
   // TBD

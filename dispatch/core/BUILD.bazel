@@ -1,9 +1,10 @@
 package(default_visibility = ["//visibility:public"])
 
+
+
 cc_binary(
     name = "claid_capi",
     linkshared = True,
-    # linkstatic = True,
     srcs = [
         ":capi",
     ],
@@ -37,9 +38,6 @@ cc_binary(
     ],
     deps = [
         ":CLAID",
-        # ":claid_config",
-        # ":local_dispatching",
-        # "@com_google_protobuf//:protobuf",
     ],
 )
 
@@ -49,7 +47,6 @@ cc_library(
         "CLAID.cc",
     ] + glob([
         "Router/*.cc",
-        "Logger/*.cc",
         "Exception/*.cc",
         "ExceptionHandler/*.cc",
         "RemoteDispatching/*.cc",
@@ -58,39 +55,36 @@ cc_library(
         "CLAID.hh",
     ] + glob([
         "Router/*.hh",
-        "Logger/*.hh",
         "Exception/*.hh",
         "ExceptionHandler/*.hh",
     ]),
     deps = [
         ":claid_config",
         ":local_dispatching",
+        ":logger",
+        ":proto_util",
         ":remote_dispatching",
         "@com_google_protobuf//:protobuf",
-        # "@com_google_absl//absl/strings",
     ],
-    linkstatic = True,
-    alwayslink = True,   # include everything in dependents
 )
 
 cc_library(
     name = "local_dispatching",
     srcs = [
-        "module_table.cc",
         "local_dispatching.cc",
     ],
     hdrs = [
         "shared_queue.hh",
-        "module_table.hh",
         "local_dispatching.hh",
     ],
     deps = [
+        ":module_table",
+        ":logger",
+        ":proto_util",
         "@com_github_grpc_grpc//:grpc++",
         "//dispatch/proto:claidservice_cc_proto",
         "//dispatch/proto:claidservice_cc_grpc",
     ],
-    linkstatic = True,
-    alwayslink = True,   # include everything in dependents
 )
 
 cc_library(
@@ -100,6 +94,7 @@ cc_library(
     ]),
     hdrs = glob([
         "RemoteDispatching/*.hh",
+        ] + [
         "shared_queue.hh",
     ]),
     deps = [
@@ -111,16 +106,25 @@ cc_library(
 
 cc_library(
     name = "routing",
-    srcs = glob(["Router/*.cc", "Logger/*.cc", "module_table.cc", "RemoteDispatching/HostUserTable.cc"]),
-    hdrs = glob(["Router/*.hh", "Logger/*.hh", "shared_queue.hh",
-        "module_table.hh", "RemoteDispatching/HostUserTable.hh", "RemoteDispatching/RemoteClientKey.hh"]),
+    srcs = glob([
+            "Router/*.cc",
+        ] +  [
+            "RemoteDispatching/HostUserTable.cc",
+        ]),
+    hdrs = glob([
+        "Router/*.hh",
+        ] + [
+        "RemoteDispatching/HostUserTable.hh",
+        "RemoteDispatching/RemoteClientKey.hh",
+    ]),
     deps = [
-        "//dispatch/core:claid_config",
+        ":claid_config",
+        ":logger",
+        ":module_table",
+        ":proto_util",
         "//dispatch/proto:claidservice_cc_proto",
         "//dispatch/proto:claidservice_cc_grpc",
     ],
-    linkstatic = True,
-    alwayslink = True,   # include everything in dependents
 )
 
 
@@ -132,22 +136,37 @@ cc_library(
         "//dispatch/proto:claidservice_cc_proto",
         "@com_google_protobuf//:protobuf",
     ],
-    linkstatic = True,
-    alwayslink = True,   # include everything in dependents
 )
 
-# cc_library(
-#     name = "module_table",
-#     srcs = [
-#         "module_table.cc",
-#     ],
-#     hdrs = [
-#         "shared_queue.hh",
-#         "module_table.hh",
-#     ],
-#     deps = [
-#         "@com_github_grpc_grpc//:grpc++",
-#         "//dispatch/proto:claidservice_cc_proto",
-#         "//dispatch/proto:claidservice_cc_grpc",
-#     ],
-# )
+cc_library(
+    name = "module_table",
+    srcs = [
+        "module_table.cc",
+        "shared_queue.hh",
+    ],
+    hdrs = ["module_table.hh"],
+    deps = [
+        ":logger",
+        ":proto_util",
+        "@com_github_grpc_grpc//:grpc++",
+        "//dispatch/proto:claidservice_cc_proto",
+        "//dispatch/proto:claidservice_cc_grpc",
+    ],
+)
+
+cc_library(
+    name = "logger",
+    srcs = glob(["Logger/*.cc"]),
+    hdrs = glob(["Logger/*.hh"]),
+)
+
+cc_library(
+    name = "proto_util",
+    srcs = ["proto_util.cc"],
+    hdrs = ["proto_util.hh"],
+    deps = [
+        "@com_google_protobuf//:protobuf",
+    ],
+    # linkstatic = True,   # only create a static lib
+    # alwayslink = True,   # include everything in dependents
+)

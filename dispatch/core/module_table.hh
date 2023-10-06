@@ -13,15 +13,27 @@
 
 namespace claid {
 
-// Channel key is tuple(channelId, source, target).
-typedef std::tuple<std::string, std::string, std::string> ChannelKey;
-inline ChannelKey make_chan_key(const std::string& chanId, const std::string& src, const std::string& tgt) {
-  return std::make_tuple(chanId, src, tgt);
-}
+bool compPacketType(const claidservice::DataPackage& ref, const claidservice::DataPackage& val);
+bool validPacketType(const claidservice::DataPackage& ref);
 
-class ChannelMap {
+typedef std::map<claidservice::Runtime, std::shared_ptr<SharedQueue<claidservice::DataPackage>>> RuntimeQueueMap;
+typedef std::tuple<std::string, std::string, std::shared_ptr<claidservice::DataPackage>> ChannelInfo;
+
+struct ModuleTableProperties {
+  std::string userId;
+  std::string deviceId;
+};
+
+class ModuleTable {
   public:
-    void setChannel(const ChannelKey& channelKey);
+    virtual ~ModuleTable() {}
+    inline SharedQueue<claidservice::DataPackage>& inputQueue() {return fromModuleQueue;}
+    SharedQueue<claidservice::DataPackage>* lookupOutputQueue(const std::string& moduleId);
+    void setProperties(const ModuleTableProperties& props);
+    void setModule(const std::string& moduleId,
+        const std::string& moduleClass,
+        const std::map<std::string, std::string>& properties);
+    void setChannel(const std::string& channelId, const std::string& source, const std::string& target);
 
     // Verifies that the given channels are expected and sets their
     // data types.
@@ -29,53 +41,41 @@ class ChannelMap {
             const google::protobuf::RepeatedPtrField<claidservice::DataPackage>& channels);
 
     // Verifies that a given packet sends on defined channel
-    bool isValid(const claidservice::DataPackage& pkt) const;
+    bool isValidChannel(const claidservice::DataPackage& pkt, ChannelInfo& chanInfo) const;
+
+    bool lookupChannel(const std::string& channelId, ChannelInfo& chanInfo) const;
+
+    void augmentFieldValues(claidservice::DataPackage& pkt, const ChannelInfo& chanInfo) const;
 
     const std::string toString() const;
-
-    std::tuple<std::string, std::string, bool> lookupChannel(const std::string& channelId) const;
-
-  private:
-    std::shared_mutex mapMutex;  // mutex for channelMap
-    std::map<ChannelKey, std::shared_ptr<claidservice::DataPackage>> chanMap;
-    std::map<std::string, std::pair<std::string, std::string>> chanSrcTgtMap;
-};
-
-bool compPacketType(const claidservice::DataPackage& ref, const claidservice::DataPackage& val);
-bool validPacketType(const claidservice::DataPackage& ref);
-
-typedef std::map<claidservice::Runtime, std::shared_ptr<SharedQueue<claidservice::DataPackage>>> RuntimeQueueMap;
-
-class ModuleTable {
-  public:
-    virtual ~ModuleTable() {}
-    inline SharedQueue<claidservice::DataPackage>& inputQueue() {return fromModuleQueue;}
-    SharedQueue<claidservice::DataPackage>* lookupOutputQueue(const std::string& moduleId);
-    void setModule(const std::string& moduleId,
-        const std::string& moduleClass,
-        const std::map<std::string, std::string>& properties);
-    void setChannel(const std::string& channelId, const std::string& source, const std::string& target);
-
-    const std::string toString() const;
-
-    // std::pair<std::string, std::string> lookupChannel(const string& chanId);
 
     // ONLY FOR TESTING REMOVE LATER
     void addModuleToRuntime(const std::string& Module, claidservice::Runtime runtime);
 
   private:
+    bool containsChan(const std::string& chanId, ChannelInfo& entry) const;
+
+  private:
     SharedQueue<claidservice::DataPackage> fromModuleQueue;
-    // These two maps capture the target configuration.
+
+    // // These two maps capture the target configuration.
     std::map<std::string, std::string> moduleToClassMap; // maps module IDs to moduleClasses
+
+    // SharedQueue<claidservice::DataPackage>& fromModuleQueue;
     std::map<std::string, std::map<std::string, std::string>> moduleProperties;  // properties for each module
 
-    // populated during ModuleList. Answers: which module classes are provided by what runtime.
+    // // populated during ModuleList. Answers: which module classes are provided by what runtime.
     std::map<std::string, claidservice::Runtime> moduleClassRuntimeMap; // maps moduleClasses to the runtime that provides the implementation
 
-    // Maps from module to runtime queu.
+    // // runtimeQueueMap from module to runtime queue.
     RuntimeQueueMap runtimeQueueMap; // map from runtime to outgoing queue
-    ChannelMap channelMap; // map from <channel_id, src, tgt> to DataPacket (= data type of channel )
+
     std::map<std::string, claidservice::Runtime>  moduleRuntimeMap;  // map module ==> runtime
+    ModuleTableProperties props;
+
+    // // protect and store the channels and their types.
+    std::shared_mutex chanMapMutex;  // mutex for chanMap
+    std::map<std::string, ChannelInfo> chanMap;
 
   friend class ServiceImpl;
 };

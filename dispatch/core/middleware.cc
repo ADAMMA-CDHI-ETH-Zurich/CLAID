@@ -1,6 +1,7 @@
 #include "dispatch/core/middleware.hh"
 #include "dispatch/core/Configuration/Configuration.hh"
 #include "dispatch/core/CLAID.hh"
+#include "dispatch/core/Logger/Logger.hh"
 
 using namespace claid;
 using namespace std;
@@ -8,13 +9,15 @@ using namespace std;
 MiddleWare::MiddleWare(const string& socketPath, const string& configurationPath,
     const string& hostId, const string& userId, const string& deviceId)
         : socketPath(socketPath), configurationPath(configurationPath),
-          hostId(hostId), userId(userId), deviceId(deviceId) {}
+          hostId(hostId), userId(userId), deviceId(deviceId) {
+        moduleTable.setProperties(ModuleTableProperties{userId, deviceId});
+    }
 
 MiddleWare::~MiddleWare() {
     auto status = shutdown();
     if (!status.ok()) {
         // TODO: replace with proper logging
-        cout << "Error running shutdown in MiddleWare destructor: " << status.message() << endl;
+        Logger::printfln("Error running shutdown in MiddleWare destructor: %s", string(status.message()).c_str());
     }
 }
 
@@ -23,7 +26,7 @@ absl::Status MiddleWare::start() {
     Configuration config;
     auto status = config.parseFromJSONFile(configurationPath);
     if (!status.ok()) {
-        cout << "Unable to parse config file: " << status.message() << endl;
+        Logger::printfln("Unable to parse config file: %s", string(status.message()).c_str());
         return status;
     }
 
@@ -43,11 +46,8 @@ absl::Status MiddleWare::start() {
     if (!status.ok()) {
         return status;
     }
-
-    cout << "------------------------------------------" << endl;
-    cout << "Module Table:" << endl;
-    cout << moduleTable.toString() << endl;
-    cout << "------------------------------------------" << endl;
+    Logger::printfln("Module Table:");
+    Logger::printfln("%s", moduleTable.toString().c_str());
 
     localDispatcher = make_unique<DispatcherServer>(socketPath, moduleTable);
     if (!localDispatcher->start()) {
@@ -70,29 +70,6 @@ absl::Status MiddleWare::start() {
         }
     });
 
-    // HostDescriptionMap hostDescriptions;
-    // status = config.getHostDescriptions(hostDescriptions);
-    // if (!status.ok()) {
-    //     return status;
-    // }
-    
-    // status = startRemoteDispatcherServer(currentHost, hostDescriptions);
-    // if(!status.ok())
-    // {
-    //     return status;
-    // }
-
-    // status = startRemoteDispatcherClient(currentHost, currentUser, currentDeviceId, hostDescriptions);
-    // if(!status.ok())
-    // {
-    //     return status;
-    // }
-
-    // status = this->startRouter(currentHost, hostDescriptions);
-    // if (!status.ok()) {
-    //     return status;
-    // }
-
     return absl::OkStatus();
 }
 
@@ -112,7 +89,7 @@ absl::Status MiddleWare::startRemoteDispatcherServer(const std::string& currentH
             "The host was not found in the configuration file."
         ));
     }
-    
+
     const HostDescription& hostDescription = it->second;
     if(!hostDescription.isServer)
     {
@@ -125,18 +102,18 @@ absl::Status MiddleWare::startRemoteDispatcherServer(const std::string& currentH
     const std::string address = hostDescription.hostServerAddress;
 
     this->remoteDispatcherServer = make_unique<RemoteDispatcherServer>(address, this->hostUserTable);
-    
+
     return this->remoteDispatcherServer->start();
 }
 
-absl::Status MiddleWare::startRemoteDispatcherClient(const std::string& currentHost, const std::string& currentUser, 
+absl::Status MiddleWare::startRemoteDispatcherClient(const std::string& currentHost, const std::string& currentUser,
                 const std::string& currentDeviceId, const HostDescriptionMap& hostDescriptions)
 {
     if(this->remoteDispatcherServer != nullptr)
     {
         return absl::AlreadyExistsError("Failed to start client for connection to external server; RemoteDispatcherClient already exists.");
     }
-    
+
     //     claid::RemoteDispatcherClient client(address, host, userToken, deviceID, inQueue, outQueue);
     // absl::Status status = client.registerAtServerAndStartStreaming();
 
@@ -153,7 +130,7 @@ absl::Status MiddleWare::startRouter(const std::string& currentHost, const HostD
     auto genericMerger = new RoutingQueueMergerGeneric(this->masterInputQueue, this->moduleTable.inputQueue(), this->hostUserTable.inputQueue());
     std::unique_ptr<typename std::remove_pointer<decltype(genericMerger)>::type> uniqueMerger(genericMerger);
     this->routingQueueMerger = std::move(uniqueMerger);
-    
+
     absl::Status status = this->routingQueueMerger->start();
     if(!status.ok())
     {
@@ -180,7 +157,7 @@ absl::Status MiddleWare::startRouter(const std::string& currentHost, const HostD
     return absl::OkStatus();
 }
 
-absl::Status MiddleWare::shutdown() 
+absl::Status MiddleWare::shutdown()
 {
     // TODO: remove once the router is added.
 
@@ -190,6 +167,7 @@ absl::Status MiddleWare::shutdown()
             routerThread->join();
             routerThread.reset();
         }
+        localDispatcher->shutdown();
         localDispatcher.reset();
     }
     return absl::OkStatus();

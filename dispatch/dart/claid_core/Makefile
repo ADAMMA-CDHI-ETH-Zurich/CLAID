@@ -2,13 +2,26 @@
 OUTPUT_LIB = bazel-bin/dispatch/core/libclaid_capi.so
 TARGET_LIB = dispatch/dart/claid_core/blobs/libclaid_capi_linux.so
 
-.PHONE: all
+.PHONY: all
 all: build
+
+.PHONY: clean
+clean:
+	rm -f blobs/*.so
 
 # Build everything and run a series of tests.
 .PHONY: test
 test: build
-	flutter test ./test/middleware_test.dart
+	flutter test ./test/
+
+# Run the tests, gather coverage and generate a report.
+.PHONY: coverage
+coverage: build
+	mkdir -p coverage
+	flutter test --coverage ./test/
+	rm -rf coverage/output/*
+	mkdir -p coverage/output
+	genhtml -o coverage/output/ coverage/lcov.info
 
 # Build the middleware and generate the dart code.
 .PHONY: build
