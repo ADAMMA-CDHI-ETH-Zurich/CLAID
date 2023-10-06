@@ -5,13 +5,10 @@ from install import install_package
 
 import errno, os, stat, shutil
 
-def handleRemoveReadonly(func, path, exc):
-  excvalue = exc[1]
-  if func in (os.rmdir, os.remove) and excvalue.errno == errno.EACCES:
-      os.chmod(path, stat.S_IRWXU| stat.S_IRWXG| stat.S_IRWXO) # 0777
-      func(path)
-  else:
-      raise
+def remove_readonly(func, path, _):
+    "Clear the readonly bit and reattempt the removal"
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
 
 def is_git_repo_link(package_name):
 
@@ -35,7 +32,7 @@ def update_package_from_package_name(package_name):
     if(package_exists(package_name)):
         print("Uninstalling package {} ({}).".format(package_name, output_path))
         try:
-            shutil.rmtree(output_path, ignore_errors=False, onerror=handleRemoveReadonly)
+            shutil.rmtree(output_path, onerror=remove_readonly)
         except Exception as e:
             print("Failed to uninstall package {}: Failed to delete folder \"{}\"\nError: \"{}\"".format(package_name, output_path, e))
             return
@@ -62,7 +59,7 @@ def update_package_from_git_link(git_link):
     if(package_exists(package_name)):
         print("Uninstalling package {} ({}).".format(package_name, output_path))
         try:
-            shutil.rmtree( output_path)
+            shutil.rmtree(output_path, onerror=remove_readonly)
         except Exception as e:
             print("Failed to uninstall package {}: Failed to delete folder \"{}\"\nError: \"{}\"".format(package_name, output_path, e))
             return
