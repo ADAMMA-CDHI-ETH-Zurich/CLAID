@@ -1,6 +1,7 @@
 #include "dispatch/test/testmessages.pb.h"
 #include "dispatch/core/Logger/Logger.hh"
 #include "dispatch/core/local_dispatching.hh"
+#include "dispatch/core/proto_util.hh"
 #include "gtest/gtest.h"
 #include "google/protobuf/util/message_differencer.h"
 
@@ -238,7 +239,7 @@ TEST(LocalDispatcherTestSuit, SocketBasedDispatcherTest) {
         }
     }
 
-    Logger::printfln("%s", messsageToString(initReq).c_str());
+    Logger::printfln("%s", messageToString(initReq).c_str());
 
     auto clientStarted = client.startRuntime(initReq);
     ASSERT_TRUE(clientStarted) << "Unable to start client !";

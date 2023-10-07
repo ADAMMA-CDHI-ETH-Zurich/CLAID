@@ -19,6 +19,7 @@ cc_test(
   deps = [
     ":testmessages_cc_proto",
     "//dispatch/core:local_dispatching",
+    "//dispatch/core:proto_util",
   ] + FRAMEWORK_DEPS,
 )
 
