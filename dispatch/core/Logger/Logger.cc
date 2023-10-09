@@ -81,7 +81,7 @@ void claid::Logger::printfln(const char *format, ...)
     {
         va_end(args_copy) ;
         va_end(args) ;
-        throw ;
+        //throw ;
     }
 }
 

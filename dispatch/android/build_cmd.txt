@@ -1,0 +1,23 @@
+bazel build :app --copt=-std=c++17 --fat_apk_cpu=armeabi-v7a --android_crosstool_top=@androidndk//:toolchain --features=exceptions --copt="-fexceptions"
+
+// the bazel target is called "lib", but adding .aar builds the implicit output target lib.aar
+bazel build :lib.aar --copt=-std=c++17 --fat_apk_cpu=armeabi-v7a --android_crosstool_top=@androidndk//:toolchain
+
+
+https://github.com/bazelbuild/bazel/issues/3924
+
+
+
+
+build apk:
+
+
+
+build shared lib for a certain platform only: 
+
+bazel build :jni_lib \
+      --crosstool_top=@androidndk//:toolchain \
+      --cpu=arm64-v8a \
+      --host_crosstool_top=@bazel_tools//tools/cpp:toolchain --copt="-Wno-error" --copt="-fexceptions"
+
+

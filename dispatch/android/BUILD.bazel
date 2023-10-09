@@ -1,0 +1,39 @@
+
+# android_library(
+#     name = "claid_android",
+#     srcs = ["test.java"],
+#     # resource_files = glob(["res/**/*"]),
+#     custom_package = "adamma.c4dhi.org",
+#     manifest = "LibraryManifest.xml",
+#     deps = ["//dispatch/core:CLAID"],
+# )
+
+
+# android_binary(
+#     name = "app2",
+#     srcs = ["test.java"],
+#     deps = [":claid_android"],
+#     manifest = "AndroidManifest.xml",
+# )
+
+
+
+cc_library(
+    name = "jni_lib",
+    deps = ["//dispatch/core:CLAID"],
+)
+
+android_library(
+    name = "lib",
+    srcs = ["test.java"],
+    resource_files = glob(["res/**/*"]),
+    custom_package = "com.example.android.bazel",
+    manifest = "LibraryManifest.xml",
+    deps = [":jni_lib"],
+)
+
+android_binary(
+    name = "app",
+    deps = [":lib"],
+    manifest = "AndroidManifest.xml",
+)
