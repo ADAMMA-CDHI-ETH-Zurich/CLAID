@@ -27,7 +27,9 @@ cc_binary(
 
 cc_library(
     name = "jni_lib",
-    deps = ["@com_github_grpc_grpc//:grpc++",],
+    srcs = ["native-lib.cpp"],
+    deps = ["//dispatch/core:capi"],
+    alwayslink = True,   # include everything in dependents
 )
 
 android_library(
@@ -44,6 +46,5 @@ android_binary(
     deps = [":lib"],
     manifest = "AndroidManifest.xml",
 )
-
 
 
