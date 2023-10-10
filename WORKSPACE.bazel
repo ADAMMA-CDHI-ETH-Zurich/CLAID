@@ -24,6 +24,7 @@ http_archive(
   strip_prefix = "googletest-8a6feabf04bec8fb125e0df0ad1195c42350725f",
 )
 
+
 RULES_ANDROID_NDK_COMMIT= "81ec8b79dc50ee97e336a25724fdbb28e33b8d41"
 RULES_ANDROID_NDK_SHA = "b29409496439cdcdb50a8e161c4953ca78a548e16d3ee729a1b5cd719ffdacbf"
 
@@ -36,12 +37,15 @@ http_archive(
 )
 load("@rules_android_ndk//:rules.bzl", "android_ndk_repository")
 
+
+
+
 android_sdk_repository(
     name = "androidsdk", # Required. Name *must* be "androidsdk".
 )
 
 android_ndk_repository(
     name = "androidndk", # Required. Name *must* be "androidndk".
-    api_level=22,
 )
-register_toolchains("@androidndk//:all")
+
+

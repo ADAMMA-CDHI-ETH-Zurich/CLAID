@@ -1,12 +1,12 @@
-
-# android_library(
-#     name = "claid_android",
-#     srcs = ["test.java"],
-#     # resource_files = glob(["res/**/*"]),
-#     custom_package = "adamma.c4dhi.org",
-#     manifest = "LibraryManifest.xml",
-#     deps = ["//dispatch/core:CLAID"],
-# )
+package(default_visibility = ["//visibility:public"])
+android_library(
+    name = "claid_android",
+    srcs = ["test.java"],
+    # resource_files = glob(["res/**/*"]),
+    custom_package = "adamma.c4dhi.org",
+    manifest = "LibraryManifest.xml",
+    deps = ["@com_github_grpc_grpc//:grpc++",],
+)
 
 
 # android_binary(
@@ -18,9 +18,16 @@
 
 
 
+cc_binary(
+    name = "claid_android_lib",
+    srcs = ["native-lib.cpp"],
+    deps = ["//dispatch/core:CLAID"],
+    linkshared = True,
+)
+
 cc_library(
     name = "jni_lib",
-    deps = ["//dispatch/core:CLAID"],
+    deps = ["@com_github_grpc_grpc//:grpc++",],
 )
 
 android_library(
@@ -37,3 +44,6 @@ android_binary(
     deps = [":lib"],
     manifest = "AndroidManifest.xml",
 )
+
+
+
