@@ -22,7 +22,7 @@ void* start_core(const char* socket_path, const char* config_file, const char* h
         delete middleWare;
         return nullptr;
     }
-    return middleWare;
+    return static_cast<void*>(middleWare);
 }
 
 __attribute__((visibility("default"))) __attribute__((used))

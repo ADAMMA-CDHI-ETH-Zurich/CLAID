@@ -135,6 +135,7 @@ cc_library(
     deps = [
         "//dispatch/proto:claidservice_cc_proto",
         "@com_google_protobuf//:protobuf",
+        ":logger",
     ],
 )
 

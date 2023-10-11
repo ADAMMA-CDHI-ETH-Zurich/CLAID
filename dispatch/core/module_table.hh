@@ -47,6 +47,10 @@ class ModuleTable {
 
     void augmentFieldValues(claidservice::DataPackage& pkt, const ChannelInfo& chanInfo) const;
 
+    void addRuntimeIfNotExists(const claidservice::Runtime& runtime);
+
+    std::shared_ptr<SharedQueue<claidservice::DataPackage>> getOutputQueueOfRuntime(const claidservice::Runtime& runtime);
+
     const std::string toString() const;
 
     // ONLY FOR TESTING REMOVE LATER

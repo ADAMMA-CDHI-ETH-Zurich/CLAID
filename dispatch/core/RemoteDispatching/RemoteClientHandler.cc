@@ -1,6 +1,5 @@
 #include "dispatch/core/RemoteDispatching/RemoteClientHandler.hh"
 
-
 namespace claid
 {
     RemoteClientHandler::RemoteClientHandler(SharedQueue<claidservice::DataPackage>& inQueue,

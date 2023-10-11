@@ -24,6 +24,7 @@ MiddleWare::~MiddleWare() {
 absl::Status MiddleWare::start() {
     // Fill the module table fromt he config file
     Configuration config;
+    Logger::printfln("Parsing %s\n", configurationPath.c_str());
     auto status = config.parseFromJSONFile(configurationPath);
     if (!status.ok()) {
         Logger::printfln("Unable to parse config file: %s", string(status.message()).c_str());
@@ -69,6 +70,7 @@ absl::Status MiddleWare::start() {
             }
         }
     });
+    Logger::printfln("Middleware started.");
 
     return absl::OkStatus();
 }

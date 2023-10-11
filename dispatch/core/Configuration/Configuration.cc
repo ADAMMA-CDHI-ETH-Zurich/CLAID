@@ -1,5 +1,5 @@
 #include "dispatch/core/Configuration/Configuration.hh"
-
+#include "dispatch/core/Logger/Logger.hh"
 
 #include "google/protobuf/util/json_util.h"
 
@@ -93,9 +93,11 @@ namespace claid
     absl::Status Configuration::getModuleDescriptions(ModuleDescriptionMap& moduleDescriptions) const
     {
         moduleDescriptions.clear();
+        Logger::printfln("Hosts size %d \n", config.hosts_size());
         for(int i = 0; i < config.hosts_size(); i++)
         {
             const HostConfig& host = config.hosts(i);
+            Logger::printfln("Module size %d\n", host.modules_size());
 
             for(int j = 0; j < host.modules_size(); j++)
             {
@@ -124,6 +126,7 @@ namespace claid
                 }
 
                 absl::Status status = moduleDescriptions.insert(make_pair(moduleDescription.id, moduleDescription));
+                Logger::printfln("Inserting module %s", moduleDescription.moduleClass .c_str());
                 if(!status.ok())
                 {
                     return status;
@@ -133,7 +136,15 @@ namespace claid
         return absl::OkStatus();
     }
 
-    absl::Status Configuration::getModulesForHost(const string& hostId, ModuleDescriptionMap& moduleDescriptions) const {
+    absl::Status Configuration::getModulesForHost(const string& hostId, ModuleDescriptionMap& moduleDescriptions) const 
+    {
+        if(!hostExistsInConfiguration(hostId))
+        {
+            return absl::NotFoundError(absl::StrCat(
+                "Could not setup host \"", hostId, "\". Host was not found in the configuration file"
+            ));
+        }       
+
         // TODO: remove this duplicate call that is only made to verify the correctness
         // of the modules.
         ModuleDescriptionMap fake;
@@ -141,6 +152,8 @@ namespace claid
         if (!status.ok()) {
             return status;
         }
+
+        bool hostFound = false;
 
         moduleDescriptions.clear();
         for(auto& hostIt : config.hosts()) {
@@ -175,6 +188,7 @@ namespace claid
                 }
             }
         }
+     
         return absl::OkStatus();
     }
 
@@ -219,5 +233,17 @@ namespace claid
 
         }
         return absl::OkStatus();
+    }
+
+    bool Configuration::hostExistsInConfiguration(const std::string& host) const
+    {
+        for(auto& hostIt : config.hosts()) 
+        {
+            if (hostIt.hostname() == host) 
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

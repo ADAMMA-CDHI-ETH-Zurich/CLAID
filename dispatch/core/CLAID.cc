@@ -76,6 +76,7 @@ namespace claid
         const ChannelDescriptionMap& channelDescriptions,
         ModuleTable& moduleTable)
     {
+        Logger::printfln("Module size: %d", moduleDescriptions.size());
         for(const auto& entry : moduleDescriptions)
         {
             const ModuleDescription& moduleDescription = entry.second;

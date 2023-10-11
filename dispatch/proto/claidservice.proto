@@ -65,13 +65,16 @@ enum CtrlType {
   CTRL_ERROR           = 7;  // Error occured
 }
 
+// Note for Stephan: I removed the "optional" labels, as protoc did complain about them:
+// "Explicit 'optional' labels are disallowed in the Proto3 syntax. To define 'optional' fields in Proto3, simply remove the 'optional' label, as fields are 'optional' by default.
+
 message ControlPackage {
-  CtrlType ctrl_type                    = 1;
-  optional Runtime runtime              = 2; // CTRL_RUNTIME_PING
-  optional RemoteClientInfo remote_client_info = 3; // CTRL_REMOTE_PING
-  optional AccumulatedStatus status     = 4; // CTRL_STATUS: status sent towards root server
-  optional ErrorMsg error_msg           = 5; // CTRL_ERROR: Error report sent towards root server
-  optional ActionRequest action_request = 6; // CTRL_ACTION: action request sent to all children
+    CtrlType ctrl_type                    = 1;
+   Runtime runtime              = 2; // CTRL_RUNTIME_PING
+   RemoteClientInfo remote_client_info = 3; // CTRL_REMOTE_PING
+   AccumulatedStatus status     = 4; // CTRL_STATUS: status sent towards root server
+   ErrorMsg error_msg           = 5; // CTRL_ERROR: Error report sent towards root server
+   ActionRequest action_request = 6; // CTRL_ACTION: action request sent to all children
                                              // of the claid instance
 
 }

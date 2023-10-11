@@ -26,24 +26,32 @@ cc_binary(
 )
 
 cc_library(
-    name = "jni_lib",
+    name = "android_claid_cc",
     srcs = ["native-lib.cpp"],
     deps = ["//dispatch/core:capi"],
     alwayslink = True,   # include everything in dependents
 )
 
 android_library(
-    name = "lib",
+    name = "android_claid_lib",
     srcs = ["test.java"],
     resource_files = glob(["res/**/*"]),
     custom_package = "com.example.android.bazel",
     manifest = "LibraryManifest.xml",
-    deps = [":jni_lib"],
+    deps = [":android_claid_cc"],
 )
 
+# We use the android_binary target to build an Apk, from 
+# which we can extract the shared libraries. We do not actually need this app,
+# we just use this target to build the Apk, which we can unzip to get the claid shared libraries
+# for different Android platforms.
+# Would be cooler if we could build directly an AAR or so, which includes the libs.
+# However this is not yet possible with bazel (but might be in the future): https://github.com/bazelbuild/bazel/issues/348
+
+# Note: The name of the output shared libraries extracted from the apk will be libandroid_claid.so
 android_binary(
-    name = "app",
-    deps = [":lib"],
+    name = "android_claid",
+    deps = [":android_claid_lib"],
     manifest = "AndroidManifest.xml",
 )
 

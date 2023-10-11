@@ -77,5 +77,10 @@ namespace claid
             void clear() {
                 map.clear();
             }
+
+            size_t size() const
+            {
+                return map.size();
+            }
     };
 }

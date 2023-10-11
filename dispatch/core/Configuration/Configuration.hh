@@ -37,6 +37,8 @@ namespace claid
             absl::Status getModuleDescriptions(ModuleDescriptionMap& moduleDescriptions) const;
             absl::Status getChannelDescriptions(ChannelDescriptionMap& channelDescriptions) const;
             absl::Status getModulesForHost(const std::string& hostId, ModuleDescriptionMap& moduleDescriptions) const;
+
+            bool hostExistsInConfiguration(const std::string& hostname) const;
     };
 
 

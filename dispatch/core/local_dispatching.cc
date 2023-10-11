@@ -31,7 +31,12 @@ static bool validCtrlRuntimePingPkt(const DataPackage& pkt) {
 RuntimeDispatcher::RuntimeDispatcher(SharedQueue<DataPackage>& inQueue,
                                      SharedQueue<DataPackage>& outQueue,
                                      const ModuleTable& modTable) :
-        incomingQueue(inQueue), outgoingQueue(outQueue), moduleTable(modTable) {}
+        incomingQueue(inQueue), outgoingQueue(outQueue), moduleTable(modTable) 
+{
+    Logger::printfln("constr incoming queue ptr: %lu", &incomingQueue);
+    Logger::printfln("const outgoing queue ptr: %lu", &outgoingQueue);
+
+}
 
 bool RuntimeDispatcher::alreadyRunning() {
     lock_guard<mutex> lock(wtMutex);
@@ -39,13 +44,17 @@ bool RuntimeDispatcher::alreadyRunning() {
 }
 
 Status RuntimeDispatcher::startWriterThread(ServerReaderWriter<DataPackage, DataPackage>* stream) {
-    lock_guard<mutex> lock(wtMutex);
+    Logger::printfln("Start writer thread 1");
+    Logger::printfln("Start writer thread 2");
     if (writeThread) {
         return Status(grpc::INVALID_ARGUMENT, "Thread already running.");
     }
+    Logger::printfln("Start writer thread 3");
     writeThread = make_unique<thread>([this, stream]() {
         processWriting(stream);
     });
+    Logger::printfln("Start writer thread 4");
+
     return Status::OK;
 }
 
@@ -66,7 +75,8 @@ void RuntimeDispatcher::shutdownWriterThread() {
 }
 
 void RuntimeDispatcher::processWriting(ServerReaderWriter<DataPackage, DataPackage>* stream) {
-     while(true) {
+     while(true) {      
+        
         auto pkt = outgoingQueue.pop_front();
 
         // If we got a null pointer we are done
@@ -78,6 +88,8 @@ void RuntimeDispatcher::processWriting(ServerReaderWriter<DataPackage, DataPacka
             outgoingQueue.push_front(pkt);
             break;
         }
+
+
     }
 }
 
@@ -233,16 +245,25 @@ Status ServiceImpl::SendReceivePackages(ServerContext* context,
 
     // TODO: Add cleanup function to clean up when we leave the scope.
     if (rtDispatcher->alreadyRunning()) {
+        claid::Logger::printfln("Runtime dispatcher already running");
         return Status(grpc::ALREADY_EXISTS, "Runtime dispatcher already exists");
     }
+    dumpActiveDispatchers();
+    claid::Logger::printfln("Sending registration package");
 
     // Confirm that we are getting ready to write.
     DataPackage outPkt(inPkt);
+    claid::Logger::printfln("Sent registration package");
     stream->Write(outPkt);
 
+
+    claid::Logger::printfln("Start writer thread");
     rtDispatcher->startWriterThread(stream);
+
+    claid::Logger::printfln("Start reading");
     status = rtDispatcher->processReading(stream);
     rtDispatcher->shutdownWriterThread();
+    claid::Logger::printfln("Shutdown writer thread");
 
     removeRuntimeDispatcher(inPkt.control_val().runtime());
 
@@ -276,8 +297,19 @@ RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& s
 
     // Allocate a runtime Disptacher
     // TODO: avoid implict addition to map through [] operator.
-    shared_ptr<SharedQueue<DataPackage>> rtq = moduleTable.runtimeQueueMap[runTime];
-    auto ret = new RuntimeDispatcher(moduleTable.fromModuleQueue, *rtq, moduleTable);
+
+    moduleTable.addRuntimeIfNotExists(runTime);
+    
+    shared_ptr<SharedQueue<DataPackage>> rtq = moduleTable.getOutputQueueOfRuntime(runTime);
+
+    if(rtq == nullptr)
+    {
+        status = Status(grpc::NOT_FOUND, absl::StrCat("Unable to find Runtime \"", Runtime_Name(runTime), "\" in ModuleTable."));
+        return nullptr;
+    }
+
+    Logger::printfln("Rtq ptr: %lu", rtq.get());
+    auto ret = new RuntimeDispatcher(moduleTable.fromModuleQueue, *rtq.get(), moduleTable);
     activeDispatchers[runTime] = unique_ptr<RuntimeDispatcher>(ret);
     return ret;
 }

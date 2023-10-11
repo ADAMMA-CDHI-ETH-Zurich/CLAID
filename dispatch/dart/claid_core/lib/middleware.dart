@@ -4,7 +4,7 @@ import 'package:ffi/ffi.dart';
 
 import 'claid_core_bindings_generated.dart';
 
-const String _libName = 'claid_capi';
+const String _libName = 'claid_core';
 final String _platform = Platform.isAndroid ? 'android' : 'linux';
 
 class MiddleWareBindings {
@@ -37,8 +37,12 @@ final ffi.DynamicLibrary _dylib = () {
   if (Platform.isMacOS || Platform.isIOS) {
     return ffi.DynamicLibrary.open('$_libName.framework/$_libName');
   }
-  if (Platform.isAndroid || Platform.isLinux) {
-    return ffi.DynamicLibrary.open('blobs/lib${_libName}_$_platform.so');
+  if (Platform.isLinux) {
+    return ffi.DynamicLibrary.open('lib${_libName}.so');
+  }
+  if (Platform.isAndroid)
+  {
+    return ffi.DynamicLibrary.open('lib${_libName}.so');
   }
   if (Platform.isWindows) {
     return ffi.DynamicLibrary.open('$_libName.dll');

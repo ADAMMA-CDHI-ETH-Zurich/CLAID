@@ -173,6 +173,25 @@ const string ModuleTable::toString() const {
     return out.str();
 }
 
+void ModuleTable::addRuntimeIfNotExists(const claidservice::Runtime& runtime)
+{
+    auto it = runtimeQueueMap.find(runtime);
+    if(it == runtimeQueueMap.end())
+    {
+        runtimeQueueMap.insert(make_pair(runtime, make_shared<SharedQueue<DataPackage>>()));
+    }
+}
+
+std::shared_ptr<SharedQueue<claidservice::DataPackage>> ModuleTable::getOutputQueueOfRuntime(const claidservice::Runtime& runtime)
+{
+    auto it = runtimeQueueMap.find(runtime);
+    if(it == runtimeQueueMap.end())
+    {
+        return nullptr;
+    } 
+    return it->second;
+}
+
 
 // ONLY FOR TESTING REMOVE LATER
 void ModuleTable::addModuleToRuntime(const std::string& moduleID, claidservice::Runtime runtime)
