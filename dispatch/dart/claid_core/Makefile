@@ -57,7 +57,7 @@ build_middleware:
 .PHONY: build_android
 build_android: 
 	cd ../../..; rm -rf $(TARGET_LIBS_ANDROID)
-	CC=gcc bazel build //dispatch/android:$(OUTPUT_APK_ANDROID_NAME) --fat_apk_cpu=arm64-v8a,armeabi-v7a
+	CC=gcc bazel build //dispatch/android:$(OUTPUT_APK_ANDROID_NAME) --fat_apk_cpu=arm64-v8a,armeabi-v7a,x86,x86_64
 	cd ../../..; rm -fr $(OUTPUT_APK_TMP_PATH_ANDROID)
 	cd ../../..; mkdir $(OUTPUT_APK_TMP_PATH_ANDROID)
 	cd ../../..; cp $(OUTPUT_APK_ANDROID).apk $(OUTPUT_APK_TMP_PATH_ANDROID)/

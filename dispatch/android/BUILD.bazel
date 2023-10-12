@@ -21,7 +21,7 @@ android_library(
 cc_binary(
     name = "claid_android_lib",
     srcs = ["native-lib.cpp"],
-    deps = ["//dispatch/core:CLAID"],
+    deps = ["//dispatch/core:capi"],
     linkshared = True,
 )
 
@@ -30,6 +30,8 @@ cc_library(
     srcs = ["native-lib.cpp"],
     deps = ["//dispatch/core:capi"],
     alwayslink = True,   # include everything in dependents
+    linkstatic = True,
+    linkopts =["-landroid", "-llog"]
 )
 
 android_library(
