@@ -5,7 +5,7 @@ java_binary(
     name = "claid_java_test",
     srcs = glob(["adamma/c4dhi/claid/*.java"]),
     deps = ["//dispatch/core:claid_capi",
-            ":claid_java_proto"],
+            ":java_local_dispatching"],
 )
 
 
