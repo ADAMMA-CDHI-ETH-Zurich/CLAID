@@ -4,6 +4,10 @@ package claidservice;
 
 option go_package = "claid.ethz.ch/claidservice";
 
+option java_package = "adamma.c4dhi.claid";
+option java_outer_classname = "ClaidJavaService";
+option java_multiple_files = true;
+
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
