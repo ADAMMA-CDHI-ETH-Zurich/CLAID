@@ -3,16 +3,27 @@ package(default_visibility = ["//visibility:public"])
 
 java_binary(
     name = "claid_java_test",
-    srcs = glob(["adamma/c4dhi/claid/*.java"]),
-    deps = ["//dispatch/core:claid_capi",
-            ":java_local_dispatching"],
+    srcs = glob(["adamma/c4dhi/claid/**/*.java"]),
+    deps = [":java_local_dispatching",
+        "//dispatch/core:claid_capi",
+        "@com_google_protobuf//java/core",
+        "@io_grpc_grpc_java//api",
+        "@io_grpc_grpc_java//protobuf",
+        "@io_grpc_grpc_java//stub",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_apache_tomcat_annotations_api",
+        "//dispatch/proto:claidservice_java_proto",
+        "//dispatch/proto:claidservice_java_grpc"],
 )
 
 
 java_library(
     name = "java_local_dispatching",
-    srcs = glob(["adamma/c4dhi/claid/ModuleDispatcher/ModuleDispatcher.java"]),
+    srcs = glob(["adamma/c4dhi/claid/LocalDispatching/*.java",
+                "adamma/c4dhi/claid/Module/*.java"]),
     deps = [        
         "//dispatch/proto:claidservice_java_proto",
-        "//dispatch/proto:claidservice_java_grpc",]
+        "//dispatch/proto:claidservice_java_grpc",
+        "@io_grpc_grpc_java//api",
+        "@io_grpc_grpc_java//stub",]
 )
