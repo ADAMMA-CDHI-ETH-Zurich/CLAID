@@ -20,7 +20,8 @@ java_binary(
 java_library(
     name = "java_local_dispatching",
     srcs = glob(["adamma/c4dhi/claid/LocalDispatching/*.java",
-                "adamma/c4dhi/claid/Module/*.java"]),
+                "adamma/c4dhi/claid/Module/*.java",
+                "adamma/c4dhi/claid/Logger/*.java"]),
     deps = [        
         "//dispatch/proto:claidservice_java_proto",
         "//dispatch/proto:claidservice_java_grpc",

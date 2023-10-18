@@ -150,7 +150,7 @@ message TracePoint {
 
 // Sent by the client (Runtime) to tell the Middleware which Modules it supports.
 // The Middleware will answer with a ModuleListResponse, which contains the Modules 
-// that the Middleware wants the client to load.
+// that the Middleware wants the runtime client to load.
 message ModuleListRequest {
   Runtime runtime = 1;
   repeated string supported_module_classes = 2;

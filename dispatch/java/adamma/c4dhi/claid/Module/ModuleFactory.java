@@ -21,13 +21,14 @@ public class ModuleFactory
         return true;
     }
 
-    public Module getInstance(String className)
+    public Module getInstance(String className, String moduleId)
     {
         if(this.registeredModuleClasses.containsKey(className))
         {
             try
             {
                 Module module = this.registeredModuleClasses.get(className).getDeclaredConstructor().newInstance();
+                module.setId(moduleId);
                 return module;
             }
             catch(NoSuchMethodException e)

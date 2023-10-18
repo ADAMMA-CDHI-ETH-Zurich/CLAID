@@ -1,1 +1,9 @@
+
 Where/when does the Middleware check, whether a certain module specified in the Configuration cannot be loaded by any runtime?
+
+What if two Runtimes support the same Module Class?
+
+Where is ModuleListResponse channels set? Because when it is sent in ServiceImpl::GetModuleList(...), the value is not set.
+
+Am I initializing the Dart runtime in the ALEX_data_collection project correctly? I got a segfault because there was no entry for the dart runtime in
+in the runtimeQueueMap. I had to add it manually. However, this entry should have been set during InitRuntime.

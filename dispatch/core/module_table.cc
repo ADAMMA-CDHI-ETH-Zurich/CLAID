@@ -81,7 +81,8 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         const string& src = chanPkt.source_host_module();
         const string& tgt = chanPkt.target_host_module();
 
-        // At least source or target has to be the module in question.
+        // At least source or target has to be the module in question, i.e., moduleId is either 
+        // subscriber or publisher for this channel.
         if ((moduleId != src) && (moduleId != tgt)) {
             return Status(grpc::INVALID_ARGUMENT, "Invalid source/target in channel definition");
         }

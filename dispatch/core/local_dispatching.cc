@@ -288,6 +288,12 @@ RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& s
         return nullptr;
     }
 
+    if(runTime == RUNTIME_UNSPECIFIED)
+    {
+        status = Status(grpc::INVALID_ARGUMENT, "Invalid runtime type RUNTIME_UNSPECIFIED.");
+        return nullptr;
+    }
+
     // check if the RuntimeDispatcher exits
     lock_guard<mutex> lock(adMutex);
     auto it = activeDispatchers.find(runTime);
@@ -297,6 +303,7 @@ RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& s
 
     // Allocate a runtime Disptacher
     // TODO: avoid implict addition to map through [] operator.
+
 
     moduleTable.addRuntimeIfNotExists(runTime);
     

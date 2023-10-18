@@ -1,4 +1,5 @@
 package adamma.c4dhi.claid.LocalDispatching;
+import adamma.c4dhi.claid.Module.ChannelSubscriberPublisher;
 import adamma.c4dhi.claid.Module.Module;
 import adamma.c4dhi.claid.Module.ModuleFactory;
 import adamma.c4dhi.claid.LocalDispatching.ModuleInstanceKey;
@@ -43,8 +44,7 @@ public class ModuleManager
             return false;
         }
 
-        Module module = this.moduleFactory.getInstance(moduleClass);
-        module.setId(moduleId);
+        Module module = this.moduleFactory.getInstance(moduleClass, moduleId);
         this.runningModules.put(new ModuleInstanceKey(moduleId, moduleClass), module);
         return true;
     }
@@ -53,20 +53,45 @@ public class ModuleManager
     {
         for(ModuleDescriptor descriptor : moduleList.getDescriptorsList())
         {
-            if(!this.instantiateModule(descriptor.getModuleId(), descriptor.getModuleClass()))
+            String moduleId = descriptor.getModuleId();
+            String moduleClass = descriptor.getModuleClass();
+
+            if(!this.instantiateModule(moduleId, moduleClass))
             {
+                System.out.println("Failed to instantiate Module \"" + moduleId + "\" (class: \"" + moduleClass + "\".\n" +
+                "The Module class was not registered to the ModuleFactory.");
                 return false;
             }
         }
         return true;
     }
 
-    private boolean initializeModules()
+    private boolean initializeModules(ModuleListResponse moduleList)
     {
-        return false;
-    }
+        for(ModuleDescriptor descriptor : moduleList.getDescriptorsList())
+        {
+            String moduleId = descriptor.getModuleId();
+            String moduleClass = descriptor.getModuleClass();
 
-   
+            ModuleInstanceKey key = new ModuleInstanceKey(moduleId, moduleClass);
+
+            if(!this.runningModules.containsKey(key))
+            {
+                System.out.println("Failed to initilize Module \"" + moduleId + "\" (class: \"" + moduleClass + "\".\n" +
+                "The Module class was not registered to the ModuleFactory.");
+                return false;
+            }
+
+            Module module = this.runningModules.get(key);
+
+            ChannelSubscriberPublisher subscriberPublisher = new ChannelSubscriberPublisher();
+            module.runtimeInitialize(subscriberPublisher, descriptor.getProperties());
+
+            // TODO: Setup Channels.
+
+        }
+        return true;
+    }
 
     private boolean start()
     {
@@ -78,7 +103,7 @@ public class ModuleManager
             return false;
         }
 
-        if(!initializeModules())
+/*        if(!initializeModules())
         {
             System.out.println("Failed to initialize Modules.");
             return false;
@@ -90,7 +115,7 @@ public class ModuleManager
         if(!startRuntime())
         {
             return false;
-        }
+        } */
 
         // init runtime
         // sendreceivepackafges
