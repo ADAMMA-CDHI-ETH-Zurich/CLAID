@@ -15,14 +15,17 @@ import adamma.c4dhi.claid.ModuleListResponse.ModuleDescriptor;
 
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
-
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.stub.StreamObserver;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
+
+import com.google.protobuf.Empty;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 
 // Corresponds to ClientDispatcher of the C++ core, which is ModuleDispatcher in dart.
@@ -33,7 +36,11 @@ public class ModuleDispatcher
     
     private String socketPath;
 
+    // Stream for us to receive packages from the Middleware.
+    StreamObserver<DataPackage> inStream;
 
+    // Stream for us to send packages to the Middleware
+    StreamObserver<DataPackage> outStream;
 
     public ModuleDispatcher(final String socketPath)
     {
@@ -64,32 +71,49 @@ public class ModuleDispatcher
         return response;
     }
 
-    public void initRuntime()
-    {
 
+    public boolean initRuntime(Map<String, DataPackage> channelExamplePackages)
+    {
+        InitRuntimeRequest.Builder initRuntimeRequest = InitRuntimeRequest.newBuilder();
+        
+        for(Map.Entry<String, DataPackage> entry : channelExamplePackages.entrySet())
+        {
+            InitRuntimeRequest.ModuleChannels.Builder moduleChannels = InitRuntimeRequest.ModuleChannels.newBuilder();
+            initRuntimeRequest.addModules(moduleChannels.build());
+        }   
+        initRuntimeRequest.setRuntime(Runtime.RUNTIME_JAVA);
+
+        stub.initRuntime(initRuntimeRequest.build());
+        
+        return true;
     }
 
-    boolean startRunTime()
+    private boolean sendReceivePackages()
     {
-         // Initialize the runtime
-        /*{
-            InitRuntimeRequest runtimeRequest = 
-            InitRuntimeRequest.newBuilder()
-            .setRuntime(Runtime.RUNTIME_JAVA)
-            .setModules(this.moduleFactory.getRegisteredModuleNames())
-            .build();
 
 
-            /*
 
-            ClientContext context;
-            Empty empty;
-            Status status = stub->InitRuntime(&context,req, &empty);
-            if (!status.ok()) {
-                claid::Logger::printfln("Couldn't init request: %s", status.error_message().c_str());
-                return false;
-            } 
-        }*/
+        this.inStream = new StreamObserver<DataPackage>()
+        {
+            @Override
+            public void onNext(DataPackage incomingPackage) {
+                onMiddlewareStreamPackageReceived(incomingPackage);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                onMiddlewareStreamError(throwable);
+            }
+
+            @Override
+            public void onCompleted() {
+                onMiddlewareStreamCompleted();
+            }
+        };
+
+        
+        this.outStream = stub.SendReceivePackages(this.inStream);
+   
         /*
         // Start the bidirectional request.
         streamContext = make_shared<ClientContext>();
@@ -121,6 +145,12 @@ public class ModuleDispatcher
         writeThread = make_unique<thread>([this]() { processWriting(); });
         readThread = make_unique<thread>([this]() { processReading(); });
         return true;*/
+    }
+
+    boolean startRunTime()
+    {
+ 
+        
         return true;
     }
 
@@ -131,6 +161,21 @@ public class ModuleDispatcher
         return startRunTime();
     }
 
-    
+    private onMiddlewareStreamPackageReceived(DataPackage package)
+    {
+
+    }
+
+    private onMiddlewareStreamError(Throwable throwable)
+    {
+    }
+
+    private onMiddlewareStreamCompleted()
+    {
+
+    }
+
+
+
     // private ClaidService stub;
 }

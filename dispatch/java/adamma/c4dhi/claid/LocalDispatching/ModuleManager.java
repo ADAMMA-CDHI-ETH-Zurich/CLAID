@@ -3,6 +3,8 @@ import adamma.c4dhi.claid.Module.ChannelSubscriberPublisher;
 import adamma.c4dhi.claid.Module.Module;
 import adamma.c4dhi.claid.Module.ModuleFactory;
 import adamma.c4dhi.claid.LocalDispatching.ModuleInstanceKey;
+import adamma.c4dhi.claid.Logger.Logger;
+import adamma.c4dhi.claid.Logger.SeverityLevel;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -33,13 +35,15 @@ import adamma.c4dhi.claid.ModuleListResponse.ModuleDescriptor;
 // 7. Begin exhanging (i.e., reading and writing) packages with the middleware via the blocking sendReceivePackages() call.
 public class ModuleManager 
 {
+    private final String hostName;
     private ModuleDispatcher dispatcher;
     private ModuleFactory moduleFactory;
 
     private Map<ModuleInstanceKey, Module> runningModules;
 
-    public ModuleManager(ModuleDispatcher dispatcher, ModuleFactory moduleFactory)
+    public ModuleManager(final String hostName, ModuleDispatcher dispatcher, ModuleFactory moduleFactory)
     {
+        this.hostName = hostName;
         this.dispatcher = dispatcher;
         this.moduleFactory = moduleFactory;
     }
@@ -75,7 +79,7 @@ public class ModuleManager
         return true;
     }
 
-    private boolean initializeModules(ModuleListResponse moduleList)
+    private boolean initializeModules(ModuleListResponse moduleList, ChannelSubscriberPublisher subscriberPublisher)
     {
         for(ModuleDescriptor descriptor : moduleList.getDescriptorsList())
         {
@@ -93,14 +97,16 @@ public class ModuleManager
 
             Module module = this.runningModules.get(key);
 
-            ChannelSubscriberPublisher subscriberPublisher = new ChannelSubscriberPublisher("Testshost");
-            module.runtimeInitialize(subscriberPublisher, descriptor.getProperties());
-
-            // TODO: Setup Channels.
+            
+            // This will call the initialize functions of each Module.
+            // In the initialize function (and ONLY there), Modules can publish or subscribe Channels.
+            // Hence, once all Modules have been initialized, we know the available Channels.
+            module.runtimeInitialize(subscriberPublisher, descriptor.getPropertiesMap());
 
         }
         return true;
     }
+
 
     private boolean start()
     {
@@ -108,18 +114,27 @@ public class ModuleManager
         
         if(!instantiateModules(moduleList))
         {
-            System.out.println("ModuleDispatcher: Failed to instantiate Modules.");
+            Logger.logFatal("ModuleDispatcher: Failed to instantiate Modules.");
             return false;
         }
 
-/*        if(!initializeModules())
+        ChannelSubscriberPublisher subscriberPublisher = new ChannelSubscriberPublisher(this.hostName);
+
+        if(!initializeModules(moduleList, subscriberPublisher))
         {
-            System.out.println("Failed to initialize Modules.");
+            Logger.logFatal("Failed to initialize Modules.");
+            return false;
+        }
+
+        Map<String, DataPackage> examplePackagesForEachChannel = subscriberPublisher.getExamplePackagesForAllChannels();
+        if(!this.dispatcher.initRuntime(examplePackagesForEachChannel))
+        {
+            Logger.logFatal("Failed to initialize runtime.");
             return false;
         }
 
         // Map<String: moduleId, List<DataPackage>: list of channels
-        Map<String, List<DataPackage>> modules;
+/*        Map<String, List<DataPackage>> modules;
 
         if(!startRuntime())
         {

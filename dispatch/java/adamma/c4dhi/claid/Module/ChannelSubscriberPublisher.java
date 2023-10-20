@@ -1,7 +1,11 @@
 package adamma.c4dhi.claid.Module;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
+
+import javax.xml.crypto.Data;
 
 import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.LocalDispatching.ModuleDispatcher;
@@ -13,7 +17,7 @@ public class ChannelSubscriberPublisher
 {
 
     private final String host;
-    private ArrayList<DataPackage> examplePackagesForEachChannel = new ArrayList<>();
+    private Map<String, DataPackage> examplePackagesForEachChannel = new HashMap<>();
 
     public ChannelSubscriberPublisher(final String host)
     {
@@ -73,7 +77,7 @@ public class ChannelSubscriberPublisher
             return null;    
         }
 
-        this.examplePackagesForEachChannel.add(examplePackage);
+        this.examplePackagesForEachChannel.put(module.getId(), examplePackage);
 
         return new Channel<T>(module, channelName, ChannelAccessRights.WRITE);
     }
@@ -89,9 +93,14 @@ public class ChannelSubscriberPublisher
             return null;
         }
 
-        this.examplePackagesForEachChannel.add(examplePackage);
+        this.examplePackagesForEachChannel.put(module.getId(), examplePackage);
 
         return new Channel<T>(module, channelName, ChannelAccessRights.READ, callback);
+    }
+
+    public Map<String, DataPackage> getExamplePackagesForAllChannels()
+    {
+        return this.examplePackagesForEachChannel;
     }
 
 }

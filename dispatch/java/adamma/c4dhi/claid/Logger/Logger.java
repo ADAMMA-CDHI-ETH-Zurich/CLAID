@@ -6,9 +6,30 @@ import java.time.format.DateTimeFormatter;
 public class Logger {
     public static void log(SeverityLevel level, final String message)
     {
-        String output = "[" + getTimeString() + " | CLAID - " + level.toString() + "] " + message;
+        String output = "[" + getTimeString() + " | CLAID - " + level.toString() + "] " + message + "\n";
         System.out.println(output);
     }
+
+    public static void logInfo(final String message)
+    {
+        log(SeverityLevel.INFO, message);
+    }
+
+    public static void logWarning(final String message)
+    {
+        log(SeverityLevel.WARNING, message);
+    }
+
+    public static void logError(final String message)
+    {
+        log(SeverityLevel.ERROR, message);
+    }
+
+    public static void logFatal(final String message)
+    {
+        log(SeverityLevel.FATAL, message);
+    }
+
 
     public static String getTimeString()
     {
