@@ -21,9 +21,18 @@ import adamma.c4dhi.claid.ModuleListResponse.ModuleDescriptor;
 // Takes in the ModuleDispatcher and ModuleFactories.
 // Starts the ModuleDispatcher and spawns Modules accordingly.
 // Forwards messages from/to the ModuleDispatcher from/to the Modules.
+
+// Sequence to start the Runtime and register with the Middleware:
+// 1. Call getModuleList() of Middleware via RPC -> send ModuleListRequest to tell the Middleware which Modules are available in this Runtime.
+// 2. This call to getModuleList() will return a ModuleListResponse, which is created by the Middleware. Via this response, the Middleware tells
+// us which of the Modules that we support it wants us to load based on the configuration file. This will be a subset of the Modules provided by ModuleListRequest.
+// 3. Instantiate the Modules via the ModuleFactory.
+// 4. Initialize the Modules, by calling their initialize functions. In the initialize function, and ONLY there, the Modules can publish/subscribe channels.
+// 5. After all Modules are initialized, retrieve the list of published and subscribed channels, as well as their data types. (The data type is stored by providing an example DataPackage with the correct type).
+// 6. Send this list to the Middleware by calling initRuntime() via the corresponding RPC call. 
+// 7. Begin exhanging (i.e., reading and writing) packages with the middleware via the blocking sendReceivePackages() call.
 public class ModuleManager 
 {
-
     private ModuleDispatcher dispatcher;
     private ModuleFactory moduleFactory;
 
@@ -84,7 +93,7 @@ public class ModuleManager
 
             Module module = this.runningModules.get(key);
 
-            ChannelSubscriberPublisher subscriberPublisher = new ChannelSubscriberPublisher();
+            ChannelSubscriberPublisher subscriberPublisher = new ChannelSubscriberPublisher("Testshost");
             module.runtimeInitialize(subscriberPublisher, descriptor.getProperties());
 
             // TODO: Setup Channels.

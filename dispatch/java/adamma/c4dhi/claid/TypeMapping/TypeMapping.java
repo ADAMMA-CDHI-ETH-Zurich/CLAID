@@ -1,11 +1,18 @@
 package adamma.c4dhi.claid.TypeMapping;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import adamma.c4dhi.claid.TypeMapping.Mutator;
 
 import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.TracePoint;
+import adamma.c4dhi.claid.StringArray;
+import adamma.c4dhi.claid.NumberArray;
+import adamma.c4dhi.claid.NumberMap;
+
+import com.google.protobuf.GeneratedMessageV3;
 
 public class TypeMapping {
 
@@ -28,33 +35,168 @@ public class TypeMapping {
         return builder;
     }
 
+    public static <T> T getProtoMessageInstance(Class<T> dataType)
+    {
+        try 
+        {
+            Method newBuilderMethod = dataType.getMethod("newBuilder");
+            if (newBuilderMethod != null) 
+            {
+                Object untypedBuilder = newBuilderMethod.invoke(null);
+                if (untypedBuilder instanceof GeneratedMessageV3.Builder) 
+                {
+                    GeneratedMessageV3.Builder builder =  (GeneratedMessageV3.Builder) untypedBuilder;
+                    return (T) builder.build();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace(); // Handle the exception appropriately
+        }
+        return null;
+    }
+
+    // Can be used to create a new instance of an object of Class<T>.
+    // If T is not a protobuf message, we look up the declared constructor from the class and create a new instance of the Class via that constructor.
+    // 
+    // If T is a protobuf message, we use getProtoMessageInstance to get a new instance of that type.
+    // In Java, the constructor of Protobuf classes is private. Hence, an object as instance of a protobuf class can not 
+    // be created via using the constructor (i.e. new ProtoBufType() does not work, and we can also not use the declared constructor).
+    // The instance of the Protobuf type has to be created via the Builder. Each Protobuf class has a newBuilder() function, that can
+    // be used to get a new builder. Using the Class object, we can look up the correct builder and use it to retrieve an instance.
+    public static <T> T getNewInstance(Class<T> clz)
+    {
+        try
+        {
+            if (GeneratedMessageV3.class.isAssignableFrom(clz)) 
+            {
+                System.out.println("Is protobuf type");
+                T instance = getProtoMessageInstance(clz);
+                return instance;
+            }
+            else if (clz == Double.class) {
+                System.out.println("Is Double type");
+                // For Double, create an instance with a default value of 0.0
+                Double instance = 0.0;
+                return (T) instance;
+            } else if (clz == Integer.class) {
+                System.out.println("Is Integer type");
+                // For Integer, create an instance with a default value of 0
+                Integer instance = 0;
+                return (T) instance;
+            } 
+            else if (clz == Short.class) {
+                System.out.println("Is Long type");
+                // For Long, create an instance with a default value of 0L
+                Short instance = 0;
+                return (T) instance;
+            } 
+            else if (clz == Long.class) {
+                System.out.println("Is Long type");
+                // For Long, create an instance with a default value of 0L
+                Long instance = 0L;
+                return (T) instance;
+            } else if (clz == Float.class) {
+                System.out.println("Is Float type");
+                // For Float, create an instance with a default value of 0.0f
+                Float instance = 0.0f;
+                return (T) instance;
+            } else if (clz == Boolean.class) {
+                System.out.println("Is Boolean type");
+                // For Boolean, create an instance with a default value of false
+                Boolean instance = false;
+                return (T) instance;
+            } 
+            else
+            {
+                System.out.println("Is not protobuf type");
+                T instance = clz.getDeclaredConstructor().newInstance();
+                return instance;
+            }
+        }
+        catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            System.out.println("TypeMapping.getNewInstance(): Unsupported data type");
+            e.printStackTrace();
+            return null;
+        }
+
+    }    
+
     public static <T> Mutator<T> getMutator(T inst) 
     {
-        if (inst instanceof Double) {
+        if (inst instanceof Double || inst instanceof Float || 
+        inst instanceof Integer || inst instanceof Short || inst instanceof Long) {
             return new Mutator<T>(
                 (p, v) -> dataPackageBuilderCopy(p)
                     .setNumberVal((Double) v)
                     .build(),
-                p -> (T) new Double(p.getNumberVal())
+                p -> (T) Double.valueOf(p.getNumberVal())
             );
         }
 
-         if (inst instanceof Boolean) {
+        if (inst instanceof Boolean) {
             return new Mutator<T>(
                 (p, v) -> dataPackageBuilderCopy(p)
                     .setBoolVal((Boolean) v)
                     .build(),
-                p -> (T) new Boolean(p.getBoolVal())
+                p -> (T) Boolean.valueOf(p.getBoolVal())
             );
         }
 
-        /*if (inst instanceof String) {
-            return new Mutator<>(
-                (p, v) -> p.setStringVal((String) v),
+        if (inst instanceof String) {
+            return new Mutator<T>(
+                (p, v) -> dataPackageBuilderCopy(p)
+                    .setStringVal((String) v)
+                    .build(),
                 p -> (T) p.getStringVal()
             );
         }
 
+        
+        // Have to use NumberArray, StringArray, ..., since we cannot safely distinguish List<Double> and List<String>?
+        // Java generics... best generics... not. Type erasure, great invention.
+        if (inst instanceof NumberArray) {
+            return new Mutator<T>(
+                (p, v) -> dataPackageBuilderCopy(p)
+                    .setNumberArrayVal((NumberArray) v)
+                    .build(),
+                p -> (T) p.getNumberArrayVal()
+            );
+        }
+
+
+        if (inst instanceof StringArray) {
+            return new Mutator<T>(
+                (p, v) -> dataPackageBuilderCopy(p)
+                    .setStringArrayVal((StringArray) v)
+                    .build(),
+                p -> (T) p.getStringArrayVal()
+            );
+        }
+
+        if (inst instanceof NumberMap) {
+            return new Mutator<T>(
+                (p, v) -> dataPackageBuilderCopy(p)
+                    .setNumberMap((NumberMap) v)
+                    .build(),
+                p -> (T) p.getNumberMap()
+            );
+        }
+
+        if (inst instanceof NumberMap) {
+            return new Mutator<T>(
+                (p, v) -> dataPackageBuilderCopy(p)
+                    .setNumberMap((NumberMap) v)
+                    .build(),
+                p -> (T) p.getNumberMap()
+            );
+        }
+
+        if (inst instanceof GeneratedMessageV3)
+        {
+            throw new IllegalArgumentException("Protobuf messages not yet supported for Channels.");
+        }
+        
+/* 
         // List of Double
         if (inst instanceof List<?>) 
         {

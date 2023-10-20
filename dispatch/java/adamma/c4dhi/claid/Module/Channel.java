@@ -11,6 +11,8 @@ public class Channel<T>
     private Consumer<T> callback;
     boolean callbackRegistered = false;
 
+    private boolean valid = false;
+
     private boolean canRead()
     {
         return this.accessRights == ChannelAccessRights.READ || this.accessRights == ChannelAccessRights.READ_WRITE;
@@ -25,6 +27,7 @@ public class Channel<T>
     {
         this.channelId = channelId;
         this.accessRights = accessRights;
+        this.valid = true;
     }
 
     public Channel(Module parent, final String channelId, final ChannelAccessRights accessRights, Consumer<T> callback)
@@ -33,6 +36,21 @@ public class Channel<T>
         this.accessRights = accessRights;
         this.callback = callback;
         this.callbackRegistered = callback != null;
+        this.valid = true;
+    }
+
+    private Channel(final String channelId)
+    {
+        this.accessRights = ChannelAccessRights.NONE;
+        this.channelId = channelId;
+        this.parent = null;
+        this.valid = false;
+    }
+
+    static<T> Channel<T> newInvalidChannel(final String channelId)
+    {
+        Channel<T> channel = new Channel<T>(channelId);
+        return channel;
     }
 
     public void post(T data)

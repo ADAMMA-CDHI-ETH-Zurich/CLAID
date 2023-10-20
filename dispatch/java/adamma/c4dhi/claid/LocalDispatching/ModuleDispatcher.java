@@ -44,8 +44,8 @@ public class ModuleDispatcher
     }
 
     // Tells the Middleware Server which Modules are available by this Runtime.
-    // The Middleware will resond with the List of Modules that it wants us to initialize.
-    // In more general terms: Once the Middleware has started, it loads a config file. From the config file, it knows
+    // The Middleware will resond with the List of Modules that it wants this Runtime to initialize.
+    // In general: Once the Middleware has started, it loads a config file. From the config file, it knows
     // which Modules to instantiate, but it does not yet know which Runtime (specifically, the ModuleDispatchers of each Runtime) can load which Module.
     // Therefore, it relies on the Runtimes to tell the Middleware which Modules they can handle. They do so by calling the stub.GetModuleList() function,
     // which contains a ModuleListRequest, which contains a list of all Modules the Runtime can handle.
@@ -59,8 +59,14 @@ public class ModuleDispatcher
             .addAllSupportedModuleClasses(registeredModuleClasses)
             .build();
         
+        // stub.getModuleList() -> calls getModuleList function of RemoteService in the MiddleWare via RPC.
         ModuleListResponse response = stub.getModuleList(request);
         return response;
+    }
+
+    public void initRuntime()
+    {
+
     }
 
     boolean startRunTime()

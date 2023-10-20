@@ -69,6 +69,7 @@ public abstract class Module
         if(!this.isInitializing)
         {
             moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., first call of the initialize function).");
+            return Channel.newInvalidChannel(channelName);
         }
         return this.subscriberPublisher.publish(this, clz, channelName);
     }
@@ -78,6 +79,7 @@ public abstract class Module
         if(!this.isInitializing)
         {
             moduleError("Cannot subscribe channel \"" + channelName + "\". Subscribing is only allowed during initialization (i.e., first call of the initialize function).");
+            return Channel.newInvalidChannel(channelName);
         }
         return this.subscriberPublisher.subscribe(this, clz, channelName, callback);
     }
