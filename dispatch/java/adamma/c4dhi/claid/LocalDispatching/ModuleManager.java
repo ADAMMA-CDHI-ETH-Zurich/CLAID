@@ -7,6 +7,7 @@ import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.Logger.SeverityLevel;
 
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.HashMap;
 import java.util.List;
 import java.lang.reflect.InvocationTargetException;
@@ -18,6 +19,9 @@ import adamma.c4dhi.claid.Runtime;
 import adamma.c4dhi.claid.ModuleListRequest;
 import adamma.c4dhi.claid.ModuleListResponse;
 import adamma.c4dhi.claid.ModuleListResponse.ModuleDescriptor;
+
+
+import io.grpc.stub.StreamObserver;
 
 
 // Takes in the ModuleDispatcher and ModuleFactories.
@@ -40,6 +44,10 @@ public class ModuleManager
     private ModuleFactory moduleFactory;
 
     private Map<ModuleInstanceKey, Module> runningModules;
+
+
+    StreamObserver<DataPackage> inStream;
+    StreamObserver<DataPackage> outStream;
 
     public ModuleManager(final String hostName, ModuleDispatcher dispatcher, ModuleFactory moduleFactory)
     {
@@ -107,6 +115,27 @@ public class ModuleManager
         return true;
     }
 
+    private StreamObserver<DataPackage> makeInputStreamObserver(Consumer<DataPackage> onData, Consumer<Throwable> onError, Runnable onCompleted)
+    {
+        return new StreamObserver<DataPackage>()
+            {
+                @Override
+                public void onNext(DataPackage incomingPackage) {
+                    onData.accept(incomingPackage);
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    onError.accept(throwable);
+                }
+
+                @Override
+                public void onCompleted() {
+                    onCompleted.run();
+                }
+            };
+    }
+
 
     private boolean start()
     {
@@ -133,6 +162,13 @@ public class ModuleManager
             return false;
         }
 
+        this.inStream = makeInputStreamObserver(
+                dataPackage -> onMiddlewareStreamPackageReceived(dataPackage),
+                error -> onMiddlewareStreamError(error),
+                () -> onMiddlewareStreamCompleted()); 
+                
+        this.outStream = this.dispatcher.sendReceivePackages(this.inStream);
+
         // Map<String: moduleId, List<DataPackage>: list of channels
 /*        Map<String, List<DataPackage>> modules;
 
@@ -149,6 +185,21 @@ public class ModuleManager
     }
 
     
+
+    private void onMiddlewareStreamPackageReceived(DataPackage packet)
+    {
+        Logger.logInfo("Java Runtime received message from middleware: " + packet.getControlVal());
+    }
+
+    private void onMiddlewareStreamError(Throwable throwable)
+    {
+        this.dispatcher.closeOutputStream();
+    }
+
+    private void onMiddlewareStreamCompleted()
+    {
+        this.dispatcher.closeOutputStream();
+    }
 
   
 }

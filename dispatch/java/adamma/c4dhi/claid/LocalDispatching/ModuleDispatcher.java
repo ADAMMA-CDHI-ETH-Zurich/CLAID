@@ -3,10 +3,12 @@ package adamma.c4dhi.claid.LocalDispatching;
 
 import adamma.c4dhi.claid.ClaidServiceGrpc;
 import adamma.c4dhi.claid.ClaidServiceGrpc.ClaidServiceStub;
+import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.Module.ModuleFactory;
-import adamma.c4dhi.claid.ClaidServiceGrpc.ClaidServiceBlockingStub;
 
 import adamma.c4dhi.claid.DataPackage;
+import adamma.c4dhi.claid.ControlPackage;
+import adamma.c4dhi.claid.CtrlType;
 import adamma.c4dhi.claid.InitRuntimeRequest;
 import adamma.c4dhi.claid.Runtime;
 import adamma.c4dhi.claid.ModuleListRequest;
@@ -20,7 +22,6 @@ import io.grpc.InsecureChannelCredentials;
 import io.grpc.stub.StreamObserver;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.stub.StreamObserver;
 
 import com.google.protobuf.Empty;
 
@@ -32,7 +33,7 @@ import java.util.Map;
 public class ModuleDispatcher  
 {
     Channel grpcChannel;
-    private ClaidServiceBlockingStub stub;
+    private ClaidServiceStub stub;
     
     private String socketPath;
 
@@ -42,12 +43,13 @@ public class ModuleDispatcher
     // Stream for us to send packages to the Middleware
     StreamObserver<DataPackage> outStream;
 
+
     public ModuleDispatcher(final String socketPath)
     {
         this.socketPath = socketPath;
 
         this.grpcChannel = Grpc.newChannelBuilder(this.socketPath, InsecureChannelCredentials.create()).build();
-        this.stub = ClaidServiceGrpc.newBlockingStub(this.grpcChannel);
+        this.stub = ClaidServiceGrpc.newStub(this.grpcChannel);
     }
 
     // Tells the Middleware Server which Modules are available by this Runtime.
@@ -67,7 +69,18 @@ public class ModuleDispatcher
             .build();
         
         // stub.getModuleList() -> calls getModuleList function of RemoteService in the MiddleWare via RPC.
-        ModuleListResponse response = stub.getModuleList(request);
+
+        boolean resultReceived = false;
+        ModuleListResponse response = null;
+
+        SynchronizedStreamObserver<ModuleListResponse> responseObserver = new SynchronizedStreamObserver<>();
+        
+        Logger.logInfo("Java Runtime: Calling getModuleList(...)");
+        stub.getModuleList(request, responseObserver);
+
+        response = responseObserver.await();
+ 
+
         return response;
     }
 
@@ -79,100 +92,89 @@ public class ModuleDispatcher
         for(Map.Entry<String, DataPackage> entry : channelExamplePackages.entrySet())
         {
             InitRuntimeRequest.ModuleChannels.Builder moduleChannels = InitRuntimeRequest.ModuleChannels.newBuilder();
+            moduleChannels.setModuleId(entry.getKey());
+            moduleChannels.addChannelPackets(entry.getValue());
             initRuntimeRequest.addModules(moduleChannels.build());
         }   
         initRuntimeRequest.setRuntime(Runtime.RUNTIME_JAVA);
 
-        stub.initRuntime(initRuntimeRequest.build());
+        boolean resultReceived = false;
+        Empty response = null;
+
+        SynchronizedStreamObserver<Empty> responseObserver = new SynchronizedStreamObserver<>();
+
+        Logger.logInfo("Java Runtime: Calling initRuntime(...)");
+        stub.initRuntime(initRuntimeRequest.build(), responseObserver);
+
+        response = responseObserver.await();
+    
         
         return true;
     }
 
-    private boolean sendReceivePackages()
+
+    private DataPackage makeControlRuntimePing()
     {
+        DataPackage.Builder builder = DataPackage.newBuilder();
+        ControlPackage.Builder controlPackageBuilder = ControlPackage.newBuilder();
+        controlPackageBuilder.setCtrlType(CtrlType.CTRL_RUNTIME_PING);
+        controlPackageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
 
+        builder.setControlVal(controlPackageBuilder.build());
+        return builder.build();
+    }
 
-
-        this.inStream = new StreamObserver<DataPackage>()
-        {
-            @Override
-            public void onNext(DataPackage incomingPackage) {
-                onMiddlewareStreamPackageReceived(incomingPackage);
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                onMiddlewareStreamError(throwable);
-            }
-
-            @Override
-            public void onCompleted() {
-                onMiddlewareStreamCompleted();
-            }
-        };
-
-        
-        this.outStream = stub.SendReceivePackages(this.inStream);
+    public StreamObserver<DataPackage> sendReceivePackages(StreamObserver<DataPackage> inStream)
+    {
+        this.inStream = inStream;
+        this.outStream = stub.sendReceivePackages(this.inStream);
    
-        /*
-        // Start the bidirectional request.
-        streamContext = make_shared<ClientContext>();
-        stream = stub->SendReceivePackages(streamContext.get());
+  
+        DataPackage pingReq = makeControlRuntimePing();
+        this.outStream.onNext(pingReq);
 
-        // Send the ping message to the server.
-        claidservice::DataPackage pingReq;
-        makeControlRuntimePing(*pingReq.mutable_control_val());
-        if (!stream->Write(pingReq)) {
-            claid::Logger::printfln("Failed sending ping package to server.");
-            return false;
-        }
+        return this.outStream;
 
-        // Wait for the valid response ping
-        DataPackage pingResp;
-        if (!stream->Read(&pingResp)) {
-            claid::Logger::printfln("Did not receive a ping package from server !");
-            return false;
-        }
+        // if (!stream->Write(pingReq)) {
+        //     claid::Logger::printfln("Failed sending ping package to server.");
+        //     return false;
+        // }
+
+        // // Wait for the valid response ping
+        // DataPackage pingResp;
+        // if (!stream->Read(&pingResp)) {
+        //     claid::Logger::printfln("Did not receive a ping package from server !");
+        //     return false;
+        // }
 
         // TODO: @Stephan, shouldn't this here be pingResp ?
         // @Patrick:
-        // Check whether the package read was a control package with the right type.
-        if (pingReq.control_val().ctrl_type() != CtrlType::CTRL_RUNTIME_PING) {
-            return false;
-        }
+        // // Check whether the package read was a control package with the right type.
+        // if (pingReq.control_val().ctrl_type() != CtrlType::CTRL_RUNTIME_PING) {
+        //     return false;
+        // }
 
-        // Start the threads to service the input/output queues.
-        writeThread = make_unique<thread>([this]() { processWriting(); });
-        readThread = make_unique<thread>([this]() { processReading(); });
-        return true;*/
+        // // Start the threads to service the input/output queues.
+        // writeThread = make_unique<thread>([this]() { processWriting(); });
+        // readThread = make_unique<thread>([this]() { processReading(); });
+        // return true;*/
+
     }
 
-    boolean startRunTime()
-    {
- 
-        
-        return true;
-    }
 
     
-    public boolean start()
+
+
+    public void closeOutputStream()
     {
-        
-        return startRunTime();
+        this.outStream.onCompleted();
+        this.outStream = null;
     }
 
-    private onMiddlewareStreamPackageReceived(DataPackage package)
+
+    boolean postPackage(DataPackage packet)
     {
-
-    }
-
-    private onMiddlewareStreamError(Throwable throwable)
-    {
-    }
-
-    private onMiddlewareStreamCompleted()
-    {
-
+        return false;
     }
 
 
