@@ -1,9 +1,30 @@
 
-Where/when does the Middleware check, whether a certain module specified in the Configuration cannot be loaded by any runtime?
+Questions:
+    - Currently, in GetModuleList(), the middleware always returns ALL modules in ModuleListResponse. Not only the Modules per runtime.
+        - The ModuleDispatcher of each runtime then has to ignore all the modules it cannot support?
+    - Where/when does the Middleware check, whether a certain module specified in the Configuration cannot be loaded by any runtime?
 
-What if two Runtimes support the same Module Class?
+    - Where is ModuleListResponse channels set? Because when it is sent in ServiceImpl::GetModuleList(...), the value is not set.
+    - Am I initializing the Dart runtime in the ALEX_data_collection project correctly? I got a segfault because there was no entry for the dart runtime in
+    in the runtimeQueueMap. I had to add it manually. However, this entry should have been set during InitRuntime.
 
-Where is ModuleListResponse channels set? Because when it is sent in ServiceImpl::GetModuleList(...), the value is not set.
+    (- What if two Runtimes support the same Module Class? -> this is checked in GetModuleList as far as I can tell)
 
-Am I initializing the Dart runtime in the ALEX_data_collection project correctly? I got a segfault because there was no entry for the dart runtime in
-in the runtimeQueueMap. I had to add it manually. However, this entry should have been set during InitRuntime.
+Todo:
+- How to do Dart <-> UI integration? What if Activity get's destroyed, but service is still running -> how to restart the activity and display data from CLAID channels
+- Java
+    - Java ModuleDispatcher implementation
+    - Java tests
+- encryption
+    - encryption of data types (in rest, e.g., when writing to internal storage)
+    - encryption for remote communication (grpc credentials)
+- Remove hardcoding of socket path -> each CLAID application should have it's own directory to store the socket, which should not be readable by other Apps
+    - for Android / iOS, that's easy -> just store in App local data or documents directory
+    - How to do this safely on Linux/macOS ? (+ Windows, but that's an optional path of pain)
+- test infrastructure, code coverage, ... -> tests involving multiple languages?
+- Automatically generate device ID?
+
+Longterm todos:
+- Python integration
+- iOS bazel targets and testing
+- (decision for) Windows support

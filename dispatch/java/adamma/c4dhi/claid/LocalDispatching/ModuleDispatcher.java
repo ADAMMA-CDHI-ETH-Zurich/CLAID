@@ -27,6 +27,10 @@ import com.google.protobuf.Empty;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 
 
 // Corresponds to ClientDispatcher of the C++ core, which is ModuleDispatcher in dart.
@@ -48,7 +52,17 @@ public class ModuleDispatcher
     {
         this.socketPath = socketPath;
 
-        this.grpcChannel = Grpc.newChannelBuilder(this.socketPath, InsecureChannelCredentials.create()).build();
+        // https://github.com/grpc/grpc-java/blob/6cf638081226bf26775a8e250c4baeab2d246afa/netty/src/test/java/io/grpc/netty/UdsNettyChannelProviderTest.java#L40
+        this.grpcChannel = Grpc.newChannelBuilder(socketPath, InsecureChannelCredentials.create()).build();
+        //this.grpcChannel = ManagedChannelBuilder.forTarget(socketPath).usePlaintext().build();
+        // see https://github.com/Hellblazer/GrpcDomainSocketTest/blob/main/src/test/java/domain/DomainSocketReproTest.java
+        // this.grpcChannel = NettyChannelBuilder.forAddress(new DomainSocketAddress(socketPath))
+        //                                             .eventLoopGroup(new KQueueEventLoopGroup())
+        //                                             .channelType(KQueueDomainSocketChannel.class)
+        //                                             .keepAliveTime(1, TimeUnit.MILLISECONDS)
+        //                                             .usePlaintext()
+        //                                             .build();
+
         this.stub = ClaidServiceGrpc.newStub(this.grpcChannel);
     }
 
@@ -58,8 +72,7 @@ public class ModuleDispatcher
     // which Modules to instantiate, but it does not yet know which Runtime (specifically, the ModuleDispatchers of each Runtime) can load which Module.
     // Therefore, it relies on the Runtimes to tell the Middleware which Modules they can handle. They do so by calling the stub.GetModuleList() function,
     // which contains a ModuleListRequest, which contains a list of all Modules the Runtime can handle.
-    // The Middleware then replies with a ModuleListResponse, which contains the Modules it wants this Runtime to load (i.e., a subset of the Modules that were
-    // sent in the ModuleListRequest).
+    // The Middleware then replies with a ModuleListResponse, which contains the Modules it wants to be loaded.
     public ModuleListResponse getModuleList(ArrayList<String> registeredModuleClasses)
     {
         ModuleListRequest request = 
@@ -70,7 +83,6 @@ public class ModuleDispatcher
         
         // stub.getModuleList() -> calls getModuleList function of RemoteService in the MiddleWare via RPC.
 
-        boolean resultReceived = false;
         ModuleListResponse response = null;
 
         SynchronizedStreamObserver<ModuleListResponse> responseObserver = new SynchronizedStreamObserver<>();
@@ -79,7 +91,7 @@ public class ModuleDispatcher
         stub.getModuleList(request, responseObserver);
 
         response = responseObserver.await();
- 
+        System.out.println("Respone: " + response);
 
         return response;
     }

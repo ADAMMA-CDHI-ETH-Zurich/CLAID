@@ -31,7 +31,7 @@ import io.grpc.stub.StreamObserver;
 // Sequence to start the Runtime and register with the Middleware:
 // 1. Call getModuleList() of Middleware via RPC -> send ModuleListRequest to tell the Middleware which Modules are available in this Runtime.
 // 2. This call to getModuleList() will return a ModuleListResponse, which is created by the Middleware. Via this response, the Middleware tells
-// us which of the Modules that we support it wants us to load based on the configuration file. This will be a subset of the Modules provided by ModuleListRequest.
+// us which of the Modules that it wants us to load based on the configuration file.
 // 3. Instantiate the Modules via the ModuleFactory.
 // 4. Initialize the Modules, by calling their initialize functions. In the initialize function, and ONLY there, the Modules can publish/subscribe channels.
 // 5. After all Modules are initialized, retrieve the list of published and subscribed channels, as well as their data types. (The data type is stored by providing an example DataPackage with the correct type).
@@ -43,7 +43,8 @@ public class ModuleManager
     private ModuleDispatcher dispatcher;
     private ModuleFactory moduleFactory;
 
-    private Map<ModuleInstanceKey, Module> runningModules;
+    // ModuleId, Module
+    private Map<String, Module> runningModules = new HashMap<>();
 
 
     StreamObserver<DataPackage> inStream;
@@ -60,13 +61,18 @@ public class ModuleManager
     {
         if(!this.moduleFactory.isModuleClassRegistered(moduleClass))
         {
-            System.out.println("ModuleManager: Failed to instantiate Module of class \"" + moduleClass + "\" (id: \")" + moduleId + "\")\n" +
+            System.out.println("ModuleManager: Failed to instantiate Module of class \"" + moduleClass + "\" (id: " + moduleId + "\")\n" +
             "A Module with this class is not registered to the ModuleFactory.");
-            return false;
+         
+            // The Middleware always returns all Modules named in the config file.
+            // If we cannot load it, we assume another registered runtime can.
+            // Therefore, no error.
+            return true;
         }
 
+        Logger.logInfo("Loaded Module id \"" + moduleId + "\" (class: \"" + moduleClass + "\").");
         Module module = this.moduleFactory.getInstance(moduleClass, moduleId);
-        this.runningModules.put(new ModuleInstanceKey(moduleId, moduleClass), module);
+        this.runningModules.put(moduleId, module);
         return true;
     }
 
@@ -94,13 +100,17 @@ public class ModuleManager
             String moduleId = descriptor.getModuleId();
             String moduleClass = descriptor.getModuleClass();
 
-            ModuleInstanceKey key = new ModuleInstanceKey(moduleId, moduleClass);
-
+            String key = moduleId;
+            System.out.println(key + "  " + this.runningModules);
             if(!this.runningModules.containsKey(key))
             {
-                System.out.println("Failed to initilize Module \"" + moduleId + "\" (class: \"" + moduleClass + "\".\n" +
-                "The Module class was not registered to the ModuleFactory.");
-                return false;
+                System.out.println("Failed to initialize Module \"" + moduleId + "\" (class: \"" + moduleClass + "\".\n" +
+                "The Module was not loaded.");
+                
+                // The middleware always sends all Modules parsed from the configuration file.
+                // If this Module is not running in this runtime, that means we could not instantiate it before.
+                // Hence, we assume this Module is supported by another runtime.
+                continue;
             }
 
             Module module = this.runningModules.get(key);
@@ -137,8 +147,9 @@ public class ModuleManager
     }
 
 
-    private boolean start()
+    public boolean start()
     {
+        System.out.println(this.moduleFactory.getRegisteredModuleClasses());
         ModuleListResponse moduleList = this.dispatcher.getModuleList(this.moduleFactory.getRegisteredModuleClasses());
         
         if(!instantiateModules(moduleList))

@@ -51,7 +51,7 @@ public abstract class Module
 
     protected void initialize(Map<String, String> properties)
     {
-        
+        System.out.println("Module base initialize");
     }
 
     public void setId(String id)

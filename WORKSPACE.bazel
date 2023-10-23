@@ -35,8 +35,8 @@ android_ndk_repository(
 
 
 
-IO_GRPC_JAVA_EXTERNAL_TAG = "1.51.1"
-IO_GRPC_JAVA_SHA = "75e5994ca18ae3ffaf67a2f08d0274215916b0ff56d62e9e5b447095e622714b"
+IO_GRPC_JAVA_EXTERNAL_TAG = "1.59.0"
+IO_GRPC_JAVA_SHA = "7c2811b8b6c1147c27f11c560d617afd1ddc9fd8efb49864c38832d977232ca1"
 
 http_archive(
     name = "io_grpc_grpc_java",
@@ -69,7 +69,7 @@ load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 protobuf_deps()
 
 
-
+# Java gRPC
 maven_install(
     artifacts = IO_GRPC_GRPC_JAVA_ARTIFACTS + PROTOBUF_MAVEN_ARTIFACTS,
     generate_compat_repositories = True,
@@ -84,8 +84,8 @@ load("@maven//:compat.bzl", "compat_repositories")
 
 compat_repositories()
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+# required for JNI support
 http_archive(
     name = "fmeum_rules_jni",
     sha256 = "9a387a066f683a8aac4d165917dc7fe15ec2a20931894a97e153a9caab6123ca",
@@ -96,3 +96,6 @@ http_archive(
 load("@fmeum_rules_jni//jni:repositories.bzl", "rules_jni_dependencies")
 
 rules_jni_dependencies()
+
+
+

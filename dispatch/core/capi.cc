@@ -10,9 +10,9 @@ extern "C"
 __attribute__((visibility("default"))) __attribute__((used))
 void* start_core(const char* socket_path, const char* config_file, const char* host_id, const char* user_id, const char* device_id) {
     auto socketPath = std::string(socket_path);
-    if (socketPath.find("unix://") != 0) {
-        socketPath = "unix://" + socketPath;
-    }
+    // if (socketPath.find("unix://") != 0) {
+    //     socketPath = "unix://" + socketPath;
+    // }
 
     auto middleWare = new claid::MiddleWare(socketPath, config_file,
         host_id, user_id, device_id);

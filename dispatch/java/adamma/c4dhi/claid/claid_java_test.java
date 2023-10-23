@@ -18,8 +18,9 @@ public class claid_java_test {
 		CLAID.sayHelloDD();
 		ModuleFactory moduleFactory = new ModuleFactory();
 		moduleFactory.registerModule(TestModule.class);
-		CLAID.start("unix:///tmp/claid_socket_java_test.grpc", "alex_client", "/home/lastchance/Documents/alex_config.json", "test", "test", moduleFactory);
+		CLAID.start("localhost:1337", "/Users/planger/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory);
 
 		System.out.println(TypeMapping.getNewInstance(Double.class).getClass().getName());
+		while(true);
 	}
 }
