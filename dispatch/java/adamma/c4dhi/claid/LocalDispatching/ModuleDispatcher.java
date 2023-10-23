@@ -22,24 +22,24 @@ import io.grpc.InsecureChannelCredentials;
 import io.grpc.stub.StreamObserver;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 
 import com.google.protobuf.Empty;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import java.util.function.Consumer;
 
 
 // Corresponds to ClientDispatcher of the C++ core, which is ModuleDispatcher in dart.
 public class ModuleDispatcher  
 {
     Channel grpcChannel;
-    private ClaidServiceStub stub;
+    ClaidServiceStub stub;
     
-    private String socketPath;
+    String socketPath;
 
     // Stream for us to receive packages from the Middleware.
     StreamObserver<DataPackage> inStream;
@@ -47,12 +47,15 @@ public class ModuleDispatcher
     // Stream for us to send packages to the Middleware
     StreamObserver<DataPackage> outStream;
 
+    // For ModuleManager to receive packages
+    Consumer<DataPackage> inConsumer;
+
+    boolean waitingForPingResponse = false;
 
     public ModuleDispatcher(final String socketPath)
     {
         this.socketPath = socketPath;
 
-        // https://github.com/grpc/grpc-java/blob/6cf638081226bf26775a8e250c4baeab2d246afa/netty/src/test/java/io/grpc/netty/UdsNettyChannelProviderTest.java#L40
         this.grpcChannel = Grpc.newChannelBuilder(socketPath, InsecureChannelCredentials.create()).build();
         //this.grpcChannel = ManagedChannelBuilder.forTarget(socketPath).usePlaintext().build();
         // see https://github.com/Hellblazer/GrpcDomainSocketTest/blob/main/src/test/java/domain/DomainSocketReproTest.java
@@ -136,16 +139,55 @@ public class ModuleDispatcher
         return builder.build();
     }
 
-    public StreamObserver<DataPackage> sendReceivePackages(StreamObserver<DataPackage> inStream)
+    private StreamObserver<DataPackage> makeInputStreamObserver(Consumer<DataPackage> onData, Consumer<Throwable> onError, Runnable onCompleted)
     {
-        this.inStream = inStream;
+        return new StreamObserver<DataPackage>()
+            {
+                @Override
+                public void onNext(DataPackage incomingPackage) {
+                    onData.accept(incomingPackage);
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    onError.accept(throwable);
+                }
+
+                @Override
+                public void onCompleted() {
+                    onCompleted.run();
+                }
+            };
+    }
+
+
+    public boolean sendReceivePackages(Consumer<DataPackage> inConsumer)
+    {
+        this.inConsumer = inConsumer;
+     
+        if(inConsumer == null)
+        {
+            Logger.logFatal("Invalid argument in ModuleDispatcher::sendReceivePackages. Provided consumer is null.");
+            return false;
+        }
+     
+        this.inStream = makeInputStreamObserver(
+                dataPackage -> onMiddlewareStreamPackageReceived(dataPackage),
+                error -> onMiddlewareStreamError(error),
+                () -> onMiddlewareStreamCompleted()); 
+
         this.outStream = stub.sendReceivePackages(this.inStream);
    
-  
+        if(this.outStream == null)
+        {
+            return false;
+        }
+
+        this.waitingForPingResponse = true;
         DataPackage pingReq = makeControlRuntimePing();
         this.outStream.onNext(pingReq);
 
-        return this.outStream;
+        return true;
 
         // if (!stream->Write(pingReq)) {
         //     claid::Logger::printfln("Failed sending ping package to server.");
@@ -173,9 +215,46 @@ public class ModuleDispatcher
 
     }
 
+    private void onMiddlewareStreamPackageReceived(DataPackage packet)
+    {
+        Logger.logInfo("Java Runtime received message from middleware: " + packet);
+        
+        if(this.waitingForPingResponse)
+        {
+            if(packet.getControlVal().getCtrlType() != CtrlType.CTRL_RUNTIME_PING)
+            {
+                Logger.logError("Error in ModuleDispatcher: Sent CTRL_RUNTIME_PING to middleware and was waiting for a package with the same type as response,\n"
+                + "but got package of type " + packet.getControlVal());
+                return;
+            }
 
-    
+            if(packet.getControlVal().getRuntime() != Runtime.RUNTIME_JAVA)
+            {  
+                Logger.logError("Error in ModuleDispatcher: Sent CTRL_RUNTIME_PING to middleware and reveived response, however response has wrong Runtime identifier.\n" + 
+                "Expected RUNTIME_JAVA but got " + packet.getControlVal().getRuntime() + "\n");
+                return;
+            }
+            this.waitingForPingResponse = false;
+        }
+        else
+        {
+            Logger.logInfo("Received package " + packet.getControlVal());
+            this.inConsumer.accept(packet);
+        }
+        
+    }
 
+    private void onMiddlewareStreamError(Throwable throwable)
+    {
+        Logger.logError("Middleware stream closed!");
+        this.closeOutputStream();
+    }
+
+    private void onMiddlewareStreamCompleted()
+    {
+        Logger.logError("Middleware stream completed!");
+        this.closeOutputStream();
+    }
 
     public void closeOutputStream()
     {

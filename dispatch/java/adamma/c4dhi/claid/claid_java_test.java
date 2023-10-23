@@ -22,7 +22,7 @@ public class claid_java_test {
 		// If Linux/Android:
 		CLAID.start("unix:///tmp/test_socket.grpc", "/home/lastchance/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory);
 		// If macOS or Windows:
-		CLAID.start("localhost:1338", "/home/lastchance/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory);
+		// CLAID.start("localhost:1337", "/home/lastchance/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory);
 
 
 		System.out.println(TypeMapping.getNewInstance(Double.class).getClass().getName());

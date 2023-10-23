@@ -125,26 +125,6 @@ public class ModuleManager
         return true;
     }
 
-    private StreamObserver<DataPackage> makeInputStreamObserver(Consumer<DataPackage> onData, Consumer<Throwable> onError, Runnable onCompleted)
-    {
-        return new StreamObserver<DataPackage>()
-            {
-                @Override
-                public void onNext(DataPackage incomingPackage) {
-                    onData.accept(incomingPackage);
-                }
-
-                @Override
-                public void onError(Throwable throwable) {
-                    onError.accept(throwable);
-                }
-
-                @Override
-                public void onCompleted() {
-                    onCompleted.run();
-                }
-            };
-    }
 
 
     public boolean start()
@@ -173,12 +153,13 @@ public class ModuleManager
             return false;
         }
 
-        this.inStream = makeInputStreamObserver(
-                dataPackage -> onMiddlewareStreamPackageReceived(dataPackage),
-                error -> onMiddlewareStreamError(error),
-                () -> onMiddlewareStreamCompleted()); 
+
                 
-        this.outStream = this.dispatcher.sendReceivePackages(this.inStream);
+        if(!this.dispatcher.sendReceivePackages(receivedPackage -> onDataPackageReceived(receivedPackage)))
+        {
+            Logger.logFatal("Failed to set up input and output streams with middleware.");
+            return false;
+        }
 
         // Map<String: moduleId, List<DataPackage>: list of channels
 /*        Map<String, List<DataPackage>> modules;
@@ -196,21 +177,11 @@ public class ModuleManager
     }
 
     
-
-    private void onMiddlewareStreamPackageReceived(DataPackage packet)
+    private void onDataPackageReceived(DataPackage dataPackage)
     {
-        Logger.logInfo("Java Runtime received message from middleware: " + packet.getControlVal());
+        Logger.logInfo("ModuleManager received package!\n");
     }
 
-    private void onMiddlewareStreamError(Throwable throwable)
-    {
-        this.dispatcher.closeOutputStream();
-    }
-
-    private void onMiddlewareStreamCompleted()
-    {
-        this.dispatcher.closeOutputStream();
-    }
 
   
 }
