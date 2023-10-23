@@ -1,5 +1,6 @@
 
 Questions:
+    - unix domain sockets supported by Java gRPC implementation ONLY on Linux (+ Android), NOT on macOS or Windows -> maybe do a fallback solution via local sockets?
     - Currently, in GetModuleList(), the middleware always returns ALL modules in ModuleListResponse. Not only the Modules per runtime.
         - The ModuleDispatcher of each runtime then has to ignore all the modules it cannot support?
     - Where/when does the Middleware check, whether a certain module specified in the Configuration cannot be loaded by any runtime?

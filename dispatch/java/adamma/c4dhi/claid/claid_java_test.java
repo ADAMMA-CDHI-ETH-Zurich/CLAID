@@ -18,7 +18,12 @@ public class claid_java_test {
 		CLAID.sayHelloDD();
 		ModuleFactory moduleFactory = new ModuleFactory();
 		moduleFactory.registerModule(TestModule.class);
-		CLAID.start("localhost:1337", "/Users/planger/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory);
+
+		// If Linux/Android:
+		CLAID.start("unix:///tmp/test_socket.grpc", "/home/lastchance/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory);
+		// If macOS or Windows:
+		CLAID.start("localhost:1338", "/home/lastchance/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory);
+
 
 		System.out.println(TypeMapping.getNewInstance(Double.class).getClass().getName());
 		while(true);
