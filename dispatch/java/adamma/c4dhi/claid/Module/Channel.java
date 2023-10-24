@@ -8,7 +8,8 @@ public class Channel<T>
     private final ChannelAccessRights accessRights;
     private Module parent;
 
-    private Consumer<T> callback;
+    private Publisher<T> publisher;
+    private Subscriber<T> subscriber;
     boolean callbackRegistered = false;
 
     private boolean valid = false;
@@ -23,19 +24,22 @@ public class Channel<T>
         return this.accessRights == ChannelAccessRights.WRITE || this.accessRights == ChannelAccessRights.READ_WRITE;
     }
 
-    public Channel(Module parent, final String channelId, final ChannelAccessRights accessRights)
+    // Constructor for published Channels.
+    public Channel(Module parent, final String channelId, final Publisher<T> publisher)
     {
         this.channelId = channelId;
-        this.accessRights = accessRights;
+        this.accessRights = ChannelAccessRights.WRITE;
+        this.publisher = publisher;
         this.valid = true;
     }
 
-    public Channel(Module parent, final String channelId, final ChannelAccessRights accessRights, Consumer<T> callback)
+    // Constructor for subscribed Chanenls.
+    public Channel(Module parent, final String channelId, final Subscriber<T> subscriber)
     {
         this.channelId = channelId;
-        this.accessRights = accessRights;
-        this.callback = callback;
-        this.callbackRegistered = callback != null;
+        this.accessRights = ChannelAccessRights.READ;
+        this.subscriber = subscriber;
+        this.callbackRegistered = subscriber != null;
         this.valid = true;
     }
 
@@ -62,5 +66,6 @@ public class Channel<T>
             parent.moduleError(msg);
             return;
         }
+        this.publisher.post(data);
     }
 }

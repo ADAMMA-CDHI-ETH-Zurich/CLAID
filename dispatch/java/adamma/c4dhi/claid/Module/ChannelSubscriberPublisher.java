@@ -15,13 +15,20 @@ import adamma.c4dhi.claid.TypeMapping.Mutator;
 
 public class ChannelSubscriberPublisher 
 {
-
     private final String host;
     private Map<String, DataPackage> examplePackagesForEachChannel = new HashMap<>();
+    // Map<channel, Map<module, subscriber>>
+    // ArrayList, because theoretically the Module could also subscribe to the same channel twice.
+    private Map<String, Map<String, ArrayList<AbstractSubscriber>>> moduleChannelsSubscriberMap = new HashMap<>();
 
-    public ChannelSubscriberPublisher(final String host)
+    // Channel that is used to send DataPackages to the ModuleManager.
+    // Will be provided to each published channel, allowing the post function of the Channel to send data.
+    private ThreadSafeChannel<DataPackage> toModuleManagerQueue;
+
+    public ChannelSubscriberPublisher(final String host, ThreadSafeChannel<DataPackage> toModuleManagerQueue)
     {
         this.host = host;
+        this.toModuleManagerQueue = toModuleManagerQueue;
     }
 
     private String concatenateHostModuleAddress(final String host, final String module)
@@ -37,15 +44,18 @@ public class ChannelSubscriberPublisher
 
         if(isPublisher)
         {
-            builder.setSourceHostModule(concatenateHostModuleAddress(this.host, moduleId));
+            // Only set module Id, host will be added by Middleware later.
+            builder.setSourceHostModule(moduleId);//concatenateHostModuleAddress(this.host, moduleId));
         }
         else
         {
-            builder.setTargetHostModule(concatenateHostModuleAddress(this.host, moduleId));
+            // Only set module Id, host will be added by Middleware later.
+            builder.setTargetHostModule(moduleId);//concatenateHostModuleAddress(this.host, moduleId));
         }
         builder.setChannel(channelName);
 
         DataPackage packet = builder.build();
+        System.out.println("EXAMPLE PACKAGE " + packet + "\n example package end");
 
         T exampleInstance = TypeMapping.getNewInstance(dataType);
         if(exampleInstance == null)
@@ -79,10 +89,10 @@ public class ChannelSubscriberPublisher
 
         this.examplePackagesForEachChannel.put(module.getId(), examplePackage);
 
-        return new Channel<T>(module, channelName, ChannelAccessRights.WRITE);
+        return new Channel<T>(module, channelName, new Publisher<T>(dataType, module.getId(), channelName, this.toModuleManagerQueue));
     }
 
-    protected<T> Channel<T> subscribe(Module module, Class<T> dataType, final String channelName, Consumer<T> callback)
+    protected<T> Channel<T> subscribe(Module module, Class<T> dataType, final String channelName, Subscriber<T> subscriber)
     {
         DataPackage examplePackage = prepareExamplePackage(module.getId(), channelName, dataType, false);
         if(examplePackage == null)
@@ -95,7 +105,46 @@ public class ChannelSubscriberPublisher
 
         this.examplePackagesForEachChannel.put(module.getId(), examplePackage);
 
-        return new Channel<T>(module, channelName, ChannelAccessRights.READ, callback);
+        insertSubscriber(channelName, module.getId(), (AbstractSubscriber) subscriber);
+
+        return new Channel<T>(module, channelName, subscriber);
+    }
+
+    private void insertSubscriber(final String channelName, final String moduleId, AbstractSubscriber subscriber)
+    {
+        if(!moduleChannelsSubscriberMap.containsKey(channelName))
+        {
+            moduleChannelsSubscriberMap.put(channelName, new HashMap<>());
+        }
+
+        // Contains each Module that has at least one subscriber for the Channel called channelName.
+        Map<String, ArrayList<AbstractSubscriber>> channelSubscribers = moduleChannelsSubscriberMap.get(channelName);
+
+        if(!channelSubscribers.containsKey(moduleId))
+        {
+            channelSubscribers.put(moduleId, new ArrayList<>());
+        }
+
+        ArrayList<AbstractSubscriber> subscriberList = channelSubscribers.get(moduleId);
+        subscriberList.add(subscriber);
+    }
+
+    public ArrayList<AbstractSubscriber> getSubscribers(final String channelName, final String moduleId)
+    {
+        if(!moduleChannelsSubscriberMap.containsKey(channelName))
+        {
+            return null;
+        }
+
+        Map<String, ArrayList<AbstractSubscriber>> channelSubscribers = moduleChannelsSubscriberMap.get(channelName);
+        if(!channelSubscribers.containsKey(moduleId))
+        {
+            return null;
+        }
+
+        ArrayList<AbstractSubscriber> subscriberList = channelSubscribers.get(moduleId);
+
+        return subscriberList;
     }
 
     public Map<String, DataPackage> getExamplePackagesForAllChannels()

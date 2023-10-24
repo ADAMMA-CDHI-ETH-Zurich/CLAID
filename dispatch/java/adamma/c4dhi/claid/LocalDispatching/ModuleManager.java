@@ -1,13 +1,18 @@
 package adamma.c4dhi.claid.LocalDispatching;
+import adamma.c4dhi.claid.Module.AbstractSubscriber;
 import adamma.c4dhi.claid.Module.ChannelSubscriberPublisher;
 import adamma.c4dhi.claid.Module.Module;
 import adamma.c4dhi.claid.Module.ModuleFactory;
+import adamma.c4dhi.claid.Module.ThreadSafeChannel;
 import adamma.c4dhi.claid.LocalDispatching.ModuleInstanceKey;
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.Logger.SeverityLevel;
 
 import java.util.Map;
 import java.util.function.Consumer;
+
+import javax.xml.crypto.Data;
+
 import java.util.HashMap;
 import java.util.List;
 import java.lang.reflect.InvocationTargetException;
@@ -46,9 +51,14 @@ public class ModuleManager
     // ModuleId, Module
     private Map<String, Module> runningModules = new HashMap<>();
 
+    ChannelSubscriberPublisher subscriberPublisher;
 
     StreamObserver<DataPackage> inStream;
     StreamObserver<DataPackage> outStream;
+
+    ThreadSafeChannel<DataPackage> fromModulesChannel = new ThreadSafeChannel<>();
+    Thread readFromModulesThread;
+    boolean running = false;
 
     public ModuleManager(final String hostName, ModuleDispatcher dispatcher, ModuleFactory moduleFactory)
     {
@@ -119,7 +129,9 @@ public class ModuleManager
             // This will call the initialize functions of each Module.
             // In the initialize function (and ONLY there), Modules can publish or subscribe Channels.
             // Hence, once all Modules have been initialized, we know the available Channels.
-            module.runtimeInitialize(subscriberPublisher, descriptor.getPropertiesMap());
+            Logger.logInfo("Calling module.start() for Module \"" + module.getId() + "\".");
+            module.start(subscriberPublisher, descriptor.getPropertiesMap());
+            Logger.logInfo("Module \"" + module.getId() + "\" has started.");
 
         }
         return true;
@@ -138,7 +150,7 @@ public class ModuleManager
             return false;
         }
 
-        ChannelSubscriberPublisher subscriberPublisher = new ChannelSubscriberPublisher(this.hostName);
+        this.subscriberPublisher = new ChannelSubscriberPublisher(this.hostName, this.fromModulesChannel);
 
         if(!initializeModules(moduleList, subscriberPublisher))
         {
@@ -160,6 +172,16 @@ public class ModuleManager
             Logger.logFatal("Failed to set up input and output streams with middleware.");
             return false;
         }
+        
+        
+
+        this.running = true;
+        this.readFromModulesThread = new Thread(){
+            public void run(){
+              readFromModules();
+            }
+          };
+        this.readFromModulesThread.start();
 
         // Map<String: moduleId, List<DataPackage>: list of channels
 /*        Map<String, List<DataPackage>> modules;
@@ -173,15 +195,88 @@ public class ModuleManager
         // sendreceivepackafges
         // process queues
 
-        return false;
+        return true;
     }
 
-    
+    private String[] splitHostModule(String addr)
+    {
+        String[] hostAndModule = addr.split(":");
+
+        if(hostAndModule.length != 2)
+        {
+            return null;
+        }
+
+        return hostAndModule;
+    }
+
     private void onDataPackageReceived(DataPackage dataPackage)
     {
-        Logger.logInfo("ModuleManager received package!\n");
+        /*String[] hostAndModule = splitHostModule(dataPackage.getTargetHostModule());
+
+        if(hostAndModule == null)
+        {
+            Logger.logError("Java Runtime received DataPackage with invalid address \"" + dataPackage.getTargetHostModule() + "\".\n"
+            + "Unable to split the address into host:module");
+        }*/
+
+        if(dataPackage.hasControlVal())
+        {
+            Logger.logError("ModuleManager received DataPackage with controlVal. The controlVal should have been handled by ModuleDispatcher");
+            return;
+        }
+
+        /*String hostName = hostAndModule[0];
+        String moduleId = hostAndModule[1];*/
+
+        final String channelName = dataPackage.getChannel();
+        final String moduleId = dataPackage.getSourceHostModule();
+
+        Logger.logInfo("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\"");
+
+        if(this.subscriberPublisher == null)
+        {
+            Logger.logError("ModuleManager received DataPackage, however SubscriberPublisher is Null.");
+            return;
+        }
+
+        ArrayList<AbstractSubscriber> subscriberList = this.subscriberPublisher.getSubscribers(channelName, moduleId);
+
+        if(subscriberList == null)
+        {
+            Logger.logInfo("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n" + 
+            "however a Subscriber of the Module for this Channel was not found. The Module has no Subscriber for this Channel.");
+        }
+
+        for(AbstractSubscriber subscriber : subscriberList)
+        {
+            subscriber.onNewData(dataPackage);
+        }
     }
 
+    public void readFromModules()
+    {
+        while(this.running)
+        {
+            // Todo: Check if we received the ping from the Middleware yet and are fully registered.
+            System.out.println("Read from modules");
+            DataPackage dataPackage = this.fromModulesChannel.blockingGet();
+            if(dataPackage != null)
+            {
+                this.onDataPackageFromModule(dataPackage);
+            }
+            else
+            {
+                System.out.println("Read from modules null");
+            }
+        }
+    }
 
+    public void onDataPackageFromModule(DataPackage dataPackage)
+    {
+        Logger.logInfo("ModuleManager received local package from Module \"" + dataPackage.getSourceHostModule() + "\".");
+        Logger.logInfo(dataPackage + " ");
+        this.dispatcher.postPackage(dataPackage);
+    }
   
 }

@@ -19,6 +19,7 @@ void* start_core(const char* socket_path, const char* config_file, const char* h
 
     auto status = middleWare->start();
     if (!status.ok()) {
+        std::cout << "Failed to start middleware: " << status << "\n";
         delete middleWare;
         return nullptr;
     }

@@ -109,6 +109,7 @@ public class ModuleDispatcher
             InitRuntimeRequest.ModuleChannels.Builder moduleChannels = InitRuntimeRequest.ModuleChannels.newBuilder();
             moduleChannels.setModuleId(entry.getKey());
             moduleChannels.addChannelPackets(entry.getValue());
+            System.out.println("Adding " + entry.getValue());
             initRuntimeRequest.addModules(moduleChannels.build());
         }   
         initRuntimeRequest.setRuntime(Runtime.RUNTIME_JAVA);
@@ -187,6 +188,8 @@ public class ModuleDispatcher
         DataPackage pingReq = makeControlRuntimePing();
         this.outStream.onNext(pingReq);
 
+        awaitPingPackage();
+
         return true;
 
         // if (!stream->Write(pingReq)) {
@@ -215,6 +218,21 @@ public class ModuleDispatcher
 
     }
 
+    private void awaitPingPackage()
+    {
+        while(this.waitingForPingResponse)
+        {
+            try
+            {
+                Thread.sleep(50);
+            }
+            catch(InterruptedException e)
+            {
+                Logger.logError("ModuleDispatcher error in awaitPingPackage: " + e.getMessage());
+            }
+        }
+    }
+
     private void onMiddlewareStreamPackageReceived(DataPackage packet)
     {
         Logger.logInfo("Java Runtime received message from middleware: " + packet);
@@ -234,13 +252,18 @@ public class ModuleDispatcher
                 "Expected RUNTIME_JAVA but got " + packet.getControlVal().getRuntime() + "\n");
                 return;
             }
+
+            Logger.logInfo("Java ModuleDispatcher successfully registered at the Middleware!");
+
             this.waitingForPingResponse = false;
+            return;
         }
-        else
-        {
-            Logger.logInfo("Received package " + packet.getControlVal());
-            this.inConsumer.accept(packet);
-        }
+        
+        // Here, we could check for control vals before forwarding the package to the ModuleManager via the inConsumer
+       
+        Logger.logInfo("Received package " + packet.getControlVal());
+        this.inConsumer.accept(packet);
+
         
     }
 
@@ -265,6 +288,7 @@ public class ModuleDispatcher
 
     boolean postPackage(DataPackage packet)
     {
+        this.outStream.onNext(packet);
         return false;
     }
 

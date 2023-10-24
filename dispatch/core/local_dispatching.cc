@@ -121,6 +121,7 @@ void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
             Logger::println(messageToString(pkt));
             return;
         }
+        Logger::printfln("Received valid package from Module \"%s\".", pkt.source_host_module().c_str());
 
         // Make a copy of the package and augment it with the
         // the fields not set by the client dispatcher.

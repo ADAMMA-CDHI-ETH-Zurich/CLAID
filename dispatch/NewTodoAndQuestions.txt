@@ -1,15 +1,23 @@
 
 Questions:
+    - channels and indexing:
+        - Where do we currently set the source host and the target host? As far as I can tell, we only set moduleIds when sending packags.
+            - populateModuleTable only adds <channel name, source module, target module>, but shouldn't it be <channel name, host:source_module, host:target_module> -> it works as long as moduleIds are unique.
+            - But: We are currently not setting the host for data packages anywhere.
+        - Does the ModuleDispatcher (e.g., in Java) actually need to set the moduleId? Because in local_dispatching::processPacket, the function augmentFieldValues is called, which sets the source host and target host based on the channel info.
+        - What if a Module does not publish/subscribe a channel, which is listed in the config as input or output channel?
+
+    - Where is ModuleListResponse channels set? Because when it is sent in ServiceImpl::GetModuleList(...), the value is not set.
+
     - unix domain sockets supported by Java gRPC implementation ONLY on Linux (+ Android), NOT on macOS or Windows -> maybe do a fallback solution via local sockets?
     - Currently, in GetModuleList(), the middleware always returns ALL modules in ModuleListResponse. Not only the Modules per runtime.
         - The ModuleDispatcher of each runtime then has to ignore all the modules it cannot support?
-    - Where/when does the Middleware check, whether a certain module specified in the Configuration cannot be loaded by any runtime?
-
-    - Where is ModuleListResponse channels set? Because when it is sent in ServiceImpl::GetModuleList(...), the value is not set.
+        - Where/when does the Middleware check, whether a certain module specified in the Configuration cannot be loaded by any runtime?
     - Am I initializing the Dart runtime in the ALEX_data_collection project correctly? I got a segfault because there was no entry for the dart runtime in
     in the runtimeQueueMap. I had to add it manually. However, this entry should have been set during InitRuntime.
 
     (- What if two Runtimes support the same Module Class? -> this is checked in GetModuleList as far as I can tell)
+    - What about periodic and scheduled functions -> implement in middleware or per language?
 
 Todo:
 - How to do Dart <-> UI integration? What if Activity get's destroyed, but service is still running -> how to restart the activity and display data from CLAID channels
@@ -24,8 +32,10 @@ Todo:
     - How to do this safely on Linux/macOS ? (+ Windows, but that's an optional path of pain)
 - test infrastructure, code coverage, ... -> tests involving multiple languages?
 - Automatically generate device ID?
+- Documentation
 
 Longterm todos:
 - Python integration
 - iOS bazel targets and testing
+- AAR generation for Java standalone use
 - (decision for) Windows support
