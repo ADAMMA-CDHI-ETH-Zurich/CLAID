@@ -247,6 +247,7 @@ public class ModuleManager
             Logger.logInfo("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n" + 
             "however a Subscriber of the Module for this Channel was not found. The Module has no Subscriber for this Channel.");
         }
+        
 
         for(AbstractSubscriber subscriber : subscriberList)
         {

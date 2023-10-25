@@ -3,6 +3,10 @@ package adamma.c4dhi.claid.Module;
 import java.util.function.Consumer;
 
 import adamma.c4dhi.claid.Logger.Logger;
+import adamma.c4dhi.claid.Module.Scheduling.ConsumerRunnable;
+import adamma.c4dhi.claid.Module.Scheduling.RunnableDispatcher;
+import adamma.c4dhi.claid.Module.Scheduling.ScheduleOnce;
+import adamma.c4dhi.claid.Module.Scheduling.ScheduledRunnable;
 import adamma.c4dhi.claid.TypeMapping.Mutator;
 import adamma.c4dhi.claid.TypeMapping.TypeMapping;
 import adamma.c4dhi.claid.DataPackage;
@@ -26,8 +30,8 @@ public class Subscriber<T extends Object> extends AbstractSubscriber
 
     private void invokeCallback(T data)
     {
-        ConsumerRunnable<T> consumerRunnable = new ConsumerRunnable<T>(data, callback);
-        Runnable runnable = (Runnable) consumerRunnable;
+        ConsumerRunnable<T> consumerRunnable = new ConsumerRunnable<T>(data, callback, ScheduleOnce.now());
+        ScheduledRunnable runnable = (ScheduledRunnable) consumerRunnable;
 
         this.callbackDispatcher.addRunnable(runnable);
     }

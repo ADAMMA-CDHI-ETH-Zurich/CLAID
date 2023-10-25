@@ -40,7 +40,8 @@ java_library(
     srcs = glob(["adamma/c4dhi/claid/LocalDispatching/*.java",
                 "adamma/c4dhi/claid/Module/*.java",
                 "adamma/c4dhi/claid/Logger/*.java",
-                "adamma/c4dhi/claid/TypeMapping/*.java"]),
+                "adamma/c4dhi/claid/TypeMapping/*.java",
+                "adamma/c4dhi/claid/Module/Scheduling/*.java"]),
     deps = [        
         "//dispatch/proto:claidservice_java_proto",
         "//dispatch/proto:claidservice_java_grpc",

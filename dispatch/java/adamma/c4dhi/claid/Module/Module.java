@@ -2,11 +2,19 @@ package adamma.c4dhi.claid.Module;
 
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.Logger.SeverityLevel;
-import adamma.c4dhi.claid.Module.Channel;
+import adamma.c4dhi.claid.Module.Scheduling.FunctionRunnable;
+import adamma.c4dhi.claid.Module.Scheduling.FunctionRunnable;
+import adamma.c4dhi.claid.Module.Scheduling.RunnableDispatcher;
+import adamma.c4dhi.claid.Module.Scheduling.ScheduleOnce;
+import adamma.c4dhi.claid.Module.Scheduling.ScheduleRepeatedIntervall;
+import adamma.c4dhi.claid.Module.Scheduling.ScheduledRunnable;
 import adamma.c4dhi.claid.DataPackage;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 public abstract class Module
 {
@@ -18,6 +26,8 @@ public abstract class Module
 
     private boolean isInitializing = false;
     private boolean isInitialized = false;
+
+    Map<String, ScheduledRunnable> timers = new HashMap<>();
 
 
 
@@ -57,11 +67,7 @@ public abstract class Module
         // Use booleans to guard the access to the publish/subscribe functions.
         this.isInitializing = true;
 
-        this.runnableDispatcher.addRunnable(new Runnable() {
-            public void run(){
-                initializeInternal(properties);
-              }
-        });
+        this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> initializeInternal(properties)));
 
         while(!this.isInitialized)
         {
@@ -102,7 +108,7 @@ public abstract class Module
         return this.id;
     }
 
-    public void enqueueRunnable(Runnable runnable)
+    private void enqueueRunnable(ScheduledRunnable runnable)
     {
         this.runnableDispatcher.addRunnable(runnable);
     }
@@ -126,4 +132,67 @@ public abstract class Module
         }
         return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<T>(dataType, callback, this.runnableDispatcher));
     }
+
+    protected void registerPeriodicFunction(final String name, Runnable callback, Duration intervall)
+    {
+        this.registerPeriodicFunction(name, callback, intervall, LocalDateTime.now().plus(intervall));
+    }
+
+    protected void registerPeriodicFunction(final String name, Runnable callback, Duration intervall, LocalDateTime startTime)
+    {
+        
+        if (intervall.toMillis() == 0) 
+        {
+            this.moduleError("Error in registerPeriodicFunction: Cannot register periodic function \"" + name + "\" with a period of 0 milliseconds.");
+        }
+
+        if (timers.containsKey(name))
+        {
+            this.moduleError("Tried to register function with name \"" + name + "\", but a periodic function with the same name was already registered before.");
+        }
+
+        FunctionRunnable runnable = new FunctionRunnable(callback, new ScheduleRepeatedIntervall(startTime, intervall));
+
+       
+        timers.put(name, runnable);
+        this.runnableDispatcher.addRunnable(runnable);
+    }
+
+
+    protected void unregisterPeriodicFunction(final String name)
+    {
+        if(!timers.containsKey(name))
+        {
+            moduleError("Error, tried to unregister periodic function but function was not found in list of registered timers."
+            + "Was a function with this name ever registered before?");
+        }
+        
+        timers.get(name).invalidate();
+        timers.remove(name);
+    }
+
+    protected void registerScheduledFunction(final String name, LocalDateTime dateTime, Runnable function)
+    {   
+        if(dateTime.isBefore(LocalDateTime.now()))
+        {
+            moduleWarning("Failed to schedule function \"" + name + "\" at time " + dateTime + ". The time is in the past. It is now: " + LocalDateTime.now());
+        }
+
+        FunctionRunnable runnable = new FunctionRunnable(function, new ScheduleOnce(dateTime));
+        timers.put(name, runnable);
+    }
+
+
+//         String name, Duration period, RegisteredCallback callback) =>
+//     _scheduler.registerPeriodicFunction(_modId, name, period, callback);
+
+// void unregisterPeriodicFunction(String name) =>
+//     _scheduler.unregisterPeriodicFunction(_modId, name);
+
+// void registerScheduledFunction(
+//         String name, DateTime dateTime, RegisteredCallback callback) =>
+//     _scheduler.registerScheduledFunction(_modId, name, dateTime, callback);
+
+// void unregisterScheduledFunction(String name) =>
+//     _scheduler.unregisterScheduledFunction(_modId, name);
 };

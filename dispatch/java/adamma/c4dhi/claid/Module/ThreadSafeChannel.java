@@ -8,19 +8,16 @@ import adamma.c4dhi.claid.Logger.Logger;
 
 public class ThreadSafeChannel<T>
 {
-    BlockingQueue<T> queue = new LinkedBlockingQueue();
-    private final ReentrantLock mutex = new ReentrantLock();
+    // BlockingQueue is thred safe: https://docs.oracle.com/javase%2F7%2Fdocs%2Fapi%2F%2F/java/util/concurrent/BlockingQueue.html
+    BlockingQueue<T> queue = new LinkedBlockingQueue<>();
 
     public void add(T element)
     {
-        mutex.lock();
         queue.add(element);
-        mutex.unlock();;
     }
 
     public T blockingGet()
     {
-        mutex.lock();
         T value;
         try 
         {
@@ -31,7 +28,7 @@ public class ThreadSafeChannel<T>
             Logger.logError("ThreadSafeChannel error: " + e.getMessage());
             value = null;
         }
-        mutex.unlock();
+    
         return value;
     }
 }

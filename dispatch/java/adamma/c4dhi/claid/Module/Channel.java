@@ -2,6 +2,8 @@ package adamma.c4dhi.claid.Module;
 
 import java.util.function.Consumer;
 
+import adamma.c4dhi.claid.Logger.Logger;
+
 public class Channel<T>
 {
     private final String channelId;
