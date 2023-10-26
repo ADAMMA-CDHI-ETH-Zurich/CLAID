@@ -115,9 +115,9 @@ public class ChannelDescription
         final String moduleId = module.getId();
         if(!dataTypeMatches(dataType))
         {
-            String message = "Failed to register Module \"" + moduleId + "\" for Channel \"" + channelName + "\".\n" +
+            String message = "Module \"" + moduleId + "\" failed to register for Channel \"" + channelName + "\".\n" +
             "Channel was created before by Module\" " + firstPublisherOrSubscriber + "\" with data type \"" + this.dataType.getName() + "\", but Module\"" + moduleId + 
-            "\" tried to " + (isPublisher ? "publish" : "subscribe") + "with data type \"" + dataType.getName() + "\".";
+            "\" tried to " + (isPublisher ? "publish" : "subscribe") + " with data type \"" + dataType.getName() + "\".";
 
             module.moduleError(message);
             return false;

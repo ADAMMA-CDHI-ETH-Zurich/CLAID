@@ -13,6 +13,26 @@ cc_binary(
     ],
 )
 
+
+cc_library(
+    name="cpp_modules",
+    srcs = glob([
+        "Module/TypeMapping/*.hh",
+        "Traits/*.hh",
+        "Module/test.cpp",
+    
+    ]),
+    hdrs = glob(["Traits/*.hh",
+    
+    ]),
+    deps = [
+        ":capi",
+    ],
+    linkstatic = True,   # only create a static lib
+    alwayslink = True,   # include everything in dependents
+)
+
+
 cc_library(
     name = "capi",
     srcs = [
