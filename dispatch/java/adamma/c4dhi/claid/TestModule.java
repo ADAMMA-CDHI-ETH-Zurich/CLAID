@@ -12,16 +12,23 @@ public class TestModule extends Module
 
     private Channel<Double> testChannel;
     private Channel<Double> receiveChannel;
+    private Channel<String> receiveChannel2;
+
     private int ctr = 0;
 
     @Override
     public void initialize(Map<String, String> properties) 
     {
-        this.testChannel = this.publish(Double.class, "TestChannel");
-        this.receiveChannel = this.subscribe(Double.class, "TestChannel", (data) -> onData(data));
+       this.testChannel = this.publish(Double.class, "TestChannel");
+       this.receiveChannel = this.subscribe(Double.class, "TestChannel", (data) -> onData(data));
+       this.receiveChannel2 = this.subscribe(String.class, "TestChannel", (data) -> onDataString(data));
+
+
         System.out.println("Hello world from TestModule!");
-        this.testChannel.post(Double.valueOf(42));
-        this.registerPeriodicFunction("TestFunction", () -> testFunction(), Duration.ofMillis(1));
+      //  this.testChannel.post(Double.valueOf(42));
+        
+        
+        this.registerPeriodicFunction("TestFunction", () -> testFunction(), Duration.ofMillis(500));
     }
 
     public void onData(Double data)
@@ -34,6 +41,11 @@ public class TestModule extends Module
         Logger.logInfo("Test function hello " + ctr);
         this.testChannel.post(Double.valueOf(ctr));
         ctr += 1;
+
+    }
+
+    public void onDataString(String data)
+    {
 
     }
 

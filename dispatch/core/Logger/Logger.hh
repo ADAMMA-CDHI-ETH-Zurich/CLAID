@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <fstream>
-
+#include "dispatch/core/Logger/SeverityLevel.hh"
 
 namespace claid
 {
@@ -40,8 +40,19 @@ namespace claid
 			static void setLogTag(std::string logTag);
 			static std::string getLastLogMessage();
 
-			// Returns true if log file was created successfully.
-			static bool enableLoggingToFile(const std::string& path);
-			static void disableLoggingToFile();
+			static void log(const SeverityLevel SeverityLevel, const std::string& message);
+			static void log(const SeverityLevel severityLevel, const char* format, ...);
+			static void log(const char* format, ...);
+			static void logInfo(const char* format, ...);
+			static void logWarning(const char* format, ...);
+			static void logError(const char* format, ...);
+			static void logFatal(const char* format, ...);
+
+			static std::string severityLevelToString(const SeverityLevel level);
+
+
+			// // Returns true if log file was created successfully.
+			// static bool enableLoggingToFile(const std::string& path);
+			// static void disableLoggingToFile();
 	};
 }

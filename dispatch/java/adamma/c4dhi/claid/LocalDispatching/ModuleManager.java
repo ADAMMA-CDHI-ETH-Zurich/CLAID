@@ -15,8 +15,9 @@ import javax.xml.crypto.Data;
 
 import java.util.HashMap;
 import java.util.List;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+
+import java.lang.reflect.InvocationTargetException;
 
 import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.InitRuntimeRequest;
@@ -137,6 +138,18 @@ public class ModuleManager
         return true;
     }
 
+    // A Channel is defined by a template package defining source | target | payload.
+    // For each Module, we have a list of DataPackages defining all Channels published or subscribed by the Module.
+    private Map<String, ArrayList<DataPackage>> getTemplatePackagesOfModules()
+    {
+        Map<String, ArrayList<DataPackage>> moduleChannels = new HashMap<>();
+        for(String moduleId : this.runningModules.keySet())
+        {
+            ArrayList<DataPackage> templatePackagesForModule = this.subscriberPublisher.getChannelTemplatePackagesForModule(moduleId);
+            moduleChannels.put(moduleId, templatePackagesForModule);
+        }
+        return moduleChannels;
+    }
 
 
     public boolean start()
@@ -158,8 +171,8 @@ public class ModuleManager
             return false;
         }
 
-        Map<String, DataPackage> examplePackagesForEachChannel = subscriberPublisher.getExamplePackagesForAllChannels();
-        if(!this.dispatcher.initRuntime(examplePackagesForEachChannel))
+        Map<String, ArrayList<DataPackage>> examplePackagesOfModules = getTemplatePackagesOfModules();
+        if(!this.dispatcher.initRuntime(examplePackagesOfModules))
         {
             Logger.logFatal("Failed to initialize runtime.");
             return false;
@@ -230,7 +243,7 @@ public class ModuleManager
         String moduleId = hostAndModule[1];*/
 
         final String channelName = dataPackage.getChannel();
-        final String moduleId = dataPackage.getSourceHostModule();
+        final String moduleId = dataPackage.getTargetHostModule();
 
         Logger.logInfo("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\"");
 
@@ -240,7 +253,15 @@ public class ModuleManager
             return;
         }
 
-        ArrayList<AbstractSubscriber> subscriberList = this.subscriberPublisher.getSubscribers(channelName, moduleId);
+        if(!subscriberPublisher.isDataPackageCompatibleWithChannel(dataPackage))
+        {
+            Logger.logInfo("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n"
+            + "however the data type of payload of the package did not match the data type of the Channel.\n"
+            + "Expected payload type \"" + subscriberPublisher.getPayloadCaseOfChannel(channelName).name() + "\" but got \"" + dataPackage.getPayloadOneofCase().name());
+            return;
+        }
+
+        ArrayList<AbstractSubscriber> subscriberList = this.subscriberPublisher.getSubscriberInstancesOfModule(channelName, moduleId);
 
         if(subscriberList == null)
         {

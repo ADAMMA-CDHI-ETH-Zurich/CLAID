@@ -1,6 +1,5 @@
 package adamma.c4dhi.claid.Module;
 
-import javax.xml.crypto.Data;
 
 import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.Logger.Logger;

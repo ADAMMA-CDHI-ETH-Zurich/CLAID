@@ -100,15 +100,15 @@ public class ModuleDispatcher
     }
 
 
-    public boolean initRuntime(Map<String, DataPackage> channelExamplePackages)
+    public boolean initRuntime(Map<String, ArrayList<DataPackage>> channelExamplePackages)
     {
         InitRuntimeRequest.Builder initRuntimeRequest = InitRuntimeRequest.newBuilder();
         
-        for(Map.Entry<String, DataPackage> entry : channelExamplePackages.entrySet())
+        for(Map.Entry<String, ArrayList<DataPackage>> entry : channelExamplePackages.entrySet())
         {
             InitRuntimeRequest.ModuleChannels.Builder moduleChannels = InitRuntimeRequest.ModuleChannels.newBuilder();
             moduleChannels.setModuleId(entry.getKey());
-            moduleChannels.addChannelPackets(entry.getValue());
+            moduleChannels.addAllChannelPackets(entry.getValue());
             System.out.println("Adding " + entry.getValue());
             initRuntimeRequest.addModules(moduleChannels.build());
         }   
@@ -269,7 +269,7 @@ public class ModuleDispatcher
 
     private void onMiddlewareStreamError(Throwable throwable)
     {
-        Logger.logError("Middleware stream closed!");
+        Logger.logError("Middleware stream closed! " + throwable.getMessage());
         this.closeOutputStream();
     }
 
