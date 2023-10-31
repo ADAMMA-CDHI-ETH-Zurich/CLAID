@@ -1,5 +1,9 @@
 #include "dispatch/core/Module/TypeMapping/TypeMapping.hh"
 
+#include <vector>
+#include <string>
+#include <map>
+
 using namespace claid;
 
 
@@ -27,7 +31,12 @@ void test()
 
 int main()
 {
-    Mutator<int> mut = TypeMapping::getMutator<int>();
+    auto mut = TypeMapping::getMutator<int>();
+    auto mut2 = TypeMapping::getMutator<std::vector<int>>();
+    auto mut3 = TypeMapping::getMutator<std::vector<std::string>>();
+    auto mut4 = TypeMapping::getMutator<std::map<std::string, double>>();
+    auto mut5 = TypeMapping::getMutator<std::map<std::string, std::string>>();
+
     test();
     return 0;
 }
