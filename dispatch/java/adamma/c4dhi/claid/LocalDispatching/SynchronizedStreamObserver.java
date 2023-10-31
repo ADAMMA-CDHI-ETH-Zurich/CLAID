@@ -8,6 +8,8 @@ import adamma.c4dhi.claid.Logger.Logger;
 public class SynchronizedStreamObserver<T> implements StreamObserver<T> 
 {
     private boolean resultReceived = false;
+    private boolean error = false;
+    String errorMessage;
     T response;
 
     @Override
@@ -19,7 +21,9 @@ public class SynchronizedStreamObserver<T> implements StreamObserver<T>
 
     @Override
     public void onError(Throwable throwable) {
-        System.out.println("SynchronizedStreamObserver: onError " + throwable.getCause());
+        System.out.println("SynchronizedStreamObserver: onError ");
+        error = true;
+        errorMessage = throwable.getMessage();
         resultReceived = true;
     }
 
@@ -46,5 +50,15 @@ public class SynchronizedStreamObserver<T> implements StreamObserver<T>
         System.out.println("Await return");
         this.resultReceived = false;
         return this.response;
+    }
+
+    public boolean errorOccured()
+    {
+        return this.error;
+    }
+
+    public String getErrorMessage()
+    {
+        return errorMessage;
     }
 }

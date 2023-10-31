@@ -13,13 +13,20 @@ cc_binary(
     ],
 )
 
+cc_binary(
+    name= "cpp_modules_test",
+    srcs = ["Module/test.cpp"],
+    deps=[
+        ":cpp_modules",
+        ":proto_util"
+        ]
+)
 
 cc_library(
     name="cpp_modules",
     srcs = glob([
         "Module/TypeMapping/*.hh",
         "Traits/*.hh",
-        "Module/test.cpp",
     
     ]),
     hdrs = glob(["Traits/*.hh",
@@ -27,6 +34,7 @@ cc_library(
     ]),
     deps = [
         ":capi",
+        ":proto_util"
     ],
     linkstatic = True,   # only create a static lib
     alwayslink = True,   # include everything in dependents
@@ -187,6 +195,8 @@ cc_library(
     hdrs = ["proto_util.hh"],
     deps = [
         "@com_google_protobuf//:protobuf",
+        "//dispatch/proto:claidservice_cc_proto",
+        "//dispatch/proto:claidservice_cc_grpc"
     ],
     # linkstatic = True,   # only create a static lib
     # alwayslink = True,   # include everything in dependents

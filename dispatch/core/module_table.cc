@@ -1,6 +1,6 @@
 #include "dispatch/core/module_table.hh"
 #include "dispatch/core/proto_util.hh"
-
+#include "dispatch/core/Logger/Logger.hh"
 // #include <google/protobuf/text_format.h>
 
 using grpc::Status;
@@ -77,6 +77,7 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
                 chanPkt.channel() + "' : " + messageToString(chanPkt));
         }
 
+        const string& channelId = chanPkt.channel();
         // Make sure the source or target is set.
         const string& src = chanPkt.source_host_module();
         const string& tgt = chanPkt.target_host_module();
@@ -84,18 +85,28 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         // At least source or target has to be the module in question, i.e., moduleId is either 
         // subscriber or publisher for this channel.
         if ((moduleId != src) && (moduleId != tgt)) {
-            return Status(grpc::INVALID_ARGUMENT, "Invalid source/target in channel definition");
+            return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
+                "Invalid source/target Module for Channel \"", channelId, "\".\n",
+                "Module \"", moduleId, "\" has to be either publisher or subscriber of the Channel, but neither was set."));
         }
 
         tuple<string, string, shared_ptr<DataPackage>> temp;
+        // If the channel exists, the channel information will be assigned to temp.
         if (!containsChan(chanPkt.channel(), temp)) {
-            return Status(grpc::INVALID_ARGUMENT, "Channel '" + chanPkt.channel() + "' undefined.");
+            return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
+                "Module \"", moduleId, "\" published or subscribed Channel \"", channelId, "\", ",
+                "which was not specified in the configuration file for the Module."
+            ));
         }
 
-        // If the channel registration exists make sure it matchtes
+        // If the channel registration exists make sure it matchtes (i.e., data type is correct).
         if (get<2>(temp)) {
             if (!compPacketType(*get<2>(temp), chanPkt)) {
-                return Status(grpc::INVALID_ARGUMENT, "Previously registered channel type doesn't match!");
+                const std::string previousPayloadType = dataPackagePayloadCaseToString(*std::get<2>(temp));
+                const std::string newPayloadType = dataPackagePayloadCaseToString(chanPkt);
+                return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Mismatching data type for channel \"", channelId, "\".\n",
+                "Channel was previously registered with payload type \"", previousPayloadType, "\", but Module \"", moduleId, "\""
+                "tried to publish/subscribe with payload type \"", newPayloadType, "\"."));
             }
         } else {
             get<2>(chanMap[chanPkt.channel()]) = make_shared<DataPackage>(chanPkt);
@@ -128,6 +139,7 @@ void ModuleTable::augmentFieldValues(claidservice::DataPackage& pkt, const Chann
 }
 
 bool ModuleTable::containsChan(const string& chanId, tuple<string,string, shared_ptr<DataPackage>>& entry) const {
+    claid::Logger::logInfo("Contains chan %s\n", chanId.c_str());
     auto it = chanMap.find(chanId);
     if (it == chanMap.end()) {
         return false;

@@ -94,6 +94,12 @@ public class ModuleDispatcher
         stub.getModuleList(request, responseObserver);
 
         response = responseObserver.await();
+
+        if(responseObserver.errorOccured())
+        {
+            Logger.logError("Error occured in getModuleList() of JAVA_RUNTIME: " + responseObserver.getErrorMessage());
+            System.exit(0);
+        }
         System.out.println("Respone: " + response);
 
         return response;
@@ -124,7 +130,12 @@ public class ModuleDispatcher
 
         response = responseObserver.await();
     
-        
+        if(responseObserver.errorOccured())
+        {
+            Logger.logError("Error occured in initRuntime() of JAVA_RUNTIME: " + responseObserver.getErrorMessage());
+            System.exit(0);
+        }
+
         return true;
     }
 
