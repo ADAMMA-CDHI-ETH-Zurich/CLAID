@@ -94,21 +94,27 @@ public class ModuleDispatcher
         stub.getModuleList(request, responseObserver);
 
         response = responseObserver.await();
+
+        if(responseObserver.errorOccured())
+        {
+            Logger.logError("Error occured in getModuleList() of JAVA_RUNTIME: " + responseObserver.getErrorMessage());
+            System.exit(0);
+        }
         System.out.println("Respone: " + response);
 
         return response;
     }
 
 
-    public boolean initRuntime(Map<String, DataPackage> channelExamplePackages)
+    public boolean initRuntime(Map<String, ArrayList<DataPackage>> channelExamplePackages)
     {
         InitRuntimeRequest.Builder initRuntimeRequest = InitRuntimeRequest.newBuilder();
         
-        for(Map.Entry<String, DataPackage> entry : channelExamplePackages.entrySet())
+        for(Map.Entry<String, ArrayList<DataPackage>> entry : channelExamplePackages.entrySet())
         {
             InitRuntimeRequest.ModuleChannels.Builder moduleChannels = InitRuntimeRequest.ModuleChannels.newBuilder();
             moduleChannels.setModuleId(entry.getKey());
-            moduleChannels.addChannelPackets(entry.getValue());
+            moduleChannels.addAllChannelPackets(entry.getValue());
             System.out.println("Adding " + entry.getValue());
             initRuntimeRequest.addModules(moduleChannels.build());
         }   
@@ -124,7 +130,12 @@ public class ModuleDispatcher
 
         response = responseObserver.await();
     
-        
+        if(responseObserver.errorOccured())
+        {
+            Logger.logError("Error occured in initRuntime() of JAVA_RUNTIME: " + responseObserver.getErrorMessage());
+            System.exit(0);
+        }
+
         return true;
     }
 
@@ -269,7 +280,7 @@ public class ModuleDispatcher
 
     private void onMiddlewareStreamError(Throwable throwable)
     {
-        Logger.logError("Middleware stream closed!");
+        Logger.logError("Middleware stream closed! " + throwable.getMessage());
         this.closeOutputStream();
     }
 

@@ -40,6 +40,7 @@ public abstract class Module
     {
         String errorMsg = "Module \"" + this.id + "\": " + error;
         Logger.log(SeverityLevel.ERROR, errorMsg);
+        System.exit(0);
     }
 
     protected void moduleWarning(final String warning)

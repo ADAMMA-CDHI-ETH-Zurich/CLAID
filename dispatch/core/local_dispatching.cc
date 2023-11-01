@@ -183,7 +183,7 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
     // Make sure we have a valid runtime ID and there is matching queue for the runtime.
     Runtime rt = request->runtime();
     if (rt == Runtime::RUNTIME_UNSPECIFIED) {
-        return Status(grpc::INVALID_ARGUMENT, "Runtime identifier missing");
+        return Status(grpc::INVALID_ARGUMENT, "Runtime identifier missing in InitRuntime.");
     }
 
     for(auto modChanIt : request->modules()) {
@@ -192,12 +192,13 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
 
         map<string, string>::const_iterator modClassIt;
         if ((modClassIt = moduleTable.moduleToClassMap.find(moduleId))== moduleTable.moduleToClassMap.end()) {
-            return Status(grpc::INVALID_ARGUMENT, "Unknown module id given");
+            return Status(grpc::INVALID_ARGUMENT, "Unknown module id given in InitRuntime called by ", Runtime_Name(rt));
         }
 
         auto classRt = moduleTable.moduleClassRuntimeMap[modClassIt->second];
         if (classRt != rt) {
-            return Status(grpc::INVALID_ARGUMENT, "Runtime ids to not match");
+            return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Module \"", moduleId, "\" was registered at Runtime ", Runtime_Name(classRt), 
+            "but now was requested to be loaded by Runtime ", Runtime_Name(rt), ". Runtime of Module does not the Runtime it was originally registered at."));
         }
         moduleTable.moduleRuntimeMap[moduleId] = classRt;
         if (!moduleTable.runtimeQueueMap[classRt]) {

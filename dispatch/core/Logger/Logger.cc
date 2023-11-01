@@ -40,8 +40,6 @@ void claid::Logger::printfln(const char *format, ...)
     va_start( args, format ) ;
     va_copy( args_copy, args ) ;
 
-
-
     const auto sz = std::vsnprintf( nullptr, 0, format, args ) + 1 ;
 
     try
@@ -52,29 +50,8 @@ void claid::Logger::printfln(const char *format, ...)
         va_end(args_copy) ;
         va_end(args) ;
 
-		std::stringstream ss;
-		std::string timeString = claid::Logger::getTimeString();
-
-		ss << "[" << claid::Logger::logTag << " | "
-				<< timeString << "] " << result;
-
-		// This is not thread safe....
-		// Leads to segfault if multiple threads access it at the same time.
-		//claid::Logger::lastLogMessage = ss.str().c_str();
-
-		#ifdef __ANDROID__
-			LOGCAT(ss.str().c_str(), __LINE__);
-		#else
-			std::cout << ss.str().c_str() << "\n" << std::flush;
-		#endif
-
-		if(claid::Logger::loggingToFileEnabled && claid::Logger::file != nullptr)
-		{
-			fileAccessMutex.lock();
-			(*file) << ss.str() << "\n";
-			file->flush();
-			fileAccessMutex.unlock();
-		}
+		
+		claid::Logger::log(SeverityLevel::INFO, result);
     }
 
     catch( const std::bad_alloc& )
@@ -85,8 +62,193 @@ void claid::Logger::printfln(const char *format, ...)
     }
 }
 
+void claid::Logger::log(const claid::SeverityLevel severityLevel, const std::string& message)
+{
+	claid::Logger::getTimeString();
+
+	std::stringstream ss;
+	std::string timeString = claid::Logger::getTimeString();
+
+	ss << "[" << timeString << " | " << logTag << severityLevelToString(severityLevel)
+	<< "] " << message;
+
+	#ifdef __ANDROID__
+		LOGCAT(ss.str().c_str(), __LINE__);
+	#else
+		std::cout << ss.str().c_str() << "\n" << std::flush;
+	#endif
+}
+
+void claid::Logger::log(const claid::SeverityLevel severityLevel, const char* format, ...)
+{
+	va_list args, args_copy ;
+    va_start( args, format ) ;
+    va_copy( args_copy, args ) ;
+	
+    const auto sz = std::vsnprintf( nullptr, 0, format, args ) + 1 ;
+
+    try
+    {
+        std::string result( sz, ' ' ) ;
+        std::vsnprintf( &result.front(), sz, format, args_copy ) ;
+
+		claid::Logger::log(severityLevel, result);
+
+		// This is not thread safe....
+		// Leads to segfault if multiple threads access it at the same time.
+		//claid::Logger::lastLogMessage = ss.str().c_str();
+
+        va_end(args_copy) ;
+        va_end(args) ;		
+    }
+
+    catch( const std::bad_alloc& )
+    {
+        va_end(args_copy) ;
+        va_end(args) ;
+        throw ;
+    }
+}
+
+void claid::Logger::logInfo(const char* format, ...)
+{
+	va_list args, args_copy ;
+    va_start( args, format ) ;
+    va_copy( args_copy, args ) ;
+	
+    const auto sz = std::vsnprintf( nullptr, 0, format, args ) + 1 ;
+
+    try
+    {
+        std::string result( sz, ' ' ) ;
+        std::vsnprintf( &result.front(), sz, format, args_copy ) ;
+
+		claid::Logger::log(SeverityLevel::INFO, result);
+
+        va_end(args_copy) ;
+        va_end(args) ;
+    }
+
+    catch( const std::bad_alloc& )
+    {
+        va_end(args_copy) ;
+        va_end(args) ;
+        throw ;
+    }
+}
+
+void claid::Logger::logWarning(const char* format, ...)
+{
+	va_list args, args_copy ;
+    va_start( args, format ) ;
+    va_copy( args_copy, args ) ;
+	
+    const auto sz = std::vsnprintf( nullptr, 0, format, args ) + 1 ;
+
+    try
+    {
+        std::string result( sz, ' ' ) ;
+        std::vsnprintf( &result.front(), sz, format, args_copy ) ;
+
+		claid::Logger::log(SeverityLevel::WARNING, result);
+
+        va_end(args_copy) ;
+        va_end(args) ;
+    }
+
+    catch( const std::bad_alloc& )
+    {
+        va_end(args_copy) ;
+        va_end(args) ;
+        throw ;
+    }
+}
+
+void claid::Logger::logError(const char* format, ...)
+{
+	va_list args, args_copy ;
+    va_start( args, format ) ;
+    va_copy( args_copy, args ) ;
+	
+    const auto sz = std::vsnprintf( nullptr, 0, format, args ) + 1 ;
+
+    try
+    {
+        std::string result( sz, ' ' ) ;
+        std::vsnprintf( &result.front(), sz, format, args_copy ) ;
+
+		claid::Logger::log(SeverityLevel::ERROR, result);
+
+        va_end(args_copy) ;
+        va_end(args) ;
+    }
+
+    catch( const std::bad_alloc& )
+    {
+        va_end(args_copy) ;
+        va_end(args) ;
+        throw ;
+    }
+}
+
+void claid::Logger::logFatal(const char* format, ...)
+{
+	va_list args, args_copy ;
+    va_start( args, format ) ;
+    va_copy( args_copy, args ) ;
+	
+    const auto sz = std::vsnprintf( nullptr, 0, format, args ) + 1 ;
+
+    try
+    {
+        std::string result( sz, ' ' ) ;
+        std::vsnprintf( &result.front(), sz, format, args_copy ) ;
+
+		claid::Logger::log(SeverityLevel::FATAL, result);
+
+        va_end(args_copy) ;
+        va_end(args) ;
+    }
+
+    catch( const std::bad_alloc& )
+    {
+        va_end(args_copy) ;
+        va_end(args) ;
+        throw ;
+    }
+}
+
+
 void claid::Logger::println(const std::string& msg) {
 	claid::Logger::printfln("%s", msg.c_str());
+}
+
+std::string claid::Logger::severityLevelToString(const claid::SeverityLevel level)
+{
+	switch(level)
+	{
+		case(SeverityLevel::INFO):
+		{
+			return "INFO";
+			break;
+		}
+		case(SeverityLevel::WARNING):
+		{
+			return "WARNING";
+			break;
+		}
+		case(SeverityLevel::ERROR):
+		{
+			return "ERROR";
+			break;
+		}
+		case(SeverityLevel::FATAL):
+		{
+			return "FATAL";
+			break;
+		}
+		
+	}
 }
 
 /**
@@ -158,33 +320,33 @@ std::string claid::Logger::getLastLogMessage()
 }
 
 
-bool claid::Logger::enableLoggingToFile(const std::string& path)
-{
-	// If logging is already enabled, first disable it (i.e., closing current log file).
-	if(claid::Logger::file != nullptr)
-	{
-		claid::Logger::disableLoggingToFile();
-	}
+// bool claid::Logger::enableLoggingToFile(const std::string& path)
+// {
+// 	// If logging is already enabled, first disable it (i.e., closing current log file).
+// 	if(claid::Logger::file != nullptr)
+// 	{
+// 		claid::Logger::disableLoggingToFile();
+// 	}
 
-	claid::Logger::file = new std::ofstream(path, std::ios::app);
+// 	claid::Logger::file = new std::ofstream(path, std::ios::app);
 
-	if(!file->is_open())
-	{
-		delete file;
-		return false;
-	}
+// 	if(!file->is_open())
+// 	{
+// 		delete file;
+// 		return false;
+// 	}
 
-	claid::Logger::loggingToFileEnabled = true;
-	return true;
-}
+// 	claid::Logger::loggingToFileEnabled = true;
+// 	return true;
+// }
 
-void claid::Logger::disableLoggingToFile()
-{
-	if(claid::Logger::file != nullptr)
-	{
-		file->close();
-		delete file;
-	}
+// void claid::Logger::disableLoggingToFile()
+// {
+// 	if(claid::Logger::file != nullptr)
+// 	{
+// 		file->close();
+// 		delete file;
+// 	}
 
-	claid::Logger::loggingToFileEnabled = false;
-}
+// 	claid::Logger::loggingToFileEnabled = false;
+// }
