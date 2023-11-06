@@ -57,7 +57,11 @@ namespace claid
 
         bool start(ChannelSubscriberPublisher* subscriberPublisher, const std::map<std::string, std::string>& properties);
 
+    protected:
 
+
+        void initializeInternal(const std::map<std::string, std::string>& properties);
+        void initialize(const std::map<std::string, std::string>& properties);ystem.out.println("Module base initialize");
 
         template<typename T>
         Channel<T> publish(const std::string& channelName) 

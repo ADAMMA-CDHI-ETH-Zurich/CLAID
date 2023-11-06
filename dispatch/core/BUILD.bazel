@@ -13,14 +13,6 @@ cc_binary(
     ],
 )
 
-cc_binary(
-    name= "cpp_modules_test",
-    srcs = ["Module/test.cpp"],
-    deps=[
-        ":cpp_modules",
-        ":proto_util"
-        ]
-)
 
 cc_library(
     name="cpp_modules",

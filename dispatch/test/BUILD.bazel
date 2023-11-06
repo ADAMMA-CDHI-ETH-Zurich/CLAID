@@ -64,6 +64,15 @@ cc_test(
 )
 
 cc_test(
+  name = "mutator_test",
+  size = "small",
+  srcs = ["mutator_test.cc"],
+  deps = [
+    "//dispatch/core:cpp_modules",
+  ] + FRAMEWORK_DEPS,
+)
+
+cc_test(
   name = "router_test",
   size = "small",
   srcs = ["router_test.cc"],
@@ -89,6 +98,8 @@ cc_test(
     "@bazel_tools//tools/cpp/runfiles",
   ] + FRAMEWORK_DEPS,
 )
+
+
 
 proto_library(
     name = "testmessages_proto",
