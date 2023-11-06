@@ -3,7 +3,6 @@ package adamma.c4dhi.claid.TypeMapping;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import javax.xml.crypto.Data;
 
 import adamma.c4dhi.claid.DataPackage;
 

@@ -1,6 +1,5 @@
 package adamma.c4dhi.claid;
 
-import javax.xml.crypto.Data;
 
 import adamma.c4dhi.claid.CLAID;
 import adamma.c4dhi.claid.LocalDispatching.ModuleManager;

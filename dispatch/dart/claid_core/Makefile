@@ -66,6 +66,13 @@ build_android:
 	cd ../../..; mkdir $(TARGET_LIBS_ANDROID)
 	cd ../../..; cp -r $(OUTPUT_APK_TMP_PATH_ANDROID)/lib/** $(TARGET_LIBS_ANDROID)/
 
+# For the JavaCLAID implementation (i.e., //dispatch/core/java) to be
+# available in the flutter plugin, they have to be copied to the android/src/main folder. 
+# Sadly, there seems to be no way to just add a reference to the //dispatch/core/java folder.
+.PHONY: copy_android_java_sources
+copy_android_java_sources:
+	cp -r ../../java/adamma android/src/main/java/adamma
+
 
 .PHONY: generate
 generate: generate_dart generate_test_dart generate_ffi

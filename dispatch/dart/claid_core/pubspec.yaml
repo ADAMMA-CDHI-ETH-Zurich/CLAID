@@ -44,6 +44,7 @@ flutter:
   plugin:
     platforms:
       android:
+        androidPackage: adamma.c4dhi.claid
         ffiPlugin: true
       linux:
         ffiPlugin: true
