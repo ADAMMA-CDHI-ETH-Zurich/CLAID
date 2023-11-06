@@ -54,8 +54,8 @@ build_middleware:
 
 # Build the Android Apk, extract the libs from the Apk and copy them to the blobs folder.
 # Make sure to use CC=gcc, not clang! Otherwise build fails.
-.PHONY: build_android
-build_android: 
+.PHONY: build_android 
+build_android: copy_android_java_sources
 	cd ../../..; rm -rf $(TARGET_LIBS_ANDROID)
 	CC=gcc bazel build //dispatch/android:$(OUTPUT_APK_ANDROID_NAME) --fat_apk_cpu=arm64-v8a,armeabi-v7a,x86,x86_64
 	cd ../../..; rm -fr $(OUTPUT_APK_TMP_PATH_ANDROID)
@@ -71,7 +71,9 @@ build_android:
 # Sadly, there seems to be no way to just add a reference to the //dispatch/core/java folder.
 .PHONY: copy_android_java_sources
 copy_android_java_sources:
-	cp -r ../../java/adamma android/src/main/java/adamma
+	rm -fr android/src/main/java/adamma/c4dhi/claid
+	mkdir -p android/src/main/java/adamma/c4dhi
+	cp -r ../../java/adamma/c4dhi/claid android/src/main/java/adamma/c4dhi/claid
 
 
 .PHONY: generate

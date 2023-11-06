@@ -52,11 +52,28 @@ public class ModuleDispatcher
 
     boolean waitingForPingResponse = false;
 
+    // Is this safe?
+    private boolean isAndroid() {
+        try {
+            Class.forName("android.os.Build");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
     public ModuleDispatcher(final String socketPath)
     {
         this.socketPath = socketPath;
 
-        this.grpcChannel = Grpc.newChannelBuilder(socketPath, InsecureChannelCredentials.create()).build();
+        // If android and socket path prefix is unix://
+        if (socketPath != null && socketPath.startsWith("unix://") && isAndroid()) {
+            String udsPath = socketPath.substring("unix://".length());
+            this.grpcChannel = UdsChannelBuilder.forPath(udsPath, UdsChannelBuilder.Namespace.FILESYSTEM).build();
+        } else {
+            this.grpcChannel = Grpc.newChannelBuilder(socketPath, InsecureChannelCredentials.create()).build();
+        }
+
         //this.grpcChannel = ManagedChannelBuilder.forTarget(socketPath).usePlaintext().build();
         // see https://github.com/Hellblazer/GrpcDomainSocketTest/blob/main/src/test/java/domain/DomainSocketReproTest.java
         // this.grpcChannel = NettyChannelBuilder.forAddress(new DomainSocketAddress(socketPath))

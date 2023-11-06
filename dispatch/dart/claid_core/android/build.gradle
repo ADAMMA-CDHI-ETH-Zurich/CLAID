@@ -67,7 +67,6 @@ android {
 
     sourceSets {
 
-        main.java.srcDirs += "../../../java/"
         main.proto.srcDirs += "../../../proto"
         
     }
@@ -94,8 +93,9 @@ protobuf {
 
 dependencies
 {
-    implementation 'io.grpc:grpc-okhttp:1.59.0' // CURRENT_GRPC_VERSION
     implementation 'io.grpc:grpc-protobuf:1.59.0' // CURRENT_GRPC_VERSION
     implementation 'io.grpc:grpc-stub:1.59.0' // CURRENT_GRPC_VERSION
+    implementation 'io.grpc:grpc-android:1.59.0' // CURRENT_GRPC_VERSION
+    implementation 'io.grpc:grpc-okhttp:1.59.0' // CURRENT_GRPC_VERSION
     implementation 'javax.annotation:javax.annotation-api:1.3.2' 
 }
