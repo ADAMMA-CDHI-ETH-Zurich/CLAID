@@ -6,7 +6,7 @@
 namespace claid
 {
     // The LocalRouter is invoked from the MasterRouter, if a package is targeted
-    // for a Module on the current host (this host). 
+    // for a Module on the current host (this host).
     // The LocalRouter then routes the package to the correct RuntimeDispatcher via the corresponding queues.
 
     class LocalRouter final : public Router
@@ -38,7 +38,7 @@ namespace claid
 
                 SharedQueue<DataPackage>* inputQueueForRuntime = this->moduleTable.lookupOutputQueue(targetModule);
 
-                if(inputQueueForRuntime == nullptr)
+                if(!inputQueueForRuntime)
                 {
                     return absl::InvalidArgumentError(absl::StrCat("LocalRouter: Failed to route package to local Module \"", targetModule,"\".\n"
                     "Unable to get input queue of the Runtime the Module is running in. Possibly, the Runtime was not registered."));
@@ -47,6 +47,6 @@ namespace claid
                 inputQueueForRuntime->push_back(dataPackage);
                 return absl::OkStatus();
             }
-        
+
     };
 }

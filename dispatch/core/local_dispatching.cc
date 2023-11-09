@@ -31,7 +31,7 @@ static bool validCtrlRuntimePingPkt(const DataPackage& pkt) {
 RuntimeDispatcher::RuntimeDispatcher(SharedQueue<DataPackage>& inQueue,
                                      SharedQueue<DataPackage>& outQueue,
                                      const ModuleTable& modTable) :
-        incomingQueue(inQueue), outgoingQueue(outQueue), moduleTable(modTable) 
+        incomingQueue(inQueue), outgoingQueue(outQueue), moduleTable(modTable)
 {
     Logger::printfln("constr incoming queue ptr: %lu", &incomingQueue);
     Logger::printfln("const outgoing queue ptr: %lu", &outgoingQueue);
@@ -75,8 +75,8 @@ void RuntimeDispatcher::shutdownWriterThread() {
 }
 
 void RuntimeDispatcher::processWriting(ServerReaderWriter<DataPackage, DataPackage>* stream) {
-     while(true) {      
-        
+     while(true) {
+
         auto pkt = outgoingQueue.pop_front();
 
         // If we got a null pointer we are done
@@ -111,23 +111,27 @@ void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
 
     // Enqueue the data package and we are all done.
     if (!pkt.has_control_val()) {
-        // filter the messages for consistency
-        // check if src & dest are not in that
+        // Check if the channel of the packet is valid. That means the
+        // combination of channel, source, target and type has to exist in the
+        // channel map.
         ChannelInfo chanInfo;
-        if (!moduleTable.isValidChannel(pkt, chanInfo)) {
+        auto chanEntry = moduleTable.isValidChannel(pkt);
+        if (!chanEntry) {
             // TODO: Figure out how to handle errors without leaving
             // the read loop.
             Logger::printfln("Received invalid data packet:");
             Logger::println(messageToString(pkt));
             return;
         }
-        Logger::printfln("Received valid package from Module \"%s\".", pkt.source_host_module().c_str());
+        Logger::printfln("Received valid package from Module \"%s\" on \"%s\".",
+                         pkt.source_host_module().c_str(), pkt.channel().c_str());
+        moduleTable.addOutputPackets(pkt, chanEntry, incomingQueue);
 
         // Make a copy of the package and augment it with the
         // the fields not set by the client dispatcher.
-        auto cpPkt = make_shared<DataPackage>(pkt);
-        moduleTable.augmentFieldValues(*cpPkt, chanInfo);
-        incomingQueue.push_back(cpPkt);
+        // auto cpPkt = make_shared<DataPackage>(pkt);
+        // moduleTable.augmentFieldValues(*cpPkt, chanInfo);
+        // incomingQueue.push_back(cpPkt);
         return;
     }
 
@@ -197,7 +201,7 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
 
         auto classRt = moduleTable.moduleClassRuntimeMap[modClassIt->second];
         if (classRt != rt) {
-            return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Module \"", moduleId, "\" was registered at Runtime ", Runtime_Name(classRt), 
+            return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Module \"", moduleId, "\" was registered at Runtime ", Runtime_Name(classRt),
             "but now was requested to be loaded by Runtime ", Runtime_Name(rt), ". Runtime of Module does not the Runtime it was originally registered at."));
         }
         moduleTable.moduleRuntimeMap[moduleId] = classRt;
@@ -308,7 +312,7 @@ RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& s
 
 
     moduleTable.addRuntimeIfNotExists(runTime);
-    
+
     shared_ptr<SharedQueue<DataPackage>> rtq = moduleTable.getOutputQueueOfRuntime(runTime);
 
     if(rtq == nullptr)

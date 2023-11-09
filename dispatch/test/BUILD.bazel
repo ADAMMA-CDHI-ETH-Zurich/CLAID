@@ -18,9 +18,21 @@ cc_test(
   size = "small",
   srcs = ["local_dispatching_test.cc"],
   deps = [
-    ":testmessages_cc_proto",
+    ":test_helpers",
     "//dispatch/core:local_dispatching",
     "//dispatch/core:proto_util",
+  ] + FRAMEWORK_DEPS,
+)
+
+# ":testmessages_cc_proto",
+
+cc_test(
+  name = "module_table_test",
+  size = "small",
+  srcs = ["module_table_test.cc"],
+  deps = [
+    ":test_helpers",
+    "//dispatch/core:module_table",
   ] + FRAMEWORK_DEPS,
 )
 
@@ -115,13 +127,33 @@ cc_test(
 
 
 proto_library(
-    name = "testmessages_proto",
-    srcs = [
-        "testmessages.proto",
-    ],
+  name = "testmessages_proto",
+  srcs = [
+      "testmessages.proto",
+  ],
 )
 
 cc_proto_library(
-    name = "testmessages_cc_proto",
-    deps = [":testmessages_proto"],
+  name = "testmessages_cc_proto",
+  deps = [":testmessages_proto"],
 )
+
+cc_library(
+  name = "test_helpers",
+  srcs = [
+      "test_helpers.cc",
+  ],
+  hdrs = [
+    "test_helpers.hh",
+  ],
+  deps = [
+  # ":testmessages_cc_proto",
+  # "//dispatch/core:proto_util",
+  ":testmessages_cc_proto",
+  "//dispatch/core:logger",
+  "//dispatch/core:proto_util",
+  "//dispatch/proto:claidservice_cc_proto",
+  "//dispatch/proto:claidservice_cc_grpc",
+  ] + FRAMEWORK_DEPS,
+)
+

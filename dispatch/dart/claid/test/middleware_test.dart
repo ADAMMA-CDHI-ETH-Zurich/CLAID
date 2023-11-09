@@ -2,15 +2,15 @@
 * Copyright (C) 2023 ETH Zurich
 * Core AI & Digital Biomarker, Acoustic and Inflammatory Biomarkers (ADAMMA)
 * Centre for Digital Health Interventions (c4dhi.org)
-* 
+*
 * Authors: Patrick Langer, Stephan Altmüller
-* 
+*
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
-* 
+*
 *         http://www.apache.org/licenses/LICENSE-2.0
-* 
+*
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -59,17 +59,20 @@ void main() {
       'TestModuleOne',
       'TestModuleTwo',
     ];
-    final modDesc = await disp.getModuleList(moduleClasses);
+
+    await disp.getModuleList(moduleClasses);
 
     // Set the channels
+    const testModOne = 'test_mod_1';
+    const testModTwo = 'test_mod_2';
     final channels = <String, List<DataPackage>>{
-      'test_mod_1': <DataPackage>[
+      testModOne: <DataPackage>[
         DataPackage(
-            channel: channelID, sourceHostModule: 'test_mod_1', numberVal: 99),
+            channel: channelID, sourceHostModule: testModOne, numberVal: 99),
       ],
-      'test_mod_2': <DataPackage>[
+      testModTwo: <DataPackage>[
         DataPackage(
-            channel: channelID, targetHostModule: 'test_mod_2', numberVal: 99),
+            channel: channelID, targetHostModule: testModTwo, numberVal: 99),
       ],
     };
 
@@ -82,11 +85,12 @@ void main() {
     final incoming = <DataPackage>[];
     late StreamSubscription<DataPackage> sub;
 
-    Future<void> shutDown() async {
-      await outputController.close();
-      disp.closeRuntime();
-      completer.complete();
-    }
+    // TODO: enable shutdown once it works reliably.
+    // Future<void> shutDown() async {
+    //   await outputController.close();
+    //   disp.closeRuntime();
+    //   completer.complete();
+    // }
 
     sub = inputStream.listen((pkt) async {
       incoming.add(pkt);
@@ -105,8 +109,11 @@ void main() {
     var counter = 0;
 
     Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      final pkt =
-          DataPackage(channel: channelID, numberVal: counter.toDouble());
+      final pkt = DataPackage(
+        channel: channelID,
+        sourceHostModule: testModOne,
+        numberVal: counter.toDouble(),
+      );
       outGoingPkts.add(pkt);
       outputController.add(pkt);
       counter += 1;

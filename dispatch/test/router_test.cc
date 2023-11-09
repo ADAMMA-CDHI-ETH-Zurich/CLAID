@@ -17,11 +17,11 @@ std::shared_ptr<claidservice::DataPackage> makePkt(const std::string& channel, c
     *ret->mutable_channel() = channel;
     *ret->mutable_source_host_module() = src;
     *ret->mutable_target_host_module() = tgt;
-    setter(*ret.get()); 
-    return ret; 
+    setter(*ret.get());
+    return ret;
 }
 
-TEST(RouterTestSuite, LocalRouterTest) 
+TEST(RouterTestSuite, LocalRouterTest)
 {
     ModuleTable table;
     const std::string host = "host:";
@@ -40,11 +40,11 @@ TEST(RouterTestSuite, LocalRouterTest)
     const std::string channel33 = "TestChannel33";
 
     // Register Modules to different runtimes to simulate routing to different queues.
-    table.setModule(mod1, "TestModuleClass1", {});
+    table.setNeededModule(mod1, "TestModuleClass1", {});
     table.addModuleToRuntime(mod1, claidservice::Runtime::RUNTIME_CPP);
-    table.setModule(mod2, "TestModuleClass2", {});
+    table.setNeededModule(mod2, "TestModuleClass2", {});
     table.addModuleToRuntime(mod2, claidservice::Runtime::RUNTIME_JAVA);
-    table.setModule(mod3, "TestModuleClass3", {});
+    table.setNeededModule(mod3, "TestModuleClass3", {});
     table.addModuleToRuntime(mod3, claidservice::Runtime::RUNTIME_PYTHON);
 
     SharedQueue<DataPackage>* outputQueue1 = table.lookupOutputQueue(mod1);
@@ -59,15 +59,15 @@ TEST(RouterTestSuite, LocalRouterTest)
     LocalRouter localRouter(table);
 
     // Simulate each Module sending to data to every Module (including itself).
-    std::vector<std::shared_ptr<DataPackage>> packages = { 
+    std::vector<std::shared_ptr<DataPackage>> packages = {
         makePkt(channel11, absl::StrCat(host, mod1), absl::StrCat(host, mod1), [](auto& p) {  p.set_string_val("package11");}),
         makePkt(channel12, absl::StrCat(host, mod1), absl::StrCat(host, mod2), [](auto& p) { p.set_string_val("package12"); }),
         makePkt(channel13, absl::StrCat(host, mod1), absl::StrCat(host, mod3), [](auto& p) { p.set_string_val("package13"); }),
         makePkt(channel21, absl::StrCat(host, mod2), absl::StrCat(host, mod1), [](auto& p) { p.set_string_val("package21"); }),
         makePkt(channel22, absl::StrCat(host, mod2), absl::StrCat(host, mod2), [](auto& p) { p.set_string_val("package22"); }),
-        makePkt(channel23, absl::StrCat(host, mod2), absl::StrCat(host, mod3), [](auto& p) { p.set_string_val("package23"); }), 
-        makePkt(channel31, absl::StrCat(host, mod3), absl::StrCat(host, mod1), [](auto& p) { p.set_string_val("package31"); }), 
-        makePkt(channel32, absl::StrCat(host, mod3), absl::StrCat(host, mod2), [](auto& p) { p.set_string_val("package32"); }), 
+        makePkt(channel23, absl::StrCat(host, mod2), absl::StrCat(host, mod3), [](auto& p) { p.set_string_val("package23"); }),
+        makePkt(channel31, absl::StrCat(host, mod3), absl::StrCat(host, mod1), [](auto& p) { p.set_string_val("package31"); }),
+        makePkt(channel32, absl::StrCat(host, mod3), absl::StrCat(host, mod2), [](auto& p) { p.set_string_val("package32"); }),
         makePkt(channel33, absl::StrCat(host, mod3), absl::StrCat(host, mod3), [](auto& p) { p.set_string_val("package33"); })
     };
 
@@ -85,7 +85,7 @@ TEST(RouterTestSuite, LocalRouterTest)
 
 }
 
-TEST(RouterTestSuite, MasterRouterTest) 
+TEST(RouterTestSuite, MasterRouterTest)
 {
-    
+
 }

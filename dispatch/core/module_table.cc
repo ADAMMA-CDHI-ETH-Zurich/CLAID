@@ -18,20 +18,22 @@ bool claid::compPacketType(const DataPackage& ref, const DataPackage& val) {
         (ref.payload_oneof_case() == val.payload_oneof_case());
 }
 
+// DONE
 // Returns true if the packet from the client is valid.
 // A packet is considered valid when
 //    - the channel and payload are set
 //    - the payload is not a control package
-//    - the source or the target are set (depending whether it's an
-//      input or output channel)
+//    - the source or the target are set (exclusive or)
 //
 bool claid::validPacketType(const DataPackage& ref) {
     return !(ref.channel().empty() ||
         (ref.source_host_module().empty() && ref.target_host_module().empty()) ||
+        (!ref.source_host_module().empty() && !ref.target_host_module().empty()) ||
         (ref.payload_oneof_case() == DataPackage::PayloadOneofCase::PAYLOAD_ONEOF_NOT_SET) ||
         ref.has_control_val());
 }
 
+// DONE
 SharedQueue<DataPackage>* ModuleTable::lookupOutputQueue(const string& moduleId) {
     auto rt = moduleRuntimeMap[moduleId];
     if (rt != Runtime::RUNTIME_UNSPECIFIED) {
@@ -43,22 +45,30 @@ SharedQueue<DataPackage>* ModuleTable::lookupOutputQueue(const string& moduleId)
     return nullptr;
 }
 
+// DONE
 void ModuleTable::setProperties(const ModuleTableProperties& props) {
     this->props = props;
 }
 
-void ModuleTable::setModule(const string& moduleId, const string& moduleClass,
+// DONE
+void ModuleTable::setNeededModule(const string& moduleId, const string& moduleClass,
         const map<string, string>& properties) {
     // TODO: verify no module is registered incorreclty multiple times
     moduleToClassMap[moduleId] = moduleClass;
     moduleProperties[moduleId] = properties;
 }
 
-void ModuleTable::setChannel(const string& channelId, const string& source, const string& target) {
+// DONE
+void ModuleTable::setExpectedChannel(const string& channelId, const string& source, const string& target) {
     unique_lock<shared_mutex> lock(chanMapMutex);
-    chanMap[channelId] = make_tuple(source, target, nullptr);
+
+    // TODO: Check whether the input doesn't conflict with
+    // assumptions and previous additons of channels.
+    chanMap[channelId].sources[source] = false;
+    chanMap[channelId].targets[target] = false;
 }
 
+// DONE
 Status ModuleTable::setChannelTypes(const string& moduleId,
             const google::protobuf::RepeatedPtrField<DataPackage>& channels) {
     if (moduleId.empty()) {
@@ -70,7 +80,7 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
     // performance critical section.
     unique_lock<shared_mutex> lock(chanMapMutex);
     for(auto& chanPkt : channels) {
-        // Validate the input packets
+        // Validate the input packets, which guarantees that all required fields are set.
         if (!validPacketType(chanPkt)) {
             return Status(grpc::INVALID_ARGUMENT,
                 "Invalid packet type for channel '" +
@@ -78,11 +88,10 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         }
 
         const string& channelId = chanPkt.channel();
-        // Make sure the source or target is set.
         const string& src = chanPkt.source_host_module();
         const string& tgt = chanPkt.target_host_module();
 
-        // At least source or target has to be the module in question, i.e., moduleId is either 
+        // At least source or target has to be the module in question, i.e., moduleId is either
         // subscriber or publisher for this channel.
         if ((moduleId != src) && (moduleId != tgt)) {
             return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
@@ -90,62 +99,97 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
                 "Module \"", moduleId, "\" has to be either publisher or subscriber of the Channel, but neither was set."));
         }
 
-        tuple<string, string, shared_ptr<DataPackage>> temp;
-        // If the channel exists, the channel information will be assigned to temp.
-        if (!containsChan(chanPkt.channel(), temp)) {
-            return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
-                "Module \"", moduleId, "\" published or subscribed Channel \"", channelId, "\", ",
-                "which was not specified in the configuration file for the Module."
-            ));
+
+        // Find the channel and verify and set the type.
+        auto entry = findChannel(channelId);
+        if (!entry) {
+            return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Channel \"", channelId, "\"not known"));
         }
 
-        // If the channel registration exists make sure it matchtes (i.e., data type is correct).
-        if (get<2>(temp)) {
-            if (!compPacketType(*get<2>(temp), chanPkt)) {
-                const std::string previousPayloadType = dataPackagePayloadCaseToString(*std::get<2>(temp));
-                const std::string newPayloadType = dataPackagePayloadCaseToString(chanPkt);
-                return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Mismatching data type for channel \"", channelId, "\".\n",
-                "Channel was previously registered with payload type \"", previousPayloadType, "\", but Module \"", moduleId, "\""
-                "tried to publish/subscribe with payload type \"", newPayloadType, "\"."));
-            }
-        } else {
-            get<2>(chanMap[chanPkt.channel()]) = make_shared<DataPackage>(chanPkt);
+        // If the type was already set and the type doesn't match we return an error.
+        if ((entry->payloadType != DataPackage::PAYLOAD_ONEOF_NOT_SET) && (entry->payloadType != chanPkt.payload_oneof_case())) {
+            return Status(grpc::INVALID_ARGUMENT, "Invalid packet type for channel '" +
+                                                    chanPkt.channel() + "' : " + messageToString(chanPkt));
         }
+
+        // Mark the source / target as matched by this module.
+        bool isSource = (moduleId == src);
+        const string& val = isSource ? src : tgt;
+        if (!entry->addSet(val, isSource)) {
+            return Status(grpc::INVALID_ARGUMENT, "Source or target '" + val + "' not expected.");
+        }
+        entry->payloadType = chanPkt.payload_oneof_case();
     }
     return Status::OK;
 }
 
-bool ModuleTable::isValidChannel(const DataPackage& pkt, ChannelInfo& chanInfo) const {
-    shared_lock<shared_mutex> lock(const_cast<shared_mutex&>(chanMapMutex));
+bool ModuleTable::ready() const {
+    for(auto& it : chanMap) {
+        for(auto& innerIt : it.second.sources) {
+            if (!innerIt.second) {
+                return false;
+            }
+        }
 
-    if (!containsChan(pkt.channel(), chanInfo)) {
-        return false;
+        for(auto& innerIt : it.second.targets) {
+            if (!innerIt.second) {
+                return false;
+            }
+        }
+        if (it.second.payloadType == DataPackage::PAYLOAD_ONEOF_NOT_SET) {
+            return false;
+        }
     }
-    return compPacketType(*get<2>(chanInfo), pkt);
+    return true;
 }
 
-bool ModuleTable::lookupChannel(const string& chanId, ChannelInfo& chanInfo) const {
+const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt) const {
     shared_lock<shared_mutex> lock(const_cast<shared_mutex&>(chanMapMutex));
-    return containsChan(chanId, chanInfo);
+
+    auto entry = (const_cast<ModuleTable*>(this))->findChannel(pkt.channel());
+    if (!entry) {
+        return nullptr;
+    }
+
+    auto srcIt = entry->sources.find(pkt.source_host_module());
+    if (srcIt == entry->sources.end()) {
+        return nullptr;
+    }
+
+    if (entry->payloadType != pkt.payload_oneof_case()) {
+        return nullptr;
+    }
+
+    return entry;
 }
 
-void ModuleTable::augmentFieldValues(claidservice::DataPackage& pkt, const ChannelInfo& chanInfo) const {
+void ModuleTable::addOutputPackets(const claidservice::DataPackage pkt,
+                          const ChannelEntry* chanEntry,
+                          SharedQueue<claidservice::DataPackage>& queue) const {
+
+    // Make a copy of the incoming packet and augment it.
+    auto cpPkt = pkt;
+    augmentFieldValues(cpPkt);
+    for(auto& it : chanEntry->targets) {
+        auto outPkt = make_shared<DataPackage>(cpPkt);
+        outPkt->set_target_host_module(it.first);
+        queue.push_back(outPkt);
+    }
+}
+
+void ModuleTable::augmentFieldValues(claidservice::DataPackage& pkt) const {
     pkt.set_source_user_token(props.userId);
     pkt.set_device_id(props.deviceId);
-    pkt.set_source_host_module(get<0>(chanInfo));
-    pkt.set_target_host_module(get<1>(chanInfo));
 
     // TODO: Add more meta data fields here, like time stamps etc.
 }
 
-bool ModuleTable::containsChan(const string& chanId, tuple<string,string, shared_ptr<DataPackage>>& entry) const {
-    claid::Logger::logInfo("Contains chan %s\n", chanId.c_str());
-    auto it = chanMap.find(chanId);
+ChannelEntry* ModuleTable::findChannel(const string& channelId) {
+    auto it = chanMap.find(channelId);
     if (it == chanMap.end()) {
-        return false;
+        return nullptr;
     }
-    entry = it->second;
-    return true;
+    return &it->second;
 }
 
 const string ModuleTable::toString() const {
@@ -165,23 +209,20 @@ const string ModuleTable::toString() const {
 
     shared_lock<shared_mutex> lock(const_cast<shared_mutex&>(chanMapMutex));
     for(auto& it : chanMap) {
-        out << "    ";
-        out << "<" << it.first << ", " << get<0>(it.second) << ", " << get<1>(it.second) << "> : ";
-        auto pkg = get<2>(it.second);
-        if (pkg) {
-            out << pkg->source_host_module() << " --> " << pkg->target_host_module();
-        } else {
-            out << "<none>";
+        out << "    \'" << it.first << "\'" << endl;
+        out << "         Sources: ";
+        for(auto& srcIt : it.second.sources) {
+            out << srcIt.first << " : " << (srcIt.second ? "true" : "false") << "   ";
         }
         out << endl;
-    }
 
-    out << "Chan Table: " << endl;
-    for(auto it : chanMap) {
-        out << "   " << it.first << " : "
-            << get<0>(it.second) << " | "
-            << get<1>(it.second) << " | "
-            << (get<2>(it.second) ? (messageToString(*get<2>(it.second))) : string("none")) << endl << endl;
+        out << "         Targets: ";
+        for(auto& tgtIt : it.second.targets) {
+            out << tgtIt.first << " : " << (tgtIt.second ? "true" : "false") << "  ";
+        }
+        out << endl;
+
+        out << "         Type:" << it.second.payloadType << endl;
     }
     return out.str();
 }
@@ -201,7 +242,7 @@ std::shared_ptr<SharedQueue<claidservice::DataPackage>> ModuleTable::getOutputQu
     if(it == runtimeQueueMap.end())
     {
         return nullptr;
-    } 
+    }
     return it->second;
 }
 
@@ -215,4 +256,15 @@ void ModuleTable::addModuleToRuntime(const std::string& moduleID, claidservice::
     {
         runtimeQueueMap[runtime] = make_shared<SharedQueue<DataPackage>>();
     }
+}
+
+bool ChannelEntry::addSet(const string& key, bool isSrc) {
+    map<string, bool>& field = (isSrc) ? sources : targets;
+    auto it = field.find(key);
+    if (it == field.end()) {
+        field[key] = false;
+        return false;
+    }
+    it->second = true;
+    return true;
 }

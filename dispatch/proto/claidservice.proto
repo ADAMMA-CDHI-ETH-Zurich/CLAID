@@ -34,8 +34,8 @@ service ClaidRemoteService
 }
 
 message DataPackage {
-  string id = 1;      // Unique ID of this package 
-  string channel = 2; 
+  string id = 1;      // Unique ID of this package
+  string channel = 2;
   string source_host_module = 3; // originating module in the format host_id:module_id
   string target_host_module = 4; // target module in the format host_id:module_id
   string source_user_token = 5;  // id token of the user / system entity that created this package.
@@ -149,7 +149,7 @@ message TracePoint {
 }
 
 // Sent by the client (Runtime) to tell the Middleware which Modules it supports.
-// The Middleware will answer with a ModuleListResponse, which contains the Modules 
+// The Middleware will answer with a ModuleListResponse, which contains the Modules
 // that the Middleware wants the runtime client to load.
 message ModuleListRequest {
   Runtime runtime = 1;
@@ -162,7 +162,7 @@ message ModuleListResponse {
     string module_id = 1;
     string module_class = 2;
     map<string, string> properties = 3;
-    repeated DataPackage channels = 4;
+    // repeated DataPackage channels = 4;
   }
 
   repeated ModuleDescriptor descriptors = 1;

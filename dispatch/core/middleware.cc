@@ -190,7 +190,7 @@ absl::Status MiddleWare::populateModuleTable(
     {
         const ModuleDescription& moduleDescription = entry.second;
 
-        moduleTable.setModule(moduleDescription.id,
+        moduleTable.setNeededModule(moduleDescription.id,
             moduleDescription.moduleClass,
             moduleDescription.properties);
     }
@@ -206,12 +206,12 @@ absl::Status MiddleWare::populateModuleTable(
             if(channelDescription.subscriberModules.size() == 0)
             {
                 // Channel without subscriber.
-                moduleTable.setChannel(channelName, publisher, "");
+                moduleTable.setExpectedChannel(channelName, publisher, "");
                 continue;
             }
             for(const std::string& subscriber : channelDescription.subscriberModules)
             {
-                moduleTable.setChannel(channelName, publisher, subscriber);
+                moduleTable.setExpectedChannel(channelName, publisher, subscriber);
             }
         }
     }

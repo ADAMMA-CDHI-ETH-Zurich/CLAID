@@ -19,12 +19,12 @@ OUTPUT_APK_ANDROID = bazel-bin/dispatch/android/$(OUTPUT_APK_ANDROID_NAME)
 OUTPUT_APK_TMP_PATH_ANDROID = bazel-bin/dispatch/android/extract_libs
 TARGET_LIBS_ANDROID = dispatch/dart/claid/blobs/android
 
-
 .PHONY: all
 all: build
 
 .PHONY: clean
 clean:
+	mkdir -p blobs
 	rm -f blobs/*.so
 
 # Build everything and run a series of tests.
@@ -48,14 +48,16 @@ build: build_middleware generate
 # Build the middleware via bazel.
 .PHONY: build_middleware
 build_middleware:
+	mkdir -p blobs
 	cd ../../..; rm -f $(TARGET_LIB)
 	CC=clang bazel build //dispatch/core:claid_capi
 	cd ../../..; cp $(OUTPUT_LIB) $(TARGET_LIB)
 
 # Build the Android Apk, extract the libs from the Apk and copy them to the blobs folder.
 # Make sure to use CC=gcc, not clang! Otherwise build fails.
-.PHONY: build_android 
+.PHONY: build_android
 build_android: copy_android_sources
+	mkdir -p blobs
 	cd ../../..; rm -rf $(TARGET_LIBS_ANDROID)
 	CC=gcc bazel build //dispatch/android:$(OUTPUT_APK_ANDROID_NAME) --fat_apk_cpu=arm64-v8a,armeabi-v7a
 	cd ../../..; rm -fr $(OUTPUT_APK_TMP_PATH_ANDROID)
@@ -67,7 +69,7 @@ build_android: copy_android_sources
 	cd ../../..; cp -r $(OUTPUT_APK_TMP_PATH_ANDROID)/lib/** $(TARGET_LIBS_ANDROID)/
 
 # For the JavaCLAID implementation (i.e., //dispatch/core/java) to be
-# available in the flutter plugin, they have to be copied to the android/src/main folder. 
+# available in the flutter plugin, they have to be copied to the android/src/main folder.
 # Sadly, there seems to be no way to just add a reference to the //dispatch/core/java folder.
 .PHONY: copy_android_sources
 copy_android_sources:

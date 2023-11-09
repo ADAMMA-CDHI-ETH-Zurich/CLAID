@@ -14,10 +14,11 @@
 
 namespace claid
 {
-  class RemoteDispatcherServer 
+  class RemoteDispatcherServer
   {
     public:
       RemoteDispatcherServer(const std::string& addr, HostUserTable& hostUserTable);
+      RemoteDispatcherServer(const std::string& addr);
       virtual ~RemoteDispatcherServer() {};
 
       absl::Status start();
