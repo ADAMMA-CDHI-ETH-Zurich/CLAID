@@ -21,8 +21,7 @@ public class Publisher<T>
         this.channelName = channelName;
         this.toModuleManagerQueue = toModuleManagerQueue;
 
-        T instance = TypeMapping.getNewInstance(dataType);
-        this.mutator = TypeMapping.getMutator(instance);
+        this.mutator = TypeMapping.getMutator(dataType);
     }
 
     public void post(T data)

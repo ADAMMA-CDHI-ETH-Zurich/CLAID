@@ -24,8 +24,7 @@ public class Subscriber<T extends Object> extends AbstractSubscriber
         this.dataType = dataType;
         this.callback = callback;
         this.callbackDispatcher = callbackDispatcher;
-        T instance = TypeMapping.getNewInstance(dataType);
-        this.mutator = TypeMapping.getMutator(instance);
+        this.mutator = TypeMapping.getMutator(dataType);
     }
 
     private void invokeCallback(T data)

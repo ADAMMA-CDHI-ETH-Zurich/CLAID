@@ -18,7 +18,9 @@ cc_binary(
 
 java_binary(
     name = "claid_java_test",
-    srcs = glob(["adamma/c4dhi/claid/**/*.java"]),
+    srcs = glob(["adamma/c4dhi/claid/**/*.java",
+                "io/grpc/android/UdsChannelBuilder.java",
+                "android/net/LocalSocketAddress/Namespace.java"]),
     deps = [":java_local_dispatching",
         ":claid_capi_java",
         "@com_google_protobuf//java/core",
@@ -41,7 +43,9 @@ java_library(
                 "adamma/c4dhi/claid/Module/*.java",
                 "adamma/c4dhi/claid/Logger/*.java",
                 "adamma/c4dhi/claid/TypeMapping/*.java",
-                "adamma/c4dhi/claid/Module/Scheduling/*.java"]),
+                "adamma/c4dhi/claid/Module/Scheduling/*.java",
+                "io/grpc/android/UdsChannelBuilder.java",
+                "android/net/LocalSocketAddress/Namespace.java"]),
     deps = [        
         "//dispatch/proto:claidservice_java_proto",
         "//dispatch/proto:claidservice_java_grpc",

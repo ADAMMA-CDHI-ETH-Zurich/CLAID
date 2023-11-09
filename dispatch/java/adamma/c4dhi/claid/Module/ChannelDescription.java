@@ -56,7 +56,7 @@ public class ChannelDescription
             return null;
         }
 
-        Mutator<T> mutator = TypeMapping.getMutator(exampleInstance);
+        Mutator<T> mutator = TypeMapping.getMutator(dataType);
         if(mutator == null)
         {
             System.out.println("Failed to create get mutator for object of class \"" + dataType.getName() + "\".");
@@ -86,14 +86,14 @@ public class ChannelDescription
         }
         DataPackage dataPackage = builder.build();
 
-         T exampleInstance = TypeMapping.getNewInstance(dataType);
+        T exampleInstance = TypeMapping.getNewInstance(dataType);
         if(exampleInstance == null)
         {
             System.out.println("Failed to create example instance for object of class \"" + dataType.getName() + "\".");
             return null;
         }
 
-        Mutator<T> mutator = TypeMapping.getMutator(exampleInstance);
+        Mutator<T> mutator = TypeMapping.getMutator(dataType);
         if(mutator == null)
         {
             System.out.println("Failed to create get mutator for object of class \"" + dataType.getName() + "\".");

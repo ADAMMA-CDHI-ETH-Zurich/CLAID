@@ -2,7 +2,12 @@ package adamma.c4dhi.claid.TypeMapping;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+
 
 import adamma.c4dhi.claid.TypeMapping.Mutator;
 
@@ -121,10 +126,10 @@ public class TypeMapping {
 
     }    
 
-    public static <T> Mutator<T> getMutator(T inst) 
+    public static <T> Mutator<T> getMutator(Class<T> dataType) 
     {
-        if (inst instanceof Double || inst instanceof Float || 
-        inst instanceof Integer || inst instanceof Short || inst instanceof Long) {
+        if (dataType == Double.class || dataType == Float.class || 
+        dataType == Integer.class || dataType == Short.class || dataType == Long.class) {
             return new Mutator<T>(
                 (p, v) -> dataPackageBuilderCopy(p)
                     .setNumberVal((Double) v)
@@ -133,7 +138,7 @@ public class TypeMapping {
             );
         }
 
-        if (inst instanceof Boolean) {
+        if (dataType == Boolean.class) {
             return new Mutator<T>(
                 (p, v) -> dataPackageBuilderCopy(p)
                     .setBoolVal((Boolean) v)
@@ -142,7 +147,7 @@ public class TypeMapping {
             );
         }
 
-        if (inst instanceof String) {
+        if (dataType == String.class) {
             return new Mutator<T>(
                 (p, v) -> dataPackageBuilderCopy(p)
                     .setStringVal((String) v)
@@ -151,10 +156,26 @@ public class TypeMapping {
             );
         }
 
+        if (dataType == ArrayList.class) {
+            // You have a generic ArrayList
+            Type genericType = dataType.getGenericSuperclass();
+    
+            if (genericType instanceof ParameterizedType) {
+                ParameterizedType parameterizedType = (ParameterizedType) genericType;
+                Type[] typeArguments = parameterizedType.getActualTypeArguments();
+    
+                if (typeArguments.length == 1 && typeArguments[0] == String.class) {
+                    System.out.println("ArrayList of Strings");
+                } else if (typeArguments.length == 1 && typeArguments[0] == Double.class) {
+                    System.out.println("ArrayList of Doubles");
+                }
+            }
+            return null;
+        }
         
         // Have to use NumberArray, StringArray, ..., since we cannot safely distinguish List<Double> and List<String>?
         // Java generics... best generics... not. Type erasure, great invention.
-        if (inst instanceof NumberArray) {
+       /* if (dataType == ArrayList<Double>.class) {
             return new Mutator<T>(
                 (p, v) -> dataPackageBuilderCopy(p)
                     .setNumberArrayVal((NumberArray) v)
@@ -189,9 +210,9 @@ public class TypeMapping {
                     .build(),
                 p -> (T) p.getNumberMap()
             );
-        }
+        } */
 
-        if (inst instanceof GeneratedMessageV3)
+        if (GeneratedMessageV3.class.isAssignableFrom(dataType))
         {
             throw new IllegalArgumentException("Protobuf messages not yet supported for Channels.");
         }
@@ -234,6 +255,6 @@ public class TypeMapping {
             }
         }
 */
-        throw new IllegalArgumentException("Type \"" + inst.getClass().getSimpleName() + "\" is not supported by CLAID channels.");
+        throw new IllegalArgumentException("Type \"" + dataType.getSimpleName() + "\" is not supported by CLAID channels.");
     }
 }

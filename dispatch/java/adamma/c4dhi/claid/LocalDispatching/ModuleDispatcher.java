@@ -69,7 +69,7 @@ public class ModuleDispatcher
         // If android and socket path prefix is unix://
         if (socketPath != null && socketPath.startsWith("unix://") && isAndroid()) {
             String udsPath = socketPath.substring("unix://".length());
-            this.grpcChannel = UdsChannelBuilder.forPath(udsPath, UdsChannelBuilder.Namespace.FILESYSTEM).build();
+            this.grpcChannel = io.grpc.android.UdsChannelBuilder.forPath(udsPath, android.net.LocalSocketAddress.Namespace.FILESYSTEM).build();
         } else {
             this.grpcChannel = Grpc.newChannelBuilder(socketPath, InsecureChannelCredentials.create()).build();
         }
