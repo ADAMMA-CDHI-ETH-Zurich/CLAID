@@ -94,6 +94,12 @@ namespace claid
 
             for(const std::string& publisher : channelDescription.publisherModules)
             {
+                if(channelDescription.subscriberModules.size() == 0)
+                {
+                    // Channel without subscriber.
+                    moduleTable.setChannel(channelName, publisher, "");
+                    continue;
+                }
                 for(const std::string& subscriber : channelDescription.subscriberModules)
                 {
                     moduleTable.setChannel(channelName, publisher, subscriber);

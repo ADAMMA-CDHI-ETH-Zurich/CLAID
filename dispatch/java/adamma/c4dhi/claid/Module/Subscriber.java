@@ -7,19 +7,21 @@ import adamma.c4dhi.claid.Module.Scheduling.ConsumerRunnable;
 import adamma.c4dhi.claid.Module.Scheduling.RunnableDispatcher;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduleOnce;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduledRunnable;
+import adamma.c4dhi.claid.TypeMapping.DataType;
 import adamma.c4dhi.claid.TypeMapping.Mutator;
 import adamma.c4dhi.claid.TypeMapping.TypeMapping;
 import adamma.c4dhi.claid.DataPackage;
 
+
 public class Subscriber<T extends Object> extends AbstractSubscriber
 {
-    private Class<T> dataType;
+    private DataType dataType;
     private Consumer<T> callback;
     private RunnableDispatcher callbackDispatcher;
 
     private Mutator<T> mutator;
         
-    public Subscriber(Class<T> dataType, Consumer<T> callback, RunnableDispatcher callbackDispatcher)
+    public Subscriber(DataType dataType, Consumer<T> callback, RunnableDispatcher callbackDispatcher)
     {
         this.dataType = dataType;
         this.callback = callback;

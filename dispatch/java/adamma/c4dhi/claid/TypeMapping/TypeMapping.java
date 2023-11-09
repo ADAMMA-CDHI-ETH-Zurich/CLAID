@@ -3,8 +3,9 @@ package adamma.c4dhi.claid.TypeMapping;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
@@ -18,6 +19,7 @@ import adamma.c4dhi.claid.NumberArray;
 import adamma.c4dhi.claid.NumberMap;
 
 import com.google.protobuf.GeneratedMessageV3;
+
 
 public class TypeMapping {
 
@@ -124,12 +126,85 @@ public class TypeMapping {
             return null;
         }
 
-    }    
-
-    public static <T> Mutator<T> getMutator(Class<T> dataType) 
+    }   
+    
+    public static<T> T getNewInstance(DataType dataType)
     {
-        if (dataType == Double.class || dataType == Float.class || 
-        dataType == Integer.class || dataType == Short.class || dataType == Long.class) {
+        
+        if(!dataType.isGeneric())
+        {
+            Class<?> dataTypeClass = dataType.getDataTypeClass();
+            return (T) getNewInstance(dataTypeClass);
+        }
+        else
+        {
+            // If it is a generic class, e.g., ArrayList<String>,
+            // normally we could not find oujt the data type (i.e., String), 
+            // because of the world's greatest invention "type erasure"..
+            // However, with our custom DataType class, we set the name of the generic type manually
+            // when creating the object. Check the Publish and Subscribe functions of Module for example.
+            String typeName = dataType.getName();
+            
+            if(typeName.equals("ArrayList<String>"))
+            {
+                return (T) new ArrayList<String>();
+            }
+            else if (typeName.equals("ArrayList<Short>")) 
+            {
+                return (T) new ArrayList<Short>();
+            } else if (typeName.equals("ArrayList<Integer>")) 
+            {
+                return (T) new ArrayList<Integer>();
+            } 
+            else if (typeName.equals("ArrayList<Long>")) 
+            {
+                return (T) new ArrayList<Long>();
+            } 
+            else if (typeName.equals("ArrayList<Float>")) 
+            {
+                return (T) new ArrayList<Float>();
+            } 
+            else if (typeName.equals("ArrayList<Double>")) 
+            {
+                return (T) new ArrayList<Double>();
+            } 
+            else if (typeName.equals("Map<String, Short>")) 
+            {
+                return (T) new HashMap<String, Short>();
+            } 
+            else if (typeName.equals("Map<String, Integer>")) 
+            {
+                return (T) new HashMap<String, Integer>();
+            } 
+            else if (typeName.equals("Map<String, Long>")) 
+            {
+                return (T) new HashMap<String, Long>();
+            } 
+            else if (typeName.equals("Map<String, Float>")) 
+            {
+                return (T) new HashMap<String, Float>();
+            } 
+            else if (typeName.equals("Map<String, Double>")) 
+            {
+                return (T) new HashMap<String, Double>();
+            } 
+            else 
+            {
+                // Handle other cases or return null if needed
+                return null;
+            }
+            
+        }
+
+
+    }
+
+    public static <T> Mutator<T> getMutator(DataType dataType) 
+    {
+        Class<?> dataTypeClass = dataType.getDataTypeClass();
+
+        if (dataTypeClass == Double.class || dataTypeClass == Float.class || 
+        dataTypeClass == Integer.class || dataTypeClass == Short.class || dataTypeClass == Long.class) {
             return new Mutator<T>(
                 (p, v) -> dataPackageBuilderCopy(p)
                     .setNumberVal((Double) v)
@@ -138,7 +213,7 @@ public class TypeMapping {
             );
         }
 
-        if (dataType == Boolean.class) {
+        if (dataTypeClass == Boolean.class) {
             return new Mutator<T>(
                 (p, v) -> dataPackageBuilderCopy(p)
                     .setBoolVal((Boolean) v)
@@ -147,7 +222,7 @@ public class TypeMapping {
             );
         }
 
-        if (dataType == String.class) {
+        if (dataTypeClass == String.class) {
             return new Mutator<T>(
                 (p, v) -> dataPackageBuilderCopy(p)
                     .setStringVal((String) v)
@@ -155,23 +230,212 @@ public class TypeMapping {
                 p -> (T) p.getStringVal()
             );
         }
+   
 
-        if (dataType == ArrayList.class) {
-            // You have a generic ArrayList
-            Type genericType = dataType.getGenericSuperclass();
-    
-            if (genericType instanceof ParameterizedType) {
-                ParameterizedType parameterizedType = (ParameterizedType) genericType;
-                Type[] typeArguments = parameterizedType.getActualTypeArguments();
-    
-                if (typeArguments.length == 1 && typeArguments[0] == String.class) {
-                    System.out.println("ArrayList of Strings");
-                } else if (typeArguments.length == 1 && typeArguments[0] == Double.class) {
-                    System.out.println("ArrayList of Doubles");
-                }
+        // LIST / ARRAY
+        if (dataType.isGeneric() && dataTypeClass == ArrayList.class) 
+        {
+            // getName returns a hardcoded string for generic types, which was
+            // specified when creating this instance of DataType.
+            String genericName = dataType.getName();
+           
+            if (genericName.equals("ArrayList<Short>")) 
+            {
+                return new Mutator<T>(
+                    (p, v) -> {
+                        ArrayList<Short> data = (ArrayList<Short>) v;
+                        DataPackage.Builder builder = dataPackageBuilderCopy(p);
+            
+                        NumberArray.Builder numberArrayBuilder = NumberArray.newBuilder();
+                        for (Short value : data) {
+                            numberArrayBuilder.addVal(value.doubleValue());
+                        }
+            
+                        builder.setNumberArrayVal(numberArrayBuilder.build());
+                        return builder.build();
+                    },
+                    p -> {
+                        ArrayList<Short> array = new ArrayList<>();
+                        NumberArray numberArray = p.getNumberArrayVal();
+            
+                        for (Double value : numberArray.getValList()) {
+                            array.add(value.shortValue());
+                        }
+                        
+                        return (T) array;
+                    }
+                );
+            } 
+            else if (genericName.equals("ArrayList<Integer>")) 
+            {
+                return new Mutator<T>(
+                    (p, v) -> {
+                        ArrayList<Integer> data = (ArrayList<Integer>) v;
+                        DataPackage.Builder builder = dataPackageBuilderCopy(p);
+            
+                        NumberArray.Builder numberArrayBuilder = NumberArray.newBuilder();
+                        for (Integer value : data) {
+                            numberArrayBuilder.addVal(value.doubleValue());
+                        }
+            
+                        builder.setNumberArrayVal(numberArrayBuilder.build());
+                        return builder.build();
+                    },
+                    p -> {
+                        ArrayList<Integer> array = new ArrayList<>();
+                        NumberArray numberArray = p.getNumberArrayVal();
+            
+                        for (Double value : numberArray.getValList()) {
+                            array.add(value.intValue());
+                        }
+                        
+                        
+                        return (T) array;
+                    }
+                );
+            } 
+            else if (genericName.equals("ArrayList<Long>")) {
+                return new Mutator<T>(
+                    (p, v) -> {
+                        ArrayList<Long> data = (ArrayList<Long>) v;
+                        DataPackage.Builder builder = dataPackageBuilderCopy(p);
+            
+                        NumberArray.Builder numberArrayBuilder = NumberArray.newBuilder();
+                        for (Long value : data) {
+                            numberArrayBuilder.addVal(value);
+                        }
+            
+                        builder.setNumberArrayVal(numberArrayBuilder.build());
+                        return builder.build();
+                    },
+                    p -> {
+                        ArrayList<Long> array = new ArrayList<>();
+                        NumberArray numberArray = p.getNumberArrayVal();
+            
+                        for (Double value : numberArray.getValList()) {
+                            array.add(value.longValue());
+                        }
+                        
+                        
+                        return (T) array;
+                    }
+                );
+            } 
+            else if (genericName.equals("ArrayList<Float>")) {
+                return new Mutator<T>(
+                    (p, v) -> {
+                        ArrayList<Float> data = (ArrayList<Float>) v;
+                        DataPackage.Builder builder = dataPackageBuilderCopy(p);
+            
+                        NumberArray.Builder numberArrayBuilder = NumberArray.newBuilder();
+                        for (Float value : data) {
+                            numberArrayBuilder.addVal(value);
+                        }
+            
+                        builder.setNumberArrayVal(numberArrayBuilder.build());
+                        return builder.build();
+                    },
+                    p -> {
+                        ArrayList<Float> array = new ArrayList<>();
+                        NumberArray numberArray = p.getNumberArrayVal();
+            
+                        for (Double value : numberArray.getValList()) {
+                            array.add(value.floatValue());
+                        }
+                        
+                        
+                        return (T) array;
+                    }
+                );
             }
-            return null;
+            else if(genericName.equals("ArrayList<Double>"))
+            {
+                return new Mutator<T>(
+                    (p, v) -> {
+                        ArrayList<Double> data = (ArrayList<Double>) v;
+                        DataPackage.Builder builder = dataPackageBuilderCopy(p);
+
+                        NumberArray.Builder numberArrayBuilder = NumberArray.newBuilder();
+                        for(Double value : data)
+                        {
+                            numberArrayBuilder.addVal(value);
+                        }
+
+                        builder.setNumberArrayVal(numberArrayBuilder.build());
+                        return builder.build();
+                    },
+                    p -> {
+                        ArrayList<Double> array = new ArrayList<>();
+                        NumberArray numberArray = p.getNumberArrayVal();
+
+                        return (T) new ArrayList<Double>(numberArray.getValList());
+                    }
+                );
+            }
+            else if(genericName.equals("ArrayList<String>"))
+            {
+                return new Mutator<T>(
+                    (p, v) -> {
+                        ArrayList<String> data = (ArrayList<String>) v;
+                        DataPackage.Builder builder = dataPackageBuilderCopy(p);
+
+                        StringArray.Builder stringArrayBuilder = StringArray.newBuilder();
+                        for(String value : data)
+                        {
+                            stringArrayBuilder.addVal(value);
+                        }
+
+                        builder.setStringArrayVal(stringArrayBuilder.build());
+                        return builder.build();
+                    },
+                    p -> {
+                        ArrayList<String> array = new ArrayList<>();
+                        StringArray stringArray = p.getStringArrayVal();
+
+                        return (T) new ArrayList<String>(stringArray.getValList());
+                    }
+                );
+            }
         }
+
+        // MAP
+        if (dataType.isGeneric() && dataTypeClass == Map.class) 
+        {
+            // getName returns a hardcoded string for generic types, which was
+            // specified when creating this instance of DataType.
+            String genericName = dataType.getName();
+           
+            if (genericName.equals("Map<String, Double>")) 
+            {
+                new Mutator<T>(
+                    (p, v) -> {
+                        Map<String, Double> data = (Map<String, Double>) v;
+                        DataPackage.Builder builder = dataPackageBuilderCopy(p);
+
+                        NumberMap.Builder numberMapBuilder = NumberMap.newBuilder();
+                        for (Map.Entry<String, Double> entry : data.entrySet()) {
+                            numberMapBuilder.putVal(entry.getKey(), entry.getValue());
+                        }
+
+                        builder.setNumberMap(numberMapBuilder.build());
+                        return builder.build();
+                    },
+                    p -> {
+                        Map<String, Double> map = new HashMap<>();
+                        NumberMap numberMap = p.getNumberMap();
+
+                        for (String key : numberMap.getValMap().keySet()) {
+                            double value = numberMap.getValMap().get(key);
+                            map.put(key, value);
+                        }
+
+                        return (T) map;
+                    }
+                );
+            } 
+        }
+
+
         
         // Have to use NumberArray, StringArray, ..., since we cannot safely distinguish List<Double> and List<String>?
         // Java generics... best generics... not. Type erasure, great invention.
@@ -212,7 +476,7 @@ public class TypeMapping {
             );
         } */
 
-        if (GeneratedMessageV3.class.isAssignableFrom(dataType))
+        if (GeneratedMessageV3.class.isAssignableFrom(dataTypeClass))
         {
             throw new IllegalArgumentException("Protobuf messages not yet supported for Channels.");
         }

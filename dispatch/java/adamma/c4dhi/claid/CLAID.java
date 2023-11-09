@@ -22,7 +22,6 @@ public class CLAID
         final String configFilePath, final String hostId, final String userId, final String deviceId);
     private static native void shutdownCore(long handle);
 
-    public static native void sayHelloDD();
     // Starts the middleware
     public static boolean start(final String socketPath, final String configFilePath, final String hostId, final String userId, final String deviceId, ModuleFactory moduleFactory)
     {

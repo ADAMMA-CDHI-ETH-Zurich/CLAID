@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.Logger.Logger;
+import adamma.c4dhi.claid.TypeMapping.DataType;
 import adamma.c4dhi.claid.TypeMapping.Mutator;
 import adamma.c4dhi.claid.TypeMapping.TypeMapping;
 
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 public class ChannelDescription 
 {
     final String channelName;
-    final Class<?> dataType;
+    final DataType dataType;
 
     // Module in the Java runtime that was the first to subscribe to or publish this channel.
     final String firstPublisherOrSubscriber; 
@@ -33,7 +34,7 @@ public class ChannelDescription
     Map<String, ArrayList<DataPackage>> modules = new HashMap<>();
 
     private ChannelDescription(final String channelName, 
-        final Class<?> dataType, final String firstPublisherOrSubscriber, final DataPackage templatePackage)
+        final DataType dataType, final String firstPublisherOrSubscriber, final DataPackage templatePackage)
     {
         this.channelName = channelName;
         this.dataType = dataType;
@@ -41,7 +42,7 @@ public class ChannelDescription
         this.templatePackage = templatePackage;
     }
 
-    public static<T> ChannelDescription newChannel(final String channelName, final Class<T> dataType, final String firstPublisherOrSubscriber)
+    public static<T> ChannelDescription newChannel(final String channelName, final DataType dataType, final String firstPublisherOrSubscriber)
     {
         DataPackage.Builder builder = DataPackage.newBuilder();
         builder.setChannel(channelName);
@@ -69,7 +70,7 @@ public class ChannelDescription
 
     }
 
-    public<T> DataPackage prepareTemplatePackage(Class<T> dataType, final String moduleId, boolean isPublisher)
+    public<T> DataPackage prepareTemplatePackage(DataType dataType, final String moduleId, boolean isPublisher)
     {
         DataPackage.Builder builder = DataPackage.newBuilder();
         builder.setChannel(channelName);
@@ -105,12 +106,12 @@ public class ChannelDescription
         return dataPackage;
     }
 
-    private<T> boolean dataTypeMatches(Class<T> dataType)
+    private<T> boolean dataTypeMatches(DataType dataType)
     {
         return this.dataType.equals(dataType);
     }
 
-    public<T> boolean registerModuleToChannel(Module module, Class<T> dataType, boolean isPublisher)
+    public<T> boolean registerModuleToChannel(Module module, DataType dataType, boolean isPublisher)
     {
         final String moduleId = module.getId();
         if(!dataTypeMatches(dataType))

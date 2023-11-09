@@ -10,6 +10,7 @@ import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.LocalDispatching.ModuleDispatcher;
 import adamma.c4dhi.claid.TypeMapping.TypeMapping;
 import adamma.c4dhi.claid.Logger.Logger;
+import adamma.c4dhi.claid.TypeMapping.DataType;
 import adamma.c4dhi.claid.TypeMapping.Mutator;
 
 
@@ -38,7 +39,7 @@ public class ChannelSubscriberPublisher
     }
 
     
-    protected<T> Channel<T> publish(Module module, Class<T> dataType, final String channelName)
+    protected<T> Channel<T> publish(Module module, DataType dataType, final String channelName)
     {
         if(!this.channelDescriptions.containsKey(channelName))
         {
@@ -61,7 +62,7 @@ public class ChannelSubscriberPublisher
         return new Channel<T>(module, channelName, new Publisher<T>(dataType, module.getId(), channelName, this.toModuleManagerQueue));
     }
 
-    protected<T> Channel<T> subscribe(Module module, Class<T> dataType, final String channelName, Subscriber<T> subscriber)
+    protected<T> Channel<T> subscribe(Module module, DataType dataType, final String channelName, Subscriber<T> subscriber)
     {
         if(!this.channelDescriptions.containsKey(channelName))
         {
