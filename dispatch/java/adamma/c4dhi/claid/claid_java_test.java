@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import adamma.c4dhi.claid.CLAID;
 import adamma.c4dhi.claid.LocalDispatching.ModuleManager;
 import adamma.c4dhi.claid.Module.ChannelSubscriberPublisher;
 import adamma.c4dhi.claid.Module.ModuleFactory;
 import adamma.c4dhi.claid.TypeMapping.DataType;
 import adamma.c4dhi.claid.TypeMapping.Mutator;
 import adamma.c4dhi.claid.TypeMapping.TypeMapping;
+import adamma.c4dhi.claid_platform_impl.CLAID;
 import adamma.c4dhi.claid.TestModule;
 
 public class claid_java_test {

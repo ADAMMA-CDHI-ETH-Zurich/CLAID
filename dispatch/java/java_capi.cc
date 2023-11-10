@@ -26,13 +26,13 @@ static std::string jniStringToStdString(JNIEnv *env, jstring jStr)
 
 extern "C"
 {
-    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_CLAID_sayHelloDD
+    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_sayHelloDD
   (JNIEnv* env, jobject thisObject) {
     std::cout << "Hello from C++ !!" << std::endl;
 }
 
     
-    JNIEXPORT jlong JNICALL Java_adamma_c4dhi_claid_CLAID_startCore
+    JNIEXPORT jlong JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_startCore
     (JNIEnv *env, jobject CLAIDOBJ, jstring jsocketPath, jstring jconfigFile, jstring jhostId, jstring juserId, jstring jdeviceId) {
         std::string socketPath = jniStringToStdString(env, jsocketPath);
         std::string configFile = jniStringToStdString(env, jconfigFile);
@@ -45,7 +45,7 @@ extern "C"
         return reinterpret_cast<jlong>(handle);
     }
 
-    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_CLAID_shutdownCore
+    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_shutdownCore
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) {
         void* nativeHandle = reinterpret_cast<void*>(handle);
         shutdown_core(nativeHandle);

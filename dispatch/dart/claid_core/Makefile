@@ -14,7 +14,7 @@ else
     endif
 endif
 
-OUTPUT_APK_ANDROID_NAME = android_claid
+OUTPUT_APK_ANDROID_NAME = claid_capi_android
 OUTPUT_APK_ANDROID = bazel-bin/dispatch/android/$(OUTPUT_APK_ANDROID_NAME)
 OUTPUT_APK_TMP_PATH_ANDROID = bazel-bin/dispatch/android/extract_libs
 TARGET_LIBS_ANDROID = dispatch/dart/claid_core/blobs/android

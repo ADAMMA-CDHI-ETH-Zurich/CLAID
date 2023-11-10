@@ -31,7 +31,7 @@ android_library(
 
 # Note: The name of the output shared libraries extracted from the apk will be libandroid_claid.so
 android_binary(
-    name = "android_claid",
+    name = "claid_capi_android",
     deps = [":android_claid_lib"],
     manifest = "AndroidManifest.xml",
 )
