@@ -28,8 +28,6 @@ cc_library(
         ":capi",
         ":proto_util"
     ],
-    linkstatic = True,   # only create a static lib
-    alwayslink = True,   # include everything in dependents
 )
 
 
