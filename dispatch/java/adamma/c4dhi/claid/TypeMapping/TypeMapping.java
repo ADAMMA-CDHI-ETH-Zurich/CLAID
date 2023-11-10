@@ -17,6 +17,7 @@ import adamma.c4dhi.claid.TracePoint;
 import adamma.c4dhi.claid.StringArray;
 import adamma.c4dhi.claid.NumberArray;
 import adamma.c4dhi.claid.NumberMap;
+import adamma.c4dhi.claid.StringMap;
 
 import com.google.protobuf.GeneratedMessageV3;
 
@@ -230,7 +231,8 @@ public class TypeMapping {
                 p -> (T) p.getStringVal()
             );
         }
-   
+        
+        System.out.println("Test1");
 
         // LIST / ARRAY
         if (dataType.isGeneric() && dataTypeClass == ArrayList.class) 
@@ -399,15 +401,133 @@ public class TypeMapping {
         }
 
         // MAP
+        System.out.println("Test: " + dataType.isGeneric() + " " + (boolean) (dataTypeClass == Map.class) + " " + dataType.getName());
         if (dataType.isGeneric() && dataTypeClass == Map.class) 
         {
             // getName returns a hardcoded string for generic types, which was
             // specified when creating this instance of DataType.
             String genericName = dataType.getName();
            
+            
+            if (genericName.equals("Map<String, Short>")) 
+            {
+                return new Mutator<T>(
+                    (p, v) -> {
+                        Map<String, Short> data = (Map<String, Short>) v;
+                        DataPackage.Builder builder = dataPackageBuilderCopy(p);
+
+                        NumberMap.Builder numberMapBuilder = NumberMap.newBuilder();
+                        for (Map.Entry<String, Short> entry : data.entrySet()) {
+                            numberMapBuilder.putVal(entry.getKey(), entry.getValue().doubleValue());
+                        }
+
+                        builder.setNumberMap(numberMapBuilder.build());
+                        return builder.build();
+                    },
+                    p -> {
+                        Map<String, Short> map = new HashMap<>();
+                        NumberMap numberMap = p.getNumberMap();
+
+                        for (String key : numberMap.getValMap().keySet()) {
+                            double value = numberMap.getValMap().get(key);
+                            map.put(key, (short) value);
+                        }
+
+                        return (T) map;
+                    }
+                );
+            } 
+
+            if (genericName.equals("Map<String, Integer>")) 
+            {
+                return new Mutator<T>(
+                    (p, v) -> {
+                        Map<String, Integer> data = (Map<String, Integer>) v;
+                        DataPackage.Builder builder = dataPackageBuilderCopy(p);
+
+                        NumberMap.Builder numberMapBuilder = NumberMap.newBuilder();
+                        for (Map.Entry<String, Integer> entry : data.entrySet()) {
+                            numberMapBuilder.putVal(entry.getKey(), entry.getValue().doubleValue());
+                        }
+
+                        builder.setNumberMap(numberMapBuilder.build());
+                        return builder.build();
+                    },
+                    p -> {
+                        Map<String, Integer> map = new HashMap<>();
+                        NumberMap numberMap = p.getNumberMap();
+
+                        for (String key : numberMap.getValMap().keySet()) {
+                            double value = numberMap.getValMap().get(key);
+                            map.put(key, (int) value);
+                        }
+
+                        return (T) map;
+                    }
+                );
+            } 
+
+            if (genericName.equals("Map<String, Long>")) 
+            {
+                return new Mutator<T>(
+                    (p, v) -> {
+                        Map<String, Long> data = (Map<String, Long>) v;
+                        DataPackage.Builder builder = dataPackageBuilderCopy(p);
+
+                        NumberMap.Builder numberMapBuilder = NumberMap.newBuilder();
+                        for (Map.Entry<String, Long> entry : data.entrySet()) {
+                            numberMapBuilder.putVal(entry.getKey(), entry.getValue().doubleValue());
+                        }
+
+                        builder.setNumberMap(numberMapBuilder.build());
+                        return builder.build();
+                    },
+                    p -> {
+                        Map<String, Long> map = new HashMap<>();
+                        NumberMap numberMap = p.getNumberMap();
+
+                        for (String key : numberMap.getValMap().keySet()) {
+                            double value = numberMap.getValMap().get(key);
+                            map.put(key, (long) value);
+                        }
+
+                        return (T) map;
+                    }
+                );
+            } 
+
+            if (genericName.equals("Map<String, Float>")) 
+            {
+                return new Mutator<T>(
+                    (p, v) -> {
+                        Map<String, Float> data = (Map<String, Float>) v;
+                        DataPackage.Builder builder = dataPackageBuilderCopy(p);
+
+                        NumberMap.Builder numberMapBuilder = NumberMap.newBuilder();
+                        for (Map.Entry<String, Float> entry : data.entrySet()) {
+                            numberMapBuilder.putVal(entry.getKey(), entry.getValue().floatValue());
+                        }
+
+                        builder.setNumberMap(numberMapBuilder.build());
+                        return builder.build();
+                    },
+                    p -> {
+                        Map<String, Float> map = new HashMap<>();
+                        NumberMap numberMap = p.getNumberMap();
+
+                        for (String key : numberMap.getValMap().keySet()) {
+                            double value = numberMap.getValMap().get(key);
+                            map.put(key, (float) value);
+                        }
+
+                        return (T) map;
+                    }
+                );
+            } 
+
             if (genericName.equals("Map<String, Double>")) 
             {
-                new Mutator<T>(
+                return new Mutator<T>(
                     (p, v) -> {
                         Map<String, Double> data = (Map<String, Double>) v;
                         DataPackage.Builder builder = dataPackageBuilderCopy(p);
@@ -433,6 +553,64 @@ public class TypeMapping {
                     }
                 );
             } 
+            if (genericName.equals("Map<String, String>")) 
+            {
+                return new Mutator<T>(
+                    (p, v) -> {
+                        Map<String, String> data = (Map<String, String>) v;
+                        DataPackage.Builder builder = dataPackageBuilderCopy(p);
+
+                        StringMap.Builder stringMapBuilder = StringMap.newBuilder();
+                        for (Map.Entry<String, String> entry : data.entrySet()) {
+                            stringMapBuilder.putVal(entry.getKey(), entry.getValue());
+                        }
+
+                        builder.setStringMap(stringMapBuilder.build());
+                        return builder.build();
+                    },
+                    p -> {
+                        Map<String, String> map = new HashMap<>();
+                        StringMap numberMap = p.getStringMap();
+
+                        for (String key : numberMap.getValMap().keySet()) {
+                            String value = numberMap.getValMap().get(key);
+                            map.put(key, value);
+                        }
+
+                        return (T) map;
+                    }
+                );
+            } 
+
+            /*if (genericName.equals("Map<String, Double>")) 
+            {
+                return new Mutator<T>(
+                    (p, v) -> {
+                        Map<String, Double> data = (Map<String, Double>) v;
+                        DataPackage.Builder builder = dataPackageBuilderCopy(p);
+
+                        NumberMap.Builder numberMapBuilder = NumberMap.newBuilder();
+                        for (Map.Entry<String, Double> entry : data.entrySet()) {
+                            numberMapBuilder.putVal(entry.getKey(), entry.getValue());
+                        }
+
+                        builder.setNumberMap(numberMapBuilder.build());
+                        return builder.build();
+                    },
+                    p -> {
+                        Map<String, Double> map = new HashMap<>();
+                        NumberMap numberMap = p.getNumberMap();
+
+                        for (String key : numberMap.getValMap().keySet()) {
+                            double value = numberMap.getValMap().get(key);
+                            map.put(key, value);
+                        }
+
+                        return (T) map;
+                    }
+                );
+            } */
+
         }
 
 

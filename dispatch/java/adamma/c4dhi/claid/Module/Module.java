@@ -118,17 +118,18 @@ public abstract class Module
     }
 
     
-    // Default publish method for all data types except of collections like ArrayList or Map.
-    protected<T> Channel<T> publish(Class<T> dataType, final String channelName)
+    private boolean assertCanPublish(final String channelName)
     {
-        if(!this.isInitializing)
-        {
-            moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., first call of the initialize function).");
-            return Channel.newInvalidChannel(channelName);
+        if (!this.isInitializing) {
+            moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
+            return false;
         }
-        return this.subscriberPublisher.publish(this, new DataType(dataType), channelName);
+        return true;
     }
+
     
+
+
     // Magic to tackle java type erasure, because there is absolutely no way
     // to find out the generic type of a collection from the Class object (e.g., new ArrayList<String>().class()) itself.
     // We require an instance of the Collection and use some magic to trick the compiler into generating
@@ -140,8 +141,7 @@ public abstract class Module
     public static class DoubleType {}
     public static class StringType {}
 
-    protected Channel<ArrayList<Short>> publish(ArrayList<Short> shorts, final String channelName, ShortType... ignore) {
-        System.out.println("Hello, Short!");
+    protected Channel<ArrayList<Short>> publish(final String channelName, ArrayList<Short> shorts, ShortType... ignore) {
         if (!this.isInitializing) {
             moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
             return Channel.newInvalidChannel(channelName);
@@ -149,8 +149,7 @@ public abstract class Module
         return this.subscriberPublisher.publish(this, new DataType(ArrayList.class, "ArrayList<Short>"), channelName);
     }
 
-    protected Channel<ArrayList<Integer>> publish(ArrayList<Integer> ints, final String channelName, IntegerType... ignore) {
-        System.out.println("Hello, Integer!");
+    protected Channel<ArrayList<Integer>> publish(final String channelName, ArrayList<Integer> ints, IntegerType... ignore) {
         if (!this.isInitializing) {
             moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
             return Channel.newInvalidChannel(channelName);
@@ -158,8 +157,7 @@ public abstract class Module
         return this.subscriberPublisher.publish(this, new DataType(ArrayList.class, "ArrayList<Integer>"), channelName);
     }
 
-    protected Channel<ArrayList<Long>> publish(ArrayList<Long> longs, final String channelName, LongType... ignore) {
-        System.out.println("Hello, Long!");
+    protected Channel<ArrayList<Long>> publish(final String channelName, ArrayList<Long> longs, LongType... ignore) {
         if (!this.isInitializing) {
             moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
             return Channel.newInvalidChannel(channelName);
@@ -167,8 +165,7 @@ public abstract class Module
         return this.subscriberPublisher.publish(this, new DataType(ArrayList.class, "ArrayList<Long>"), channelName);
     }
 
-    protected Channel<ArrayList<Float>> publish(ArrayList<Float> floats, final String channelName, FloatType... ignore) {
-        System.out.println("Hello, Float!");
+    protected Channel<ArrayList<Float>> publish(final String channelName, ArrayList<Float> floats, FloatType... ignore) {
         if (!this.isInitializing) {
             moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
             return Channel.newInvalidChannel(channelName);
@@ -176,8 +173,7 @@ public abstract class Module
         return this.subscriberPublisher.publish(this, new DataType(ArrayList.class, "ArrayList<Float>"), channelName);
     }
 
-    protected Channel<ArrayList<Double>> publish(ArrayList<Double> dbs, final String channelName, DoubleType... ignore) {
-        System.out.println("Hello, Double!");
+    protected Channel<ArrayList<Double>> publish(final String channelName, ArrayList<Double> dbs, DoubleType... ignore) {
         if (!this.isInitializing) {
             moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
             return Channel.newInvalidChannel(channelName);
@@ -185,8 +181,7 @@ public abstract class Module
         return this.subscriberPublisher.publish(this, new DataType(ArrayList.class, "ArrayList<Double>"), channelName);
     }
 
-    protected Channel<ArrayList<String>> publish(ArrayList<String> strings, final String channelName, StringType... ignore) {
-        System.out.println("Hello, String!");
+    protected Channel<ArrayList<String>> publish(final String channelName, ArrayList<String> strings, StringType... ignore) {
         if (!this.isInitializing) {
             moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
             return Channel.newInvalidChannel(channelName);
@@ -194,15 +189,109 @@ public abstract class Module
         return this.subscriberPublisher.publish(this, new DataType(ArrayList.class, "ArrayList<String>"), channelName);
     }
     
-   
+    // MAP
+    protected Channel<Map<String, Short>> publish(final String channelName, Map<String, Short> shorts, ShortType... ignore) {
+        if (!this.isInitializing) {
+            moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
+            return Channel.newInvalidChannel(channelName);
+        }
+        return this.subscriberPublisher.publish(this, new DataType(Map.class, "Map<String, Short>"), channelName);
+    }
+    
+    protected Channel<Map<String, Integer>> publish(final String channelName, Map<String, Integer> ints, IntegerType... ignore) {
+        if (!this.isInitializing) {
+            moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
+            return Channel.newInvalidChannel(channelName);
+        }
+        return this.subscriberPublisher.publish(this, new DataType(Map.class, "Map<String, Integer>"), channelName);
+    }
+    
+    protected Channel<Map<String, Long>> publish(final String channelName, Map<String, Long> longs, LongType... ignore) {
+        if (!this.isInitializing) {
+            moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
+            return Channel.newInvalidChannel(channelName);
+        }
+        return this.subscriberPublisher.publish(this, new DataType(Map.class, "Map<String, Long>"), channelName);
+    }
+    
+    protected Channel<Map<String, Float>> publish(final String channelName, Map<String, Float> floats, FloatType... ignore) {
+        if (!this.isInitializing) {
+            moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
+            return Channel.newInvalidChannel(channelName);
+        }
+        return this.subscriberPublisher.publish(this, new DataType(Map.class, "Map<String, Float>"), channelName);
+    }
+    
+    protected Channel<Map<String, Double>> publish(final String channelName, Map<String, Double> dbs, DoubleType... ignore) {
+        if (!this.isInitializing) {
+            moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
+            return Channel.newInvalidChannel(channelName);
+        }
+        return this.subscriberPublisher.publish(this, new DataType(Map.class, "Map<String, Double>"), channelName);
+    }
+    
+    protected Channel<Map<String, String>> publish(final String channelName, Map<String, String> strings, StringType... ignore) {
+        System.out.println("Map<String,String>");
+        if (!this.isInitializing) {
+            moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
+            return Channel.newInvalidChannel(channelName);
+        }
+        return this.subscriberPublisher.publish(this, new DataType(Map.class, "Map<String, String>"), channelName);
+    }
+    
+    // Default publish method for all data types except of collections like ArrayList or Map.
+    // Sadly, we cannot do this, because this function would also be called for Map or ArrayList types.
+    // Thus, our only option is to use the Class<?> as data type for all classes and an instance T t for cases like Map and ArrayList.
+    /*protected<T> Channel<T> publish(final String channelName, T t)
+    {
+        if(!this.assertCanPublish(channelName))
+        {
+            return Channel.newInvalidChannel(channelName);
+        }
+        Class<?> dataType = t.getClass();
+        return this.subscriberPublisher.publish(this, new DataType(dataType), channelName);
+    }*/
+    
+    // Alternative to the default publish method. Instead of providing an example instance,
+    // providing the Class is sufficient for all data types except Collections (Collections are handled separately).
+    protected<T> Channel<T> publish(final String channelName, Class<T> dataType)
+    {
+        if(!this.assertCanPublish(channelName))
+        {
+            return Channel.newInvalidChannel(channelName);
+        }
+        return this.subscriberPublisher.publish(this, new DataType(dataType), channelName);
+    }
 
+    // =================== Subscribe ===================
    
-
-    protected<T> Channel<T> subscribe(Class<T> dataTypeClass, final String channelName, Consumer<T> callback)
+    private boolean assertCanSubscribe(final String channelName)
     {
         if(!this.isInitializing)
         {
             moduleError("Cannot subscribe channel \"" + channelName + "\". Subscribing is only allowed during initialization (i.e., first call of the initialize function).");
+            return false;
+        }
+        return true;
+    }
+
+    protected<T> Channel<T> subscribe(final String channelName, T t, Consumer<T> callback)
+    {
+        if(!this.assertCanSubscribe(channelName))
+        {
+            return Channel.newInvalidChannel(channelName);
+        }
+
+        Class<?> dataTypeClass = t.getClass();
+
+        DataType dataType = new DataType(dataTypeClass);
+        return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<T>(dataType, callback, this.runnableDispatcher));
+    }
+
+    protected<T> Channel<T> subscribe(final String channelName, Class<T> dataTypeClass, Consumer<T> callback)
+    {
+        if(!this.assertCanSubscribe(channelName))
+        {
             return Channel.newInvalidChannel(channelName);
         }
 
@@ -210,17 +299,121 @@ public abstract class Module
         return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<T>(dataType, callback, this.runnableDispatcher));
     }
 
-    protected<T> Channel<T> subscribe(ArrayList<Double> dbs, final String channelName, Consumer<T> callback, DoubleType ...ignore)
+    // =================== Subscribe ArrayList ===================
+
+
+    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Short> dbs, Consumer<T> callback, ShortType ...ignore)
     {
-        if(!this.isInitializing)
+        if(!this.assertCanSubscribe(channelName))
         {
-            moduleError("Cannot subscribe channel \"" + channelName + "\". Subscribing is only allowed during initialization (i.e., first call of the initialize function).");
+            return Channel.newInvalidChannel(channelName);
+        }
+
+        DataType dataType = new DataType(ArrayList.class, "ArrayList<Short>");
+        return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<T>(dataType, callback, this.runnableDispatcher));
+    }
+
+    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Integer> dbs, Consumer<T> callback, IntegerType ...ignore)
+    {
+        if(!this.assertCanSubscribe(channelName))
+        {
+            return Channel.newInvalidChannel(channelName);
+        }
+
+        DataType dataType = new DataType(ArrayList.class, "ArrayList<Integer>");
+        return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<T>(dataType, callback, this.runnableDispatcher));
+    }
+
+    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Long> dbs, Consumer<T> callback, LongType ...ignore)
+    {
+        if(!this.assertCanSubscribe(channelName))
+        {
+            return Channel.newInvalidChannel(channelName);
+        }
+
+        DataType dataType = new DataType(ArrayList.class, "ArrayList<Long>");
+        return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<T>(dataType, callback, this.runnableDispatcher));
+    }
+
+    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Float> dbs, Consumer<T> callback, FloatType ...ignore)
+    {
+        if(!this.assertCanSubscribe(channelName))
+        {
+            return Channel.newInvalidChannel(channelName);
+        }
+
+        DataType dataType = new DataType(ArrayList.class, "ArrayList<Float>");
+        return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<T>(dataType, callback, this.runnableDispatcher));
+    }
+
+    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Double> dbs, Consumer<T> callback, DoubleType ...ignore)
+    {
+        if(!this.assertCanSubscribe(channelName))
+        {
             return Channel.newInvalidChannel(channelName);
         }
 
         DataType dataType = new DataType(ArrayList.class, "ArrayList<Double>");
         return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<T>(dataType, callback, this.runnableDispatcher));
     }
+
+
+    // =================== Subscribe Map ===================
+
+    protected Channel<Map<String, Short>> subscribe(final String channelName, Map<String, Short> map, Consumer<Map<String, Short>> callback, ShortType... ignore) {
+        if (!this.assertCanSubscribe(channelName)) {
+            return Channel.newInvalidChannel(channelName);
+        }
+    
+        DataType dataType = new DataType(Map.class, "Map<String, Short>");
+        return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<>(dataType, callback, this.runnableDispatcher));
+    }
+    
+    protected Channel<Map<String, Integer>> subscribe(final String channelName, Map<String, Integer> map, Consumer<Map<String, Integer>> callback, IntegerType... ignore) {
+        if (!this.assertCanSubscribe(channelName)) {
+            return Channel.newInvalidChannel(channelName);
+        }
+    
+        DataType dataType = new DataType(Map.class, "Map<String, Integer>");
+        return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<>(dataType, callback, this.runnableDispatcher));
+    }
+    
+    protected Channel<Map<String, Long>> subscribe(final String channelName, Map<String, Long> map, Consumer<Map<String, Long>> callback, LongType... ignore) {
+        if (!this.assertCanSubscribe(channelName)) {
+            return Channel.newInvalidChannel(channelName);
+        }
+    
+        DataType dataType = new DataType(Map.class, "Map<String, Long>");
+        return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<>(dataType, callback, this.runnableDispatcher));
+    }
+    
+    protected Channel<Map<String, Float>> subscribe(final String channelName, Map<String, Float> map, Consumer<Map<String, Float>> callback, FloatType... ignore) {
+        if (!this.assertCanSubscribe(channelName)) {
+            return Channel.newInvalidChannel(channelName);
+        }
+    
+        DataType dataType = new DataType(Map.class, "Map<String, Float>");
+        return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<>(dataType, callback, this.runnableDispatcher));
+    }
+    
+    protected Channel<Map<String, Double>> subscribe(final String channelName, Map<String, Double> map, Consumer<Map<String, Double>> callback, DoubleType... ignore) {
+        if (!this.assertCanSubscribe(channelName)) {
+            return Channel.newInvalidChannel(channelName);
+        }
+    
+        DataType dataType = new DataType(Map.class, "Map<String, Double>");
+        return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<>(dataType, callback, this.runnableDispatcher));
+    }
+    
+    protected Channel<Map<String, String>> subscribe(final String channelName, Map<String, String> map, Consumer<Map<String, String>> callback, StringType... ignore) {
+        if (!this.assertCanSubscribe(channelName)) {
+            return Channel.newInvalidChannel(channelName);
+        }
+    
+        DataType dataType = new DataType(Map.class, "Map<String, String>");
+        return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<>(dataType, callback, this.runnableDispatcher));
+    }
+    
 
     protected void registerPeriodicFunction(final String name, Runnable callback, Duration intervall)
     {
