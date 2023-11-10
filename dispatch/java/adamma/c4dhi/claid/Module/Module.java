@@ -231,7 +231,6 @@ public abstract class Module
     }
     
     protected Channel<Map<String, String>> publish(final String channelName, Map<String, String> strings, StringType... ignore) {
-        System.out.println("Map<String,String>");
         if (!this.isInitializing) {
             moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
             return Channel.newInvalidChannel(channelName);
@@ -275,7 +274,7 @@ public abstract class Module
         return true;
     }
 
-    protected<T> Channel<T> subscribe(final String channelName, T t, Consumer<T> callback)
+    /*protected<T> Channel<T> subscribe(final String channelName, T t, Consumer<T> callback)
     {
         if(!this.assertCanSubscribe(channelName))
         {
@@ -286,7 +285,7 @@ public abstract class Module
 
         DataType dataType = new DataType(dataTypeClass);
         return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<T>(dataType, callback, this.runnableDispatcher));
-    }
+    }*/
 
     protected<T> Channel<T> subscribe(final String channelName, Class<T> dataTypeClass, Consumer<T> callback)
     {

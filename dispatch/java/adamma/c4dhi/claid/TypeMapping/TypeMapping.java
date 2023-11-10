@@ -188,6 +188,10 @@ public class TypeMapping {
             else if (typeName.equals("Map<String, Double>")) 
             {
                 return (T) new HashMap<String, Double>();
+            }
+            else if (typeName.equals("Map<String, String>")) 
+            {
+                return (T) new HashMap<String, String>();
             } 
             else 
             {
