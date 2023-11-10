@@ -37,7 +37,7 @@ namespace claid {
         typename std::enable_if<std::is_same<T, bool>::value, Mutator<T>>::type
         static getMutator()
         {
-            return Mutator<std::string>(
+            return Mutator<bool>(
                 [](DataPackage& packet, const bool& value) { packet.set_bool_val(value); },
                 [](const DataPackage& packet) { return packet.bool_val(); }
             );
