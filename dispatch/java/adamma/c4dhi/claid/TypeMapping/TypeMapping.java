@@ -13,11 +13,13 @@ import java.lang.reflect.Type;
 import adamma.c4dhi.claid.TypeMapping.Mutator;
 
 import adamma.c4dhi.claid.DataPackage;
+import adamma.c4dhi.claid.Blob;
 import adamma.c4dhi.claid.TracePoint;
 import adamma.c4dhi.claid.StringArray;
 import adamma.c4dhi.claid.NumberArray;
 import adamma.c4dhi.claid.NumberMap;
 import adamma.c4dhi.claid.StringMap;
+
 
 import com.google.protobuf.GeneratedMessageV3;
 
@@ -53,7 +55,7 @@ public class TypeMapping {
                 Object untypedBuilder = newBuilderMethod.invoke(null);
                 if (untypedBuilder instanceof GeneratedMessageV3.Builder) 
                 {
-                    GeneratedMessageV3.Builder builder =  (GeneratedMessageV3.Builder) untypedBuilder;
+                    GeneratedMessageV3.Builder builder = (GeneratedMessageV3.Builder) untypedBuilder;
                     return (T) builder.build();
                 }
             }
@@ -203,6 +205,21 @@ public class TypeMapping {
 
 
     }
+
+    private static HashMap<String, ProtoCodec> protoCodecMap = new HashMap<>();
+
+    private static ProtoCodec getProtoCodec(GeneratedMessageV3 msg) 
+    {
+      final String fullName =  msg.getDescriptorForType().getFullName();
+      
+      if(!protoCodecMap.containsKey(fullName))
+      {
+        protoCodecMap.put(fullName, new ProtoCodec(msg));
+      }
+
+      return protoCodecMap.get(fullName);
+    }
+    
 
     public static <T> Mutator<T> getMutator(DataType dataType) 
     {
@@ -586,6 +603,8 @@ public class TypeMapping {
                 );
             } 
 
+               
+
             /*if (genericName.equals("Map<String, Double>")) 
             {
                 return new Mutator<T>(
@@ -618,7 +637,29 @@ public class TypeMapping {
         }
 
 
+         System.out.println("Is protobuf type ? " + dataTypeClass.getName());
+
+        if (GeneratedMessageV3.class.isAssignableFrom(dataTypeClass))
+        {
+            System.out.println("Is protobuf typ pe in typemapper");
         
+            return new Mutator<T>((p, v) -> {
+                    GeneratedMessageV3 instance = (GeneratedMessageV3) getProtoMessageInstance((Class<T>) dataTypeClass);
+                    final ProtoCodec protoCodec = getProtoCodec(instance);
+
+                    Blob blob = protoCodec.encode((GeneratedMessageV3) v);
+
+                    return dataPackageBuilderCopy(p)
+                            .setBlobVal(blob)
+                            .build();
+            },
+            p -> {
+                GeneratedMessageV3 instance = (GeneratedMessageV3) getProtoMessageInstance((Class<T>) dataTypeClass);
+                final ProtoCodec protoCodec = getProtoCodec(instance);
+                
+                return (T) protoCodec.decode(p.getBlobVal());
+            });
+        }
         // Have to use NumberArray, StringArray, ..., since we cannot safely distinguish List<Double> and List<String>?
         // Java generics... best generics... not. Type erasure, great invention.
        /* if (dataType == ArrayList<Double>.class) {
@@ -658,10 +699,6 @@ public class TypeMapping {
             );
         } */
 
-        if (GeneratedMessageV3.class.isAssignableFrom(dataTypeClass))
-        {
-            throw new IllegalArgumentException("Protobuf messages not yet supported for Channels.");
-        }
         
 /* 
         // List of Double

@@ -10,7 +10,9 @@ extern "C"
 __attribute__((visibility("default"))) __attribute__((used))
 void* start_core(const char* socket_path, const char* config_file, const char* host_id, const char* user_id, const char* device_id) {
     auto socketPath = std::string(socket_path);
-    if (socketPath.find("unix://") != 0) {
+    if (socketPath.find("unix://") != 0 && socketPath.find("localhost:") != 0) 
+    {
+        // Default to unix domain sockets
         socketPath = "unix://" + socketPath;
     }
 

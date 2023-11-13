@@ -12,9 +12,9 @@ import adamma.c4dhi.claid.Module.Module;
 public class TestModule extends Module
 {
 
-    private Channel<Map<String, String>> testChannel;
+    private Channel<NumberMap> testChannel;
     private Channel<String> testChannel2;
-    private Channel<Map<String, String>> receiveChannel;
+    private Channel<NumberMap> receiveChannel;
     private Channel<String> receiveChannel2;
 
     private int ctr = 0;
@@ -22,8 +22,8 @@ public class TestModule extends Module
     @Override
     public void initialize(Map<String, String> properties) 
     {
-       this.testChannel = this.publish("TestChannel", new HashMap<String, String>());
-       this.receiveChannel = this.subscribe("TestChannel", new HashMap<String,String>(), (data) -> onData(data));
+       this.testChannel = this.publish("TestChannel", NumberMap.class);
+       this.receiveChannel = this.subscribe("TestChannel", NumberMap.class, val -> onData(val));
 
     //     this.receiveChannel2 = this.subscribe(String.class, "TestChannel", (data) -> onDataString(data));
     //     this.receiveChannel = this.subscribe(Double.class, "TestChannel", (data) -> onData(data));
@@ -33,10 +33,10 @@ public class TestModule extends Module
     //   //  this.testChannel.post(Double.valueOf(42));
         
         
-         this.registerPeriodicFunction("TestFunction", () -> testFunction(), Duration.ofMillis(500));
+        this.registerPeriodicFunction("TestFunction", () -> testFunction(), Duration.ofMillis(500));
     }
 
-    public void onData(Map<String, String> data)
+    public void onData(NumberMap data)
     {
         System.out.println("On data: " + data);
     }
@@ -46,7 +46,10 @@ public class TestModule extends Module
         Logger.logInfo("Test function hello " + ctr);
         Map<String, String> data = new HashMap<>();
         data.put("Test" + ctr, String.valueOf(ctr));
-        this.testChannel.post(data);
+
+        NumberMap.Builder builder = NumberMap.newBuilder();
+        builder.putVal("Test"+ctr, ctr);
+        this.testChannel.post(builder.build());
         ctr += 1;
 
     }

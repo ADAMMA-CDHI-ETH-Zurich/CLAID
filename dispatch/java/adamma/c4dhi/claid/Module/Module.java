@@ -128,7 +128,29 @@ public abstract class Module
     }
 
     
+    // Default publish method for all data types except of collections like ArrayList or Map.
+    // providing the Class is sufficient for all data types except Collections (Collections are handled separately).
+    protected<T> Channel<T> publish(final String channelName, Class<T> dataType)
+    {
+        if(!this.assertCanPublish(channelName))
+        {
+            return Channel.newInvalidChannel(channelName);
+        }
+        return this.subscriberPublisher.publish(this, new DataType(dataType), channelName);
+    }
 
+    // Alternative to the default publish method. Instead of providing an example instance,
+    // Sadly, we cannot do this, because this function would also be called for Map or ArrayList types.
+    // Thus, our only option is to use the Class<?> as data type for all classes and an instance T t for cases like Map and ArrayList.
+    /*protected<T> Channel<T> publish(final String channelName, T t)
+    {
+        if(!this.assertCanPublish(channelName))
+        {
+            return Channel.newInvalidChannel(channelName);
+        }
+        Class<?> dataType = t.getClass();
+        return this.subscriberPublisher.publish(this, new DataType(dataType), channelName);
+    }*/
 
     // Magic to tackle java type erasure, because there is absolutely no way
     // to find out the generic type of a collection from the Class object (e.g., new ArrayList<String>().class()) itself.
@@ -238,29 +260,8 @@ public abstract class Module
         return this.subscriberPublisher.publish(this, new DataType(Map.class, "Map<String, String>"), channelName);
     }
     
-    // Default publish method for all data types except of collections like ArrayList or Map.
-    // Sadly, we cannot do this, because this function would also be called for Map or ArrayList types.
-    // Thus, our only option is to use the Class<?> as data type for all classes and an instance T t for cases like Map and ArrayList.
-    /*protected<T> Channel<T> publish(final String channelName, T t)
-    {
-        if(!this.assertCanPublish(channelName))
-        {
-            return Channel.newInvalidChannel(channelName);
-        }
-        Class<?> dataType = t.getClass();
-        return this.subscriberPublisher.publish(this, new DataType(dataType), channelName);
-    }*/
     
-    // Alternative to the default publish method. Instead of providing an example instance,
-    // providing the Class is sufficient for all data types except Collections (Collections are handled separately).
-    protected<T> Channel<T> publish(final String channelName, Class<T> dataType)
-    {
-        if(!this.assertCanPublish(channelName))
-        {
-            return Channel.newInvalidChannel(channelName);
-        }
-        return this.subscriberPublisher.publish(this, new DataType(dataType), channelName);
-    }
+    
 
     // =================== Subscribe ===================
    
