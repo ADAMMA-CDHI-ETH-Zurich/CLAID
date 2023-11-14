@@ -2,7 +2,7 @@
 <p style='text-align: justify;'> 
 A Flutter plugin to use the CLAID framework. CLAID is a flexible and modular middleware framework based on transparent computing. The middleware framework allows to build applications for mobile (Android, WearOS, iOS*) and regular (Linux, macOS) operating systems, enabling seamless communication between individual Modules implemented in different programming languages (C++, Java, Dart, Python) running on all these operating systems. Existing CLAID Modules allow to effortlessly implement modular machine learning and data collection application with little-to-no coding.  For more details, check out the <a href="https://claid.ethz.ch">CLAID website</a> and our <a href="https://arxiv.org/abs/2310.05643">publication</a>.
 
-CLAID was developed by the Centre for Digital Health Interventions at ETH Zurich. 
+CLAID is developed and maintained by the <a href="http://c4dhi.org">Centre for Digital Health Interventions</a> at ETH Zurich. 
 </p>
 
 
