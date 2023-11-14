@@ -1,9 +1,9 @@
 # CLAID - Closing the Loop on AI & Data Collection: Flutter Package
-<p style='text-align: justify;'> 
+<div align="justify"> 
 A Flutter plugin to use the CLAID framework. CLAID is a flexible and modular middleware framework based on transparent computing. The middleware framework allows to build applications for mobile (Android, WearOS, iOS*) and regular (Linux, macOS) operating systems, enabling seamless communication between individual Modules implemented in different programming languages (C++, Java, Dart, Python) running on all these operating systems. Existing CLAID Modules allow to effortlessly implement modular machine learning and data collection application with little-to-no coding.  For more details, check out the <a href="https://claid.ethz.ch">CLAID website</a> and our <a href="https://arxiv.org/abs/2310.05643">publication</a>.
 
 CLAID is developed and maintained by the <a href="http://c4dhi.org">Centre for Digital Health Interventions</a> at ETH Zurich. 
-</p>
+</div>
 
 
 
@@ -38,13 +38,13 @@ Please check out the official [CLAID website](https://claid.ethz.ch/tutorial/tut
 
 
 ## Our research
-<p style='text-align: justify;'> 
-CLAID is driven by our <strong>Digital Biomarker Research</strong>. In the field of Digital Biomarkers, we use mobile devices like Smartphones, Wearables, and Bluetooth Peripherals to gather datasets for training Machine Learning-based Digital Biomarkers. We observed a lack of tools to repurpose our data collection applications for real-world validation of our research projects. CLAID offers a unified solution for both data collection and integration of trained models, closing a critical gap in Digital Biomarker research.</p>
+<div align="justify"> 
+CLAID is driven by our <strong>Digital Biomarker Research</strong>. In the field of Digital Biomarkers, we use mobile devices like Smartphones, Wearables, and Bluetooth Peripherals to gather datasets for training Machine Learning-based Digital Biomarkers. We observed a lack of tools to repurpose our data collection applications for real-world validation of our research projects. CLAID offers a unified solution for both data collection and integration of trained models, closing a critical gap in Digital Biomarker research.</div>
 
-<p style='text-align: justify;'> 
-If you are interested in what we do in our research and how we use CLAID to build mobile AI and Digital Biomarker applications, check out the <a href="https://adamma-cdhi-eth-zurich.github.io">ADAMMA group</a>
+<div align="justify"> 
+If you are interested in our research and how we use CLAID to build mobile AI and Digital Biomarker applications, check out the <a href="https://adamma-cdhi-eth-zurich.github.io">ADAMMA group</a>
 (Core for AI & Digital Biomarker, Accoustic and Inflammatory Biomarkers) at the <a href="http://c4dhi.org">Centre for Digital Health Interventions</a>
- at ETH Zurich.</p>
+ at ETH Zurich.</div>
 
 ## Source code availability
 CLAID is completely open-sourced and released under the Apache2 license. You can access the code from the [CLAID repo](https://github.com/ADAMMA-CDHI-ETH-Zurich/CLAID).
