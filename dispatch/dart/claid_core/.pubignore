@@ -29,8 +29,4 @@ migrate_working_dir/
 .packages
 build/
 
-# code generated running ./make
-lib/generated/**
-test/generated/**
-blobs/**
-android/src/main/java/adamma/c4dhi/claid/
+Makefile
