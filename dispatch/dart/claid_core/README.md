@@ -1,92 +1,59 @@
-# claid_core
+# CLAID - Closing the Loop on AI & Data Collection: Flutter Package
+<p style='text-align: justify;'> 
+A Flutter plugin to use the CLAID framework. CLAID is a flexible and modular middleware framework based on transparent computing. The middleware framework allows to build applications for mobile (Android, WearOS, iOS*) and regular (Linux, macOS) operating systems, enabling seamless communication between individual Modules implemented in different programming languages (C++, Java, Dart, Python) running on all these operating systems. Existing CLAID Modules allow to effortlessly implement modular machine learning and data collection application with little-to-no coding.  For more details, check out the <a href="https://claid.ethz.ch">CLAID website</a> and our <a href="https://arxiv.org/abs/2310.05643">publication</a>.
 
-A new Flutter FFI plugin project.
+CLAID was developed by the Centre for Digital Health Interventions at ETH Zurich. 
+</p>
 
-## Getting Started
 
-This project is a starting point for a Flutter
-[FFI plugin](https://docs.flutter.dev/development/platform-integration/c-interop),
-a specialized package that includes native code directly invoked with Dart FFI.
 
-## Project structure
+[![DOI](https://img.shields.io/badge/DOI-2310.05643/arxiv.org/abs/2310.05643-red.svg)](https://arxiv.org/abs/2310.05643)
+<p align="center">
+  <img alt="ETH" src="graphics/eth_logo.png" width="45%">
+&nbsp; &nbsp; &nbsp; &nbsp;
+  <img alt="CDHI" src="graphics/cdhi_logo.png" width="45%">
+</p>
 
-This template uses the following structure:
+<p><small style="color: grey;">*iOS support available but not yet released</small></p>
 
-* `src`: Contains the native source code, and a CmakeFile.txt file for building
-  that source code into a dynamic library.
 
-* `lib`: Contains the Dart code that defines the API of the plugin, and which
-  calls into the native code using `dart:ffi`.
+## Features
+- Seamless communication between Modules running on different OS or implemented in programming languages, allowing different devices to be integrated into an edge-cloud system
+  - Support for Android, WearOS, Linux and macOS (iOS support in the making)
+  - Support for C++, Java, Dart and Python*
+- Pre-created Modules ready to use without programming, which can be loaded, configured and combined from simple configuration files:
+  - Modules for data collection on Android and WearOS
+  - Modules for data serialization, storage and upload
+  - Modules to execute machine learning models (currently using TensorFlowLite) 
+- Background operating via services on Android and WearOS
+- Encryption in rest and in-transit (soon) of data sent via a network or stored locally
 
-* platform folders (`android`, `ios`, `windows`, etc.): Contains the build files
-  for building and bundling the native code library with the platform application.
 
-## Building and bundling native code
+<p><small style="color: grey;">*pip package will be released separately</small></p>
 
-The `pubspec.yaml` specifies FFI plugins as follows:
+## Getting started
+Please check out the official [CLAID website](https://claid.ethz.ch/tutorial/tutorial_introduction/) for in-depth tutorials on how to use CLAID.
 
-```yaml
-  plugin:
-    platforms:
-      some_platform:
-        ffiPlugin: true
-```
 
-This configuration invokes the native build for the various target platforms
-and bundles the binaries in Flutter applications using these FFI plugins.
 
-This can be combined with dartPluginClass, such as when FFI is used for the
-implementation of one platform in a federated plugin:
 
-```yaml
-  plugin:
-    implements: some_other_plugin
-    platforms:
-      some_platform:
-        dartPluginClass: SomeClass
-        ffiPlugin: true
-```
+## Our research
+<p style='text-align: justify;'> 
+CLAID is driven by our <strong>Digital Biomarker Research</strong>. In the field of Digital Biomarkers, we use mobile devices like Smartphones, Wearables, and Bluetooth Peripherals to gather datasets for training Machine Learning-based Digital Biomarkers. We observed a lack of tools to repurpose our data collection applications for real-world validation of our research projects. CLAID offers a unified solution for both data collection and integration of trained models, closing a critical gap in Digital Biomarker research.</p>
 
-A plugin can have both FFI and method channels:
+<p style='text-align: justify;'> 
+If you are interested in what we do in our research and how we use CLAID to build mobile AI and Digital Biomarker applications, check out the <a href="https://adamma-cdhi-eth-zurich.github.io">ADAMMA group</a>
+(Core for AI & Digital Biomarker, Accoustic and Inflammatory Biomarkers) at the <a href="http://c4dhi.org">Centre for Digital Health Interventions</a>
+ at ETH Zurich.</p>
 
-```yaml
-  plugin:
-    platforms:
-      some_platform:
-        pluginClass: SomeName
-        ffiPlugin: true
-```
+## Source code availability
+CLAID is completely open-sourced and released under the Apache2 license. You can access the code from the [CLAID repo](https://github.com/ADAMMA-CDHI-ETH-Zurich/CLAID).
 
-The native build systems that are invoked by FFI (and method channel) plugins are:
+## Issues, Feedback and Contribution
+... coming soon
 
-* For Android: Gradle, which invokes the Android NDK for native builds.
-  * See the documentation in android/build.gradle.
-* For iOS and MacOS: Xcode, via CocoaPods.
-  * See the documentation in ios/claid_core.podspec.
-  * See the documentation in macos/claid_core.podspec.
-* For Linux and Windows: CMake.
-  * See the documentation in linux/CMakeLists.txt.
-  * See the documentation in windows/CMakeLists.txt.
-
-## Binding to native code
-
-To use the native code, bindings in Dart are needed.
-To avoid writing these by hand, they are generated from the header file
-(`src/claid_core.h`) by `package:ffigen`.
-Regenerate the bindings by running `flutter pub run ffigen --config ffigen.yaml`.
-
-## Invoking native code
-
-Very short-running native functions can be directly invoked from any isolate.
-For example, see `sum` in `lib/claid_core.dart`.
-
-Longer-running functions should be invoked on a helper isolate to avoid
-dropping frames in Flutter applications.
-For example, see `sumAsync` in `lib/claid_core.dart`.
-
-## Flutter help
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
+## Contributors
+Patrick Langer, ETH Zurich, 2023  
+Stephan Altmüller, ETH Zurich, 2023  
+Francesco Feher, ETH Zurich, University of Parma, 2023  
+Filipe Barata, ETH Zurich, 2023  
