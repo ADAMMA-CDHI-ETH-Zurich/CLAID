@@ -25,6 +25,7 @@
 #include <chrono>
 #include "dispatch/core/Module/RunnableDispatcherThread.hpp"
 #include "dispatch/core/Module/RunnableDispatcher.hpp"
+#include "dispatch/core/Module/ModuleFactory/ModuleFactory.hpp"
 #include "Logger/Logger.hpp"
 
 
@@ -105,3 +106,7 @@ namespace claid
     };
 
 }
+
+#define REGISTER_MODULE(className)\
+    static_assert(std::is_base_of<claid::BaseModule, className>::value, "Tried to register a class as Module (see above), which did not inherit from BaseModule. Did you forget to inherit from Module or BaseModule?"  ); \
+    REGISTER_MODULE_FACTORY(className)
