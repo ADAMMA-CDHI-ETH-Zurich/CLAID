@@ -1,7 +1,7 @@
 name: claid
-description: CLAID - Closing the Loop on AI & Data Collection
-version: 0.0.1
-homepage: http://claid.ethz.ch
+description: CLAID is a flexible and modular middleware framework based on transparent computing. CLAID allows to build applications for mobile (Android, WearOS, iOS*) and regular (Linux, macOS) operating systems, enabling seamless communication between individual Modules implemented in different programming languages (C++, Java, Dart, Python) running on all these operating systems. Existing CLAID Modules allow to effortlessly implement modular machine learning and data collection application with little-to-no coding.
+version: 0.0.5
+homepage: https://claid.ethz.ch
 
 environment:
   sdk: '>=3.1.1 <4.0.0'
@@ -48,7 +48,8 @@ flutter:
         ffiPlugin: true
       linux:
         ffiPlugin: true
-
+  
+  
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

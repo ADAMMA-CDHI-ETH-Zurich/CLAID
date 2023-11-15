@@ -21,8 +21,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:claid_core/dispatcher.dart';
-import 'package:claid_core/generated/claidservice.pb.dart';
+import 'package:claid/dispatcher.dart';
+import 'package:claid/generated/claidservice.pb.dart';
 import 'package:path/path.dart';
 
 import 'package:test/test.dart';

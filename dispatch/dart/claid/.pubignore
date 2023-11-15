@@ -30,3 +30,7 @@ migrate_working_dir/
 build/
 
 Makefile
+
+blobs/android/x86
+blobs/android/x86_64
+blobs/libclaid_capi_linux.so

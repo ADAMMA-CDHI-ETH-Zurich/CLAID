@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package claidservice;
+
+// Container for the central CLAID config file. 
+// TODO (patrick): change as you see fit, this just a starting point. 
+message CLAIDConfig {
+  repeated HostConfig hosts = 1; 
+}
+
+message HostConfig {
+  string hostname = 1; 
+  string type = 2;
+  bool is_server = 3;
+  optional string host_server_address = 4; // If is_server, then this identifies the address of the server. Must be fully specified.
+  optional string connect_to = 5; // If specified, the host will connect to this address. 
+                                  // The host can either be a Client connection to a Server, or a Server connecting to another Server.
+  repeated ModuleConfig modules = 6;
+}
+
+message ModuleConfig
+{
+  string id = 1; 
+  string type = 2;
+  repeated string input_channels = 3;
+  repeated string output_channels = 4;
+  map<string, string> properties = 5;
+}

@@ -18,7 +18,7 @@
 * limitations under the License.
 ***************************************************************************/
 
-import 'package:claid_core/generated/claidservice.pb.dart';
+import 'package:claid/generated/claidservice.pb.dart';
 import 'package:protobuf/protobuf.dart';
 
 typedef SetterFn<T> = void Function(DataPackage pkt, T val);

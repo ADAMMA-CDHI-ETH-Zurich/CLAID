@@ -1,0 +1,214 @@
+syntax = "proto3";
+
+package claidservice;
+
+option go_package = "claid.ethz.ch/claidservice";
+
+option java_package = "adamma.c4dhi.claid";
+option java_outer_classname = "ClaidJavaService";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+// Service for modules to talk to the CLAID middleware.
+service ClaidService {
+  // Continuous stream of DataPackage's between client and server.
+  rpc SendReceivePackages(stream DataPackage) returns (stream DataPackage) {}
+
+  // Get the modules to set up during initialization.
+  rpc GetModuleList(ModuleListRequest) returns (ModuleListResponse) {}
+
+  // Init Modules
+  rpc InitRuntime(InitRuntimeRequest) returns (google.protobuf.Empty) {}
+}
+
+// Service for two instances of the CLAID middleware to talk to each other over a TCP connection.
+service ClaidRemoteService
+{
+  // Continuous stream of DataPackage's between remote client and remote server.
+  rpc SendReceivePackages(stream DataPackage) returns (stream DataPackage) {}
+
+  // Registers the client (identified by user_token and device_id) with the server.
+  // rpc RegisterRemoteClient(RemoteClientInitRequest) returns (google.protobuf.Empty) {}
+}
+
+message DataPackage {
+  string id = 1;      // Unique ID of this package 
+  string channel = 2; 
+  string source_host_module = 3; // originating module in the format host_id:module_id
+  string target_host_module = 4; // target module in the format host_id:module_id
+  string source_user_token = 5;  // id token of the user / system entity that created this package.
+  string target_user_token = 6; // id of the user / system that this package is intended for, if it is intended to send data to a module of a specific user.
+                                // typically, this will be *, meaning that the package will be forwarded to all users that run the corresponding host.
+  string device_id = 7;    // unique ID for this device / host, e.g. MAC id
+  repeated TracePoint trace_points = 8;
+
+  // To add another message type add it below.
+  oneof payload_oneof {
+    ControlPackage control_val = 30;
+    double number_val = 31;
+    string string_val = 32;
+    bool bool_val = 33;
+    NumberArray number_array_val = 34;
+    StringArray string_array_val = 35;
+    NumberMap number_map = 36;
+    StringMap string_map = 37;
+    Blob blob_val = 38;
+  }
+}
+
+enum CtrlType {
+  CTRL_UNSPECIFIED     = 0;
+  CTRL_RUNTIME_PING    = 1;  // Client sends this upon connect and periodically if no packages have been sent
+  CTRL_REMOTE_PING     = 2;  // RemoteClient sends this upon connect to a RemoteDispatcherServer upon connect.
+  CTRL_CONN_CANCEL     = 3;  // Signal by the client that it is about to cancel the request.
+  // CTRL_MODULE_READY = 4;  // sent to module when the local middleware is ready
+  // CTRL_STATUS       = 5;  // Sent from a middleware client up the tree
+  // CTRL_ACTION       = 6;  // sent to module when the local middleware is ready
+  CTRL_ERROR           = 7;  // Error occured
+}
+
+// Note for Stephan: I removed the "optional" labels, as protoc did complain about them:
+// "Explicit 'optional' labels are disallowed in the Proto3 syntax. To define 'optional' fields in Proto3, simply remove the 'optional' label, as fields are 'optional' by default.
+
+message ControlPackage {
+    CtrlType ctrl_type                    = 1;
+   Runtime runtime              = 2; // CTRL_RUNTIME_PING
+   RemoteClientInfo remote_client_info = 3; // CTRL_REMOTE_PING
+   AccumulatedStatus status     = 4; // CTRL_STATUS: status sent towards root server
+   ErrorMsg error_msg           = 5; // CTRL_ERROR: Error report sent towards root server
+   ActionRequest action_request = 6; // CTRL_ACTION: action request sent to all children
+                                             // of the claid instance
+
+}
+
+message AccumulatedStatus {
+  // TBD
+}
+
+message ErrorMsg {
+  string message = 1;
+  bool cancel = 2;
+}
+
+// enum ErrorLevel {
+//   ERR_LEVEL_UNSPECIFIED = 0;
+//   ERR_LEVEL_WARNING = 1;
+//   ERR_LEVEL_FATAL = 2;
+// }
+
+message ActionRequest {
+  // TBD
+  map<string, string> action_params = 1;
+}
+
+message NumberArray {
+  repeated double val = 1;
+}
+
+message StringArray {
+  repeated string val = 1;
+}
+
+message NumberMap {
+  map<string, double> val = 1;
+}
+
+message StringMap {
+  map<string, string> val = 1;
+}
+
+message Blob {
+  Codec codec = 1;
+
+  // The byte blob containing the payload data.
+  bytes payload = 2;
+
+  string name = 3;  // local name of the blob (e.g. file name)
+
+  // type and subtype contains meta information to decode the bytes contained above.
+  // See this list of common mime types
+  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+  //
+  string message_type = 4;  // mime type, protobuf type (to decode payload)
+  string sub_type = 5;      // mime subtype, etc.
+}
+
+enum Codec {
+  CODEC_UNSPECIFIED = 0;
+  CODEC_BYTES       = 1;   // Just a bytes blob (no-op codec)
+  CODEC_FILE        = 2;    // File blob
+  CODEC_JSON        = 3;    // JSON data (maybe decode)
+  CODEC_PROTO       = 4;   // Decode based on registry
+}
+
+message TracePoint {
+ google.protobuf.Timestamp time_stamp = 1;
+ string node_id = 2;  // full module id:  host_id:module_type
+}
+
+// Sent by the client (Runtime) to tell the Middleware which Modules it supports.
+// The Middleware will answer with a ModuleListResponse, which contains the Modules 
+// that the Middleware wants the runtime client to load.
+message ModuleListRequest {
+  Runtime runtime = 1;
+  repeated string supported_module_classes = 2;
+}
+
+// List of modules that the runtime client is expected to instantiate.
+message ModuleListResponse {
+  message ModuleDescriptor {
+    string module_id = 1;
+    string module_class = 2;
+    map<string, string> properties = 3;
+    repeated DataPackage channels = 4;
+  }
+
+  repeated ModuleDescriptor descriptors = 1;
+}
+
+// Sent by the client after the modules have been instantiated
+// to inform the server what channels will be sent.
+message InitRuntimeRequest {
+  message ModuleChannels {
+    string module_id = 1;
+    repeated DataPackage channel_packets = 2; // channel, source | target, payload => define the channel
+  }
+
+  Runtime runtime = 1;
+  repeated ModuleChannels modules = 2;
+}
+
+enum Runtime {
+  RUNTIME_UNSPECIFIED = 0;
+  RUNTIME_CPP = 1;
+  RUNTIME_DART = 2;
+  RUNTIME_JAVA = 3;
+  RUNTIME_PYTHON = 4;
+}
+
+message RemoteClientInfo
+{
+  string host = 1;
+  string user_token = 2;
+  string device_id = 3;
+}
+
+// message AppConfig {
+//   repeated HostConfig hosts = 1;
+// }
+
+// message HostConfig {
+//   string host_id = 1;
+//   repeated ModuleConfig modules = 2;
+// }
+
+// message ModuleConfig {
+//   string mod_id = 1;
+//   string mod_type = 2;
+//   repeated string in_channels = 3;
+//   repeated string out_channels = 4;
+//   map<string, string> properties = 5;
+// }
+

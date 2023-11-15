@@ -62,7 +62,7 @@ final ffi.DynamicLibrary _dylib = () {
   }
   if (Platform.isAndroid)
   {
-    return ffi.DynamicLibrary.open('libandroid_claid.so');
+    return ffi.DynamicLibrary.open('libclaid_capi_android.so');
   }
   if (Platform.isWindows) {
     return ffi.DynamicLibrary.open('$_libName.dll');

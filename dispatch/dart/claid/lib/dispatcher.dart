@@ -21,7 +21,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:claid_core/generated/claidservice.pbgrpc.dart';
+import 'package:claid/generated/claidservice.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
 
 import 'middleware.dart';

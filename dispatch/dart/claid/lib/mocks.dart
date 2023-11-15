@@ -20,12 +20,12 @@
 
 import 'dart:async';
 
-import 'package:claid_core/src/module_impl.dart';
+import 'package:claid/src/module_impl.dart';
 import 'package:ffi/ffi.dart';
 import 'package:fixnum/fixnum.dart';
 
-import 'package:claid_core/generated/claidservice.pb.dart';
-import 'package:claid_core/generated/google/protobuf/timestamp.pb.dart';
+import 'package:claid/generated/claidservice.pb.dart';
+import 'package:claid/generated/google/protobuf/timestamp.pb.dart';
 import 'module.dart';
 import 'dispatcher.dart';
 

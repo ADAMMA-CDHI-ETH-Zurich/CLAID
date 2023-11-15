@@ -17,3 +17,17 @@
     * Protobuf data types
 * Support for Android, Linux and macOS
     * Android libs for armeabi-v7a, arm64-v8a, x86 and x86_64 
+
+## 0.0.2
+* Updating LICENSE
+* Updating README
+* Updating pubspec
+
+## 0.0.3 
+* Updating Readme
+
+## 0.0.4
+* Updated proto sources
+
+## 0.0.5
+* Added ABI filters, because this flutter package currently does not support x86 and x86_64 devices.

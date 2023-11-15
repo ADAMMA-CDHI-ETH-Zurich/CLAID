@@ -2,16 +2,16 @@
 <div align="justify"> 
 A Flutter plugin to use the CLAID framework. CLAID is a flexible and modular middleware framework based on transparent computing. The middleware framework allows to build applications for mobile (Android, WearOS, iOS*) and regular (Linux, macOS) operating systems, enabling seamless communication between individual Modules implemented in different programming languages (C++, Java, Dart, Python) running on all these operating systems. Existing CLAID Modules allow to effortlessly implement modular machine learning and data collection application with little-to-no coding.  For more details, check out the <a href="https://claid.ethz.ch">CLAID website</a> and our <a href="https://arxiv.org/abs/2310.05643">publication</a>.
 
-CLAID is developed and maintained by the <a href="http://c4dhi.org">Centre for Digital Health Interventions</a> at ETH Zurich. 
+CLAID is developed and maintained by the <a href="https://c4dhi.org">Centre for Digital Health Interventions</a> at ETH Zurich. 
 </div>
 
 
 
 [![DOI](https://img.shields.io/badge/DOI-2310.05643/arxiv.org/abs/2310.05643-red.svg)](https://arxiv.org/abs/2310.05643)
 <p align="center">
-  <img alt="ETH" src="graphics/eth_logo.png" width="45%">
+  <img alt="ETH" src="https://github.com/ADAMMA-CDHI-ETH-Zurich/CLAID/blob/main/assets/eth_logo.png?raw=true" width="45%">
 &nbsp; &nbsp; &nbsp; &nbsp;
-  <img alt="CDHI" src="graphics/cdhi_logo.png" width="45%">
+  <img alt="CDHI" src="https://github.com/ADAMMA-CDHI-ETH-Zurich/CLAID/blob/main/assets/cdhi_logo.png?raw=true" width="45%">
 </p>
 
 <p><small style="color: grey;">*iOS support available but not yet released</small></p>
@@ -32,7 +32,9 @@ CLAID is developed and maintained by the <a href="http://c4dhi.org">Centre for D
 <p><small style="color: grey;">*pip package will be released separately</small></p>
 
 ## Getting started
-Please check out the official [CLAID website](https://claid.ethz.ch/tutorial/tutorial_introduction/) for in-depth tutorials on how to use CLAID.
+**This is a pre-release, detailed instructions will follow soon.**
+
+
 
 
 
@@ -43,7 +45,7 @@ CLAID is driven by our <strong>Digital Biomarker Research</strong>. In the field
 
 <div align="justify"> 
 If you are interested in our research and how we use CLAID to build mobile AI and Digital Biomarker applications, check out the <a href="https://adamma-cdhi-eth-zurich.github.io">ADAMMA group</a>
-(Core for AI & Digital Biomarker, Accoustic and Inflammatory Biomarkers) at the <a href="http://c4dhi.org">Centre for Digital Health Interventions</a>
+(Core for AI & Digital Biomarker, Accoustic and Inflammatory Biomarkers) at the <a href="https://c4dhi.org">Centre for Digital Health Interventions</a>
  at ETH Zurich.</div>
 
 ## Source code availability

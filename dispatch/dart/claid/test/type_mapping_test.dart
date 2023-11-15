@@ -18,9 +18,9 @@
 * limitations under the License.
 ***************************************************************************/
 
-import 'package:claid_core/generated/claidservice.pb.dart';
+import 'package:claid/generated/claidservice.pb.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:claid_core/src/type_mapping.dart';
+import 'package:claid/src/type_mapping.dart';
 import './generated/testmessages.pb.dart';
 
 void testMapping<T>(

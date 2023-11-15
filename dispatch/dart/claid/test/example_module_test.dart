@@ -20,9 +20,9 @@
 
 import 'dart:async';
 
-import 'package:claid_core/dispatcher.dart';
-import 'package:claid_core/mocks.dart';
-import 'package:claid_core/module.dart';
+import 'package:claid/dispatcher.dart';
+import 'package:claid/mocks.dart';
+import 'package:claid/module.dart';
 
 import 'package:test/test.dart';
 

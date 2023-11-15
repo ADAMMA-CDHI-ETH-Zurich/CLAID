@@ -55,9 +55,9 @@ build_middleware:
 # Build the Android Apk, extract the libs from the Apk and copy them to the blobs folder.
 # Make sure to use CC=gcc, not clang! Otherwise build fails.
 .PHONY: build_android 
-build_android: copy_android_java_sources
+build_android: copy_android_sources
 	cd ../../..; rm -rf $(TARGET_LIBS_ANDROID)
-	CC=gcc bazel build //dispatch/android:$(OUTPUT_APK_ANDROID_NAME) --fat_apk_cpu=arm64-v8a,armeabi-v7a,x86,x86_64
+	CC=gcc bazel build //dispatch/android:$(OUTPUT_APK_ANDROID_NAME) --fat_apk_cpu=arm64-v8a,armeabi-v7a
 	cd ../../..; rm -fr $(OUTPUT_APK_TMP_PATH_ANDROID)
 	cd ../../..; mkdir $(OUTPUT_APK_TMP_PATH_ANDROID)
 	cd ../../..; cp $(OUTPUT_APK_ANDROID).apk $(OUTPUT_APK_TMP_PATH_ANDROID)/
@@ -69,12 +69,14 @@ build_android: copy_android_java_sources
 # For the JavaCLAID implementation (i.e., //dispatch/core/java) to be
 # available in the flutter plugin, they have to be copied to the android/src/main folder. 
 # Sadly, there seems to be no way to just add a reference to the //dispatch/core/java folder.
-.PHONY: copy_android_java_sources
-copy_android_java_sources:
+.PHONY: copy_android_sources
+copy_android_sources:
 	rm -fr android/src/main/java/adamma/c4dhi/claid
 	mkdir -p android/src/main/java/adamma/c4dhi
 	cp -r ../../java/adamma/c4dhi/claid android/src/main/java/adamma/c4dhi/claid
-
+	rm -fr android/src/proto
+	cp -r ../../proto/ android/src/proto
+	rm android/src/proto/BUILD.bazel
 
 .PHONY: generate
 generate: generate_dart generate_test_dart generate_ffi

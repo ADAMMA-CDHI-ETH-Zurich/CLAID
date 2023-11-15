@@ -12,7 +12,7 @@ if(ANDROID)
 
 add_library(libandroid_claid SHARED IMPORTED)
 set_target_properties(libandroid_claid PROPERTIES IMPORTED_LOCATION
-        ${CMAKE_CURRENT_LIST_DIR}/../blobs/android/${ANDROID_ABI}/libandroid_claid.so
+        ${CMAKE_CURRENT_LIST_DIR}/../blobs/android/${ANDROID_ABI}/libclaid_capi_android.so
         )
 
 find_library( # Sets the name of the path variable.

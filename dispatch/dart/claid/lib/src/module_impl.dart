@@ -21,9 +21,9 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:claid_core/dispatcher.dart';
-import 'package:claid_core/generated/claidservice.pb.dart';
-import 'package:claid_core/mocks.dart';
+import 'package:claid/dispatcher.dart';
+import 'package:claid/generated/claidservice.pb.dart';
+import 'package:claid/mocks.dart';
 
 import '../module.dart';
 import 'type_mapping.dart';
@@ -126,8 +126,10 @@ class ModuleManager {
     for (var mod in modDesc) {
       final fn = _factories[mod.moduleClass];
       if (fn == null) {
-        throw UnsupportedError(
-            "module factory ${mod.moduleClass} is not registered");
+        
+        //throw UnsupportedError(
+        //    "module factory ${mod.moduleClass} is not registered");
+        continue;
       }
       final instance = fn();
       _moduleMap[mod.moduleId] =
