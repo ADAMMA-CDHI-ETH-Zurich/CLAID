@@ -71,42 +71,5 @@ namespace claid
         while(true);
     }
 
-    absl::Status populateModuleTable(
-        const ModuleDescriptionMap& moduleDescriptions,
-        const ChannelDescriptionMap& channelDescriptions,
-        ModuleTable& moduleTable)
-    {
-        Logger::printfln("Module size: %d", moduleDescriptions.size());
-        for(const auto& entry : moduleDescriptions)
-        {
-            const ModuleDescription& moduleDescription = entry.second;
-
-            moduleTable.setModule(moduleDescription.id,
-                moduleDescription.moduleClass,
-                moduleDescription.properties);
-        }
-
-        for(const auto& entry : channelDescriptions)
-        {
-            const ChannelDescription& channelDescription = entry.second;
-
-            const std::string& channelName = channelDescription.channelName;
-
-            for(const std::string& publisher : channelDescription.publisherModules)
-            {
-                if(channelDescription.subscriberModules.size() == 0)
-                {
-                    // Channel without subscriber.
-                    moduleTable.setChannel(channelName, publisher, "");
-                    continue;
-                }
-                for(const std::string& subscriber : channelDescription.subscriberModules)
-                {
-                    moduleTable.setChannel(channelName, publisher, subscriber);
-                }
-            }
-        }
-
-        return absl::OkStatus();
-    }
+    
 }

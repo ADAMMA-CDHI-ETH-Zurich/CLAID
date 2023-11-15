@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include "FunctionRunnableBase.hpp"
-#include "Utilities/VariadicTemplateHelpers.hpp"
+#include "FunctionRunnableBase.hh"
+#include "dispatch/core/Utilities/VariadicTemplateHelpers.hh"
 
 namespace claid
 {

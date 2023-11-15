@@ -24,10 +24,11 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <thread>
 
-#include "Utilities/Time.hpp"
-#include "Logger/Logger.hpp"
-#include "ScheduledRunnable.hpp"
+#include "dispatch/core/Utilities/Time.hh"
+#include "dispatch/core/Logger/Logger.hh"
+#include "dispatch/core/Module/RunnableDispatcherThread/ScheduledRunnable.hh"
 namespace claid
 {
     class RunnableDispatcher
@@ -43,6 +44,8 @@ namespace claid
 
             bool rescheduleRequired = false;
             bool stopped = false;
+
+            std::thread thread;
 
             std::chrono::microseconds getWaitDurationUntilNextRunnableIsDue()
             {
@@ -185,28 +188,6 @@ namespace claid
 
             }
 
-        public:
-
-            void init()
-            {
-                this->stopped = false;
-            }
-
-            void stop()
-            {
-                this->stopped = true;
-            }
-
-            void addRunnable(ScheduledRunnable runnable)
-            {
-                std::unique_lock<std::mutex> lock(this->mutex);
-                this->scheduledRunnables.insert(std::make_pair(runnable.schedule->getExecutionTime(), runnable));
-
-                // This will lead to a wake up, so we can reschedule.
-                this->rescheduleRequired = true;
-                this->conditionVariable.notify_all();
-            }
-
             void runScheduling()
             {
                 std::vector<ScheduledRunnable> dueRunnables;
@@ -228,5 +209,44 @@ namespace claid
                     waitUntilRunnableIsDueOrRescheduleIsRequired();
                 }
             }
+
+        public:
+
+
+            bool start()
+            {
+                if(!this->stopped)
+                {
+                    return false;
+                }
+
+                this->stopped = false;
+                this->thread = std::thread(&RunnableDispatcher::runScheduling, this);
+
+                return true;
+            }
+
+            bool stop()
+            {
+                if(this->stopped)
+                {
+                    return false;
+                }
+                this->stopped = true;
+                this->thread.join();
+                return true;
+            }
+
+            void addRunnable(ScheduledRunnable runnable)
+            {
+                std::unique_lock<std::mutex> lock(this->mutex);
+                this->scheduledRunnables.insert(std::make_pair(runnable.schedule->getExecutionTime(), runnable));
+
+                // This will lead to a wake up, so we can reschedule.
+                this->rescheduleRequired = true;
+                this->conditionVariable.notify_all();
+            }
+
+            
     };
 }

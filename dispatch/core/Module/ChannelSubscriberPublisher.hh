@@ -7,8 +7,9 @@
 #include "dispatch/proto/claidservice.grpc.pb.h"
 #include "dispatch/core/shared_queue.hh"
 #include "dispatch/core/module_table.hh"
-#include "dispatch/core/Module/AbstractSubscriber.hpp"
-#include "dispatch/core/Module/Module.hpp"
+#include "dispatch/core/Module/AbstractSubscriber.hh"
+#include "dispatch/core/Module/Module.hh"
+#include "dispatch/core/Module/Channel.hh"
 
 using claidservice::DataPackage;
 
@@ -22,7 +23,7 @@ private:
 
 
     // Map<ModuleId, list of example packages defining publishments and subscriptions of the Module for that Channel>.
-    std::map<Module, std::vector<DataPackage>> examplePackagesForEachModule;
+    std::map<std::string, std::vector<DataPackage>> examplePackagesForEachModule;
 
     // pair<ChannelId, ModuleId>
     typedef std::pair<std::string, std::string> ChannelModulePair;
@@ -46,45 +47,45 @@ public:
         if(isPublisher)
         {
             // Only set module Id, host will be added by Middleware later.
-            dataPackage.set_source_host_module(moduleId);//concatenateHostModuleAddress(this.host, moduleId));
+            dataPackage.set_source_host_module(moduleId);//concatenateHostModuleAddress(this->host, moduleId));
         }
         else
         {
             // Only set module Id, host will be added by Middleware later.
-            dataPackage.set_target_host_module(moduleId);//concatenateHostModuleAddress(this.host, moduleId));
+            dataPackage.set_target_host_module(moduleId);//concatenateHostModuleAddress(this->host, moduleId));
         }
         dataPackage.set_channel(channelName);
 
         Mutator<T> mutator = TypeMapping::getMutator<T>();
         T exampleInstance;
-        mutator.setPackagePayload(packet, exampleInstance);
+        mutator.setPackagePayload(dataPackage, exampleInstance);
 
-        return packet;   
+        return dataPackage;   
     }
 
     template<typename T>
-    Channel<T> publish(Module& module, const std::string& channelName)
+    Channel<T> publish(ModuleRef module, const std::string& channelName)
     {
-        DataPackage examplePackage = prepareExamplePackage(module.getId(), channelName, true);
+        const std::string moduleId = module.getId();
+        DataPackage examplePackage = prepareExamplePackage<T>(moduleId, channelName, true);
 
-        const std::string& moduleId = module.getId();
 
 
-        this.examplePackagesForEachChannel[module.getId()].push_back(examplePackage);
+        this->examplePackagesForEachModule[moduleId].push_back(examplePackage);
 
-        return Channel<T>(module, channelName, Publisher<T>(module.getId(), channelName, this.toModuleManagerQueue));
+        return Channel<T>(module, channelName, Publisher<T>(moduleId, channelName, this->toModuleManagerQueue));
     }
 
     template <typename T>
-    Channel<T> subscribe(Module& module, const std::string& channelName, std::shared_ptr<Subscriber<T>> subscriber) 
+    Channel<T> subscribe(ModuleRef module, const std::string& channelName, std::shared_ptr<Subscriber<T>> subscriber) 
     {
-        DataPackage examplePackage = prepareExamplePackage<T>(module.getId(), channelName, false);
+        std::string moduleId = module.getId();
+        DataPackage examplePackage = prepareExamplePackage<T>(moduleId, channelName, false);
 
-        const std::string& moduleId = module.getId();
 
-        this.examplePackagesForEachChannel[module.getId()].push_back(examplePackage);
+        this->examplePackagesForEachModule[moduleId].push_back(examplePackage);
 
-        insertSubscriber(channelName, module.getId(), std::static_pointer_cast<AbstractSubscriber>(subscriber));
+        insertSubscriber(channelName, moduleId, std::static_pointer_cast<AbstractSubscriber>(subscriber));
 
         return Channel<T>(module, channelName, subscriber);
     }
@@ -119,7 +120,7 @@ public:
     std::vector<DataPackage> getChannelTemplatePackagesForModule(const std::string& moduleId)
     {
         // If moduleId does not exist in the map, it is added automatically and a new empty vector is allocated.
-       return examplePackagesForEachChannel[moduleId];
+       return examplePackagesForEachModule[moduleId];
     }
 
     bool isDataPackageCompatibleWithChannel(const DataPackage& dataPackage, const std::string& receiverModule)

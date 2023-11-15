@@ -23,10 +23,17 @@
 #include <map>
 #include <functional>
 #include <chrono>
-#include "dispatch/core/Module/RunnableDispatcherThread.hpp"
-#include "dispatch/core/Module/RunnableDispatcher.hpp"
-#include "dispatch/core/Module/ModuleFactory/ModuleFactory.hpp"
-#include "Logger/Logger.hpp"
+#include "dispatch/core/Module/RunnableDispatcherThread/RunnableDispatcher.hh"
+#include "dispatch/core/Logger/Logger.hh"
+#include "dispatch/core/Module/ModuleRef.hh"
+
+
+namespace claid
+{
+    class Module;
+}
+
+#include "dispatch/core/Module/ChannelSubscriberPublisher.hh"
 
 
 namespace claid 
@@ -48,13 +55,13 @@ namespace claid
 
 
     public:
-        Module() {}
+        Module();
 
-        void moduleError(const std::string& error);
-        void moduleWarning(const std::string& warning);
+        void moduleError(const std::string& error) const;
+        void moduleWarning(const std::string& warning) const;
 
         void setId(const std::string& id);
-        std::string getId();
+        std::string getId() const;
 
         bool start(ChannelSubscriberPublisher* subscriberPublisher, const std::map<std::string, std::string>& properties);
 
@@ -62,12 +69,12 @@ namespace claid
 
 
         void initializeInternal(const std::map<std::string, std::string>& properties);
-        void initialize(const std::map<std::string, std::string>& properties);ystem.out.println("Module base initialize");
+        void initialize(const std::map<std::string, std::string>& properties);
 
         void registerPeriodicFunction(const std::string& name, std::function<void()> callback, const Duration& interval);
         void registerPeriodicFunction(const std::string& name, std::function<void()> function, const Duration& interval, const Time& startTime);
 
-        void registerScheduledFunction(const std::string& name, const LocalDateTime& dateTime, std::function<void()> function);
+        void registerScheduledFunction(const std::string& name, const Time& dateTime, std::function<void()> function);
         void unregisterPeriodicFunction(const std::string& name);
 
         template<typename T>
@@ -77,7 +84,7 @@ namespace claid
                 moduleError("Cannot publish channel \"" + channelName + "\". Publishing is only allowed during initialization (i.e., the first call of the initialize function).");
                 return Channel<T>::newInvalidChannel(channelName);
             }
-            return subscriberPublisher.publish(this, channelName);
+            return subscriberPublisher->publish<T>(ModuleRef(this), channelName);
         }
 
         template<typename T>
@@ -86,27 +93,28 @@ namespace claid
                 moduleError("Cannot subscribe channel \"" + channelName + "\". Subscribing is only allowed during initialization (i.e., the first call of the initialize function).");
                 return Channel<T>::newInvalidChannel(channelName);
             }
-            return subscriberPublisher.subscribe(this, channelName, callback, runnableDispatcher);
+            return subscriberPublisher->subscribe<T>(ModuleRef(this), channelName, callback, runnableDispatcher);
         }
 
         template<typename Class>
         void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, const Duration& interval)
         {
-            registerPeriodicFunction(name, f, obj, std::chrono::system_clock::now() + interval);
+            registerPeriodicFunction(name, f, obj, interval, Time::now() + interval);
         }
 
         template<typename Class>
         void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, const Duration& interval, const Time& startTime)
         {
             std::function<void()> function = std::bind(f, obj);
-            this->registerPeriodicFunction(name, function, periodInMs, startTime);
+            this->registerPeriodicFunction(name, function, interval, startTime);
         }
 
         
     };
 
 }
+#include "dispatch/core/Module/ModuleFactory/ModuleFactory.hh"
 
 #define REGISTER_MODULE(className)\
-    static_assert(std::is_base_of<claid::BaseModule, className>::value, "Tried to register a class as Module (see above), which did not inherit from BaseModule. Did you forget to inherit from Module or BaseModule?"  ); \
+    static_assert(std::is_base_of<claid::Module, className>::value, "Tried to register a class as Module (see above), which did not inherit from BaseModule. Did you forget to inherit from Module or BaseModule?"  ); \
     REGISTER_MODULE_FACTORY(className)

@@ -19,11 +19,11 @@
 ***************************************************************************/
 // REQUIRES C++17, thus deactivated for now.
 
-// #include "RunnableDispatcherThread/RunnableDispatcherThread.hpp"
+// #include "RunnableDispatcherThread/RunnableDispatcherThread.hh"
 // #include <functional>
 
-// #include "SubscriberBase.hpp"
-// #include "ChannelData.hpp"
+// #include "SubscriberBase.hh"
+// #include "ChannelData.hh"
 // #include "mutex"
 // #include <iostream>
 

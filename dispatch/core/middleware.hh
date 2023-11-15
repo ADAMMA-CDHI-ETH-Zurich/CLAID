@@ -64,6 +64,12 @@ namespace claid
             // TODO: Remove this, for temporary testing only
             std::unique_ptr<std::thread> routerThread;
 
+            absl::Status populateModuleTable(
+                const ModuleDescriptionMap& moduleDescriptions,
+                const ChannelDescriptionMap& channelDescriptions,
+                claid::ModuleTable& moduleTable);
+
+
     };
 }
 

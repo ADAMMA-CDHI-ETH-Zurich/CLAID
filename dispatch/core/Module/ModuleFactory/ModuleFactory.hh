@@ -20,11 +20,10 @@
 #pragma once
 
 
-#include "ModuleFactoryBase.hpp"
-#include "ModuleFactoryTyped.hpp"
+#include "ModuleFactoryBase.hh"
+#include "ModuleFactoryTyped.hh"
 
-#include "Exception/Exception.hpp"
-#include "Utilities/Singleton.hpp"
+#include "dispatch/core/Utilities/Singleton.hh"
 
 #include <map>
 #include <string>
@@ -41,7 +40,7 @@ namespace claid
 			template<typename T>
 			void registerFactory(const std::string& className)
 			{
-				static_assert(std::is_base_of<claid::BaseModule, T>::value, "Tried to register a class as Module (see above), which did not inherit from Module."); 
+				static_assert(std::is_base_of<claid::Module, T>::value, "Tried to register a class as Module (see above), which did not inherit from Module."); 
 				ModuleFactoryBase* factory = static_cast<ModuleFactoryBase*>(new ModuleFactoryTyped<T>);
 				registerFactory(className, factory);
 			}

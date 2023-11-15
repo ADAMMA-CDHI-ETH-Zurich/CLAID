@@ -1,8 +1,10 @@
 #pragma once
 
-#include "AbstractSubscriber.hpp"
-#include "dispatch/core/Module/RunnableDispatcherThread/RunnableDispatcher.hpp"
-#include "dispatch/core/Module/ChannelData.hpp"
+#include "AbstractSubscriber.hh"
+#include "dispatch/core/Module/RunnableDispatcherThread/RunnableDispatcher.hh"
+#include "dispatch/core/Module/RunnableDispatcherThread/FunctionRunnableWithParams.hh"
+
+#include "dispatch/core/Module/ChannelData.hh"
 #include "dispatch/core/Module/TypeMapping/Mutator.hh"
 #include "dispatch/core/Module/TypeMapping/TypeMapping.hh"
 
@@ -29,14 +31,14 @@ namespace claid{
         {
             std::shared_ptr<
                     FunctionRunnableWithParams<void>> functionRunnable =
-                            std::make_shared<FunctionRunnableWithParams<void>>();
+                            std::make_shared<FunctionRunnableWithParams<void>>(this->callback);
 
 
-            functionRunnable->bind(&ChannelSubscriber::run, this);
+ 
 
             std::shared_ptr<Runnable> runnable = std::static_pointer_cast<Runnable>(functionRunnable);
             
-            this.callbackDispatcher.addRunnable(runnable);
+            this->callbackDispatcher.addRunnable(runnable);
         }
 
         void onNewData(DataPackage data) 
@@ -44,8 +46,8 @@ namespace claid{
             const T& value = this->mutator.getPackagePayload(data);
 
             // Create a new copy of the data so we can take ownership.
-            ChannelData<T> data = ChannelData<T>::fromCopy(value);
-            this->invokeCallback(value);
+            ChannelData<T> channelData = ChannelData<T>::fromCopy(value);
+            this->invokeCallback(channelData);
         }
     };
 }

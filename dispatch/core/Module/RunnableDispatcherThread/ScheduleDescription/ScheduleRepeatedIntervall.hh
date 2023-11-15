@@ -19,7 +19,7 @@
 ***************************************************************************/
 #pragma once
 
-#include "ScheduleDescription.hpp"
+#include "ScheduleDescription.hh"
 
 namespace claid
 {
@@ -35,6 +35,8 @@ namespace claid
         {
 
         }
+        
+        virtual ~ScheduleRepeatedIntervall() {};
 
         bool doesRunnableHaveToBeRepeated()
         {

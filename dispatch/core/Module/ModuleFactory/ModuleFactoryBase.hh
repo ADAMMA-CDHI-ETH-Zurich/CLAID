@@ -19,21 +19,13 @@
 ***************************************************************************/
 #pragma once
 
-#include "FunctionRunnableBase.hpp"
-#include <functional>
+#include "dispatch/core/Module/Module.hh"
 
 namespace claid
 {
-    // A Runnable that does nothing.
-    // Can be used to wake up a RunnableDispatcher thread, by inserting
-    // a DummyRunnable into the queue.
-    class DummyRunnable : public FunctionRunnableBase
-    {
-        private:
-            void run()
-            {
-             
-            }
-          
-    };
+	class ModuleFactoryBase
+	{
+		public:
+			virtual Module* getInstanceUntyped() = 0;
+	};
 }

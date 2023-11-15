@@ -18,23 +18,26 @@
 * limitations under the License.
 ***************************************************************************/
 
-#include "dispatch/core/Module/Module.hpp"
+#include "dispatch/core/Module/Module.hh"
+#include "dispatch/core/Module/RunnableDispatcherThread/FunctionRunnable.hh"
+#include "dispatch/core/Module/RunnableDispatcherThread/ScheduleDescription/ScheduleOnce.hh"
+#include "dispatch/core/Module/RunnableDispatcherThread/ScheduleDescription/ScheduleRepeatedIntervall.hh"
+#include "absl/strings/str_split.h"
 
 namespace claid
 {
-    // Somehow compiler does not like the constructor in the Module_imp .. soooo
     Module::Module()
     {
     }
 
 
-    void Module::moduleError(const std::string& error) 
+    void Module::moduleError(const std::string& error) const
     {
         std::string errorMsg = "Module \"" + id + "\": " + error;
         Logger::log(SeverityLevel::ERROR, errorMsg);
     }
 
-    void Module::moduleWarning(const std::string& warning) 
+    void Module::moduleWarning(const std::string& warning) const
     {
         std::string warningMsg = "Module \"" + id + "\": " + warning;
         Logger::log(SeverityLevel::WARNING, warningMsg);
@@ -59,7 +62,13 @@ namespace claid
         this->isInitializing = true;
         this->isInitialized = false;
 
-        this->runnableDispatcher.addRunnable(FunctionRunnable([this, properties] { initializeInternal(properties); }));
+        std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>([this, properties] { initializeInternal(properties); }));
+       
+        this->runnableDispatcher.addRunnable(
+            ScheduledRunnable(
+                std::static_pointer_cast<Runnable>(functionRunnable), 
+                ScheduleOnce(Time::now())));
+
 
         while (!isInitialized) {
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -72,20 +81,21 @@ namespace claid
 
     void Module::initializeInternal(const std::map<std::string, std::string>& properties)
     {
-        this.initialize(properties);
-        this.isInitialized = true;
+        this->initialize(properties);
+        this->isInitialized = true;
     }
 
     void Module::initialize(const std::map<std::string, std::string>& properties)
     {
-        System.out.println("Module base initialize");
+        Logger::logInfo("Module base initialize");
     }
 
     void Module::setId(const std::string& id) {
         this->id = id;
     }
 
-    std::string Module::getId() {
+    std::string Module::getId() const
+    {
         return id;
     }
 
@@ -96,12 +106,12 @@ namespace claid
 
     void Module::registerPeriodicFunction(const std::string& name, std::function<void()> callback, const Duration& interval) 
     {
-        registerPeriodicFunction(name, callback, interval, std::chrono::system_clock::now() + interval);
+        registerPeriodicFunction(name, callback, interval, Time::now() + interval);
     }
 
     void Module::registerPeriodicFunction(const std::string& name, std::function<void()> function, const Duration& interval, const Time& startTime) 
     {
-        if (interval.count() == 0) {
+        if (interval.getMicroSeconds() == 0) {
             moduleError("Error in registerPeriodicFunction: Cannot register periodic function \"" + name + "\" with a period of 0 milliseconds.");
         }
 
@@ -114,20 +124,30 @@ namespace claid
         std::shared_ptr<Runnable> runnable = std::static_pointer_cast<Runnable>(functionRunnable);
 
         
+        ScheduledRunnable scheduledRunnable(runnable, 
+            ScheduleRepeatedIntervall(startTime, Duration(std::chrono::milliseconds(interval.getMicroSeconds()))));
 
-        this->timers.insert(std::make_pair(name, runnable));
-        this->runnableDispatcherThread->addRunnable(ScheduledRunnable(runnable, 
-            ScheduleRepeatedIntervall(firstExecutionTime, Duration(std::chrono::milliseconds(periodInMs)))));
+        this->timers.insert(std::make_pair(name, scheduledRunnable));
+        this->runnableDispatcher.addRunnable(scheduledRunnable);
     }
 
-    void Module::registerScheduledFunction(const std::string& name, const LocalDateTime& dateTime, std::function<void()> function) 
+    void Module::registerScheduledFunction(const std::string& name, const Time& startTime, std::function<void()> function) 
     {
-        if (dateTime < LocalDateTime::now()) {
-            moduleWarning("Failed to schedule function \"" + name + "\" at time " + dateTime + ". The time is in the past. It is now: " + LocalDateTime::now());
+        if (startTime < Time::now()) {
+            moduleWarning(absl::StrCat(
+                "Failed to schedule function \"", name, "\" at time ", startTime.strftime("%d.%m.%y - %H:%M:%S"), 
+                ". The time is in the past. It is now: ", Time::now().strftime("%d.%m.%y - %H:%M:%S")
+            ));
         }
 
-        FunctionRunnable runnable(function, std::make_shared<ScheduleOnce>(dateTime));
-        timers[name] = runnable;
+        std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>(function));
+
+        ScheduledRunnable scheduledRunnable(
+            std::static_pointer_cast<Runnable>(functionRunnable), 
+            ScheduleOnce(startTime));
+
+        this->timers.insert(std::make_pair(name, scheduledRunnable));
+        this->runnableDispatcher.addRunnable(scheduledRunnable);
     }
 
     void Module::unregisterPeriodicFunction(const std::string& name) 
@@ -137,7 +157,7 @@ namespace claid
             moduleError("Error, tried to unregister periodic function but function was not found in the list of registered timers. Was a function with this name ever registered before?");
         }
 
-        it->second.invalidate();
+        it->second.runnable->invalidate();
         timers.erase(it);
     }
 }

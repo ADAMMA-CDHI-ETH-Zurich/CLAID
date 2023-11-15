@@ -63,7 +63,7 @@ public class Channel<T>
     {
         if(!canWrite())
         {
-            String msg = "Module \"" + this.parent.getId() + "\"] tried to post data to channel \"" + this.channelId + "\", however\n" +    
+            String msg = " tried to post data to channel \"" + this.channelId + "\", however\n" +    
                         "it did not publish this channel before.";
             parent.moduleError(msg);
             return;

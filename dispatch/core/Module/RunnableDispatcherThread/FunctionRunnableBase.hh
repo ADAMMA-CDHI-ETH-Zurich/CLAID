@@ -19,13 +19,12 @@
 ***************************************************************************/
 #pragma once
 
-#include "dispatch/core/Module/Module.hpp"
+#include "Runnable.hh"
 
 namespace claid
 {
-	class ModuleFactoryBase
-	{
-		public:
-			virtual BaseModule* getInstanceUntyped() = 0;
-	};
+    class FunctionRunnableBase : public Runnable
+    {
+        virtual void run() = 0;
+    };
 }

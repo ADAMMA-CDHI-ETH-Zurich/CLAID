@@ -17,33 +17,41 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ***************************************************************************/
-#include "RunnableDispatcherThread/RunnableDispatcherThread.hpp"
-#include "RunnableDispatcherThread/ScheduleDescription/ScheduleOnce.hpp"
+#pragma once
+
+#include "ScheduleDescription.hh"
 
 namespace claid
 {
-    class Subscriber
-    {   public:
-            std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread;
+    struct ScheduleOnce : public ScheduleDescription
+    {
+        private:
+            Time executionTime;
 
         public:
-            virtual void signalNewDataIsAvailable()
-            {
-                std::shared_ptr<Runnable> runnable = this->getRunnable();
 
-                runnableDispatcherThread->addRunnable(ScheduledRunnable(runnable, ScheduleOnce(Time::now())));
-            }
+        ScheduleOnce(const Time& executionTime) : executionTime(executionTime)
+        {
 
-            virtual std::shared_ptr<Runnable> getRunnable() = 0;
+        }
 
-            Subscriber()
-            {
+        virtual ~ScheduleOnce() {}
 
-            }
+        bool doesRunnableHaveToBeRepeated()
+        {
+            return false;
+        }
 
-            Subscriber(std::shared_ptr<RunnableDispatcherThread> runnableDispatcherThread) : runnableDispatcherThread(runnableDispatcherThread)
-            {
-                
-            }
+        void updateExecutionTime()
+        {
+            // Does not exist for ScheduleOnce. 
+            // A ScheduledRunnable with ScheduleDescription
+            // of type ScheduleOnce is not supposed to be repeated.
+        }
+
+        Time getExecutionTime()
+        {
+            return this->executionTime;
+        }
     };
 }

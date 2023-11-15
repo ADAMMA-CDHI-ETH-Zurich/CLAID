@@ -17,38 +17,28 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ***************************************************************************/
-// Taken from https://www.theimpossiblecode.com/blog/c11-generic-singleton-pattern/
-
 #pragma once
-#include "Logger/Logger.hpp"
-#include "TypeChecking/TypeCheckingFunctions.hpp"
 
-template <typename T>
-class Singleton
+#include "dispatch/core/Utilities/Time.hh"
+
+namespace claid
 {
-public:
-
-    static T *getInstance()
+    // Standard runnable schedule description, for runnables that do not have to be repeated.
+    struct ScheduleDescription
     {
-        if(mpInstance == nullptr)
-        {
-            mpInstance = new T();
-        }
-        
-        return mpInstance;
-    }
+        public:
 
-protected:
-    Singleton()
-    {
-       
-    }
+            ScheduleDescription()
+            {
 
+            }
 
-private:
-    static T* mpInstance;
-};
+            virtual ~ScheduleDescription() {}
 
+           
 
-template <typename T>
-T* Singleton<T>::mpInstance = nullptr;
+            virtual bool doesRunnableHaveToBeRepeated() = 0;
+            virtual void updateExecutionTime() = 0;
+            virtual Time getExecutionTime() = 0;
+    };
+}

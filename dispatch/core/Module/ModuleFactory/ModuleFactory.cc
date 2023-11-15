@@ -17,24 +17,4 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ***************************************************************************/
-#pragma once
-
-#include "Module/ModuleFactory/ModuleFactoryBase.hpp"
-
-namespace claid
-{
-	template<typename T>
-	class ModuleFactoryTyped : public ModuleFactoryBase
-	{
-		public:
-			BaseModule* getInstanceUntyped()
-			{
-				return static_cast<BaseModule*>(new T);
-			}
-
-			T* getInstance()
-			{
-				return new T;
-			}
-	};
-}
+#include "dispatch/core/Module/ModuleFactory/ModuleFactory.hh"

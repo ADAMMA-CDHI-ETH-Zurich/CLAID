@@ -3,6 +3,10 @@
 #include "dispatch/core/shared_queue.hh"
 #include "dispatch/proto/claidservice.grpc.pb.h"
 
+#include "dispatch/core/Module/TypeMapping/Mutator.hh"
+#include "dispatch/core/Module/TypeMapping/TypeMapping.hh"
+
+
 using claidservice::DataPackage;
 
 namespace claid{
@@ -27,12 +31,12 @@ namespace claid{
         void post(const T& data)
         {
             DataPackage package;
-            package.set_source_host_module(this.moduleId);
-            package.set_channel(this.channelName);
+            package.set_source_host_module(this->moduleId);
+            package.set_channel(this->channelName);
 
-            this.mutator->setPackagePayload(package, data);
+            this->mutator->setPackagePayload(package, data);
 
-            this.toModuleManagerQueue.add(dataPackage);
+            this->toModuleManagerQueue.add(package);
         }        
     };
 

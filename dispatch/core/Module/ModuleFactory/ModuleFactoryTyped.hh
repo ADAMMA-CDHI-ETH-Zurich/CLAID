@@ -19,40 +19,22 @@
 ***************************************************************************/
 #pragma once
 
-#include "Utilities/ITCChannel.hpp"
-#include "Runnable.hpp"
-#include "ScheduledRunnable.hpp"
-#include "RunnableDispatcher.hpp"
-
-#include <thread>
-#include <memory.h>
-#include <functional>
+#include "dispatch/core/Module/ModuleFactory/ModuleFactoryBase.hh"
 
 namespace claid
 {
-    class RunnableDispatcherThread
-    {
-        private:
-            std::thread thread;
-            RunnableDispatcher runnableDispatcher;
+	template<typename T>
+	class ModuleFactoryTyped : public ModuleFactoryBase
+	{
+		public:
+			Module* getInstanceUntyped()
+			{
+				return static_cast<Module*>(new T);
+			}
 
-            bool active = false;
-            
-            
-
-            void run();
-
-
-        public:
-            void start();
-            void stop();
-            void join();
-            void addRunnable(ScheduledRunnable scheduledRunnable);
-            void addRunnable(std::shared_ptr<Runnable> runnable, std::shared_ptr<ScheduleDescription> schedule);
-
-
-            bool isRunning() const;
-
-            std::thread::id getThreadID();
-    };
+			T* getInstance()
+			{
+				return new T;
+			}
+	};
 }

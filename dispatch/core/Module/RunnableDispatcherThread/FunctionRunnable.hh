@@ -17,34 +17,29 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ***************************************************************************/
+#pragma once
 
-#include <string>
-#include <vector>
+#include "FunctionRunnableBase.hh"
+#include <functional>
 
-class ArgumentParser
+namespace claid
 {
-    private:
-        int argc;
-        char** argv;
-    
-        int findArgumentIndex(const char* argument);
+    template<typename Return>
+    class FunctionRunnable : public FunctionRunnableBase
+    {
+        private:
+            std::function<Return ()> function;
+            void run()
+            {
+                this->function();
+            }
 
-        bool invalidArgumentFound;
+        public:
+            FunctionRunnable(std::function<Return ()> function) : function(function)
+            {
 
-        std::vector<std::string> arguments;
-        std::vector<std::string> descriptions;
+            }
 
-
-    public:
-        ArgumentParser(int argc, char** argv);
-
-        void printHelpIfInvalidArgumentFound();
-
-        template<typename T> void add_argument(std::string argument, T& var, T defaultValue, std::string description);
-        template<typename T> void add_argument(std::string argument, T& var, T defaultValue)
-        {
-            add_argument(argument, var, defaultValue, "");
-        }
-
-   
-};
+        
+    };
+}

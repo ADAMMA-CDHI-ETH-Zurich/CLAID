@@ -19,8 +19,8 @@
 ***************************************************************************/
 #pragma once
 
-#include "Runnable.hpp"
-#include "ScheduleDescription/ScheduleDescription.hpp"
+#include "Runnable.hh"
+#include "ScheduleDescription/ScheduleDescription.hh"
 
 #include <memory>
 
