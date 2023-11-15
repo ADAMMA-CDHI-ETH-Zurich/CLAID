@@ -139,6 +139,7 @@ public class ModuleManager
 
     // A Channel is defined by a template package defining source | target | payload.
     // For each Module, we have a list of DataPackages defining all Channels published or subscribed by the Module.
+    // This functions builds a Map<Module, List<DataPackage>>, representing the (data packages for each) channel of the Module.
     private Map<String, ArrayList<DataPackage>> getTemplatePackagesOfModules()
     {
         Map<String, ArrayList<DataPackage>> moduleChannels = new HashMap<>();

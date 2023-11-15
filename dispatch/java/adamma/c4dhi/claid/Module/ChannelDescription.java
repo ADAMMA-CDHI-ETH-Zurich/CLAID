@@ -29,7 +29,8 @@ public class ChannelDescription
     // i.e.: source | target | payload
     final DataPackage templatePackage;
 
-    // ModuleName, List of packages defining the channel with source | target | payload for each Module.
+    // This Map holds all Modules that are publishing or subscribing this Channel.
+    // <ModuleName, List of packages defining the channel with source | target | payload for each Module>
     // Map<moduleId, packages>
     Map<String, ArrayList<DataPackage>> modules = new HashMap<>();
 

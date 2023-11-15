@@ -63,6 +63,12 @@ namespace claid
         void initializeInternal(const std::map<std::string, std::string>& properties);
         void initialize(const std::map<std::string, std::string>& properties);ystem.out.println("Module base initialize");
 
+        void registerPeriodicFunction(const std::string& name, std::function<void()> callback, const Duration& interval);
+        void registerPeriodicFunction(const std::string& name, std::function<void()> function, const Duration& interval, const Time& startTime);
+
+        void registerScheduledFunction(const std::string& name, const LocalDateTime& dateTime, std::function<void()> function);
+        void unregisterPeriodicFunction(const std::string& name);
+
         template<typename T>
         Channel<T> publish(const std::string& channelName) 
         {
@@ -82,30 +88,6 @@ namespace claid
             return subscriberPublisher.subscribe(this, channelName, callback, runnableDispatcher);
         }
 
-        void registerPeriodicFunction(const std::string& name, std::function<void()> callback, const Duration& interval) {
-            registerPeriodicFunction(name, callback, interval, std::chrono::system_clock::now() + interval);
-        }
-
-        void registerPeriodicFunction(const std::string& name, std::function<void()> function, const Duration& interval, const Time& startTime) {
-            if (interval.count() == 0) {
-                moduleError("Error in registerPeriodicFunction: Cannot register periodic function \"" + name + "\" with a period of 0 milliseconds.");
-            }
-
-            auto it = timers.find(name);
-            if (it != timers.end()) {
-                moduleError("Tried to register function with name \"" + name + "\", but a periodic function with the same name was already registered before.");
-            }
-
-            std::shared_ptr<FunctionRunnable<void>> functionRunnable(new FunctionRunnable<void>(function));
-            std::shared_ptr<Runnable> runnable = std::static_pointer_cast<Runnable>(functionRunnable);
-
-            
-
-            this->timers.insert(std::make_pair(name, runnable));
-            this->runnableDispatcherThread->addRunnable(ScheduledRunnable(runnable, 
-                ScheduleRepeatedIntervall(firstExecutionTime, Duration(std::chrono::milliseconds(periodInMs)))));
-        }
-
         template<typename Class>
         void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, const Duration& interval)
         {
@@ -119,24 +101,7 @@ namespace claid
             this->registerPeriodicFunction(name, function, periodInMs, startTime);
         }
 
-        void unregisterPeriodicFunction(const std::string& name) {
-            auto it = timers.find(name);
-            if (it == timers.end()) {
-                moduleError("Error, tried to unregister periodic function but function was not found in the list of registered timers. Was a function with this name ever registered before?");
-            }
-
-            it->second.invalidate();
-            timers.erase(it);
-        }
-
-        void registerScheduledFunction(const std::string& name, const LocalDateTime& dateTime, std::function<void()> function) {
-            if (dateTime < LocalDateTime::now()) {
-                moduleWarning("Failed to schedule function \"" + name + "\" at time " + dateTime + ". The time is in the past. It is now: " + LocalDateTime::now());
-            }
-
-            FunctionRunnable runnable(function, std::make_shared<ScheduleOnce>(dateTime));
-            timers[name] = runnable;
-        }
+        
     };
 
 }
