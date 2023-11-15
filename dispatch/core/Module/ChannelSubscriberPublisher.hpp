@@ -8,33 +8,35 @@
 #include "dispatch/core/shared_queue.hh"
 #include "dispatch/core/module_table.hh"
 #include "dispatch/core/Module/AbstractSubscriber.hpp"
+#include "dispatch/core/Module/Module.hpp"
 
 using claidservice::DataPackage;
 
-namespace claid{
+namespace claid
+{
 
     class ChannelSubscriberPublisher 
     {
 private:
-    // pair<Channel, Module>
-    typedef std::pair<std::string, std::string> ChannelModulePair;
 
-    std::string host;
-    std::map<ChannelModulePair, DataPackage> examplePackagesForEachModuleChannel;
+
+
+    // Map<ModuleId, list of example packages defining publishments and subscriptions of the Module for that Channel>.
+    std::map<Module, std::vector<DataPackage>> examplePackagesForEachModule;
+
+    // pair<ChannelId, ModuleId>
+    typedef std::pair<std::string, std::string> ChannelModulePair;
     std::map<ChannelModulePair, std::vector<std::shared_ptr<AbstractSubscriber>>> moduleChannelsSubscriberMap;
 
     SharedQueue<DataPackage>& toModuleManagerQueue;
 
 public:
-    ChannelSubscriberPublisher(const std::string& host, SharedQueue<DataPackage>& toModuleManagerQueue)
-        : host(host), toModuleManagerQueue(toModuleManagerQueue) 
+    ChannelSubscriberPublisher(SharedQueue<DataPackage>& toModuleManagerQueue)
+        : toModuleManagerQueue(toModuleManagerQueue) 
     {
 
     }
 
-    std::string concatenateHostModuleAddress(const std::string& host, const std::string& module) {
-        return host + ":" + module;
-    }
 
     template <typename T>
     DataPackage prepareExamplePackage(const std::string& moduleId, const std::string& channelName, bool isPublisher) 
@@ -67,60 +69,20 @@ public:
 
         const std::string& moduleId = module.getId();
 
-        ChannelModulePair channelModuleKey = make_pair(channelName, moduleId);
 
-        auto it = examplePackagesForEachModuleChannel.find(channelModuleKey);
-        if(it != this->examplePackagesForEachModuleChannel.end())
-        {
-            DataPackage& alreadyRegisteredPackage = it->second;
-
-            if(alreadyRegisteredPackage.payload_oneof_case() != examplePackage.payload_oneof_case())
-            {
-                const std::string alreadyRegisteredDataTypeName = dataPackagePayloadCaseToString(alreadyRegisteredPackage);
-                const std::string newDataTypeName = dataPackagePayloadCaseToString(examplePackage);
-                module.moduleError(absl::StrCat(
-                    "Published twice Channel \"", channelName, "\", but with different data types.\n",
-                    "First registration used data type \"", alreadyRegisteredDataTypeName, "\", second registration used \"", newDataTypeName, "\"."
-                ));
-                return null;
-            }
-        }
-        this.examplePackagesForEachChannel.put(module.getId(), examplePackage);
+        this.examplePackagesForEachChannel[module.getId()].push_back(examplePackage);
 
         return Channel<T>(module, channelName, Publisher<T>(module.getId(), channelName, this.toModuleManagerQueue));
     }
 
     template <typename T>
-    Channel<T> subscribe(Module& module, const std::string& channelName, std::shared_ptr<Subscriber<T>> subscriber) {
-        DataPackage<T> examplePackage = prepareExamplePackage<T>(module.getId(), channelName, false);
-        if (examplePackage == nullptr) {
-            module.moduleError("Failed to create example package for data type \"" + dataType.getName() + "\".\n" +
-                                "The data type is unsupported.");
+    Channel<T> subscribe(Module& module, const std::string& channelName, std::shared_ptr<Subscriber<T>> subscriber) 
+    {
+        DataPackage examplePackage = prepareExamplePackage<T>(module.getId(), channelName, false);
 
-            return nullptr;
-        }
         const std::string& moduleId = module.getId();
 
-        ChannelModulePair channelModuleKey = make_pair(channelName, moduleId);
-
-        auto it = examplePackagesForEachModuleChannel.find(channelModuleKey);
-        if(it != this->examplePackagesForEachModuleChannel.end())
-        {
-            DataPackage& alreadyRegisteredPackage = it->second;
-
-            if(alreadyRegisteredPackage.payload_oneof_case() != examplePackage.payload_oneof_case())
-            {
-                const std::string alreadyRegisteredDataTypeName = dataPackagePayloadCaseToString(alreadyRegisteredPackage);
-                const std::string newDataTypeName = dataPackagePayloadCaseToString(examplePackage);
-                module.moduleError(absl::StrCat(
-                    "Subscribed twice to Channel \"", channelName, "\", but with different data types.\n",
-                    "First registration used data type \"", alreadyRegisteredDataTypeName, "\", second registration used \"", newDataTypeName, "\"."
-                ));
-                return null;
-            }
-        }
-
-        this.examplePackagesForEachChannel.insert(make_pair(channelModuleKey, examplePackage));
+        this.examplePackagesForEachChannel[module.getId()].push_back(examplePackage);
 
         insertSubscriber(channelName, module.getId(), std::static_pointer_cast<AbstractSubscriber>(subscriber));
 
@@ -154,48 +116,56 @@ public:
     }
 
     
-    public ArrayList<DataPackage> getChannelTemplatePackagesForModule(final String moduleId)
+    std::vector<DataPackage> getChannelTemplatePackagesForModule(const std::string& moduleId)
     {
-        ArrayList<DataPackage> templatePackages = new ArrayList<>();
-
-        for(Map.Entry<String, ChannelDescription> channels : this.channelDescriptions.entrySet())
-        {
-            ArrayList<DataPackage> templatePackagesOfModuleForChannel = channels.getValue().getChannelTemplatePackagesForModule(moduleId);
-
-            if(templatePackagesOfModuleForChannel != null)
-            {
-                templatePackages.addAll(templatePackagesOfModuleForChannel);
-            }
-        }
-
-        return templatePackages;
+        // If moduleId does not exist in the map, it is added automatically and a new empty vector is allocated.
+       return examplePackagesForEachChannel[moduleId];
     }
 
     bool isDataPackageCompatibleWithChannel(const DataPackage& dataPackage, const std::string& receiverModule)
     {
         const std::string& channelName = dataPackage.channel();
 
-        ChannelModulePair channelModuleKey = make_pair(channelName, receiverModule);
-
-        auto it = examplePackagesForEachModuleChannel.find(channelModuleKey);
-        if(it != this->examplePackagesForEachModuleChannel.end())
+        
+        auto it = examplePackagesForEachModule.find(receiverModule);
+        if(it != this->examplePackagesForEachModule.end())
         {
-            const DataPackage& templatePackage = it->second;
-            return templatePackage.payload_oneof_case() == dataPackage.payload_oneof_case();
+
+            for(const DataPackage& templatePackage : it->second)
+            {
+                // Look for the first etmplate package of the Module for this channel.
+                // If the Module has subscribed/published the same Channel multiple times,
+                // then all the payload cases should be identical (checked by the Middleware during InitRuntime).
+                // What if this function is used before InitRuntime? Then it is not guaranteed that the payload cases are verified.
+                if(templatePackage.channel() == channelName)
+                {
+                    return templatePackage.payload_oneof_case() == dataPackage.payload_oneof_case();
+                }
+
+            }
+
         }
         return false;
     }
 
-    DataPackage::PayloadOneofCase getPayloadCaseOfChannel(const std::string& channelName)
-    {
-        if(!this.channelDescriptions.containsKey(channelName))
+    DataPackage::PayloadOneofCase getPayloadCaseOfChannel(const std::string& channelName, const std::string& receiverModule)
+    {    
+        auto it = examplePackagesForEachModule.find(receiverModule);
+        if(it != this->examplePackagesForEachModule.end())
         {
-            return null;
+            for(const DataPackage& templatePackage : it->second)
+            {
+                // Look for the first etmplate package of the Module for this channel.
+                // If the Module has subscribed/published the same Channel multiple times,
+                // then all the payload cases should be identical (checked by the Middleware during InitRuntime).
+                // What if this function is used before InitRuntime? Then it is not guaranteed that the payload cases are verified.
+                if(templatePackage.channel() == channelName)
+                {
+                    return templatePackage.payload_oneof_case();
+                }
+            }
         }
-
-        ChannelDescription description = this.channelDescriptions.get(channelName);
-
-        return description.getPayloadOneofCase();
+        return DataPackage::PayloadOneofCase::PAYLOAD_ONEOF_NOT_SET;
     }
 };
 

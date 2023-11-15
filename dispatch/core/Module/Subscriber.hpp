@@ -3,6 +3,8 @@
 #include "AbstractSubscriber.hpp"
 #include "dispatch/core/Module/RunnableDispatcherThread/RunnableDispatcher.hpp"
 #include "dispatch/core/Module/ChannelData.hpp"
+#include "dispatch/core/Module/TypeMapping/Mutator.hh"
+#include "dispatch/core/Module/TypeMapping/TypeMapping.hh"
 
 namespace claid{
     

@@ -17,6 +17,8 @@ import adamma.c4dhi.claid.TypeMapping.Mutator;
 public class ChannelSubscriberPublisher 
 {
     private final String host;
+
+    // Map<ChannelId, ChannelDescription>
     private Map<String, ChannelDescription> channelDescriptions = new HashMap<>();
     
     // Map<channel, Map<module, subscriber>>
