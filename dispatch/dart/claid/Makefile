@@ -1,23 +1,23 @@
 
 ifeq ($(OS),Windows_NT)
     OUTPUT_LIB = bazel-bin/dispatch/core/libclaid_capi.dll
-	TARGET_LIB = dispatch/dart/claid_core/blobs/libclaid_capi_linux.dll
+	TARGET_LIB = dispatch/dart/claid/blobs/libclaid_capi_linux.dll
 else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
         OUTPUT_LIB = bazel-bin/dispatch/core/libclaid_capi.so
-		TARGET_LIB = dispatch/dart/claid_core/blobs/libclaid_capi_linux.so
+		TARGET_LIB = dispatch/dart/claid/blobs/libclaid_capi_linux.so
     endif
     ifeq ($(UNAME_S),Darwin)
         OUTPUT_LIB = bazel-bin/dispatch/core/libclaid_capi.dylib
-		TARGET_LIB = dispatch/dart/claid_core/blobs/libclaid_capi_linux.dylib
+		TARGET_LIB = dispatch/dart/claid/blobs/libclaid_capi_linux.dylib
     endif
 endif
 
 OUTPUT_APK_ANDROID_NAME = claid_capi_android
 OUTPUT_APK_ANDROID = bazel-bin/dispatch/android/$(OUTPUT_APK_ANDROID_NAME)
 OUTPUT_APK_TMP_PATH_ANDROID = bazel-bin/dispatch/android/extract_libs
-TARGET_LIBS_ANDROID = dispatch/dart/claid_core/blobs/android
+TARGET_LIBS_ANDROID = dispatch/dart/claid/blobs/android
 
 
 .PHONY: all
