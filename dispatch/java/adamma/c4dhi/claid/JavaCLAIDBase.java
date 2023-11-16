@@ -68,7 +68,7 @@ public abstract class JavaCLAIDBase
         }
 
         moduleDispatcher = new ModuleDispatcher(socketPath);
-        moduleManager = new ModuleManager(hostId, moduleDispatcher, factory);
+        moduleManager = new ModuleManager(moduleDispatcher, factory);
 
         return moduleManager.start();
     }

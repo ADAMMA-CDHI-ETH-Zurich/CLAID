@@ -16,8 +16,6 @@ import adamma.c4dhi.claid.TypeMapping.Mutator;
 
 public class ChannelSubscriberPublisher 
 {
-    private final String host;
-
     // Map<ChannelId, ChannelDescription>
     private Map<String, ChannelDescription> channelDescriptions = new HashMap<>();
     
@@ -29,17 +27,12 @@ public class ChannelSubscriberPublisher
     // Will be provided to each published channel, allowing the post function of the Channel to send data.
     private ThreadSafeChannel<DataPackage> toModuleManagerQueue;
 
-    public ChannelSubscriberPublisher(final String host, ThreadSafeChannel<DataPackage> toModuleManagerQueue)
+    public ChannelSubscriberPublisher(ThreadSafeChannel<DataPackage> toModuleManagerQueue)
     {
-        this.host = host;
         this.toModuleManagerQueue = toModuleManagerQueue;
     }
 
-    private String concatenateHostModuleAddress(final String host, final String module)
-    {
-        return host + ":" + module;
-    }
-
+ 
     
     protected<T> Channel<T> publish(Module module, DataType dataType, final String channelName)
     {

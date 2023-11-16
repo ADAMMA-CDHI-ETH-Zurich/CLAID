@@ -13,6 +13,49 @@ cc_binary(
     ],
 )
 
+cc_library(
+    name = "capi",
+    srcs = [
+        "capi.cc",
+        "middleware.cc",
+        "CLAID.cc",
+    ],
+    hdrs = [
+        "capi.h",
+        "middleware.hh",
+        "CLAID.hh"
+    ],
+    deps = [
+        ":CLAID",
+    ],
+    linkstatic = True,   # only create a static lib
+    alwayslink = True,   # include everything in dependents
+)
+
+
+cc_library(
+    name = "CLAID",
+    srcs = glob([
+        "Router/*.cc",
+        "Exception/*.cc",
+        "ExceptionHandler/*.cc",
+        "RemoteDispatching/*.cc",
+    ]),
+    hdrs = glob([
+        "Router/*.hh",
+        "Exception/*.hh",
+        "ExceptionHandler/*.hh",
+    ]),
+    deps = [
+        ":claid_config",
+        ":local_dispatching",
+        ":logger",
+        ":proto_util",
+        ":remote_dispatching",
+        ":cpp_modules",
+        "@com_google_protobuf//:protobuf",
+    ],
+)
 
 cc_library(
     name="cpp_modules",
@@ -25,57 +68,13 @@ cc_library(
     hdrs = glob([
         "Module/**/*.hh",
         "Traits/**/*.hh",
-        "Utilities/**/*.hh"
+        "Utilities/**/*.hh",
+        "shared_queue.hh",
+        "module_table.hh",
     ]),
     deps = [
-        ":capi",
-        ":proto_util"
-    ],
-)
-
-
-cc_library(
-    name = "capi",
-    srcs = [
-        "capi.cc",
-        "middleware.cc",
-    ],
-    hdrs = [
-        "capi.h",
-        "middleware.hh",
-    ],
-    deps = [
-        ":CLAID",
-    ],
-    linkstatic = True,   # only create a static lib
-    alwayslink = True,   # include everything in dependents
-)
-
-
-cc_library(
-    name = "CLAID",
-    srcs = [
-        "CLAID.cc",
-    ] + glob([
-        "Router/*.cc",
-        "Exception/*.cc",
-        "ExceptionHandler/*.cc",
-        "RemoteDispatching/*.cc",
-    ]),
-    hdrs = [
-        "CLAID.hh",
-    ] + glob([
-        "Router/*.hh",
-        "Exception/*.hh",
-        "ExceptionHandler/*.hh",
-    ]),
-    deps = [
-        ":claid_config",
-        ":local_dispatching",
-        ":logger",
         ":proto_util",
-        ":remote_dispatching",
-        "@com_google_protobuf//:protobuf",
+        ":logger",
     ],
 )
 

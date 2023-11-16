@@ -41,7 +41,7 @@ public class CLAID extends JavaCLAIDBase
     // HAS to be called AFTER start is called in ANOTHER language.
     public static boolean startAttach(final String socketPath, final String hostId, ModuleFactory factory)
     {
-        return startAttachInternal(socketPath, hostId, factory);
+        return startAttachInternal(socketPath, factory);
     }
 
     // Implement functions for context management etc.

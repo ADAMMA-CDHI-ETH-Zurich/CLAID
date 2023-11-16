@@ -44,7 +44,6 @@ import io.grpc.stub.StreamObserver;
 // 7. Begin exhanging (i.e., reading and writing) packages with the middleware via the blocking sendReceivePackages() call.
 public class ModuleManager 
 {
-    private final String hostName;
     private ModuleDispatcher dispatcher;
     private ModuleFactory moduleFactory;
 
@@ -60,9 +59,8 @@ public class ModuleManager
     Thread readFromModulesThread;
     boolean running = false;
 
-    public ModuleManager(final String hostName, ModuleDispatcher dispatcher, ModuleFactory moduleFactory)
+    public ModuleManager(ModuleDispatcher dispatcher, ModuleFactory moduleFactory)
     {
-        this.hostName = hostName;
         this.dispatcher = dispatcher;
         this.moduleFactory = moduleFactory;
     }
@@ -163,7 +161,7 @@ public class ModuleManager
             return false;
         }
 
-        this.subscriberPublisher = new ChannelSubscriberPublisher(this.hostName, this.fromModulesChannel);
+        this.subscriberPublisher = new ChannelSubscriberPublisher(this.fromModulesChannel);
 
         if(!initializeModules(moduleList, subscriberPublisher))
         {

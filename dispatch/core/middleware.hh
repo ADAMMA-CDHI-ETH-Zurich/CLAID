@@ -8,6 +8,8 @@
 #include "absl/status/status.h"
 #include "dispatch/core/module_table.hh"
 #include "dispatch/core/local_dispatching.hh"
+#include "dispatch/core/Configuration/Configuration.hh"
+
 #include "dispatch/core/RemoteDispatching/RemoteDispatcherClient.hh"
 #include "dispatch/core/RemoteDispatching/RemoteDispatcherServer.hh"
 #include "dispatch/core/RemoteDispatching/HostUserTable.hh"

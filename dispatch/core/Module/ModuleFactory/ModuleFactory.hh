@@ -58,43 +58,54 @@ namespace claid
 				moduleFactories.insert(std::make_pair(className, moduleFactory));
 			}
 
-			bool isFactoryRegisteredForModule(const std::string& moduleName)
+			bool isModuleClassRegistered(const std::string& className)
 			{
-				auto it = moduleFactories.find(moduleName);
+				auto it = moduleFactories.find(className);
 
 				return it != moduleFactories.end();
 			}
 
-			ModuleFactoryBase* getFactoryForModuleByName(const std::string& moduleName)
+			ModuleFactoryBase* getFactoryForModule(const std::string& className)
 			{
-				if (!isFactoryRegisteredForModule(moduleName))
+				if (!isModuleClassRegistered(className))
 				{
 					return nullptr;
 				}
 
-				auto it = moduleFactories.find(moduleName);
+				auto it = moduleFactories.find(className);
 				return it->second;
 			}
 
 			template<typename T>
-			T* getNewInstanceAndCast(const std::string& moduleName)
+			T* getNewInstanceAndCast(const std::string& className)
 			{
-				if (!isFactoryRegisteredForModule(moduleName))
+				if (!isModuleClassRegistered(className))
 				{
 					return nullptr;
 				}
 				
-				T* obj = dynamic_cast<T*>(getFactoryForModuleByName(moduleName)->getInstanceUntyped());
+				T* obj = dynamic_cast<T*>(getFactoryForModule(className)->getInstanceUntyped());
 				return obj;
 			}
 
-			std::vector<std::string> getRegisteredModuleNames()
+			Module* getInstanceUntyped(const std::string& className)
 			{
-				std::vector<std::string> output;
+				if (!isModuleClassRegistered(className))
+				{
+					return nullptr;
+				}
+
+				auto it = moduleFactories.find(className);
+				return it->second->getInstanceUntyped();
+			}
+
+			std::set<std::string> getRegisteredModuleClasses()
+			{
+				std::set<std::string> output;
 
 				for(auto it : this->moduleFactories)
 				{
-					output.push_back(it.first);
+					output.insert(it.first);
 				}
 
 				return output;
@@ -107,7 +118,8 @@ namespace claid
 		public:
 			ModuleFactoryRegistrar(std::string name) 
 			{
-				ModuleFactory::getInstance()->registerFactory<T>(name);
+				std::string moduleClassWithoutNamespace = getModuleNameFromClassName(name);
+				ModuleFactory::getInstance()->registerFactory<T>(moduleClassWithoutNamespace);
 			}	
 
 			static std::string getModuleNameFromClassName(std::string className)
