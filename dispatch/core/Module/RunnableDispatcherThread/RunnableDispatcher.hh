@@ -2,15 +2,15 @@
 * Copyright (C) 2023 ETH Zurich
 * Core AI & Digital Biomarker, Acoustic and Inflammatory Biomarkers (ADAMMA)
 * Centre for Digital Health Interventions
-* 
+*
 * Authors: Patrick Langer
-* 
+*
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
-* 
+*
 *         http://www.apache.org/licenses/LICENSE-2.0
-* 
+*
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,6 +25,7 @@
 #include <vector>
 #include <iostream>
 #include <thread>
+#include <condition_variable>
 
 #include "dispatch/core/Utilities/Time.hh"
 #include "dispatch/core/Logger/Logger.hh"
@@ -55,8 +56,8 @@ namespace claid
                     // Wait forever.
                     return std::chrono::microseconds::max();
                 }
-                
-                std::chrono::microseconds 
+
+                std::chrono::microseconds
                     microsecondsUntilNextRunnableIsDue =
                         std::chrono::duration_cast<std::chrono::microseconds>(
                             this->scheduledRunnables.begin()->first - Time::now());
@@ -167,10 +168,10 @@ namespace claid
                     else
                     {
                         // Since the map is ordered in increasing order,
-                        // all subsequent entries have a time 
+                        // all subsequent entries have a time
                         // which is greater than the time of the current entry.
                         // Hence, no need to keep iterating. We found the latest-most runnable
-                        // which is due. 
+                        // which is due.
                         break;
                     }
 
@@ -192,7 +193,7 @@ namespace claid
             {
                 std::vector<ScheduledRunnable> dueRunnables;
                 while(!stopped)
-                {   
+                {
                     do
                     {
 
@@ -247,6 +248,6 @@ namespace claid
                 this->conditionVariable.notify_all();
             }
 
-            
+
     };
 }
