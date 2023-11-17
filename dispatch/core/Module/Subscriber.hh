@@ -47,7 +47,7 @@ namespace claid{
                     ScheduleOnce(Time::now())));
         }
 
-        void onNewData(DataPackage data) 
+        void onNewData(const DataPackage& data) 
         {
             const T& value = this->mutator.getPackagePayload(data);
 

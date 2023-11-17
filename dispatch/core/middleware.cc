@@ -213,3 +213,8 @@ absl::Status MiddleWare::populateModuleTable(
 
     return absl::OkStatus();
 }
+
+const std::string MiddleWare::getSocketPath() const
+{
+    return socketPath;
+}

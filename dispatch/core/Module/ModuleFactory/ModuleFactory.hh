@@ -140,14 +140,14 @@ namespace claid
 }
 
 
-// #define DECLARE_MODULE_FACTORY(className) \
-// 	static volatile claid::ModuleFactory::RegisterHelper<className> moduleFactoryRegistrar;\
-// 	static const std::string __MODULE_NAME__;\
+// #define DECLARE_MODULE_FACTORY(className) 
+// 	static volatile claid::ModuleFactory::RegisterHelper<className> moduleFactoryRegistrar;
+// 	static const std::string __MODULE_NAME__;
 // 	const std::string getModuleName() {return className::__MODULE_NAME__;}
 
 // Uses anonymous namespace to solve multiple definitions issue; c.f. https://artificial-mind.net/blog/2020/10/17/static-registration-macro (great article)
-#define REGISTER_MODULE_FACTORY(className)\
-	namespace\
-	{\
-		static volatile claid::ModuleFactoryRegistrar<className> moduleFactoryRegistrar (#className);\
-	}\
+#define REGISTER_MODULE_FACTORY(className) \
+    namespace \
+    { \
+        static volatile claid::ModuleFactoryRegistrar<className> moduleFactoryRegistrar (#className); \
+    }
