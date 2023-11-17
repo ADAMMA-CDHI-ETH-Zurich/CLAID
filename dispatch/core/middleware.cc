@@ -165,13 +165,18 @@ absl::Status MiddleWare::shutdown()
 
     if (localDispatcher) {
         if (routerThread) {
+            Logger::printfln("Stopping router thread.");
             moduleTable.inputQueue().close();
             routerThread->join();
             routerThread.reset();
+            Logger::printfln("Router thread stopped.");
         }
+        Logger::printfln("Shutting down local dispatcher.");
         localDispatcher->shutdown();
+        Logger::printfln("Resetting local dispatcher.");
         localDispatcher.reset();
     }
+    Logger::printfln("Middleware successfully shut down.");
     return absl::OkStatus();
 }
 

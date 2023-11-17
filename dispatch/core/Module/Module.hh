@@ -64,12 +64,15 @@ namespace claid
         std::string getId() const;
 
         bool start(ChannelSubscriberPublisher* subscriberPublisher, const std::map<std::string, std::string>& properties);
+        void shutdown();
 
     protected:
 
 
         void initializeInternal(const std::map<std::string, std::string>& properties);
-        void initialize(const std::map<std::string, std::string>& properties);
+        virtual void initialize(const std::map<std::string, std::string>& properties);
+
+        virtual void terminate();
 
         void registerPeriodicFunction(const std::string& name, std::function<void()> callback, const Duration& interval);
         void registerPeriodicFunction(const std::string& name, std::function<void()> function, const Duration& interval, const Time& startTime);
@@ -115,6 +118,10 @@ namespace claid
 }
 #include "dispatch/core/Module/ModuleFactory/ModuleFactory.hh"
 
-#define REGISTER_MODULE(className) \
+#define REGISTER_MODULE(moduleName, className)\
     static_assert(std::is_base_of<claid::Module, className>::value, "Tried to register a class as Module (see above), which did not inherit from BaseModule. Did you forget to inherit from Module or BaseModule?");\
-    REGISTER_MODULE_FACTORY(className)
+    REGISTER_MODULE_FACTORY(moduleName, className)
+
+#define REGISTER_MODULE_CUSTOM_NAME(className)\
+    static_assert(std::is_base_of<claid::Module, className>::value, "Tried to register a class as Module (see above), which did not inherit from BaseModule. Did you forget to inherit from Module or BaseModule?");\
+    REGISTER_MODULE_FACTORY_CUSTOM_NAME(className)

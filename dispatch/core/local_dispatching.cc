@@ -324,8 +324,11 @@ RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& s
 }
 
 void ServiceImpl::removeRuntimeDispatcher(Runtime rt) {
+    Logger::printfln("Removing runtime dispatcher");
     lock_guard<mutex> lock(adMutex);
     activeDispatchers.erase(rt);
+    Logger::printfln("Removed runtime dispatcher");
+
 }
 
 void ServiceImpl::dumpActiveDispatchers() {
@@ -355,14 +358,20 @@ void DispatcherServer::shutdown() {
     if (!server) {
         return;
     }
+    Logger::logInfo("DispatcherServer: Shutting down.");
 
     serviceImpl.shutdown();
     auto helperTheat = make_unique<thread>([this]() {
         server->Wait();
     });
+    Logger::logInfo("DispatcherServer: Shutting waiting 2 seconds.");
     std::this_thread::sleep_for(2000ms);
+    Logger::logInfo("DispatcherServer: Shutting down server.");
     server->Shutdown();
+    Logger::logInfo("DispatcherServer: Releasing resources.");
     server = nullptr;
+    Logger::logInfo("DispatcherServer: DispatcherServer shutdown successfully.");
+    helperTheat->join();
 }
 
 void DispatcherServer::buildAndStartServer() {

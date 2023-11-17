@@ -8,7 +8,7 @@
 using namespace claid;
 
 
-// Tets if all available Mutators can be implemented using the template specialization.
+// Tests if all available Mutators can be implemented using the template specialization.
 TEST(MutatorTestSuite, MutatorTest) {
     // numberVal
     auto mut = TypeMapping::getMutator<unsigned short>();

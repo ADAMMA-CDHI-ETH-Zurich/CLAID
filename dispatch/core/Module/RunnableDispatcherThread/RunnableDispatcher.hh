@@ -191,6 +191,7 @@ namespace claid
 
             void runScheduling()
             {
+                Logger::logInfo("Running scheduling");
                 std::vector<ScheduledRunnable> dueRunnables;
                 while(!stopped)
                 {
@@ -213,6 +214,10 @@ namespace claid
 
         public:
 
+            RunnableDispatcher() : stopped(true)
+            {
+
+            }
 
             bool start()
             {

@@ -38,6 +38,12 @@ private:
     }
 
 public:
+
+    Channel() : accessRights(ChannelAccessRights::NONE), parent(nullptr)
+    {
+        this->valid = false;
+    }
+
     // Constructor for published Channels.
     Channel(ModuleRef parent, const std::string& channelId, Publisher<T>* publisher)
         : channelId(channelId), accessRights(ChannelAccessRights::WRITE), parent(parent), publisher(publisher), valid(true) 

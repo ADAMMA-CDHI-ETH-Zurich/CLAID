@@ -1,0 +1,30 @@
+{
+	"hosts": [{
+			"hostname": "alex_client",
+			"type": "linux",
+			"is_server": false,
+			"connect_to": "claid.ethz.ch:1337",
+			"modules": [{
+					"type": "TestSenderModule",
+					"id": "SenderModule1",
+					"input_channels": [],
+					"output_channels": ["StringData"],
+					"properties": {
+					
+					}
+				},
+				{
+					"type": "TestReceiverModule",
+					"id": "ReceiverModule1",
+					"input_channels": ["StringData"],
+					"output_channels": [],
+					"properties": {
+						
+					}
+				},
+				
+
+			]
+		}
+	]
+}

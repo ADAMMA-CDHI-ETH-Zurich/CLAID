@@ -63,12 +63,11 @@ namespace claid
         this->isInitialized = false;
 
         std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>([this, properties] { initializeInternal(properties); }));
-       
+
         this->runnableDispatcher.addRunnable(
             ScheduledRunnable(
                 std::static_pointer_cast<Runnable>(functionRunnable), 
                 ScheduleOnce(Time::now())));
-
 
         while (!isInitialized) {
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -87,7 +86,6 @@ namespace claid
 
     void Module::initialize(const std::map<std::string, std::string>& properties)
     {
-        Logger::logInfo("Module base initialize");
     }
 
     void Module::setId(const std::string& id) {
@@ -125,7 +123,7 @@ namespace claid
 
         
         ScheduledRunnable scheduledRunnable(runnable, 
-            ScheduleRepeatedIntervall(startTime, Duration(std::chrono::milliseconds(interval.getMicroSeconds()))));
+            ScheduleRepeatedIntervall(startTime, interval));
 
         this->timers.insert(std::make_pair(name, scheduledRunnable));
         this->runnableDispatcher.addRunnable(scheduledRunnable);
@@ -159,6 +157,17 @@ namespace claid
 
         it->second.runnable->invalidate();
         timers.erase(it);
+    }
+
+    void Module::shutdown()
+    {
+        this->terminate();
+        this->runnableDispatcher.stop();
+    }
+
+    void Module::terminate()
+    {
+
     }
 }
 

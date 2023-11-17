@@ -9,6 +9,7 @@ import 'package:claid/module_factory.dart';
 class CLAID
 {
   static ModuleDispatcher? dispatcher;
+  
   static Future<void> start(final String socketPath, 
     final String configFilePath, final String hostId, 
     final String userId, final String deviceId, final ModuleFactory moduleFactory) async

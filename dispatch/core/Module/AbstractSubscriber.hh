@@ -9,6 +9,6 @@ namespace claid
     class AbstractSubscriber
     {
         public:
-            void onNewData(DataPackage data);
+            virtual void onNewData(DataPackage data) = 0;
     };
 }

@@ -9,6 +9,7 @@ filegroup(
     name = "test_configs",
     srcs = [
         "test_config.json",
+        "cpp_runtime_test.json",
     ],
 )
 
@@ -70,6 +71,18 @@ cc_test(
   deps = [
     "//dispatch/core:cpp_modules",
   ] + FRAMEWORK_DEPS,
+)
+
+cc_test(
+  name = "cpp_runtime_test",
+  size = "small",
+  srcs = ["cpp_runtime_test.cc"],
+  deps = [
+    "//dispatch/core:capi",
+  ] + FRAMEWORK_DEPS,
+  data = [
+    ":test_configs",
+  ]
 )
 
 cc_test(

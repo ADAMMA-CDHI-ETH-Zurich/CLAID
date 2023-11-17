@@ -151,3 +151,10 @@ namespace claid
     { \
         static volatile claid::ModuleFactoryRegistrar<className> moduleFactoryRegistrar (#className); \
     }
+
+#define REGISTER_MODULE_FACTORY_CUSTOM_NAME(moduleName, className) \
+    namespace \
+    { \
+        static volatile claid::ModuleFactoryRegistrar<className> moduleFactoryRegistrar##moduleName (#moduleName); \
+    }
+
