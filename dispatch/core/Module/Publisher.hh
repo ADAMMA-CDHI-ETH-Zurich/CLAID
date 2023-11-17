@@ -30,13 +30,13 @@ namespace claid{
 
         void post(const T& data)
         {
-            DataPackage package;
-            package.set_source_host_module(this->moduleId);
-            package.set_channel(this->channelName);
+            std::shared_ptr<DataPackage> package = std::make_shared<DataPackage>();
+            package->set_source_host_module(this->moduleId);
+            package->set_channel(this->channelName);
 
             this->mutator->setPackagePayload(package, data);
 
-            this->toModuleManagerQueue.add(package);
+            this->toModuleManagerQueue.push_back(package);
         }        
     };
 

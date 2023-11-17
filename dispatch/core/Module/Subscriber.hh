@@ -3,6 +3,8 @@
 #include "AbstractSubscriber.hh"
 #include "dispatch/core/Module/RunnableDispatcherThread/RunnableDispatcher.hh"
 #include "dispatch/core/Module/RunnableDispatcherThread/FunctionRunnableWithParams.hh"
+#include "dispatch/core/Module/RunnableDispatcherThread/ScheduleDescription/ScheduleOnce.hh"
+
 
 #include "dispatch/core/Module/ChannelData.hh"
 #include "dispatch/core/Module/TypeMapping/Mutator.hh"
@@ -38,7 +40,11 @@ namespace claid{
 
             std::shared_ptr<Runnable> runnable = std::static_pointer_cast<Runnable>(functionRunnable);
             
-            this->callbackDispatcher.addRunnable(runnable);
+                
+            this->callbackDispatcher.addRunnable(
+                ScheduledRunnable(
+                    std::static_pointer_cast<Runnable>(functionRunnable), 
+                    ScheduleOnce(Time::now())));
         }
 
         void onNewData(DataPackage data) 

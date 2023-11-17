@@ -25,6 +25,8 @@
 #include <vector>
 #include <iostream>
 #include <thread>
+#include <condition_variable>
+#include <functional>
 
 #include "dispatch/core/Utilities/Time.hh"
 #include "dispatch/core/Logger/Logger.hh"
