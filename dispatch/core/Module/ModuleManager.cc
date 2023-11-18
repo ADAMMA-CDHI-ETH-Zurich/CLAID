@@ -63,7 +63,7 @@ absl::Status ModuleManager::initializeModules(ModuleListResponse moduleList, Cha
         if(this->runningModules.find(key) == this->runningModules.end())
         {
             return absl::NotFoundError(absl::StrCat(
-                "Failed to initialize Module \"" + moduleId + "\" (class: \"" + moduleClass + "\".\n" +
+                "Failed to initialize Module \"" + moduleId + "\" (class: \"" + moduleClass + "\").\n" +
                 "The Module was not loaded."
             ));
             

@@ -71,11 +71,8 @@ public class ModuleManager
         {
             System.out.println("ModuleManager: Failed to instantiate Module of class \"" + moduleClass + "\" (id: " + moduleId + "\")\n" +
             "A Module with this class is not registered to the ModuleFactory.");
-         
-            // The Middleware always returns all Modules named in the config file.
-            // If we cannot load it, we assume another registered runtime can.
-            // Therefore, no error.
-            return true;
+        
+            return false;
         }
 
         Logger.logInfo("Loaded Module id \"" + moduleId + "\" (class: \"" + moduleClass + "\").");
@@ -93,7 +90,7 @@ public class ModuleManager
 
             if(!this.instantiateModule(moduleId, moduleClass))
             {
-                System.out.println("Failed to instantiate Module \"" + moduleId + "\" (class: \"" + moduleClass + "\".\n" +
+                System.out.println("Failed to instantiate Module \"" + moduleId + "\" (class: \"" + moduleClass + "\").\n" +
                 "The Module class was not registered to the ModuleFactory.");
                 return false;
             }
@@ -105,6 +102,7 @@ public class ModuleManager
     {
         for(ModuleDescriptor descriptor : moduleList.getDescriptorsList())
         {
+            System.out.println(moduleList.getDescriptorsList());
             String moduleId = descriptor.getModuleId();
             String moduleClass = descriptor.getModuleClass();
 
@@ -112,13 +110,11 @@ public class ModuleManager
             System.out.println(key + "  " + this.runningModules);
             if(!this.runningModules.containsKey(key))
             {
-                System.out.println("Failed to initialize Module \"" + moduleId + "\" (class: \"" + moduleClass + "\".\n" +
+                System.out.println("Failed to initialize Module \"" + moduleId + "\" (class: \"" + moduleClass + "\").\n" +
                 "The Module was not loaded.");
                 
-                // The middleware always sends all Modules parsed from the configuration file.
-                // If this Module is not running in this runtime, that means we could not instantiate it before.
-                // Hence, we assume this Module is supported by another runtime.
-                continue;
+             
+                return false;
             }
 
             Module module = this.runningModules.get(key);
@@ -154,7 +150,7 @@ public class ModuleManager
     {
         System.out.println(this.moduleFactory.getRegisteredModuleClasses());
         ModuleListResponse moduleList = this.dispatcher.getModuleList(this.moduleFactory.getRegisteredModuleClasses());
-        
+        Logger.logInfo("Received ModuleListResponse: " + moduleList);
         if(!instantiateModules(moduleList))
         {
             Logger.logFatal("ModuleDispatcher: Failed to instantiate Modules.");
