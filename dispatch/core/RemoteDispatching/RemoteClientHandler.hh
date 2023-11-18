@@ -19,7 +19,7 @@ namespace claid
 {
     // Just as the RuntimeDispatcher manages local DispatcherClients,
     // the RemoteClientHandler manages connected RemoteDispatcherClients.
-    // It reads and messages from/to the associated RemoteDispatcherClient.
+    // It reads and writes messages from/to the associated RemoteDispatcherClient.
     class RemoteClientHandler
     {
         explicit RemoteClientHandler(SharedQueue<claidservice::DataPackage>& inQueue,

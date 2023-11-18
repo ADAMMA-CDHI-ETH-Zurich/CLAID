@@ -56,11 +56,22 @@ namespace claid
 
             ModuleTable moduleTable;
             HostUserTable hostUserTable;
+            
+            // Server for local runtimes (C++, Dart, Java, Python, ...) to connect to.
             std::unique_ptr<DispatcherServer> localDispatcher;
+
+            // Server for external instances of CLAID to connect to.
             std::unique_ptr<RemoteDispatcherServer> remoteDispatcherServer;
+
+            // Client for the current instance of CLAID to connect to another instance of CLAID.
             std::unique_ptr<RemoteDispatcherClient> remoteDispatcherClient;
 
+            // 
             std::unique_ptr<MasterRouter> masterRouter;
+            
+            // Merges the queus from the localDispatcher, remoteDispatcherServer and remoteDispatcherClient into a single queue.
+            // This queue is processed by the masterRouter, which decides whether to route the package locally (to a runtime),
+            // to a connected client (downwards in the routing tree) or to a connected server (upwards in the routing tree).
             std::unique_ptr<RoutingQueueMerger> routingQueueMerger;
             SharedQueue<DataPackage> masterInputQueue;
 

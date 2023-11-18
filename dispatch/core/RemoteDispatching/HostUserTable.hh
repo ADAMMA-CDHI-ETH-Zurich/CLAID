@@ -31,12 +31,17 @@ class HostUserTable
 
     inline SharedQueue<claidservice::DataPackage>& inputQueue() { return fromClientsQueue; }
 
-    // Looks up the output queue for the host of specific user (i.e., address host:user)
+    // Looks up the output queue for the host of a specific user (i.e., address host:user)
+    // Other hosts connected to the current host can either be servers or clients.
+    // If it are clients, that means multiple instances of the same host connect, but with a different user id (multiple user ids, same host).
+    // This function looks up the queue for one specific user connected to the current host.
     absl::Status lookupOutputQueueForHostUser(const std::string& host, const std::string& userToken, std::shared_ptr<SharedQueue<claidservice::DataPackage>>& queue);
 
     // Looks up output queue for all users running the same host (i.e., address host:*)
     absl::Status lookupOutputQueuesForHost(const std::string& host, std::vector<std::shared_ptr<SharedQueue<claidservice::DataPackage>>>& queues);
 
+    // Typically called when a user connects to the current host (i.e., the current instance of CLAID).
+    // Registers the user with the current server.
     absl::Status addRemoteClient(const std::string& host, const std::string& userToken, const std::string& deviceID);
     absl::Status removeRemoteClient(const std::string& host, const std::string& userToken, const std::string& deviceID);
 
@@ -52,7 +57,7 @@ class HostUserTable
     // Multiple users can run the same host.
     // This map stores connected users for each host.
     // In other words, you can use this map to find out 
-    // which connected users run a certain host.
+    // which *connected* users run a certain host.
     std::map<std::string, std::vector<std::string>> hostToUserMap;
     
     std::mutex hostUserTableMutex;
