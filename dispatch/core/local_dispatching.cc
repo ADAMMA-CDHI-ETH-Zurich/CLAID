@@ -154,8 +154,9 @@ Status ServiceImpl::GetModuleList(ServerContext* context,
         return Status(grpc::INVALID_ARGUMENT, "Invalid runtime value provided");
     }
 
+    set<string> supportedModClasses;
     // Register the runtime
-    for(auto it : req->supported_module_classes()) {
+    for(auto& it : req->supported_module_classes()) {
         // Look up the module class
         auto rt = moduleTable.moduleClassRuntimeMap[it];
 
@@ -169,16 +170,20 @@ Status ServiceImpl::GetModuleList(ServerContext* context,
             return Status(grpc::INVALID_ARGUMENT, "Attempted redefiniton of the runtime for a module class");
         }
         moduleTable.moduleClassRuntimeMap[it] = req->runtime();
+        supportedModClasses.insert(it);
     }
 
-    // Iterate over
+    // Iterate over the needed modules and only include the module classes
+    // that are supported by the caller.
     for(auto it : moduleTable.moduleToClassMap) {
-        auto desc = resp->add_descriptors();
-        desc->set_module_id(it.first);
-        desc->set_module_class(it.second);
-        desc->mutable_properties()->insert(
-            moduleTable.moduleProperties[it.first].begin(),
-            moduleTable.moduleProperties[it.first].end());
+        if (supportedModClasses.find(it.second) != supportedModClasses.end()) {
+            auto desc = resp->add_descriptors();
+            desc->set_module_id(it.first);
+            desc->set_module_class(it.second);
+            desc->mutable_properties()->insert(
+                moduleTable.moduleProperties[it.first].begin(),
+                moduleTable.moduleProperties[it.first].end());
+        }
     }
     return Status::OK;
 }
