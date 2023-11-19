@@ -18,7 +18,6 @@ bool claid::compPacketType(const DataPackage& ref, const DataPackage& val) {
         (ref.payload_oneof_case() == val.payload_oneof_case());
 }
 
-// DONE
 // Returns true if the packet from the client is valid.
 // A packet is considered valid when
 //    - the channel and payload are set
@@ -33,7 +32,6 @@ bool claid::validPacketType(const DataPackage& ref) {
         ref.has_control_val());
 }
 
-// DONE
 SharedQueue<DataPackage>* ModuleTable::lookupOutputQueue(const string& moduleId) {
     auto rt = moduleRuntimeMap[moduleId];
     if (rt != Runtime::RUNTIME_UNSPECIFIED) {
@@ -45,12 +43,10 @@ SharedQueue<DataPackage>* ModuleTable::lookupOutputQueue(const string& moduleId)
     return nullptr;
 }
 
-// DONE
 void ModuleTable::setProperties(const ModuleTableProperties& props) {
     this->props = props;
 }
 
-// DONE
 void ModuleTable::setNeededModule(const string& moduleId, const string& moduleClass,
         const map<string, string>& properties) {
     // TODO: verify no module is registered incorreclty multiple times
@@ -58,7 +54,6 @@ void ModuleTable::setNeededModule(const string& moduleId, const string& moduleCl
     moduleProperties[moduleId] = properties;
 }
 
-// DONE
 void ModuleTable::setExpectedChannel(const string& channelId, const string& source, const string& target) {
     unique_lock<shared_mutex> lock(chanMapMutex);
 
@@ -68,7 +63,6 @@ void ModuleTable::setExpectedChannel(const string& channelId, const string& sour
     chanMap[channelId].targets[target] = false;
 }
 
-// DONE
 Status ModuleTable::setChannelTypes(const string& moduleId,
             const google::protobuf::RepeatedPtrField<DataPackage>& channels) {
     if (moduleId.empty()) {
