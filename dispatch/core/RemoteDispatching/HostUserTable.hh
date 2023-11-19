@@ -32,7 +32,7 @@ class HostUserTable
 
     inline std::shared_ptr<SharedQueue<claidservice::DataPackage>> inputQueue() { return fromClientsQueue; }
 
-    // Looks up the output queue for the host of a specific user (i.e., address host:user)
+    // Looks up the output queue for the host of a specific user (i.e., address (host, user))
     // Other hosts connected to the current host can either be servers or clients.
     // If it are clients, that means multiple instances of the same host connect, but with a different user id (multiple user ids, same host).
     // This function looks up the queue for one specific user connected to the current host.

@@ -222,11 +222,11 @@ void ModuleManager::readFromModulesDispatcher()
 
 void ModuleManager::onPackageReceivedFromModulesDispatcher(std::shared_ptr<DataPackage> dataPackage)
 {
-    /*String[] hostAndModule = splitHostModule(dataPackage.gettargetModule());
+    /*String[] hostAndModule = splitHostModule(dataPackage.getTargetModule());
 
     if(hostAndModule == null)
     {
-        Logger.logError("Java Runtime received DataPackage with invalid address \"" + dataPackage.gettargetModule() + "\".\n"
+        Logger.logError("Java Runtime received DataPackage with invalid address \"" + dataPackage.getTargetModule() + "\".\n"
         + "Unable to split the address into host:module");
     }*/
 

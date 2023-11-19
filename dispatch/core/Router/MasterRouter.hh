@@ -24,23 +24,16 @@ namespace claid
             //   can have a client dispatcher, to connect as client to another server ("up" in the connection tree).
 
 
-            std::shared_ptr<Router> localRouter;
-            std::shared_ptr<Router> clientRouter;  // Routes to another server the current runtime is connected to ("up" in the routing tree).
-            std::shared_ptr<Router> serverRouter;  // Routes to connected hosts ("down" in the routing tree). 
-                                                   // ServerRouter might forward the package to the connected users, or a specific user.
+            // Typically, the MasterRouter has 3 sub-routers:
 
-            // This map decides whether to route a DataPackage locally, to a server we are connected to ("up") or to a client connected to us ("down").
-            // If the module is on the current host, it will be routed locally.
-            // If the module is not on the current host, we determine whether we can reach the host from here, meaning it is either 
-            // a direct client of our server dispatcher, or a client of any of the clients of the ServerDispatcher (i.e., route downards).
-            // If we cannot reach the host from here (i.e., it is not "below" us in the routing tree), we send it to the ClientDispatcher (meaning we are 
-            // a client connected to another server, hence we are routing upwards in the tree).
+            // A ClientRouter, which routes to another server the current runtime is connected to ("up" in the routing tree).
+            // A ServerRouter to connected hosts ("down" in the routing tree). 
+            // ServerRouter might forward the package to the connected users, or a specific user.
+            // And a LocalRouter, routing packages to local modules.
+            std::vector<std::shared_ptr<Router>> routers;
+
+            // This map decides which subrouter to forward the package to.
             std::map<std::string /* adress = host */, std::shared_ptr<Router>> routingTable;
-
-            // The routing tree resulting from the configuration file.
-            // This tree will be the same on each host, since they all share the same configuration file.
-            // From the routingTree, we can generate the routingTable, which is specific for each host.
-            RoutingTree routingTree;
 
             // All incoming packages either from a local runtime, from the server or client will be gathered in this queue.
             // Incoming packages on this queue will then be routed to either the localRouter, serverRouter or clientRouter 
@@ -51,23 +44,26 @@ namespace claid
             bool active = false;
 
         private:    
-            absl::Status buildRoutingTableFromTree(
-                const std::string& currentHost, const HostDescriptionMap& hostDescriptions);
+   
+
+            absl::Status buildRoutingTable(const std::string& currentHost, const HostDescriptionMap& hostDescriptions);
+
 
             void processQueue();
 
         public:
         
 
+            template<typename... RouterTypes>
             MasterRouter(
                 SharedQueue<claidservice::DataPackage>& incomingQueue, 
-                std::shared_ptr<LocalRouter> localRouter,
-                std::shared_ptr<ClientRouter> clientRouter,
-                std::shared_ptr<ServerRouter> serverRouter);
-
-            absl::Status buildRoutingTable(std::string currentHost, const HostDescriptionMap& hostDescriptions);
+                std::shared_ptr<RouterTypes>... routersToRegister) : incomingQueue(incomingQueue)
+            {
+                routers = {std::static_pointer_cast<Router>(routersToRegister)...};
+            }
 
             absl::Status start() override final;
             absl::Status routePackage(std::shared_ptr<DataPackage> dataPackage) override final;
+            bool canReachHost(const std::string& hostname) override final;
     };
 }

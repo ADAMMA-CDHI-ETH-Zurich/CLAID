@@ -109,6 +109,7 @@ cc_library(
         "shared_queue.hh",
     ]),
     deps = [
+        ":routing",
         "@com_github_grpc_grpc//:grpc++",
         "//dispatch/proto:claidservice_cc_proto",
         "//dispatch/proto:claidservice_cc_grpc",

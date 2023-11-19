@@ -3,7 +3,6 @@
 #include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/proto/claidconfig.pb.h"
 
-#include "dispatch/core/Router/DispatcherStub.hh"
 #include "dispatch/core/Router/RoutingNode.hh"
 #include "dispatch/core/Router/RoutingTree.hh"
 #include "dispatch/core/shared_queue.hh"
@@ -31,6 +30,7 @@ namespace claid
 
             virtual absl::Status start();
             virtual absl::Status routePackage(std::shared_ptr<DataPackage> package) = 0;
+            virtual bool canReachHost(const std::string& host) = 0;
     };
 
     inline absl::Status getTargetHostAndModule(const DataPackage& package, std::string& host, std::string& module)

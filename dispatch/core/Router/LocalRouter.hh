@@ -13,9 +13,10 @@ namespace claid
     {
         private:
             ModuleTable& moduleTable;
+            const std::string currentHost;
 
         public:
-            LocalRouter(ModuleTable& moduleTable) : moduleTable(moduleTable)
+            LocalRouter(const std::string& currentHost, ModuleTable& moduleTable) : moduleTable(moduleTable), currentHost(currentHost)
             {
 
             }
@@ -27,9 +28,6 @@ namespace claid
                 std::string targetHost;
 
                 
-
-             
-
                 SharedQueue<DataPackage>* inputQueueForRuntime = this->moduleTable.lookupOutputQueue(targetModule);
 
                 if(!inputQueueForRuntime)
@@ -40,6 +38,11 @@ namespace claid
 
                 inputQueueForRuntime->push_back(dataPackage);
                 return absl::OkStatus();
+            }
+
+            bool canReachHost(const std::string& hostname) override final
+            {
+                return hostname == currentHost;
             }
 
     };

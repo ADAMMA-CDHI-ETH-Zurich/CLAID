@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dispatch/core/Router/RoutingNode.hh"
+#include "dispatch/core/Router/RoutingDirection.hh"
 #include <stack>
 
 namespace claid
@@ -21,7 +22,7 @@ namespace claid
 
             }
 
-            RoutingNode* lookupHost(const std::string& hostname)
+            RoutingNode* lookupHost(const std::string& hostname) const
             {
                 if(this->rootNode == nullptr)
                 {
@@ -85,20 +86,26 @@ namespace claid
 
             }
 
-            bool getPathFromHostToHost(const std::string& sourceHost, const std::string& targetHost, std::vector<std::string>& hostToHostPath)
+            bool getRouteFromHostToHost(const std::string& sourceHost, 
+                                    const std::string& targetHost, 
+                                    std::vector<std::string>& hostToHostPath,
+                                    RoutingDirection& routingDirection) const
             {
                 hostToHostPath.clear();
                 if(sourceHost == targetHost)
                 {
                     hostToHostPath.push_back(targetHost);
+                    routingDirection = RoutingDirection::ROUTE_LOCAL;
                     return true;
                 }
 
-                RoutingNode* currentNode = this->lookupHost(sourceHost);
+                RoutingNode* sourceHostNode = this->lookupHost(sourceHost);
+                RoutingNode* currentNode = sourceHostNode;
+
+                bool routingUpwardsRequired = false;
 
                 while(currentNode != nullptr)
                 {
-
                     std::vector<std::string> childHosts;
                     RoutingTree subTree(currentNode);
                     subTree.getChildHostRecursively(childHosts);
@@ -124,6 +131,11 @@ namespace claid
                         }
                         // Add intermediate hosts in reverse order.
                         hostToHostPath.insert( hostToHostPath.end(), intermediateHosts.rbegin(), intermediateHosts.rend() );
+
+                        // If the targetHost is a direct child of the sourceHostNode (i.e., first iteration of the while loop),
+                        // this means that means that the sourceHost is a server and the targetHost is connected to that server
+                        // either directly or indirectly. In that case, the package has to be routed downards in the routing tree.
+                        routingDirection = routingUpwardsRequired ? RoutingDirection::ROUTE_UP : RoutingDirection::ROUTE_DOWN;
                         return true;
                     }
                     else
@@ -135,6 +147,7 @@ namespace claid
                         // That means for the sourceHost to reach the targetHost, it would
                         // have to send a package "upward" in the tree, 
                         hostToHostPath.push_back(currentNode->name);
+                        routingUpwardsRequired = true;
                     }
                 }
 
@@ -142,7 +155,7 @@ namespace claid
                 return false;
             }
 
-            void toString(std::string& output)
+            void toString(std::string& output) const
             {
                 output.clear();
                 if(this->rootNode == nullptr)
@@ -176,6 +189,25 @@ namespace claid
                         nodesToCheck.push(std::make_pair(level + 1, child));
                     }
                 }
+            }
+
+            bool isDirectChildOfHost(const std::string& suggestedChild, const std::string& parent)
+            {
+                RoutingNode* parentNode = lookupHost(parent);
+                if(parentNode == nullptr)
+                {
+                    return false;
+                }
+
+                std::vector<std::string> childNames;
+                for(RoutingNode* child : parentNode->children)
+                {
+                    childNames.push_back(child->name);
+                }
+
+                auto it = std::find(childNames.begin(), childNames.end(), suggestedChild);
+
+                return it != childNames.end();
             }
     };
 }

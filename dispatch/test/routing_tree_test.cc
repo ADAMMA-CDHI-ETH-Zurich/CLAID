@@ -136,19 +136,19 @@ TEST(RoutingTreeTestSuite, RoutingTreeTest)
     assertAllChildsMatch(routingTree, "Server1", mergeVectors({{"Server2", "Server3", "Server4", "Server5"}, server1Childs, server2Childs, server3Childs, server4Childs, server5Childs}));
 
     std::vector<std::string> path;
-    bool success = routingTree.getPathFromHostToHost("Client6", "Client11", path);
+    bool success = routingTree.getRouteFromHostToHost("Client6", "Client11", path);
     ASSERT_TRUE(success) << "Failed to get path from Client6 to Client11";
     assertVectorMatchExactly(path, {"Server3", "Server2", "Server4", "Server5", "Client11"});
 
-    success = routingTree.getPathFromHostToHost("Server1", "Client14", path);
+    success = routingTree.getRouteFromHostToHost("Server1", "Client14", path);
     ASSERT_TRUE(success) << "Failed to get path from Server1 to Client14";
     assertVectorMatchExactly(path, {"Server2", "Server4", "Server5", "Client14"});
 
-    success = routingTree.getPathFromHostToHost("Client8", "Client3", path);
+    success = routingTree.getRouteFromHostToHost("Client8", "Client3", path);
     ASSERT_TRUE(success) << "Failed to get path from Client8 to Client3";
     assertVectorMatchExactly(path, {"Server4", "Server2", "Server1", "Client3"});
 
-    success = routingTree.getPathFromHostToHost("Client1", "Client3", path);
+    success = routingTree.getRouteFromHostToHost("Client1", "Client3", path);
     ASSERT_TRUE(success) << "Failed to get path from Client1 to Client3";
     assertVectorMatchExactly(path, {"Server1", "Client3"});
 } 

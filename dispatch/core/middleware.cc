@@ -142,7 +142,7 @@ absl::Status MiddleWare::startRouter(const std::string& currentHost, const HostD
     std::shared_ptr<ClientRouter> clientRouter = std::make_shared<ClientRouter>();
 
     MasterRouter router(this->masterInputQueue, localRouter, clientRouter, serverRouter);
-    status = router.buildRoutingTable(currentHost, hostDescriptions);
+    //status = router.buildRoutingTable(currentHost, hostDescriptions);
     if(!status.ok())
     {
         return status;
