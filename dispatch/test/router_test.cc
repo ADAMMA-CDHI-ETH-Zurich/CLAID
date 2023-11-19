@@ -15,8 +15,8 @@ typedef std::function<void(DataPackage&)> setterFn;
 std::shared_ptr<claidservice::DataPackage> makePkt(const std::string& channel, const std::string& src, const std::string& tgt, setterFn setter) {
     auto ret = std::make_shared<claidservice::DataPackage>();
     *ret->mutable_channel() = channel;
-    *ret->mutable_source_host_module() = src;
-    *ret->mutable_target_host_module() = tgt;
+    *ret->mutable_source_module() = src;
+    *ret->mutable_target_module() = tgt;
     setter(*ret.get());
     return ret;
 }
@@ -24,7 +24,6 @@ std::shared_ptr<claidservice::DataPackage> makePkt(const std::string& channel, c
 TEST(RouterTestSuite, LocalRouterTest)
 {
     ModuleTable table;
-    const std::string host = "host:";
     const std::string mod1 = "TestModule1";
     const std::string mod2 = "TestModule2";
     const std::string mod3 = "TestModule3";
@@ -60,15 +59,15 @@ TEST(RouterTestSuite, LocalRouterTest)
 
     // Simulate each Module sending to data to every Module (including itself).
     std::vector<std::shared_ptr<DataPackage>> packages = {
-        makePkt(channel11, absl::StrCat(host, mod1), absl::StrCat(host, mod1), [](auto& p) {  p.set_string_val("package11");}),
-        makePkt(channel12, absl::StrCat(host, mod1), absl::StrCat(host, mod2), [](auto& p) { p.set_string_val("package12"); }),
-        makePkt(channel13, absl::StrCat(host, mod1), absl::StrCat(host, mod3), [](auto& p) { p.set_string_val("package13"); }),
-        makePkt(channel21, absl::StrCat(host, mod2), absl::StrCat(host, mod1), [](auto& p) { p.set_string_val("package21"); }),
-        makePkt(channel22, absl::StrCat(host, mod2), absl::StrCat(host, mod2), [](auto& p) { p.set_string_val("package22"); }),
-        makePkt(channel23, absl::StrCat(host, mod2), absl::StrCat(host, mod3), [](auto& p) { p.set_string_val("package23"); }),
-        makePkt(channel31, absl::StrCat(host, mod3), absl::StrCat(host, mod1), [](auto& p) { p.set_string_val("package31"); }),
-        makePkt(channel32, absl::StrCat(host, mod3), absl::StrCat(host, mod2), [](auto& p) { p.set_string_val("package32"); }),
-        makePkt(channel33, absl::StrCat(host, mod3), absl::StrCat(host, mod3), [](auto& p) { p.set_string_val("package33"); })
+        makePkt(channel11, mod1, mod1, [](auto& p) {  p.set_string_val("package11");}),
+        makePkt(channel12, mod1, mod2, [](auto& p) { p.set_string_val("package12"); }),
+        makePkt(channel13, mod1, mod3, [](auto& p) { p.set_string_val("package13"); }),
+        makePkt(channel21, mod2, mod1, [](auto& p) { p.set_string_val("package21"); }),
+        makePkt(channel22, mod2, mod2, [](auto& p) { p.set_string_val("package22"); }),
+        makePkt(channel23, mod2, mod3, [](auto& p) { p.set_string_val("package23"); }),
+        makePkt(channel31, mod3, mod1, [](auto& p) { p.set_string_val("package31"); }),
+        makePkt(channel32, mod3, mod2, [](auto& p) { p.set_string_val("package32"); }),
+        makePkt(channel33, mod3, mod3, [](auto& p) { p.set_string_val("package33"); })
     };
 
     for(std::shared_ptr<DataPackage>& package : packages)

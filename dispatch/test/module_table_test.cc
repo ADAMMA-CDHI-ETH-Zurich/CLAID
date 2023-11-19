@@ -24,17 +24,17 @@ TEST(ModuleTableTestSuite, BasicModuleTableTest) {
 
     map<string, vector<DataPackage>> pktsVecMap;
     for(auto pkt : testChannels) {
-        modTable.setExpectedChannel(pkt->channel(), pkt->source_host_module(), pkt->target_host_module());
+        modTable.setExpectedChannel(pkt->channel(), pkt->source_module(), pkt->target_module());
 
         // Add the channel type for source modules.
         auto cpPkt = *pkt;
-        cpPkt.clear_target_host_module();
-        pktsVecMap[cpPkt.source_host_module()].push_back(cpPkt);
+        cpPkt.clear_target_module();
+        pktsVecMap[cpPkt.source_module()].push_back(cpPkt);
 
         // Add the channel type for target modules.
         cpPkt = *pkt;
-        cpPkt.clear_source_host_module();
-        pktsVecMap[cpPkt.target_host_module()].push_back(cpPkt);
+        cpPkt.clear_source_module();
+        pktsVecMap[cpPkt.target_module()].push_back(cpPkt);
     }
 
     // Make sure a wrong channel type is rejected.

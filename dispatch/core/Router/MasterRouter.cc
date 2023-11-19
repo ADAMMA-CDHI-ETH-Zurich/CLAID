@@ -88,19 +88,10 @@ namespace claid
 
     absl::Status MasterRouter::routePackage(std::shared_ptr<DataPackage> dataPackage) 
     {
-        std::string targetHost;
-        std::string targetModule;
-
-        absl::Status status = getTargetHostAndModule(*dataPackage.get(), targetHost, targetModule);
         
-        if(!status.ok())
-        {
-            // Do what? 
-            // return status;
-            return absl::InvalidArgumentError(
-                absl::StrCat("Error, failed to parse host from data package failed. Host \"", 
-                dataPackage->target_host_module(), "\" is invalid.\n"));
-        }
+
+        std::string targetHost = dataPackage->target_host();
+        std::string targetModule = dataPackage->target_module();
 
         auto it = this->routingTable.find(targetHost);
         if(it == this->routingTable.end())
@@ -109,7 +100,7 @@ namespace claid
             return absl::InvalidArgumentError(absl::StrCat("Routing package failed. Host \"", targetHost, "\" is unknown.\n"));
         }
 
-        status = it->second->routePackage(dataPackage);
+        absl::Status status = it->second->routePackage(dataPackage);
 
         return status;
     }
@@ -124,7 +115,7 @@ namespace claid
 
             if(!package)
             {
-                Logger::printfln("MasterRouter: Failed to route package, package is null.");
+                Logger::logError("MasterRouter: Failed to route package, package is null.");
                 return;
             }
 
@@ -133,7 +124,7 @@ namespace claid
             {
                 std::stringstream ss;
                 ss << status;
-                Logger::printfln("MasterRouter: Failed to route package with error %s", ss.str().c_str());
+                Logger::logError("MasterRouter: Failed to route package with error %s", ss.str().c_str());
                 return;
             }
         }

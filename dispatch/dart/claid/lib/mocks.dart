@@ -265,8 +265,8 @@ class MockDispatcher implements ModuleDispatcher {
     for (var ch in env.channels) {
       _routerChannelMap[ch.id] = DataPackage(
           channel: ch.id,
-          sourceHostModule: ch.sourceModule,
-          targetHostModule: ch.targetModule);
+          sourceModule: ch.sourceModule,
+          targetModule: ch.targetModule);
     }
 
     return Future<Stream<DataPackage>>.delayed(
@@ -296,7 +296,7 @@ class MockDispatcher implements ModuleDispatcher {
   void _emulateMiddleware(DataPackage pkt) {
     // Check that the incoming package has at least the minimum information
     // necessary.
-    if ((pkt.sourceHostModule.isEmpty) ||
+    if ((pkt.sourceModule.isEmpty) ||
         (pkt.channel.isEmpty) ||
         (pkt.whichPayloadOneof() == DataPackage_PayloadOneof.notSet)) {
       throw ArgumentError('Data packet nees a channel, a source and payload');
@@ -309,13 +309,13 @@ class MockDispatcher implements ModuleDispatcher {
       throw ArgumentError('provided channel ${pkt.channel} unknown');
     }
 
-    if (chanSrcTgt.sourceHostModule != pkt.sourceHostModule) {
+    if (chanSrcTgt.sourceModule != pkt.sourceModule) {
       throw ArgumentError(
-          'source modules "${chanSrcTgt.sourceHostModule}" and "${pkt.sourceHostModule}" do not match');
+          'source modules "${chanSrcTgt.sourceModule}" and "${pkt.sourceModule}" do not match');
     }
 
     final now = DateTime.now();
-    pkt.targetHostModule = chanSrcTgt.targetHostModule;
+    pkt.targetModule = chanSrcTgt.targetModule;
     pkt.tracePoints.add(TracePoint(timeStamp: timeStampFromDateTime(now)));
   }
 

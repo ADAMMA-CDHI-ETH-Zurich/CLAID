@@ -27,9 +27,10 @@ typedef std::map<RemoteClientKey, std::shared_ptr<SharedQueue<claidservice::Data
 class HostUserTable 
 {
   public:
+    HostUserTable();
     virtual ~HostUserTable() {}
 
-    inline SharedQueue<claidservice::DataPackage>& inputQueue() { return fromClientsQueue; }
+    inline std::shared_ptr<SharedQueue<claidservice::DataPackage>> inputQueue() { return fromClientsQueue; }
 
     // Looks up the output queue for the host of a specific user (i.e., address host:user)
     // Other hosts connected to the current host can either be servers or clients.
@@ -48,7 +49,7 @@ class HostUserTable
   private:
     
     // Queue where the clients output their received packages to.
-    SharedQueue<claidservice::DataPackage> fromClientsQueue;
+    std::shared_ptr<SharedQueue<claidservice::DataPackage>> fromClientsQueue;
 
     // Maps <host, user> to the corresponding queue.
     // Each queue will be used by a corresponding RemoteClientHandler.

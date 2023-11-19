@@ -160,9 +160,9 @@ class ModuleManager {
     final mutator = _typeMapper.getMutator(inst);
     final chanPkt = DataPackage(channel: channelId);
     if (isSource) {
-      chanPkt.sourceHostModule = moduleId;
+      chanPkt.sourceModule = moduleId;
     } else {
-      chanPkt.targetHostModule = moduleId;
+      chanPkt.targetModule = moduleId;
     }
     mutator.setter(chanPkt, inst);
     _modChanMap[moduleId] = chanList..add(chanPkt);
@@ -171,7 +171,7 @@ class ModuleManager {
 
   // Process incoming packages.
   void _handleInputMessage(DataPackage pkt) {
-    final modChanId = _combineIds(pkt.targetHostModule, pkt.channel);
+    final modChanId = _combineIds(pkt.targetModule, pkt.channel);
     final recv = _receiverMap[modChanId];
     if (recv != null) {
       recv(pkt);
@@ -255,7 +255,7 @@ class PubChannelImpl<T> implements PublishChannel<T> {
   @override
   Future<void> post(T payload) async {
     final pkt =
-        DataPackage(sourceHostModule: _srcModuleId, channel: _channelId);
+        DataPackage(sourceModule: _srcModuleId, channel: _channelId);
     _mutator.setter(pkt, payload);
     await _manager._publish(pkt);
   }

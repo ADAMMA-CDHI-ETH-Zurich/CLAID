@@ -219,11 +219,11 @@ public class ModuleManager
 
     private void onDataPackageReceived(DataPackage dataPackage)
     {
-        /*String[] hostAndModule = splitHostModule(dataPackage.getTargetHostModule());
+        /*String[] hostAndModule = splitHostModule(dataPackage.gettargetModule());
 
         if(hostAndModule == null)
         {
-            Logger.logError("Java Runtime received DataPackage with invalid address \"" + dataPackage.getTargetHostModule() + "\".\n"
+            Logger.logError("Java Runtime received DataPackage with invalid address \"" + dataPackage.gettargetModule() + "\".\n"
             + "Unable to split the address into host:module");
         }*/
 
@@ -237,7 +237,7 @@ public class ModuleManager
         String moduleId = hostAndModule[1];*/
 
         final String channelName = dataPackage.getChannel();
-        final String moduleId = dataPackage.getTargetHostModule();
+        final String moduleId = dataPackage.gettargetModule();
 
         Logger.logInfo("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\"");
 
@@ -290,7 +290,7 @@ public class ModuleManager
 
     public void onDataPackageFromModule(DataPackage dataPackage)
     {
-        Logger.logInfo("ModuleManager received local package from Module \"" + dataPackage.getSourceHostModule() + "\".");
+        Logger.logInfo("ModuleManager received local package from Module \"" + dataPackage.getsourceModule() + "\".");
         Logger.logInfo(dataPackage + " ");
         this.dispatcher.postPackage(dataPackage);
     }

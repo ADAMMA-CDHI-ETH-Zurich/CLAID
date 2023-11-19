@@ -13,8 +13,8 @@ using namespace claidservice;
 // channel and payload in the 'ref' packet.
 bool claid::compPacketType(const DataPackage& ref, const DataPackage& val) {
     return (ref.channel() == val.channel()) &&
-        // ((ref.source_host_module() == val.source_host_module()) ||
-        // (ref.target_host_module() == val.target_host_module())) &&
+        // ((ref.source_module() == val.source_module()) ||
+        // (ref.target_module() == val.target_module())) &&
         (ref.payload_oneof_case() == val.payload_oneof_case());
 }
 
@@ -27,8 +27,8 @@ bool claid::compPacketType(const DataPackage& ref, const DataPackage& val) {
 //
 bool claid::validPacketType(const DataPackage& ref) {
     return !(ref.channel().empty() ||
-        (ref.source_host_module().empty() && ref.target_host_module().empty()) ||
-        (!ref.source_host_module().empty() && !ref.target_host_module().empty()) ||
+        (ref.source_module().empty() && ref.target_module().empty()) ||
+        (!ref.source_module().empty() && !ref.target_module().empty()) ||
         (ref.payload_oneof_case() == DataPackage::PayloadOneofCase::PAYLOAD_ONEOF_NOT_SET) ||
         ref.has_control_val());
 }
@@ -88,8 +88,8 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         }
 
         const string& channelId = chanPkt.channel();
-        const string& src = chanPkt.source_host_module();
-        const string& tgt = chanPkt.target_host_module();
+        const string& src = chanPkt.source_module();
+        const string& tgt = chanPkt.target_module();
 
         // At least source or target has to be the module in question, i.e., moduleId is either
         // subscriber or publisher for this channel.
@@ -151,7 +151,7 @@ const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt) const {
         return nullptr;
     }
 
-    auto srcIt = entry->sources.find(pkt.source_host_module());
+    auto srcIt = entry->sources.find(pkt.source_module());
     if (srcIt == entry->sources.end()) {
         return nullptr;
     }
@@ -172,7 +172,7 @@ void ModuleTable::addOutputPackets(const claidservice::DataPackage pkt,
     augmentFieldValues(cpPkt);
     for(auto& it : chanEntry->targets) {
         auto outPkt = make_shared<DataPackage>(cpPkt);
-        outPkt->set_target_host_module(it.first);
+        outPkt->set_target_module(it.first);
         queue.push_back(outPkt);
     }
 }

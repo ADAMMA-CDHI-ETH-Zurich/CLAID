@@ -36,13 +36,15 @@ service ClaidRemoteService
 message DataPackage {
   string id = 1;      // Unique ID of this package
   string channel = 2;
-  string source_host_module = 3; // originating module in the format host_id:module_id
-  string target_host_module = 4; // target module in the format host_id:module_id
-  string source_user_token = 5;  // id token of the user / system entity that created this package.
-  string target_user_token = 6; // id of the user / system that this package is intended for, if it is intended to send data to a module of a specific user.
+  string source_module = 3; // originating module id
+  string target_module = 4; // target module id
+  string source_host = 5; // originating host name
+  string target_host = 6; // target host name
+  string source_user_token = 7;  // id token of the user / system entity that created this package.
+  string target_user_token = 8; // id of the user / system that this package is intended for, if it is intended to send data to a module of a specific user.
                                 // typically, this will be *, meaning that the package will be forwarded to all users that run the corresponding host.
-  string device_id = 7;    // unique ID for this device / host, e.g. MAC id
-  repeated TracePoint trace_points = 8;
+  string device_id = 9;    // unique ID for this device / host, e.g. MAC id
+  repeated TracePoint trace_points = 10;
 
   // To add another message type add it below.
   oneof payload_oneof {

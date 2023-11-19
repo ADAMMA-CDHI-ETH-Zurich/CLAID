@@ -47,12 +47,12 @@ public:
         if(isPublisher)
         {
             // Only set module Id, host will be added by Middleware later.
-            dataPackage.set_source_host_module(moduleId);//concatenateHostModuleAddress(this->host, moduleId));
+            dataPackage.set_source_module(moduleId);//concatenateHostModuleAddress(this->host, moduleId));
         }
         else
         {
             // Only set module Id, host will be added by Middleware later.
-            dataPackage.set_target_host_module(moduleId);//concatenateHostModuleAddress(this->host, moduleId));
+            dataPackage.set_target_module(moduleId);//concatenateHostModuleAddress(this->host, moduleId));
         }
         dataPackage.set_channel(channelName);
 

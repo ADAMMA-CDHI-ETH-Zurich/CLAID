@@ -35,10 +35,10 @@ namespace claid
 
     inline absl::Status getTargetHostAndModule(const DataPackage& package, std::string& host, std::string& module)
     {
-        std::vector<std::string> tokens = absl::StrSplit(package.target_host_module(), ":");
+        std::vector<std::string> tokens = absl::StrSplit(package.target_module(), ":");
         if(tokens.size() != 2)
         {
-            return absl::InvalidArgumentError(absl::StrCat("Unable to parse \"", package.target_host_module(), "\" into host and module.",
+            return absl::InvalidArgumentError(absl::StrCat("Unable to parse \"", package.target_module(), "\" into host and module.",
                     "Please make sure the string follows the format host:module (exactly one colon is expected)."));
         }
 

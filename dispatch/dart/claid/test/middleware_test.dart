@@ -68,11 +68,11 @@ void main() {
     final channels = <String, List<DataPackage>>{
       testModOne: <DataPackage>[
         DataPackage(
-            channel: channelID, sourceHostModule: testModOne, numberVal: 99),
+            channel: channelID, sourceModule: testModOne, numberVal: 99),
       ],
       testModTwo: <DataPackage>[
         DataPackage(
-            channel: channelID, targetHostModule: testModTwo, numberVal: 99),
+            channel: channelID, targetModule: testModTwo, numberVal: 99),
       ],
     };
 
@@ -111,7 +111,7 @@ void main() {
     Timer.periodic(const Duration(milliseconds: 500), (timer) {
       final pkt = DataPackage(
         channel: channelID,
-        sourceHostModule: testModOne,
+        sourceModule: testModOne,
         numberVal: counter.toDouble(),
       );
       outGoingPkts.add(pkt);

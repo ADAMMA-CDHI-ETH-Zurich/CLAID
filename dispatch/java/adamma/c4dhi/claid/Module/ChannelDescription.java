@@ -79,12 +79,12 @@ public class ChannelDescription
         if(isPublisher)
         {
             // Only set module Id, host will be added by Middleware later.
-            builder.setSourceHostModule(moduleId);//concatenateHostModuleAddress(this.host, moduleId));
+            builder.setsourceModule(moduleId);//concatenateHostModuleAddress(this.host, moduleId));
         }
         else
         {
             // Only set module Id, host will be added by Middleware later.
-            builder.setTargetHostModule(moduleId);//concatenateHostModuleAddress(this.host, moduleId));
+            builder.settargetModule(moduleId);//concatenateHostModuleAddress(this.host, moduleId));
         }
         DataPackage dataPackage = builder.build();
 

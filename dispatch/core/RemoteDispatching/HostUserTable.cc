@@ -3,6 +3,12 @@
 
 namespace claid
 {
+
+HostUserTable::HostUserTable() : fromClientsQueue(std::make_shared<SharedQueue<DataPackage>>())
+{
+
+}
+
 // Looks up the output queue for the host of specific user (i.e., address host:user)
 absl::Status HostUserTable::lookupOutputQueueForHostUser(const std::string& host, 
     const std::string& userToken, std::shared_ptr<SharedQueue<DataPackage>>& queue)

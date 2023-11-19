@@ -31,8 +31,8 @@ public class TypeMapping {
         DataPackage.Builder builder = DataPackage.newBuilder()
                     .setId(p.getId())
                     .setChannel(p.getChannel())
-                    .setSourceHostModule(p.getSourceHostModule())
-                    .setTargetHostModule(p.getTargetHostModule())
+                    .setsourceModule(p.getsourceModule())
+                    .settargetModule(p.gettargetModule())
                     .setSourceUserToken(p.getSourceUserToken())
                     .setTargetUserToken(p.getTargetUserToken())
                     .setDeviceId(p.getDeviceId());

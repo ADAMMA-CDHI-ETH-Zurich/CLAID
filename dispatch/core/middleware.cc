@@ -64,7 +64,7 @@ absl::Status MiddleWare::start() {
             if (!pkt || moduleTable.inputQueue().is_closed()) {
                 return;
             }
-            auto outQ = moduleTable.lookupOutputQueue(pkt->target_host_module());
+            auto outQ = moduleTable.lookupOutputQueue(pkt->target_module());
             if (outQ) {
                 outQ->push_back(pkt);
             }
@@ -129,9 +129,7 @@ absl::Status MiddleWare::startRouter(const std::string& currentHost, const HostD
         return absl::AlreadyExistsError("Failed to start router: RoutingQueueMerger already exists.");
     }
 
-    auto genericMerger = new RoutingQueueMergerGeneric(this->masterInputQueue, this->moduleTable.inputQueue(), this->hostUserTable.inputQueue());
-    std::unique_ptr<typename std::remove_pointer<decltype(genericMerger)>::type> uniqueMerger(genericMerger);
-    this->routingQueueMerger = std::move(uniqueMerger);
+    this->routingQueueMerger = makeUniqueRoutingQueueMerger(this->masterInputQueue, this->moduleTable.inputQueue(), *this->hostUserTable.inputQueue());
 
     absl::Status status = this->routingQueueMerger->start();
     if(!status.ok())

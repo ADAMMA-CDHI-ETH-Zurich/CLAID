@@ -22,8 +22,8 @@ using google::protobuf::io::StringOutputStream;
 shared_ptr<claidservice::DataPackage> claidtest::makePkt(const string& channel, const string& src, const string& tgt, setterFn setter) {
     auto ret = make_shared<claidservice::DataPackage>();
     *ret->mutable_channel() = channel;
-    *ret->mutable_source_host_module() = src;
-    *ret->mutable_target_host_module() = tgt;
+    *ret->mutable_source_module() = src;
+    *ret->mutable_target_module() = tgt;
     setter(*ret);
     return ret;
 }
@@ -32,15 +32,15 @@ shared_ptr<claidservice::DataPackage> claidtest::makeChanPacket(const string& ch
         map<tuple<string, string, string>, list<shared_ptr<DataPackage>>>& receivePkts, const vector<shared_ptr<DataPackage>>& testChannels, setterFn setter) {
     auto ret = make_shared<claidservice::DataPackage>();
     *ret->mutable_channel() = channel;
-    *ret->mutable_source_host_module() = src;
+    *ret->mutable_source_module() = src;
     setter(*ret);
 
     // Add the packets we should receive as a result.
     for(auto it : testChannels) {
-        if ((it->channel() == channel) && (it->source_host_module() == src)) {
+        if ((it->channel() == channel) && (it->source_module() == src)) {
             auto pkg = make_shared<claidservice::DataPackage>(*ret);
-            *pkg->mutable_target_host_module() = it->target_host_module();
-            auto key = make_tuple(pkg->channel(), pkg->source_host_module(), pkg->target_host_module());
+            *pkg->mutable_target_module() = it->target_module();
+            auto key = make_tuple(pkg->channel(), pkg->source_module(), pkg->target_module());
             receivePkts[key].push_back(pkg);
         }
     }
@@ -73,8 +73,8 @@ string claidtest::cmpMsg(const Message& m1, const Message& m2) {
 }
 
 void claidtest::clearSrcTgt(DataPackage& pkt) {
-    pkt.clear_source_host_module();
-    pkt.clear_target_host_module();
+    pkt.clear_source_module();
+    pkt.clear_target_module();
 }
 
 void claidtest::blobMsgFromProto(const Message& msg, Blob& targetBlob) {

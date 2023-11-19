@@ -18,7 +18,7 @@ bool validPacketType(const claidservice::DataPackage& ref);
 
 typedef std::map<claidservice::Runtime, std::shared_ptr<SharedQueue<claidservice::DataPackage>>> RuntimeQueueMap;
 
-// tuple<source_host_module, target_host_module, example package (specifies data type)>
+// tuple<source_module, target_module, example package (specifies data type)>
 typedef std::tuple<std::string, std::string, std::shared_ptr<claidservice::DataPackage>> ChannelInfo;
 
 struct ModuleTableProperties {

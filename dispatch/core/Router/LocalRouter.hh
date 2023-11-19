@@ -22,19 +22,13 @@ namespace claid
 
             absl::Status routePackage(std::shared_ptr<DataPackage> dataPackage) override final
             {
-                const std::string& targetHostModule = dataPackage->target_host_module();
+                const std::string& targetModule = dataPackage->target_module();
 
                 std::string targetHost;
-                std::string targetModule;
 
-                absl::Status status = getTargetHostAndModule(*dataPackage.get(), targetHost, targetModule);
+                
 
-                if(!status.ok())
-                {
-                    return absl::InvalidArgumentError(absl::StrCat("LocalRouter: Failed to route package to local Module.\n"
-                    "Unable to split target address \"", targetHostModule, "\" into host and module.\n"
-                    "Make sure that target address is in format host:module."));
-                }
+             
 
                 SharedQueue<DataPackage>* inputQueueForRuntime = this->moduleTable.lookupOutputQueue(targetModule);
 

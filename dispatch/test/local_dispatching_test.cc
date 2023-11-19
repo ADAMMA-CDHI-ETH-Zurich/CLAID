@@ -28,7 +28,7 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
     }
 
     for(auto pkt : testChannels) {
-        modTable.setExpectedChannel(pkt->channel(), pkt->source_host_module(), pkt->target_host_module());
+        modTable.setExpectedChannel(pkt->channel(), pkt->source_module(), pkt->target_module());
     }
 
     DispatcherServer server(addr, modTable);
@@ -40,7 +40,7 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
             if (!pkt || modTable.inputQueue().is_closed()) {
                 return;
             }
-            auto outQ = modTable.lookupOutputQueue(pkt->target_host_module());
+            auto outQ = modTable.lookupOutputQueue(pkt->target_module());
             if (outQ) {
                 outQ->push_back(pkt);
             }
@@ -79,15 +79,15 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
         auto newMod = modulesRef->Add();
         newMod->set_module_id(modId);
         for(auto pkt : testChannels) {
-            bool isSrc = pkt->source_host_module() == modId;
-            bool isTgt = (pkt->target_host_module() == modId);
+            bool isSrc = pkt->source_module() == modId;
+            bool isTgt = (pkt->target_module() == modId);
             if (isSrc || isTgt) {
                 DataPackage cpPkt(*pkt);
                 if (!isSrc) {
-                    cpPkt.clear_source_host_module();
+                    cpPkt.clear_source_module();
                 }
                 if (!isTgt) {
-                    cpPkt.clear_target_host_module();
+                    cpPkt.clear_target_module();
                 }
                 *newMod->add_channel_packets() = cpPkt;
             }
@@ -125,20 +125,20 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
 
     // Expect those packages from the input queue.
     auto gotPkt12 = inQueue.pop_front();
-    ASSERT_EQ(gotPkt12->source_host_module(), mod1);
-    ASSERT_EQ(gotPkt12->target_host_module(), mod2);
+    ASSERT_EQ(gotPkt12->source_module(), mod1);
+    ASSERT_EQ(gotPkt12->target_module(), mod2);
     diff = cmpMsg(*pkt12, *gotPkt12);
     ASSERT_TRUE(diff == "") << diff;
 
     auto gotPkt13 = inQueue.pop_front();
-    ASSERT_EQ(gotPkt13->source_host_module(), mod1);
-    ASSERT_EQ(gotPkt13->target_host_module(), mod3);
+    ASSERT_EQ(gotPkt13->source_module(), mod1);
+    ASSERT_EQ(gotPkt13->target_module(), mod3);
     diff = cmpMsg(*pkt13, *gotPkt13);
     ASSERT_TRUE(diff == "") << diff;
 
     auto gotPkt23 = inQueue.pop_front();
-    ASSERT_EQ(gotPkt23->source_host_module(), mod2);
-    ASSERT_EQ(gotPkt23->target_host_module(), mod3);
+    ASSERT_EQ(gotPkt23->source_module(), mod2);
+    ASSERT_EQ(gotPkt23->target_module(), mod3);
     diff = cmpMsg(*pkt23, *gotPkt23);
     ASSERT_TRUE(diff == "") << diff;
 
@@ -150,15 +150,15 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
 
     while(inQueue.size() > 0) {
         auto gotPkt = inQueue.pop_front();
-        auto key = make_tuple(gotPkt->channel(), gotPkt->source_host_module(), gotPkt->target_host_module());
+        auto key = make_tuple(gotPkt->channel(), gotPkt->source_module(), gotPkt->target_module());
         auto pl = receivePkts.find(key);
         ASSERT_FALSE(pl == receivePkts.end());
 
         // Look for the packet in the list of packages.
         for(auto lit = pl->second.begin(); lit != pl->second.end(); pl++) {
             if ((gotPkt->channel() == (*lit)->channel()) &&
-                (gotPkt->source_host_module() == (*lit)->source_host_module()) &&
-                (gotPkt->target_host_module() == (*lit)->target_host_module())) {
+                (gotPkt->source_module() == (*lit)->source_module()) &&
+                (gotPkt->target_module() == (*lit)->target_module())) {
                     // remove the packet from the list
                     pl->second.erase(lit);
                     break;

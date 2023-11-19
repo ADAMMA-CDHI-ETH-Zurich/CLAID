@@ -124,7 +124,7 @@ void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
             return;
         }
         Logger::printfln("Received valid package from Module \"%s\" on \"%s\".",
-                         pkt.source_host_module().c_str(), pkt.channel().c_str());
+                         pkt.source_module().c_str(), pkt.channel().c_str());
         moduleTable.addOutputPackets(pkt, chanEntry, incomingQueue);
 
         // Make a copy of the package and augment it with the

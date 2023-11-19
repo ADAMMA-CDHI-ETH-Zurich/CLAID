@@ -28,7 +28,7 @@ public class Publisher<T>
     public void post(T data)
     {
         DataPackage.Builder builder = DataPackage.newBuilder();
-        builder.setSourceHostModule(this.moduleId);
+        builder.setsourceModule(this.moduleId);
         builder.setChannel(this.channelName);
         DataPackage dataPackage = builder.build();
         dataPackage = this.mutator.setPackagePayload(dataPackage, data);

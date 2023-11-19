@@ -115,9 +115,8 @@ namespace claid
             return nullptr;
         }
 
-        // TODO: Unify this (normal ptr vs shared ptr).
-        // @Patrick
-        SharedQueue<DataPackage>& fromRemoteClientQueue = this->hostUserTable.inputQueue();
+       
+        std::shared_ptr<SharedQueue<DataPackage>> fromRemoteClientQueue = this->hostUserTable.inputQueue();
         std::shared_ptr<SharedQueue<DataPackage>> toRemoteClientQueue;
         
         abslStatus = 
@@ -132,7 +131,7 @@ namespace claid
 
         auto remoteClientHandler = 
             new RemoteClientHandler(
-                    fromRemoteClientQueue, *toRemoteClientQueue.get(), 
+                    *fromRemoteClientQueue, *toRemoteClientQueue, 
                     remoteClientInfo.user_token(), remoteClientInfo.device_id());
 
         this->remoteClientHandlers[remoteClient] = 

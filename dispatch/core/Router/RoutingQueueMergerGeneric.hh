@@ -64,4 +64,15 @@ namespace claid
                 return absl::OkStatus();
             }
     };
+
+    template<typename Output, typename... Inputs>
+    inline std::unique_ptr<RoutingQueueMerger> 
+        makeUniqueRoutingQueueMerger(SharedQueue<Output>& outputQueue, SharedQueue<Inputs>&... inputQueues)
+    {
+        auto genericMerger = new RoutingQueueMergerGeneric(outputQueue, inputQueues...);
+        std::unique_ptr<typename std::remove_pointer<decltype(genericMerger)>::type> uniqueMerger(genericMerger);
+        std::unique_ptr<RoutingQueueMerger> routingQueueMerger = std::move(uniqueMerger);
+
+        return routingQueueMerger;
+    }
 }
