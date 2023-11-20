@@ -56,7 +56,7 @@ namespace claid
 
             ModuleTable moduleTable;
             HostUserTable hostUserTable;
-            
+                
             // Server for local runtimes (C++, Dart, Java, Python, ...) to connect to.
             std::unique_ptr<DispatcherServer> localDispatcher;
 
@@ -65,6 +65,8 @@ namespace claid
 
             // Client for the current instance of CLAID to connect to another instance of CLAID.
             std::unique_ptr<RemoteDispatcherClient> remoteDispatcherClient;
+
+            RoutingTree routingTree;
 
             // 
             std::unique_ptr<MasterRouter> masterRouter;

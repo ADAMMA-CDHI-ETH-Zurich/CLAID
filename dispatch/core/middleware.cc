@@ -2,6 +2,7 @@
 #include "dispatch/core/Configuration/Configuration.hh"
 #include "dispatch/core/CLAID.hh"
 #include "dispatch/core/Logger/Logger.hh"
+#include "dispatch/core/Router/RoutingTreeParser.hh"
 
 using namespace claid;
 using namespace std;
@@ -137,9 +138,16 @@ absl::Status MiddleWare::startRouter(const std::string& currentHost, const HostD
         return status;
     }
 
-    std::shared_ptr<LocalRouter> localRouter = std::make_shared<LocalRouter>(this->moduleTable);
-    std::shared_ptr<ServerRouter> serverRouter = std::make_shared<ServerRouter>(this->hostUserTable);
-    std::shared_ptr<ClientRouter> clientRouter = std::make_shared<ClientRouter>();
+    RoutingTreeParser routingTreeParser;
+    status = routingTreeParser.buildRoutingTree(hostDescriptions, routingTree);
+    if(!status.ok())
+    {
+        return status;
+    }
+    
+    std::shared_ptr<LocalRouter> localRouter = std::make_shared<LocalRouter>(currentHost, this->moduleTable);
+    std::shared_ptr<ServerRouter> serverRouter = std::make_shared<ServerRouter>(currentHost, routingTree, this->hostUserTable);
+    std::shared_ptr<ClientRouter> clientRouter = std::make_shared<ClientRouter>(currentHost, routingTree);
 
     MasterRouter router(this->masterInputQueue, localRouter, clientRouter, serverRouter);
     //status = router.buildRoutingTable(currentHost, hostDescriptions);

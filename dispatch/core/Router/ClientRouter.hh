@@ -22,7 +22,7 @@ namespace claid
             return absl::OkStatus();
         }
 
-        bool canReachHost(const std::string& hostname)
+        bool canReachHost(const std::string& hostname) override final
         {
             std::vector<std::string> route;
             RoutingDirection direction;
