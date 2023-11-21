@@ -15,6 +15,12 @@ MiddleWare::MiddleWare(const string& socketPath, const string& configurationPath
     }
 
 MiddleWare::~MiddleWare() {
+
+    if(!running)
+    {
+        return;
+    }
+
     auto status = shutdown();
     if (!status.ok()) {
         // TODO: replace with proper logging
@@ -23,6 +29,12 @@ MiddleWare::~MiddleWare() {
 }
 
 absl::Status MiddleWare::start() {
+
+    if(running)
+    {
+        return absl::AbortedError("Failed to start middleware, middleware is already running. Middleware::start was called twice");
+    }
+
     // Fill the module table fromt he config file
     Configuration config;
     Logger::printfln("Parsing %s\n", configurationPath.c_str());
@@ -73,6 +85,7 @@ absl::Status MiddleWare::start() {
     });
     Logger::printfln("Middleware started.");
 
+    running = true;
     return absl::OkStatus();
 }
 
@@ -167,7 +180,12 @@ absl::Status MiddleWare::startRouter(const std::string& currentHost, const HostD
 
 absl::Status MiddleWare::shutdown()
 {
+    if(!running)
+    {
+        return absl::InvalidArgumentError("MiddleWare::shutdown called although middleware was not running.");
+    }
     // TODO: remove once the router is added.
+    Logger::printfln("Middleware shutdown called.");
 
     if (localDispatcher) {
         if (routerThread) {
@@ -183,6 +201,7 @@ absl::Status MiddleWare::shutdown()
         localDispatcher.reset();
     }
     Logger::printfln("Middleware successfully shut down.");
+    running = false;
     return absl::OkStatus();
 }
 

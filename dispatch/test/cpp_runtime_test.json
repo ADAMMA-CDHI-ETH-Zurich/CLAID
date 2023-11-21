@@ -10,7 +10,7 @@
 					"input_channels": [],
 					"output_channels": ["StringData"],
 					"properties": {
-					
+						"dataPeriodMs" : "10"
 					}
 				},
 				{

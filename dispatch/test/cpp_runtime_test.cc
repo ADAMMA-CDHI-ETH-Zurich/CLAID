@@ -9,22 +9,47 @@ class SenderModule : public Module
 {
     Channel<std::string> channel;
 
+    int ctr = 0;
+
     void initialize(const std::map<std::string, std::string>& properties)
     {
         Logger::logInfo("SenderModule init!");
-        registerPeriodicFunction("TestFunction", &SenderModule::periodicFunction, this, Duration::milliseconds(100));
+
+        int dataPeriodMs = 100;
+        auto it = properties.find("dataPeriodMs");
+        if(it != properties.end())
+        {
+            dataPeriodMs = std::atoi(it->second.c_str());
+        }
+        Logger::logInfo("Data period set to %d", dataPeriodMs);
+        registerPeriodicFunction("TestFunction", &SenderModule::periodicFunction, this, Duration::milliseconds(dataPeriodMs));
+        
+        channel = publish<std::string>("StringData");    
     }
 
     void periodicFunction()
     {
-        Logger::logInfo("Periodic test.");
+        std::string string = "Test " + std::to_string(ctr);
+        ctr++; 
+
+        channel.post(string);
     }
 };
 
 class ReceiverModule : public Module
 {
+    Channel<std::string> channel;
 
-};
+    void initialize(const std::map<std::string, std::string>& properties)
+    {
+        channel = subscribe<std::string>("StringData", &ReceiverModule::onData, this);
+    }
+
+    void onData(ChannelData<std::string> data)
+    {
+        Logger::logInfo("Received data %s\n", data.getData().c_str());
+    }
+};  
 
 REGISTER_MODULE_FACTORY_CUSTOM_NAME(TestSenderModule, SenderModule)
 REGISTER_MODULE_FACTORY_CUSTOM_NAME(TestReceiverModule, ReceiverModule)
@@ -42,9 +67,10 @@ TEST(CppRuntimeTestSuite, CppRuntimeTest)
     std::cout << "T2\n";
 
     bool result = CLAID::start(socket_path, config_file, host_id, user_id, device_id);
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
     ASSERT_TRUE(result);
-    std::cout << "Attach cpp runtime 4\n";
-    std::this_thread::sleep_for(std::chrono::milliseconds(6000));
     CLAID::shutdown();
+    std::cout << "Waiting\n";
+
 }

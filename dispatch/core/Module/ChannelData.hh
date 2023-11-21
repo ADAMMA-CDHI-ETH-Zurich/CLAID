@@ -12,10 +12,16 @@ namespace claid{
             const Time timestamp;
             const std::string userId;
 
+            bool valid = false;
     public:
 
+        ChannelData() : valid(false)
+        {
+
+        }
+
         ChannelData(std::shared_ptr<T> data, 
-            const Time& timestamp, const std::string& userId) : data(data), timestamp(timestamp), userId(userId)
+            const Time& timestamp, const std::string& userId) : data(data), timestamp(timestamp), userId(userId), valid(true)
         {
 
         }
@@ -24,7 +30,7 @@ namespace claid{
         {
             std::shared_ptr<T> sharedDataCopy = std::make_shared<T>(data);
 
-            return ChannelData(data, timestamp, userId);
+            return ChannelData(sharedDataCopy, timestamp, userId);
         }
 
 
@@ -41,6 +47,11 @@ namespace claid{
         const std::string& getUserId()
         {
             return this->userId;
+        }
+
+        bool isValid() const
+        {
+            return this->valid;
         }
 
     };

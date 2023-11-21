@@ -159,10 +159,45 @@ namespace claid
         timers.erase(it);
     }
 
+    void Module::unregisterAllPeriodicFunctions()
+    {
+        for(auto& entry : this->timers)
+        {
+            entry.second.runnable->invalidate();
+        }
+    }
+
     void Module::shutdown()
     {
-        this->terminate();
+        this->isTerminating = true;
+
+        std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>([this] { this->terminateInternal(); }));
+
+        this->runnableDispatcher.addRunnable(
+            ScheduledRunnable(
+                std::static_pointer_cast<Runnable>(functionRunnable), 
+                ScheduleOnce(Time::now())));
+
+        while(this->isTerminating)
+        {
+            Logger::logInfo("Terminate internal 1");
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            Logger::logInfo("Terminate internal 2");
+        }
+        Logger::logInfo("Runnable dispatcher stop 1");
         this->runnableDispatcher.stop();
+        Logger::logInfo("Runnable dispatcher stop 2");
+        this->isInitialized = false;
+        Logger::logInfo("Runnable dispatcher stop 3");  
+
+    }
+
+    void Module::terminateInternal()
+    {
+        this->terminate();
+        this->unregisterAllPeriodicFunctions();
+        this->isTerminating = false;
+
     }
 
     void Module::terminate()

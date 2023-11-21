@@ -210,6 +210,7 @@ namespace claid
                     rescheduleRequired = false;
                     waitUntilRunnableIsDueOrRescheduleIsRequired();
                 }
+                Logger::logInfo("RunnableDispatcher shutdown.");
             }
 
         public:

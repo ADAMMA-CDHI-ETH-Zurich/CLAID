@@ -55,7 +55,7 @@ TEST(RouterTestSuite, LocalRouterTest)
     SharedQueue<DataPackage>* outputQueue3 = table.lookupOutputQueue(mod3);
     ASSERT_NE(outputQueue3, nullptr) << "Could not find output queue for Module " << mod3;
 
-    LocalRouter localRouter(table);
+    LocalRouter localRouter("test_host", table);
 
     // Simulate each Module sending to data to every Module (including itself).
     std::vector<std::shared_ptr<DataPackage>> packages = {

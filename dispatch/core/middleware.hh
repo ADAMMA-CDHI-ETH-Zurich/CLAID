@@ -47,6 +47,9 @@ namespace claid
 
             virtual ~MiddleWare();
         private:
+
+            bool running = false;
+
             // TODO: Incorporate all variables into the code if necessary.
             std::string socketPath;
             std::string configurationPath;

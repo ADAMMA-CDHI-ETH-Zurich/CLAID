@@ -8,6 +8,9 @@
 #include "dispatch/core/shared_queue.hh"
 #include "dispatch/core/module_table.hh"
 #include "dispatch/core/Module/AbstractSubscriber.hh"
+#include "dispatch/core/Module/Subscriber.hh"
+#include "dispatch/core/Module/Publisher.hh"
+
 #include "dispatch/core/Module/Module.hh"
 #include "dispatch/core/Module/Channel.hh"
 
@@ -73,7 +76,8 @@ public:
 
         this->examplePackagesForEachModule[moduleId].push_back(examplePackage);
 
-        return Channel<T>(module, channelName, Publisher<T>(moduleId, channelName, this->toModuleManagerQueue));
+        std::shared_ptr<Publisher<T>> publisher = std::make_shared<Publisher<T>>(moduleId, channelName, this->toModuleManagerQueue);
+        return Channel<T>(module, channelName, publisher);
     }
 
     template <typename T>

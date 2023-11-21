@@ -370,17 +370,17 @@ void DispatcherServer::shutdown() {
     Logger::logInfo("DispatcherServer: Shutting down.");
 
     serviceImpl.shutdown();
-    auto helperTheat = make_unique<thread>([this]() {
+    auto helperThread = make_unique<thread>([this]() {
         server->Wait();
     });
-    Logger::logInfo("DispatcherServer: Shutting waiting 2 seconds.");
-    std::this_thread::sleep_for(2000ms);
+
     Logger::logInfo("DispatcherServer: Shutting down server.");
     server->Shutdown();
+    Logger::logInfo("DispatcherServer: DispatcherServer joining helper thread;");
+    helperThread->join();
     Logger::logInfo("DispatcherServer: Releasing resources.");
     server = nullptr;
     Logger::logInfo("DispatcherServer: DispatcherServer shutdown successfully.");
-    helperTheat->join();
 }
 
 void DispatcherServer::buildAndStartServer() {
@@ -404,16 +404,19 @@ DispatcherClient::DispatcherClient(const string& socketPath,
 
 void DispatcherClient::shutdown() {
     // Closing the outgoing queue will end the writer thread.
+    Logger::logInfo("Dispatcher client shutdown 1");
     outgoingQueue.close();
     if (writeThread) {
         writeThread->join();
         writeThread = nullptr;
     }
+    Logger::logInfo("Dispatcher client shutdown 2");
 
     if (readThread) {
         readThread->join();
         readThread = nullptr;
     }
+    Logger::logInfo("Dispatcher client shutdown 3");
 }
 
 unique_ptr<ModuleListResponse> DispatcherClient::getModuleList() {

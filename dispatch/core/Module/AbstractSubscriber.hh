@@ -9,6 +9,7 @@ namespace claid
     class AbstractSubscriber
     {
         public:
-            virtual void onNewData(DataPackage data) = 0;
+            virtual ~AbstractSubscriber() {}
+            virtual void onNewData(const DataPackage& data) = 0;
     };
 }

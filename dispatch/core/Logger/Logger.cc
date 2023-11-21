@@ -9,7 +9,7 @@
 #include <string>
 #include <stdexcept>
 #include <mutex>
-std::string claid::Logger::logTag = "claid";
+std::string claid::Logger::logTag = "CLAID";
 std::string claid::Logger::lastLogMessage = "";
 bool claid::Logger::loggingToFileEnabled = false;
 std::ofstream* claid::Logger::file = nullptr;
@@ -69,7 +69,7 @@ void claid::Logger::log(const claid::SeverityLevel severityLevel, const std::str
 	std::stringstream ss;
 	std::string timeString = claid::Logger::getTimeString();
 
-	ss << "[" << timeString << " | " << logTag << severityLevelToString(severityLevel)
+	ss << "[" << timeString << " | " << logTag << " " << severityLevelToString(severityLevel)
 	<< "] " << message;
 
 	#ifdef __ANDROID__

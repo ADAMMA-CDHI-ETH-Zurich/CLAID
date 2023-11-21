@@ -12,12 +12,12 @@ template <typename T>
 class Channel 
 {
 private:
-    const std::string channelId;
-    const ChannelAccessRights accessRights;
+    std::string channelId;
+    ChannelAccessRights accessRights;
     ModuleRef parent;
 
-    Publisher<T>* publisher;
-    Subscriber<T>* subscriber;
+    std::shared_ptr<Publisher<T>> publisher;
+    std::shared_ptr<Subscriber<T>> subscriber;
     bool callbackRegistered = false;
 
     bool valid = false;
@@ -45,14 +45,14 @@ public:
     }
 
     // Constructor for published Channels.
-    Channel(ModuleRef parent, const std::string& channelId, Publisher<T>* publisher)
+    Channel(ModuleRef parent, const std::string& channelId, std::shared_ptr<Publisher<T>> publisher)
         : channelId(channelId), accessRights(ChannelAccessRights::WRITE), parent(parent), publisher(publisher), valid(true) 
     {
 
     }
 
     // Constructor for subscribed Channels.
-    Channel(ModuleRef parent, const std::string& channelId, Subscriber<T>* subscriber)
+    Channel(ModuleRef parent, const std::string& channelId, std::shared_ptr<Subscriber<T>> subscriber)
         : channelId(channelId), accessRights(ChannelAccessRights::READ), parent(parent), subscriber(subscriber), valid(true) 
     {
         this->callbackRegistered = subscriber != nullptr;

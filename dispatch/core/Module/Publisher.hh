@@ -34,7 +34,7 @@ namespace claid{
             package->set_source_module(this->moduleId);
             package->set_channel(this->channelName);
 
-            this->mutator->setPackagePayload(package, data);
+            this->mutator.setPackagePayload(*package, data);
 
             this->toModuleManagerQueue.push_back(package);
         }        

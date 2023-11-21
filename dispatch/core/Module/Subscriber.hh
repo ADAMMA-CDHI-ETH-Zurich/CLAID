@@ -13,7 +13,7 @@
 namespace claid{
     
     template<typename T>
-    class Subscriber
+    class Subscriber : public AbstractSubscriber
     {
     private:
         std::function<void(ChannelData<T>)> callback;
@@ -32,8 +32,8 @@ namespace claid{
         void invokeCallback(ChannelData<T> data)
         {
             std::shared_ptr<
-                    FunctionRunnableWithParams<void>> functionRunnable =
-                            std::make_shared<FunctionRunnableWithParams<void>>(this->callback);
+                    FunctionRunnableWithParams<void, ChannelData<T>>> functionRunnable =
+                            std::make_shared<FunctionRunnableWithParams<void, ChannelData<T>>>(this->callback);
 
 
  
@@ -47,12 +47,12 @@ namespace claid{
                     ScheduleOnce(Time::now())));
         }
 
-        void onNewData(const DataPackage& data) 
+        void onNewData(const DataPackage& data) override final
         {
             const T& value = this->mutator.getPackagePayload(data);
 
             // Create a new copy of the data so we can take ownership.
-            ChannelData<T> channelData = ChannelData<T>::fromCopy(value);
+            ChannelData<T> channelData = ChannelData<T>::fromCopy(value, Time::now(), data.source_user_token());
             this->invokeCallback(channelData);
         }
     };

@@ -1,4 +1,6 @@
 #include "dispatch/core/Router/ServerRouter.hh"
+#include "dispatch/core/Logger/Logger.hh"
+#include <sstream>
 
 namespace claid
 {
@@ -11,12 +13,13 @@ namespace claid
 
     absl::Status ServerRouter::routePackage(std::shared_ptr<DataPackage> dataPackage) 
     {
+        const std::string& sourceHost = dataPackage->source_host();
         const std::string& targetHost = dataPackage->target_host();
         
         if(!canReachHost(targetHost))
         {
             return absl::InvalidArgumentError(absl::StrCat(
-                "Error in ServerRouter: Cannot route package from source host \"", dataPackage->source_host(), "\" ",
+                "Error in ServerRouter: Cannot route package from source host \"", sourceHost, "\" ",
                 "to target host \"", targetHost, "\". The target host is not connected as client to the source host."
             ));
         }
@@ -25,7 +28,93 @@ namespace claid
 
         const std::vector<std::string>& route = this->routingTable[targetHost];
 
+        if(route.size() == 0)
+        {
+            return absl::NotFoundError(absl::StrCat(
+                "ServerRouter on host \"", currentHost, "\" failed to route received package from host \"", sourceHost, "\" to host \"", targetHost, "\".\n",
+                "No route found."
+            ));
+        }
 
+        absl::Status status;
+        const std::string& nextHost = route[0];
+
+        // This means that the targetHost is a direct client of us.
+        if(route.size() == 1)
+        {
+            // If the target user_token is set to *, we route to all users.
+            // If not, only to a specific user.
+            bool routeToAllUsers = dataPackage->target_user_token() == "*";
+
+            if(routeToAllUsers)
+            {
+                std::vector<std::shared_ptr<SharedQueue<DataPackage>>> queues;
+                status = this->hostUserTable.lookupOutputQueuesForHost(nextHost, queues);
+
+                if(!status.ok() || queues.size() == 0)
+                {
+                    std::stringstream ss;
+                    ss << status;
+                    Logger::logWarning("ServerRouter failed to route package from host \"%s\" to host \"%s\", "
+                    "Error was: ", sourceHost.c_str(), targetHost.c_str(), ss.str().c_str());
+
+                    return absl::OkStatus();
+                }
+
+                for(std::shared_ptr<SharedQueue<DataPackage>> queue : queues)
+                {
+                    queue->push_back(dataPackage);
+                }
+            }
+            else
+            {
+                const std::string& targetUserToken = dataPackage->target_user_token();
+                std::shared_ptr<SharedQueue<DataPackage>> queue;
+                status = this->hostUserTable.lookupOutputQueueForHostUser(nextHost, targetUserToken, queue);
+
+                if(!status.ok())
+                {
+                    std::stringstream ss;
+                    ss << status;
+                    Logger::logWarning("ServerRouter failed to route package from host \"%s\" to user \"%s\" running host \"%s\", "
+                    "Error was: %s", sourceHost.c_str(), targetUserToken.c_str(), targetHost.c_str(), targetHost.c_str(), ss.str().c_str());
+
+                    return absl::OkStatus();
+                }
+
+                queue->push_back(dataPackage);
+            }
+
+        }   
+        // There are still multiple hosts to go between us and the target host. 
+        // In that case, the next host in the list HAS to be a server, and there can only be ONE instance of that host.
+        else
+        {
+            std::vector<std::shared_ptr<SharedQueue<DataPackage>>> queues;
+            status = this->hostUserTable.lookupOutputQueuesForHost(nextHost, queues);
+
+            if(!status.ok())
+            {
+                Logger::logWarning("ServerRouter failed to route package from host \"%s\" to host \"%s\", "
+                "via intermediate host \"%s\". No instance of the intermediate host \"%s\" is currently connected or was connected before.\n"
+                "Package will be discarded.", sourceHost.c_str(), targetHost.c_str(), nextHost.c_str(), nextHost.c_str());
+
+                return absl::OkStatus();
+            }
+
+            if(queues.size() > 1)
+            {
+                return absl::InvalidArgumentError(absl::StrCat(
+                    "Amiguity detected in ServerRouter: Trying to route package from host \"", sourceHost, "\" ",
+                    "to target host \"", targetHost, "\" via Server host \"", nextHost, "\". However, multiple instances\n",
+                    " of host \"", nextHost, "\" are connected. The host \"", nextHost, "\" is an intermediate node ",
+                    " and therefore only one instance of that host should exist."
+                ));
+            }
+
+            queues[0]->push_back(dataPackage);
+
+        }
 
         return absl::OkStatus();
     }

@@ -18,6 +18,11 @@ class Mutator
     std::function<T(const DataPackage& )> getter;
     
 public:
+    Mutator()
+    {
+        
+    }
+
     Mutator(std::function<void(DataPackage&, const T&)> setter, 
         std::function<T(const DataPackage&)> getter) : setter(setter), getter(getter)
     {

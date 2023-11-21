@@ -52,7 +52,7 @@ namespace claid
                 
             }
 
-            FunctionRunnableWithParams(std::function<Return (Ts...)> function) : function(function)
+            FunctionRunnableWithParams(std::function<Return (Ts...)> function) : function(function), stack()
             {
             }
 

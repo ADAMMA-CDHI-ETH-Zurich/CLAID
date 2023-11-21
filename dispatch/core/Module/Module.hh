@@ -26,6 +26,8 @@
 #include "dispatch/core/Module/RunnableDispatcherThread/RunnableDispatcher.hh"
 #include "dispatch/core/Logger/Logger.hh"
 #include "dispatch/core/Module/ModuleRef.hh"
+#include "dispatch/core/Module/Publisher.hh"
+#include "dispatch/core/Module/Subscriber.hh"
 
 
 namespace claid
@@ -46,6 +48,7 @@ namespace claid
         RunnableDispatcher runnableDispatcher;
         bool isInitializing = false;
         bool isInitialized = false;
+        bool isTerminating = false;
 
         std::map<std::string, ScheduledRunnable> timers;
 
@@ -56,7 +59,8 @@ namespace claid
 
     public:
         Module();
-
+        virtual ~Module() {}
+        
         void moduleError(const std::string& error) const;
         void moduleWarning(const std::string& warning) const;
 
@@ -72,13 +76,16 @@ namespace claid
         void initializeInternal(const std::map<std::string, std::string>& properties);
         virtual void initialize(const std::map<std::string, std::string>& properties);
 
+        void terminateInternal();
         virtual void terminate();
 
         void registerPeriodicFunction(const std::string& name, std::function<void()> callback, const Duration& interval);
         void registerPeriodicFunction(const std::string& name, std::function<void()> function, const Duration& interval, const Time& startTime);
+       
+        void unregisterPeriodicFunction(const std::string& name);
+        void unregisterAllPeriodicFunctions();
 
         void registerScheduledFunction(const std::string& name, const Time& dateTime, std::function<void()> function);
-        void unregisterPeriodicFunction(const std::string& name);
 
         template<typename T>
         Channel<T> publish(const std::string& channelName) 
@@ -96,8 +103,20 @@ namespace claid
                 moduleError("Cannot subscribe channel \"" + channelName + "\". Subscribing is only allowed during initialization (i.e., the first call of the initialize function).");
                 return Channel<T>::newInvalidChannel(channelName);
             }
-            return subscriberPublisher->subscribe<T>(ModuleRef(this), channelName, callback, runnableDispatcher);
+
+            std::shared_ptr<Subscriber<T>> subscriber = std::make_shared<Subscriber<T>>(callback, runnableDispatcher);
+            return subscriberPublisher->subscribe<T>(ModuleRef(this), channelName, subscriber);
         }
+
+        
+        template<typename T, typename Class>
+        Channel<T> subscribe(const std::string& channelID,
+                        void (Class::*f)(ChannelData<T>), Class* obj)
+        {
+            std::function<void (ChannelData<T>)> function = std::bind(f, obj, std::placeholders::_1);
+            return subscribe(channelID, function); 
+        }
+
 
         template<typename Class>
         void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, const Duration& interval)

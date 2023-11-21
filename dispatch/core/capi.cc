@@ -33,7 +33,6 @@ __attribute__((visibility("default"))) __attribute__((used))
 void shutdown_core(void* handle) {
     if (handle) {
         auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
-        claid::Logger::printfln("Shutting down middleware");
         auto status = middleWare->shutdown();
         if (!status.ok()) {
             // TODO: replace with proper logging.
