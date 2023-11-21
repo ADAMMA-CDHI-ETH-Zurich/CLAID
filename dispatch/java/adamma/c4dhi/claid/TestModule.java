@@ -7,6 +7,7 @@ import java.util.Map;
 
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.Module.Channel;
+import adamma.c4dhi.claid.Module.ChannelData;
 import adamma.c4dhi.claid.Module.Module;
 
 public class TestModule extends Module
@@ -36,9 +37,9 @@ public class TestModule extends Module
         this.registerPeriodicFunction("TestFunction", () -> testFunction(), Duration.ofMillis(500));
     }
 
-    public void onData(NumberMap data)
+    public void onData(ChannelData<NumberMap> data)
     {
-        System.out.println("On data: " + data);
+        System.out.println("On data: " + data.getData());
     }
 
     public void testFunction()

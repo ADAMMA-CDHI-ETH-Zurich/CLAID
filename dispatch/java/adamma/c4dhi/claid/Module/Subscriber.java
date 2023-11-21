@@ -1,5 +1,8 @@
 package adamma.c4dhi.claid.Module;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.function.Consumer;
 
 import adamma.c4dhi.claid.Logger.Logger;
@@ -16,12 +19,12 @@ import adamma.c4dhi.claid.DataPackage;
 public class Subscriber<T extends Object> extends AbstractSubscriber
 {
     private DataType dataType;
-    private Consumer<T> callback;
+    private Consumer<ChannelData<T>> callback;
     private RunnableDispatcher callbackDispatcher;
 
     private Mutator<T> mutator;
         
-    public Subscriber(DataType dataType, Consumer<T> callback, RunnableDispatcher callbackDispatcher)
+    public Subscriber(DataType dataType, Consumer<ChannelData<T>> callback, RunnableDispatcher callbackDispatcher)
     {
         this.dataType = dataType;
         this.callback = callback;
@@ -29,9 +32,9 @@ public class Subscriber<T extends Object> extends AbstractSubscriber
         this.mutator = TypeMapping.getMutator(dataType);
     }
 
-    private void invokeCallback(T data)
+    private void invokeCallback(ChannelData<T> data)
     {
-        ConsumerRunnable<T> consumerRunnable = new ConsumerRunnable<T>(data, callback, ScheduleOnce.now());
+        ConsumerRunnable<ChannelData<T>> consumerRunnable = new ConsumerRunnable<ChannelData<T>>(data, callback, ScheduleOnce.now());
         ScheduledRunnable runnable = (ScheduledRunnable) consumerRunnable;
 
         this.callbackDispatcher.addRunnable(runnable);
@@ -41,7 +44,15 @@ public class Subscriber<T extends Object> extends AbstractSubscriber
     public void onNewData(DataPackage data) 
     {
         T value = this.mutator.getPackagePayload(data);
-        this.invokeCallback(value);
+
+        Instant instant = Instant.ofEpochSecond(data.getUnixTimestampMs());
+
+        // Convert Instant to LocalDateTime
+        LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+
+
+        ChannelData channelData = new ChannelData(value, dateTime, data.getSourceUserToken());
+        this.invokeCallback(channelData);
 
         /*if(dataType.isInstance(data))
         {   

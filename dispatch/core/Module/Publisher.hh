@@ -33,6 +33,7 @@ namespace claid{
             std::shared_ptr<DataPackage> package = std::make_shared<DataPackage>();
             package->set_source_module(this->moduleId);
             package->set_channel(this->channelName);
+            package->set_unix_timestamp_ms(Time::now().toUnixTimestampMilliseconds());
 
             this->mutator.setPackagePayload(*package, data);
 

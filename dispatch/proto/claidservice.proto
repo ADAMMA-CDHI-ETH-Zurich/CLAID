@@ -45,6 +45,7 @@ message DataPackage {
                                 // typically, this will be *, meaning that the package will be forwarded to all users that run the corresponding host.
   string device_id = 9;    // unique ID for this device / host, e.g. MAC id
   repeated TracePoint trace_points = 10;
+  int64 unix_timestamp_ms = 11; // unix timestamp in milliseconds of when the package was created
 
   // To add another message type add it below.
   oneof payload_oneof {

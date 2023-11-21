@@ -88,9 +88,8 @@ namespace claid {
         moduleManager->stop();
         moduleDispatcher->shutdown();
 
-        Logger::logInfo("Shutting down middleware.");
         shutdown_core(handle);
-        Logger::logInfo("Shut down middleware successfully.");
+        
         moduleDispatcher = nullptr;
         moduleManager = nullptr;
         return true;

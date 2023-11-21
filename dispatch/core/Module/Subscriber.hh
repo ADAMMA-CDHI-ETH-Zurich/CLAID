@@ -52,7 +52,7 @@ namespace claid{
             const T& value = this->mutator.getPackagePayload(data);
 
             // Create a new copy of the data so we can take ownership.
-            ChannelData<T> channelData = ChannelData<T>::fromCopy(value, Time::now(), data.source_user_token());
+            ChannelData<T> channelData = ChannelData<T>::fromCopy(value, Time::fromUnixTimestampMilliseconds(data.unix_timestamp_ms()), data.source_user_token());
             this->invokeCallback(channelData);
         }
     };

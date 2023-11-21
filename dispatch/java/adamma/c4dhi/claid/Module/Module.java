@@ -275,7 +275,7 @@ public abstract class Module
         return true;
     }
 
-    /*protected<T> Channel<T> subscribe(final String channelName, T t, Consumer<T> callback)
+    /*protected<T> Channel<T> subscribe(final String channelName, T t, Consumer<ChannelData<T>> callback)
     {
         if(!this.assertCanSubscribe(channelName))
         {
@@ -288,7 +288,7 @@ public abstract class Module
         return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<T>(dataType, callback, this.runnableDispatcher));
     }*/
 
-    protected<T> Channel<T> subscribe(final String channelName, Class<T> dataTypeClass, Consumer<T> callback)
+    protected<T> Channel<T> subscribe(final String channelName, Class<T> dataTypeClass, Consumer<ChannelData<T>> callback)
     {
         if(!this.assertCanSubscribe(channelName))
         {
@@ -302,7 +302,7 @@ public abstract class Module
     // =================== Subscribe ArrayList ===================
 
 
-    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Short> dbs, Consumer<T> callback, ShortType ...ignore)
+    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Short> dbs, Consumer<ChannelData<T>> callback, ShortType ...ignore)
     {
         if(!this.assertCanSubscribe(channelName))
         {
@@ -313,7 +313,7 @@ public abstract class Module
         return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<T>(dataType, callback, this.runnableDispatcher));
     }
 
-    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Integer> dbs, Consumer<T> callback, IntegerType ...ignore)
+    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Integer> dbs, Consumer<ChannelData<T>> callback, IntegerType ...ignore)
     {
         if(!this.assertCanSubscribe(channelName))
         {
@@ -324,7 +324,7 @@ public abstract class Module
         return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<T>(dataType, callback, this.runnableDispatcher));
     }
 
-    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Long> dbs, Consumer<T> callback, LongType ...ignore)
+    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Long> dbs, Consumer<ChannelData<T>> callback, LongType ...ignore)
     {
         if(!this.assertCanSubscribe(channelName))
         {
@@ -335,7 +335,7 @@ public abstract class Module
         return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<T>(dataType, callback, this.runnableDispatcher));
     }
 
-    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Float> dbs, Consumer<T> callback, FloatType ...ignore)
+    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Float> dbs, Consumer<ChannelData<T>> callback, FloatType ...ignore)
     {
         if(!this.assertCanSubscribe(channelName))
         {
@@ -346,7 +346,7 @@ public abstract class Module
         return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<T>(dataType, callback, this.runnableDispatcher));
     }
 
-    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Double> dbs, Consumer<T> callback, DoubleType ...ignore)
+    protected<T> Channel<T> subscribe(final String channelName, ArrayList<Double> dbs, Consumer<ChannelData<T>> callback, DoubleType ...ignore)
     {
         if(!this.assertCanSubscribe(channelName))
         {
@@ -360,7 +360,7 @@ public abstract class Module
 
     // =================== Subscribe Map ===================
 
-    protected Channel<Map<String, Short>> subscribe(final String channelName, Map<String, Short> map, Consumer<Map<String, Short>> callback, ShortType... ignore) {
+    protected Channel<Map<String, Short>> subscribe(final String channelName, Map<String, Short> map, Consumer<ChannelData<Map<String, Short>>> callback, ShortType... ignore) {
         if (!this.assertCanSubscribe(channelName)) {
             return Channel.newInvalidChannel(channelName);
         }
@@ -369,7 +369,7 @@ public abstract class Module
         return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<>(dataType, callback, this.runnableDispatcher));
     }
     
-    protected Channel<Map<String, Integer>> subscribe(final String channelName, Map<String, Integer> map, Consumer<Map<String, Integer>> callback, IntegerType... ignore) {
+    protected Channel<Map<String, Integer>> subscribe(final String channelName, Map<String, Integer> map, Consumer<ChannelData<Map<String, Integer>>> callback, IntegerType... ignore) {
         if (!this.assertCanSubscribe(channelName)) {
             return Channel.newInvalidChannel(channelName);
         }
@@ -378,7 +378,7 @@ public abstract class Module
         return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<>(dataType, callback, this.runnableDispatcher));
     }
     
-    protected Channel<Map<String, Long>> subscribe(final String channelName, Map<String, Long> map, Consumer<Map<String, Long>> callback, LongType... ignore) {
+    protected Channel<Map<String, Long>> subscribe(final String channelName, Map<String, Long> map, Consumer<ChannelData<Map<String, Long>>> callback, LongType... ignore) {
         if (!this.assertCanSubscribe(channelName)) {
             return Channel.newInvalidChannel(channelName);
         }
@@ -387,7 +387,7 @@ public abstract class Module
         return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<>(dataType, callback, this.runnableDispatcher));
     }
     
-    protected Channel<Map<String, Float>> subscribe(final String channelName, Map<String, Float> map, Consumer<Map<String, Float>> callback, FloatType... ignore) {
+    protected Channel<Map<String, Float>> subscribe(final String channelName, Map<String, Float> map, Consumer<ChannelData<Map<String, Float>>> callback, FloatType... ignore) {
         if (!this.assertCanSubscribe(channelName)) {
             return Channel.newInvalidChannel(channelName);
         }
@@ -396,7 +396,7 @@ public abstract class Module
         return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<>(dataType, callback, this.runnableDispatcher));
     }
     
-    protected Channel<Map<String, Double>> subscribe(final String channelName, Map<String, Double> map, Consumer<Map<String, Double>> callback, DoubleType... ignore) {
+    protected Channel<Map<String, Double>> subscribe(final String channelName, Map<String, Double> map, Consumer<ChannelData<Map<String, Double>>> callback, DoubleType... ignore) {
         if (!this.assertCanSubscribe(channelName)) {
             return Channel.newInvalidChannel(channelName);
         }
@@ -405,7 +405,7 @@ public abstract class Module
         return this.subscriberPublisher.subscribe(this, dataType, channelName, new Subscriber<>(dataType, callback, this.runnableDispatcher));
     }
     
-    protected Channel<Map<String, String>> subscribe(final String channelName, Map<String, String> map, Consumer<Map<String, String>> callback, StringType... ignore) {
+    protected Channel<Map<String, String>> subscribe(final String channelName, Map<String, String> map, Consumer<ChannelData<Map<String, String>>> callback, StringType... ignore) {
         if (!this.assertCanSubscribe(channelName)) {
             return Channel.newInvalidChannel(channelName);
         }
