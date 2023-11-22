@@ -112,6 +112,15 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         if (!entry->addSet(val, isSource)) {
             return Status(grpc::INVALID_ARGUMENT, "Source or target '" + val + "' not expected.");
         }
+        Logger::logInfo("Setting channel %s %d", channelId.c_str(), chanPkt.payload_oneof_case());
+
+        if(chanPkt.payload_oneof_case() == DataPackage::PayloadOneofCase::PAYLOAD_ONEOF_NOT_SET)
+        {
+            return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
+                "Failed to set channel \"", channelId, "\". Payload type is not set."
+            ));
+        }
+
         entry->payloadType = chanPkt.payload_oneof_case();
     }
     return Status::OK;
@@ -138,6 +147,7 @@ bool ModuleTable::ready() const {
 }
 
 const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt) const {
+
     shared_lock<shared_mutex> lock(const_cast<shared_mutex&>(chanMapMutex));
 
     auto entry = (const_cast<ModuleTable*>(this))->findChannel(pkt.channel());
@@ -151,8 +161,10 @@ const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt) const {
     }
 
     if (entry->payloadType != pkt.payload_oneof_case()) {
+        Logger::logError("Invalid package, payload type mismatch! Expected \"%d\" but got \"%d\"", entry->payloadType, pkt.payload_oneof_case());
         return nullptr;
     }
+
 
     return entry;
 }
@@ -167,6 +179,7 @@ void ModuleTable::addOutputPackets(const claidservice::DataPackage pkt,
     for(auto& it : chanEntry->targets) {
         auto outPkt = make_shared<DataPackage>(cpPkt);
         outPkt->set_target_module(it.first);
+        Logger::logInfo("Received package from %s", pkt.source_module().c_str());
         queue.push_back(outPkt);
     }
 }

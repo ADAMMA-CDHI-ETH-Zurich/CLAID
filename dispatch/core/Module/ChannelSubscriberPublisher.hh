@@ -73,7 +73,7 @@ public:
         DataPackage examplePackage = prepareExamplePackage<T>(moduleId, channelName, true);
 
 
-
+        Logger::logInfo("Inserting package for Module %s", moduleId.c_str());
         this->examplePackagesForEachModule[moduleId].push_back(examplePackage);
 
         std::shared_ptr<Publisher<T>> publisher = std::make_shared<Publisher<T>>(moduleId, channelName, this->toModuleManagerQueue);

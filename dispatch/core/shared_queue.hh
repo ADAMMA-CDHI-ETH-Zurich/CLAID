@@ -6,6 +6,7 @@
 #include <list>
 #include <memory>
 #include <mutex>
+#include <iostream>
 
 namespace claid {
 
@@ -71,6 +72,22 @@ class SharedQueue
             // Have to account for spurious wakeups?
 			cv.wait(lock, [&]() { return closed || !queue.empty(); });
 
+			if (queue.empty())
+				return nullptr;
+
+			std::shared_ptr<T> out = queue.front();
+			queue.pop_front();
+
+            return out;
+        }
+
+		std::shared_ptr<T> pop_front(bool& observerRunning)  // returns null_ptr if empty 
+        {
+            std::unique_lock<std::mutex> lock(m);
+			
+            // Have to account for spurious wakeups?
+			cv.wait(lock, [&]() { return closed || !queue.empty() || !observerRunning;});
+			std::cout << "shared queu ewakeup\n";
 			if (queue.empty())
 				return nullptr;
 

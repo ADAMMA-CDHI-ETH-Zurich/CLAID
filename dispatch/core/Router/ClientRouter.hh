@@ -2,6 +2,7 @@
 
 #include "dispatch/core/Router/Router.hh"
 #include "dispatch/core/Router/RoutingTree.hh"
+#include "dispatch/core/RemoteDispatching/ClientTable.hh"
 
 namespace claid
 {
@@ -11,35 +12,16 @@ namespace claid
     {
     public:
 
-        ClientRouter(const std::string& currentHost, 
-            const RoutingTree& routingTree) : currentHost(currentHost), routingTree(routingTree)
-        {
-            
-        }
+        ClientRouter(const std::string& currentHost,
+            const RoutingTree& routingTree, ClientTable& clientTable);
 
-        absl::Status routePackage(std::shared_ptr<DataPackage> dataPackage) override final
-        {
-            return absl::OkStatus();
-        }
+        absl::Status routePackage(std::shared_ptr<DataPackage> dataPackage) override final;
 
-        bool canReachHost(const std::string& hostname) override final
-        {
-            std::vector<std::string> route;
-            RoutingDirection direction;
-
-            // Returns false if no route was found.
-            if(!routingTree.getRouteFromHostToHost(this->currentHost, hostname, route, direction))
-            {
-                return false;
-            }
-
-            // We are a ClientRouter and route packages to a server we are connected to.
-            // Hence, we can only route upwards in the routing tree.
-            return direction == ROUTE_UP;
-        }
+        bool canReachHost(const std::string& hostname) override final;
 
     private:
         const std::string currentHost;
         const RoutingTree& routingTree;
+        ClientTable& clientTable;
     };
 }

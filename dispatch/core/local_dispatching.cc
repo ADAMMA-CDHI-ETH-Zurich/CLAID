@@ -123,8 +123,7 @@ void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
             Logger::println(messageToString(pkt));
             return;
         }
-        Logger::printfln("Received valid package from Module \"%s\" on \"%s\".",
-                         pkt.source_module().c_str(), pkt.channel().c_str());
+
         moduleTable.addOutputPackets(pkt, chanEntry, incomingQueue);
 
         // Make a copy of the package and augment it with the
@@ -198,6 +197,7 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
     for(auto modChanIt : request->modules()) {
         // find module --> moduleClass --> runtime
         auto& moduleId = modChanIt.module_id();
+        Logger::logInfo("InitRuntime: %s", moduleId.c_str());
 
         map<string, string>::const_iterator modClassIt;
         if ((modClassIt = moduleTable.moduleToClassMap.find(moduleId))== moduleTable.moduleToClassMap.end()) {
@@ -213,6 +213,7 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
         if (!moduleTable.runtimeQueueMap[classRt]) {
             moduleTable.runtimeQueueMap[classRt] = make_shared<SharedQueue<DataPackage>>();
         }
+        Logger::logInfo("InitRuntime num channel pakets for module %s: %d", moduleId.c_str(), modChanIt.channel_packets().size());
 
         // Add the channels for this module
         Status status = moduleTable.setChannelTypes(moduleId, modChanIt.channel_packets());

@@ -13,6 +13,7 @@
 #include "dispatch/core/RemoteDispatching/RemoteDispatcherClient.hh"
 #include "dispatch/core/RemoteDispatching/RemoteDispatcherServer.hh"
 #include "dispatch/core/RemoteDispatching/HostUserTable.hh"
+#include "dispatch/core/RemoteDispatching/ClientTable.hh"
 #include "dispatch/core/Router/MasterRouter.hh"
 #include "dispatch/core/Router/LocalRouter.hh"
 #include "dispatch/core/Router/ClientRouter.hh"
@@ -40,7 +41,7 @@ namespace claid
             absl::Status startRemoteDispatcherClient(const std::string& currentHost, const std::string& currentUser, 
                 const std::string& currentDeviceId, const HostDescriptionMap& hostDescriptions);
             
-            absl::Status startRouter(const std::string& currentHost, const HostDescriptionMap& hostDescriptions);
+            absl::Status startRouter(const std::string& currentHost, const HostDescriptionMap& hostDescriptions, const ModuleDescriptionMap& moduleDescriptions);
             absl::Status shutdown();
 
             const std::string getSocketPath() const;
@@ -59,6 +60,7 @@ namespace claid
 
             ModuleTable moduleTable;
             HostUserTable hostUserTable;
+            ClientTable clientTable;
                 
             // Server for local runtimes (C++, Dart, Java, Python, ...) to connect to.
             std::unique_ptr<DispatcherServer> localDispatcher;
@@ -79,10 +81,6 @@ namespace claid
             // to a connected client (downwards in the routing tree) or to a connected server (upwards in the routing tree).
             std::unique_ptr<RoutingQueueMerger> routingQueueMerger;
             SharedQueue<DataPackage> masterInputQueue;
-
-
-            // TODO: Remove this, for temporary testing only
-            std::unique_ptr<std::thread> routerThread;
 
             absl::Status populateModuleTable(
                 const ModuleDescriptionMap& moduleDescriptions,

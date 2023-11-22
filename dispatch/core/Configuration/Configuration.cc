@@ -106,6 +106,7 @@ namespace claid
                 ModuleDescription moduleDescription;
                 moduleDescription.id = moduleConfig.id();
                 moduleDescription.moduleClass = moduleConfig.type();
+                moduleDescription.host = host.hostname();
 
                 for(auto entry : moduleConfig.properties())
                 {
@@ -126,7 +127,7 @@ namespace claid
                 }
 
                 absl::Status status = moduleDescriptions.insert(make_pair(moduleDescription.id, moduleDescription));
-                Logger::printfln("Inserting module %s", moduleDescription.moduleClass .c_str());
+                Logger::printfln("Inserting module %s %s", moduleDescription.moduleClass .c_str(), moduleDescription.host.c_str());
                 if(!status.ok())
                 {
                     return status;
@@ -136,7 +137,7 @@ namespace claid
         return absl::OkStatus();
     }
 
-    absl::Status Configuration::getModulesForHost(const string& hostId, ModuleDescriptionMap& moduleDescriptions) const 
+    absl::Status Configuration::extractModulesForHost(const string& hostId, const ModuleDescriptionMap& allModuleDescriptions, ModuleDescriptionMap& modulesForHost) const 
     {
         if(!hostExistsInConfiguration(hostId))
         {
@@ -145,47 +146,14 @@ namespace claid
             ));
         }       
 
-        // TODO: remove this duplicate call that is only made to verify the correctness
-        // of the modules.
-        ModuleDescriptionMap fake;
-        auto status = getModuleDescriptions(fake);
-        if (!status.ok()) {
-            return status;
-        }
-
-        bool hostFound = false;
-
-        moduleDescriptions.clear();
-        for(auto& hostIt : config.hosts()) {
-            if (hostIt.hostname() != hostId) {
-                continue;
-            }
-
-            for(auto& modIt : hostIt.modules()) {
-                if (moduleDescriptions.find(modIt.id()) != moduleDescriptions.end()) {
-                    return absl::AlreadyExistsError(
-                        absl::StrCat("Configuration: A Module with id \"",
-                        modIt.id(), "\" was defined more than once."));
-                }
-
-                ModuleDescription moduleDescription;
-                moduleDescription.id = modIt.id();
-                moduleDescription.moduleClass = modIt.type();
-                for(auto entry : modIt.properties())
-                {
-                    moduleDescription.properties.insert(make_pair(entry.first, entry.second));
-                }
-
-                auto& inCh = modIt.input_channels();
-                moduleDescription.inputChannels = std::vector<std::string>(inCh.begin(), inCh.end());
-
-                auto& outCh = modIt.output_channels();
-                moduleDescription.outputChannels = std::vector<std::string>(outCh.begin(), outCh.end());
-
-                status = moduleDescriptions.insert(make_pair(moduleDescription.id, moduleDescription));
-                if (!status.ok()) {
-                    return status;
-                }
+        modulesForHost.clear();
+        for(const auto& entry : allModuleDescriptions)
+        {
+            const ModuleDescription& moduleDescription = entry.second;
+            
+            if(moduleDescription.host == hostId)
+            {
+                modulesForHost[moduleDescription.id] = moduleDescription;
             }
         }
      

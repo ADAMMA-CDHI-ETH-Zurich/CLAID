@@ -5,6 +5,8 @@
 #include "dispatch/core/Router/ServerRouter.hh"
 #include "dispatch/core/Router/ClientRouter.hh"
 #include "dispatch/core/Configuration/HostDescription.hh"
+#include "dispatch/core/Configuration/ModuleDescription.hh"
+
 namespace claid
 {
 
@@ -43,26 +45,44 @@ namespace claid
             std::unique_ptr<std::thread> processingThread;
             bool active = false;
 
+            const std::string currentHost;
+            const HostDescriptionMap hostDescriptions;
+            const ModuleDescriptionMap moduleDescriptions;
+
+            absl::Status lastError;
+
         private:    
    
 
             absl::Status buildRoutingTable(const std::string& currentHost, const HostDescriptionMap& hostDescriptions);
 
-
             void processQueue();
+
+            absl::Status addPackageDestinationIfNotSet(std::shared_ptr<DataPackage> package) const;
+            absl::Status addPackageSourceIfNotSet(std::shared_ptr<DataPackage> package) const;
+            bool findHostOfModule(const std::string& module, std::string& hostOfModule) const;
 
         public:
         
 
             template<typename... RouterTypes>
             MasterRouter(
+                const std::string& currentHost,
+                const HostDescriptionMap& hostDescriptions,
+                const ModuleDescriptionMap& moduleDescriptions,
                 SharedQueue<claidservice::DataPackage>& incomingQueue, 
-                std::shared_ptr<RouterTypes>... routersToRegister) : incomingQueue(incomingQueue)
+                std::shared_ptr<RouterTypes>... routersToRegister) : incomingQueue(incomingQueue), currentHost(currentHost), 
+                                                                    hostDescriptions(hostDescriptions), moduleDescriptions(moduleDescriptions)
             {
                 routers = {std::static_pointer_cast<Router>(routersToRegister)...};
             }
 
             absl::Status start() override final;
+            absl::Status stop();
+            absl::Status stopAfterQueueFinished();
+
+            absl::Status getLastError();
+
             absl::Status routePackage(std::shared_ptr<DataPackage> dataPackage) override final;
             bool canReachHost(const std::string& hostname) override final;
     };

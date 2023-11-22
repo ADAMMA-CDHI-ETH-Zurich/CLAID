@@ -2,10 +2,10 @@
 
 #include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/proto/claidconfig.pb.h"
-
 #include "dispatch/core/Router/RoutingNode.hh"
 #include "dispatch/core/Router/RoutingTree.hh"
 #include "dispatch/core/shared_queue.hh"
+#include "dispatch/core/Logger/Logger.hh"
 
 #include "absl/strings/str_split.h"
 #include "absl/status/status.h"

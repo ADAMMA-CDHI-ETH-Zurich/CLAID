@@ -122,11 +122,13 @@ cc_library(
             "Router/*.cc",
         ] +  [
             "RemoteDispatching/HostUserTable.cc",
+            "RemoteDispatching/ClientTable.cc",
         ]),
     hdrs = glob([
         "Router/*.hh",
         ] + [
         "RemoteDispatching/HostUserTable.hh",
+        "RemoteDispatching/ClientTable.hh",
         "RemoteDispatching/RemoteClientKey.hh",
     ]),
     deps = [

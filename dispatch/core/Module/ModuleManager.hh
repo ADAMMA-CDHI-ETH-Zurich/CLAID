@@ -36,7 +36,7 @@ namespace claid {
             
             absl::Status instantiateModule(const std::string& moduleId, const std::string& moduleClass);
             absl::Status instantiateModules(const ModuleListResponse& moduleList);
-            absl::Status initializeModules(ModuleListResponse moduleList, ChannelSubscriberPublisher subscriberPublisher);
+            absl::Status initializeModules(const ModuleListResponse& moduleList, ChannelSubscriberPublisher& subscriberPublisher);
 
             // A Channel is defined by a template package defining source | target | payload.
             // For each Module, we have a list of DataPackages defining all Channels published or subscribed by the Module.

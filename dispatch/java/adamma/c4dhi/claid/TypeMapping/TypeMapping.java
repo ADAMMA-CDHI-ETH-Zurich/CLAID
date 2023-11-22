@@ -37,6 +37,7 @@ public class TypeMapping {
                     .setTargetHost(p.getTargetHost())
                     .setSourceUserToken(p.getSourceUserToken())
                     .setTargetUserToken(p.getTargetUserToken())
+                    .setUnixTimestampMs(p.getUnixTimestampMs())
                     .setDeviceId(p.getDeviceId());
 
         List<TracePoint> tracePoints = p.getTracePointsList();

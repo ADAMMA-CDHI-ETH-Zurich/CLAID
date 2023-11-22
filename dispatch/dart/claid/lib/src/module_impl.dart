@@ -231,7 +231,7 @@ class SubChannelImpl<T> implements SubscribeChannel<T> {
       // of reading it out here.
       final cData = ChannelData<T>(
         _mutator.getter(pkt),
-        DateTime.now(),
+        DateTime.fromMillisecondsSinceEpoch(pkt.unixTimestampMs),
         pkt.sourceUserToken,
       );
       await callback(cData);

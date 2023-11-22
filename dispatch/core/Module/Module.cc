@@ -121,7 +121,6 @@ namespace claid
         std::shared_ptr<FunctionRunnable<void>> functionRunnable(new FunctionRunnable<void>(function));
         std::shared_ptr<Runnable> runnable = std::static_pointer_cast<Runnable>(functionRunnable);
 
-        
         ScheduledRunnable scheduledRunnable(runnable, 
             ScheduleRepeatedIntervall(startTime, interval));
 
@@ -133,8 +132,8 @@ namespace claid
     {
         if (startTime < Time::now()) {
             moduleWarning(absl::StrCat(
-                "Failed to schedule function \"", name, "\" at time ", startTime.strftime("%d.%m.%y - %H:%M:%S"), 
-                ". The time is in the past. It is now: ", Time::now().strftime("%d.%m.%y - %H:%M:%S")
+                "Failed to schedule function \"", name, "\" at time ", startTime.strftime("%d.%m.%y - %H:%M:%S"), ". ", 
+                "The time is in the past. It is now: ", Time::now().strftime("%d.%m.%y - %H:%M:%S")
             ));
         }
 

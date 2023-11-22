@@ -29,7 +29,11 @@ namespace claid
                 {
                     std::shared_ptr<DataPackage> package;
                     package = this->inputQueue.pop_front();
-                    this->outputQueue.push_back(package);
+
+                    if(!this->outputQueue.is_closed() && package != nullptr)
+                    {
+                        this->outputQueue.push_back(package);
+                    }   
                 }
             }
 

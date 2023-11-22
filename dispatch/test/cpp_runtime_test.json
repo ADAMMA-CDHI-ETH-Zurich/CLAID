@@ -3,14 +3,14 @@
 			"hostname": "alex_client",
 			"type": "linux",
 			"is_server": false,
-			"connect_to": "claid.ethz.ch:1337",
+			"connect_to": "",
 			"modules": [{
 					"type": "TestSenderModule",
 					"id": "SenderModule1",
 					"input_channels": [],
 					"output_channels": ["StringData"],
 					"properties": {
-						"dataPeriodMs" : "10"
+						"dataPeriodMs" : "100"
 					}
 				},
 				{

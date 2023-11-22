@@ -16,34 +16,12 @@ namespace claid
             const std::string currentHost;
 
         public:
-            LocalRouter(const std::string& currentHost, ModuleTable& moduleTable) : moduleTable(moduleTable), currentHost(currentHost)
-            {
+        
+            LocalRouter(const std::string& currentHost, ModuleTable& moduleTable);
 
-            }
+            absl::Status routePackage(std::shared_ptr<DataPackage> dataPackage) override final;
 
-            absl::Status routePackage(std::shared_ptr<DataPackage> dataPackage) override final
-            {
-                const std::string& targetModule = dataPackage->target_module();
-
-                std::string targetHost;
-
-                
-                SharedQueue<DataPackage>* inputQueueForRuntime = this->moduleTable.lookupOutputQueue(targetModule);
-
-                if(!inputQueueForRuntime)
-                {
-                    return absl::InvalidArgumentError(absl::StrCat("LocalRouter: Failed to route package to local Module \"", targetModule,"\".\n"
-                    "Unable to get input queue of the Runtime the Module is running in. Possibly, the Runtime was not registered."));
-                }
-
-                inputQueueForRuntime->push_back(dataPackage);
-                return absl::OkStatus();
-            }
-
-            bool canReachHost(const std::string& hostname) override final
-            {
-                return hostname == currentHost;
-            }
+            bool canReachHost(const std::string& hostname) override final;
 
     };
 }

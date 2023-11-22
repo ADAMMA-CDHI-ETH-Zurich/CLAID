@@ -35,7 +35,7 @@ namespace claid{
                     FunctionRunnableWithParams<void, ChannelData<T>>> functionRunnable =
                             std::make_shared<FunctionRunnableWithParams<void, ChannelData<T>>>(this->callback);
 
-
+            functionRunnable->setParams(data);
  
 
             std::shared_ptr<Runnable> runnable = std::static_pointer_cast<Runnable>(functionRunnable);
@@ -47,12 +47,12 @@ namespace claid{
                     ScheduleOnce(Time::now())));
         }
 
-        void onNewData(const DataPackage& data) override final
+        void onNewData(std::shared_ptr<DataPackage> package) override final
         {
-            const T& value = this->mutator.getPackagePayload(data);
+            const T& value = this->mutator.getPackagePayload(*package);
 
             // Create a new copy of the data so we can take ownership.
-            ChannelData<T> channelData = ChannelData<T>::fromCopy(value, Time::fromUnixTimestampMilliseconds(data.unix_timestamp_ms()), data.source_user_token());
+            ChannelData<T> channelData = ChannelData<T>::fromCopy(value, Time::fromUnixTimestampMilliseconds(package->unix_timestamp_ms()), package->source_user_token());
             this->invokeCallback(channelData);
         }
     };

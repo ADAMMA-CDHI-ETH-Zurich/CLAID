@@ -10,6 +10,6 @@ namespace claid
     {
         public:
             virtual ~AbstractSubscriber() {}
-            virtual void onNewData(const DataPackage& data) = 0;
+            virtual void onNewData(std::shared_ptr<DataPackage> package) = 0;
     };
 }

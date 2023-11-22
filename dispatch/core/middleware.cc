@@ -44,9 +44,29 @@ absl::Status MiddleWare::start() {
         return status;
     }
 
-    ModuleDescriptionMap moduleDescriptions;
+    HostDescriptionMap hostDescriptions;
+
+    // All Modules specified in the configuration file.
+    // Needed by the Router.
+    ModuleDescriptionMap allModuleDescriptions;
+
+    // Subset of allModuleDescriptions. Contains only the Modules running on the current host.
+    // Needed to populate the ModuleTable.
+    ModuleDescriptionMap hostModuleDescriptions;
+
     ChannelDescriptionMap channelDescriptions;
-    status = config.getModulesForHost(hostId, moduleDescriptions);
+
+    status = config.getHostDescriptions(hostDescriptions);
+    if (!status.ok()) {
+        return status;
+    }
+
+    status = config.getModuleDescriptions(allModuleDescriptions);
+    if (!status.ok()) {
+        return status;
+    }
+
+    status = config.extractModulesForHost(hostId, allModuleDescriptions, hostModuleDescriptions);
     if (!status.ok()) {
         return status;
     }
@@ -56,7 +76,7 @@ absl::Status MiddleWare::start() {
         return status;
     }
 
-    status = populateModuleTable(moduleDescriptions, channelDescriptions, moduleTable);
+    status = populateModuleTable(hostModuleDescriptions, channelDescriptions, moduleTable);
     if (!status.ok()) {
         return status;
     }
@@ -68,21 +88,12 @@ absl::Status MiddleWare::start() {
         return absl::InternalError("Error starting local dispatcher !");
     }
 
-    // TODO: REMOVE
-    // This is only temporary for testing against Dart --> this should
-    // be replaced by the router.
-    routerThread = make_unique<thread>([this]() {
-        while(true) {
-            auto pkt = moduleTable.inputQueue().pop_front();
-            if (!pkt || moduleTable.inputQueue().is_closed()) {
-                return;
-            }
-            auto outQ = moduleTable.lookupOutputQueue(pkt->target_module());
-            if (outQ) {
-                outQ->push_back(pkt);
-            }
-        }
-    });
+    status = this->startRouter(this->hostId, hostDescriptions, allModuleDescriptions);
+    if (!status.ok()) {
+        return status;
+    }
+    Logger::logInfo("Started Router successfully");
+
     Logger::printfln("Middleware started.");
 
     running = true;
@@ -115,6 +126,7 @@ absl::Status MiddleWare::startRemoteDispatcherServer(const std::string& currentH
         ));
     }
 
+    // Find out our port from the host description (if we are a server, then hostDescription.hostServerAddress typically would be a port).
     const std::string address = hostDescription.hostServerAddress;
 
     this->remoteDispatcherServer = make_unique<RemoteDispatcherServer>(address, this->hostUserTable);
@@ -136,8 +148,9 @@ absl::Status MiddleWare::startRemoteDispatcherClient(const std::string& currentH
     return absl::OkStatus();
 }
 
-absl::Status MiddleWare::startRouter(const std::string& currentHost, const HostDescriptionMap& hostDescriptions)
+absl::Status MiddleWare::startRouter(const std::string& currentHost, const HostDescriptionMap& hostDescriptions, const ModuleDescriptionMap& moduleDescriptions)
 {
+    Logger::logInfo("Starting router");
     if(this->routingQueueMerger != nullptr)
     {
         return absl::AlreadyExistsError("Failed to start router: RoutingQueueMerger already exists.");
@@ -160,16 +173,16 @@ absl::Status MiddleWare::startRouter(const std::string& currentHost, const HostD
     
     std::shared_ptr<LocalRouter> localRouter = std::make_shared<LocalRouter>(currentHost, this->moduleTable);
     std::shared_ptr<ServerRouter> serverRouter = std::make_shared<ServerRouter>(currentHost, routingTree, this->hostUserTable);
-    std::shared_ptr<ClientRouter> clientRouter = std::make_shared<ClientRouter>(currentHost, routingTree);
+    std::shared_ptr<ClientRouter> clientRouter = std::make_shared<ClientRouter>(currentHost, routingTree, this->clientTable);
 
-    MasterRouter router(this->masterInputQueue, localRouter, clientRouter, serverRouter);
-    //status = router.buildRoutingTable(currentHost, hostDescriptions);
-    if(!status.ok())
+    for(auto entry : moduleDescriptions)
     {
-        return status;
+        Logger::logInfo("%s %s", entry.second.id.c_str(), entry.second.host.c_str());
     }
 
-    status = router.start();
+    this->masterRouter = std::make_unique<MasterRouter>(currentHost, hostDescriptions, moduleDescriptions, this->masterInputQueue, localRouter, clientRouter, serverRouter);
+
+    status = masterRouter->start();
     if(!status.ok())
     {
         return status;
@@ -187,19 +200,25 @@ absl::Status MiddleWare::shutdown()
     // TODO: remove once the router is added.
     Logger::printfln("Middleware shutdown called.");
 
-    if (localDispatcher) {
-        if (routerThread) {
-            Logger::printfln("Stopping router thread.");
-            moduleTable.inputQueue().close();
-            routerThread->join();
-            routerThread.reset();
-            Logger::printfln("Router thread stopped.");
-        }
-        Logger::printfln("Shutting down local dispatcher.");
-        localDispatcher->shutdown();
-        Logger::printfln("Resetting local dispatcher.");
-        localDispatcher.reset();
+    absl::Status status;
+    Logger::printfln("Stopping MasterRouter");
+    
+    status = this->masterRouter->stop();
+    if(!status.ok())
+    {
+        return status;
     }
+
+    moduleTable.inputQueue().close();
+    this->hostUserTable.inputQueue()->close();
+
+    Logger::printfln("Stopping RoutingQueueMerger");
+    status = this->routingQueueMerger->stop();
+    if(!status.ok())
+    {
+        return status;
+    }
+
     Logger::printfln("Middleware successfully shut down.");
     running = false;
     return absl::OkStatus();

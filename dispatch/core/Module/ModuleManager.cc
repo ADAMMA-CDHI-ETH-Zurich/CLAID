@@ -52,9 +52,9 @@ absl::Status ModuleManager::instantiateModules(const ModuleListResponse& moduleL
     return absl::OkStatus();
 }
 
-absl::Status ModuleManager::initializeModules(ModuleListResponse moduleList, ChannelSubscriberPublisher subscriberPublisher)
+absl::Status ModuleManager::initializeModules(const ModuleListResponse& moduleList, ChannelSubscriberPublisher& subscriberPublisher)
 {
-    for(ModuleListResponse_ModuleDescriptor descriptor : moduleList.descriptors())
+    for(const ModuleListResponse_ModuleDescriptor& descriptor : moduleList.descriptors())
     {
         const std::string& moduleId = descriptor.module_id();
         const std::string& moduleClass = descriptor.module_class();
@@ -123,6 +123,7 @@ InitRuntimeRequest ModuleManager::makeInitRuntimeRequest()
         moduleChannels.set_module_id(entry.first);
         moduleChannels.clear_channel_packets();
 
+        Logger::logInfo("Making init run time request %s, num channels: %d", entry.first.c_str(), entry.second.size());
         for(const DataPackage& package : entry.second)
         {
             *moduleChannels.add_channel_packets() = package;
@@ -260,10 +261,14 @@ void ModuleManager::onPackageReceivedFromModulesDispatcher(std::shared_ptr<DataP
     std::vector<std::shared_ptr<AbstractSubscriber>> subscriberList 
         = this->subscriberPublisher.getSubscriberInstancesOfModule(channelName, moduleId);
 
+    Logger::logInfo("ModuleManager invoking subscribers. Found %d subscribers.", subscriberList.size());
     for(std::shared_ptr<AbstractSubscriber> subscriber : subscriberList)
     {
-        subscriber->onNewData(*dataPackage);
+        Logger::logInfo("Invoking subscriber %lu", subscriber.get());
+        subscriber->onNewData(dataPackage);
+    
     }
-}
+    Logger::logInfo("ModuleManager done invoking subscribers.", subscriberList.size());
 
+}
 }

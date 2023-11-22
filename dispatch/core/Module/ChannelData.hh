@@ -9,8 +9,8 @@ namespace claid{
     {
     private:
             std::shared_ptr<T> data;
-            const Time timestamp;
-            const std::string userId;
+            Time timestamp;
+            std::string userId;
 
             bool valid = false;
     public:

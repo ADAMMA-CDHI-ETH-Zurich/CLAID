@@ -13,6 +13,7 @@ namespace claid
     {
         std::string id;
         std::string moduleClass;
+        std::string host;
         std::vector<std::string> inputChannels;
         std::vector<std::string> outputChannels;
         std::map<std::string, std::string> properties;
@@ -23,8 +24,9 @@ namespace claid
         }
 
         ModuleDescription(const std::string& id, 
-        const std::string& moduleClass, 
-        const std::map<std::string, std::string> properties) : id(id), moduleClass(moduleClass), properties(properties)
+            const std::string& moduleClass, 
+            const std::string& host, 
+            const std::map<std::string, std::string> properties) : id(id), moduleClass(moduleClass), host(host), properties(properties)
         {
 
         }

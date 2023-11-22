@@ -14,7 +14,13 @@ namespace claid
     absl::Status ServerRouter::routePackage(std::shared_ptr<DataPackage> dataPackage) 
     {
         const std::string& sourceHost = dataPackage->source_host();
+        const std::string& sourceModule = dataPackage->source_module();
+
         const std::string& targetHost = dataPackage->target_host();
+        const std::string& targetModule = dataPackage->target_module();
+
+        Logger::logInfo("ClientRouter routing package from host \"%s\" (Module \"%s\"), "
+                        "destined for host \"%s\" (Module \"%s\").", sourceHost.c_str(), sourceModule.c_str(), targetHost.c_str(), targetModule.c_str());
         
         if(!canReachHost(targetHost))
         {
@@ -25,7 +31,7 @@ namespace claid
         }
 
         // The function canReachHost will automatically cache the route to the targetHost in our routingTable.
-
+        // Hence, it is assured that the routingTable will have an entry for targetHost.
         const std::vector<std::string>& route = this->routingTable[targetHost];
 
         if(route.size() == 0)

@@ -111,7 +111,7 @@ namespace claid
                     subTree.getChildHostRecursively(childHosts);
 
                     // Can we reach the targetHost from the current host?
-                    // Is the target host one of our childs (or child of a child ?)
+                    // Is the target host one of the childs of the currentNode?
                     if(std::find(childHosts.begin(), childHosts.end(), targetHost) != childHosts.end())
                     {
                         // If yes, we just have to go upwards from the childNode until we reach the current host,
@@ -138,11 +138,24 @@ namespace claid
                         routingDirection = routingUpwardsRequired ? RoutingDirection::ROUTE_UP : RoutingDirection::ROUTE_DOWN;
                         return true;
                     }
+                    // is the currentNode the target host itself?
+                    else if(targetHost == currentNode->name)
+                    {
+                        // If yes, that means the host is a server and we are either connected to it directly,
+                        // or via an intermediate server.
+                        hostToHostPath.push_back(currentNode->name);
+                        routingDirection = routingUpwardsRequired ? RoutingDirection::ROUTE_UP : RoutingDirection::ROUTE_DOWN;
+                        return true;
+                    }
                     else
                     {
                         // Go up in the tree and try again.
                         currentNode = currentNode->parent;
 
+                        if(currentNode == nullptr)
+                        {
+                            continue;
+                        }
                         // Store the new currentNode in the hostToHostPath.
                         // That means for the sourceHost to reach the targetHost, it would
                         // have to send a package "upward" in the tree, 
