@@ -19,8 +19,13 @@ public class CLAID extends JavaCLAIDBase
     // Attaches to the Middleware, but does not start it.
     // Assumes that the middleware is started in another language (e.g., C++ or Dart).
     // HAS to be called AFTER start is called in ANOTHER language.
-    public static boolean startAttach(final String socketPath, final String hostId, ModuleFactory factory)
+    public static boolean attachJavaRuntime(final String socketPath, ModuleFactory factory)
     {
-        return startAttachInternal(socketPath, hostId, factory);
+        return attachJavaRuntimeInternal(socketPath, factory);
+    }
+
+    public static boolean attachJavaRuntime(long handle, ModuleFactory factory)
+    {
+        return attachJavaRuntimeInternal(handle, factory);
     }
 }

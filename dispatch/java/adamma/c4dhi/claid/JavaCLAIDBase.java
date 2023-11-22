@@ -21,6 +21,8 @@ public abstract class JavaCLAIDBase
     private static native long startCore(final String socketPath, 
         final String configFilePath, final String hostId, final String userId, final String deviceId);
     private static native void shutdownCore(long handle);
+    private static native String getSocketPath(long handle);
+    
     private static ModuleDispatcher moduleDispatcher;
     private static ModuleManager moduleManager;
 
@@ -46,7 +48,7 @@ public abstract class JavaCLAIDBase
             return false;
         }
 
-        if(!startAttachInternal(socketPath, hostId, moduleFactory))
+        if(!attachJavaRuntimeInternal(socketPath, moduleFactory))
         {
             return false;
         }
@@ -59,7 +61,7 @@ public abstract class JavaCLAIDBase
     // Attaches to the Middleware, but does not start it.
     // Assumes that the middleware is started in another language (e.g., C++ or Dart).
     // HAS to be called AFTER start is called in ANOTHER language.
-    protected static boolean startAttachInternal(final String socketPath, final String hostId, ModuleFactory factory)
+    protected static boolean attachJavaRuntimeInternal(final String socketPath, ModuleFactory factory)
     {
         if(started)
         {
@@ -72,4 +74,12 @@ public abstract class JavaCLAIDBase
 
         return moduleManager.start();
     }
+
+    protected static boolean attachJavaRuntimeInternal(long handle, ModuleFactory factory)
+    {
+        String socketPath = getSocketPath(handle);
+        return attachJavaRuntimeInternal(socketPath, factory);
+    }
+
+
 }

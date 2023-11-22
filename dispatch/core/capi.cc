@@ -42,4 +42,16 @@ void shutdown_core(void* handle) {
     }
 }
 
+__attribute__((visibility("default"))) __attribute__((used))
+const char* get_socket_path(void* handle) {
+    if (handle) {
+        auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
+        
+        // This is only safe as long as middleWare does not get deleted.
+        return middleWare->getSocketPath().c_str();
+    }
+    std::cout << "return empty\n";
+    return "";
+}
+
 }

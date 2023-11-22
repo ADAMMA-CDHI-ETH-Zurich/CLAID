@@ -10,7 +10,8 @@ using namespace std;
 MiddleWare::MiddleWare(const string& socketPath, const string& configurationPath,
     const string& hostId, const string& userId, const string& deviceId)
         : socketPath(socketPath), configurationPath(configurationPath),
-          hostId(hostId), userId(userId), deviceId(deviceId) {
+          hostId(hostId), userId(userId), deviceId(deviceId) 
+    {
         moduleTable.setProperties(ModuleTableProperties{userId, deviceId});
     }
 
@@ -263,7 +264,8 @@ absl::Status MiddleWare::populateModuleTable(
     return absl::OkStatus();
 }
 
-const std::string MiddleWare::getSocketPath() const
+const std::string& MiddleWare::getSocketPath() const
 {
+    std::cout << " got socket path " << socketPath << "\n";
     return socketPath;
 }

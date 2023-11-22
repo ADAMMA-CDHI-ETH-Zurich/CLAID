@@ -247,6 +247,11 @@ std::string claid::Logger::severityLevelToString(const claid::SeverityLevel leve
 			return "FATAL";
 			break;
 		}
+        default:
+        {
+            return "UNKNOWN";
+            break;
+        }
 		
 	}
 }

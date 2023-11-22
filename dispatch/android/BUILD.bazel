@@ -6,7 +6,7 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "android_claid_cc",
-    srcs = ["native-lib.cpp"],
+    srcs = ["../java/java_capi.cc"],
     deps = ["//dispatch/core:capi"],
     alwayslink = True,   # include everything in dependents
     linkstatic = True,

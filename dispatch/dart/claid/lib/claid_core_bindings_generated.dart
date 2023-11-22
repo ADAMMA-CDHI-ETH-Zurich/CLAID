@@ -71,4 +71,19 @@ class ClaidCoreBindings {
           'shutdown_core');
   late final _shutdown_core =
       _shutdown_corePtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  ffi.Pointer<ffi.Char> get_socket_path(
+    ffi.Pointer<ffi.Void> handle,
+  ) {
+    return _get_socket_path(
+      handle,
+    );
+  }
+
+  late final _get_socket_pathPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Char> Function(
+              ffi.Pointer<ffi.Void>)>>('get_socket_path');
+  late final _get_socket_path = _get_socket_pathPtr
+      .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Void>)>();
 }

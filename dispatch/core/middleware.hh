@@ -44,7 +44,7 @@ namespace claid
             absl::Status startRouter(const std::string& currentHost, const HostDescriptionMap& hostDescriptions, const ModuleDescriptionMap& moduleDescriptions);
             absl::Status shutdown();
 
-            const std::string getSocketPath() const;
+            const std::string& getSocketPath() const;
 
             virtual ~MiddleWare();
         private:

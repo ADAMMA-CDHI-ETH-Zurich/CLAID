@@ -24,6 +24,11 @@ static std::string jniStringToStdString(JNIEnv *env, jstring jStr)
     return ret;
 }
 
+static jstring stdStringToJString(JNIEnv* env, const std::string& nativeString)
+{
+    return env->NewStringUTF(nativeString.c_str());
+}
+
 extern "C"
 {
     JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_sayHelloDD
@@ -49,6 +54,17 @@ extern "C"
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) {
         void* nativeHandle = reinterpret_cast<void*>(handle);
         shutdown_core(nativeHandle);
+    }
+
+    JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_getSocketPath
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle) {
+        void* nativeHandle = reinterpret_cast<void*>(handle);
+        std::cout << "test\n";
+        const char* socketPath = get_socket_path(nativeHandle);
+        std::cout << "got socket\n";
+        std::cout << "got socket path " << socketPath << "\n";
+
+        return stdStringToJString(env, socketPath);
     }
 
 }
