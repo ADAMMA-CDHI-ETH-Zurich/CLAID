@@ -217,6 +217,19 @@ class ModuleManager {
     }
     _outputCtrl!.add(pkt);
   }
+
+  Module? getModule(final String moduleId)
+  {
+    if(!_moduleMap.containsKey(moduleId))
+    {
+      return null;
+    }
+
+    ModuleState? state = _moduleMap[moduleId];
+
+    // If state is null, return null; otherwise, return the instance property of state.
+    return state?.instance;
+  }
 }
 
 class SubChannelImpl<T> implements SubscribeChannel<T> {
@@ -231,7 +244,7 @@ class SubChannelImpl<T> implements SubscribeChannel<T> {
       // of reading it out here.
       final cData = ChannelData<T>(
         _mutator.getter(pkt),
-        DateTime.fromMillisecondsSinceEpoch(pkt.unixTimestampMs),
+        DateTime.fromMillisecondsSinceEpoch(pkt.unixTimestampMs.toInt()),
         pkt.sourceUserToken,
       );
       await callback(cData);
