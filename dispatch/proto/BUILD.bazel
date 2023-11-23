@@ -8,10 +8,7 @@ package(default_visibility = ["//visibility:public"])
 
 proto_library(
     name = "claidservice_proto",
-    srcs = [
-        "claidservice.proto",
-        "claidconfig.proto",
-    ],
+    srcs = glob(["*.proto"]),
     deps = [
         "@com_google_protobuf//:empty_proto",
         "@com_google_protobuf//:timestamp_proto",

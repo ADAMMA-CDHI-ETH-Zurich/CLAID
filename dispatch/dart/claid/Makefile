@@ -88,6 +88,7 @@ generate_dart:
 	mkdir -p lib/generated
 	protoc -I../../proto/ --dart_out=grpc:lib/generated \
 		../../proto/claidservice.proto \
+		../../proto/*.proto\
 		google/protobuf/timestamp.proto \
 		google/protobuf/empty.proto
 

@@ -98,4 +98,8 @@ load("@fmeum_rules_jni//jni:repositories.bzl", "rules_jni_dependencies")
 rules_jni_dependencies()
 
 
-
+new_local_repository(
+    name = "tensorflow",
+    path = "/home/lastchance/Desktop/claid_external/tensorflow",
+    build_file = "BUILD.tensorflow",
+)
