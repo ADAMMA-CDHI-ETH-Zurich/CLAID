@@ -22,7 +22,8 @@ void* start_core(const char* socket_path, const char* config_file, const char* h
 
     auto status = middleWare->start();
     if (!status.ok()) {
-        std::cout << "Failed to start middleware: " << status << "\n";
+
+        claid::Logger::logError("Failed to start middleware: %s", status.ToString().c_str());
         delete middleWare;
         return nullptr;
     }
@@ -34,7 +35,8 @@ void shutdown_core(void* handle) {
     if (handle) {
         auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
         auto status = middleWare->shutdown();
-        if (!status.ok()) {
+        if (!status.ok()) 
+        {
             // TODO: replace with proper logging.
             claid::Logger::printfln("Error shuting down middleware: %s", std::string(status.message()).c_str());
         }
@@ -50,7 +52,7 @@ const char* get_socket_path(void* handle) {
         // This is only safe as long as middleWare does not get deleted.
         return middleWare->getSocketPath().c_str();
     }
-    std::cout << "return empty\n";
+    claid::Logger::printfln("Cannot get socket path from middleware, handle is null.");
     return "";
 }
 

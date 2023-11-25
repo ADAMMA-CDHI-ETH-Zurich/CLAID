@@ -1,4 +1,4 @@
-package adamma.c4dhi.claid;
+package test;
 
 
 import java.lang.ProcessBuilder.Redirect.Type;
@@ -13,7 +13,7 @@ import adamma.c4dhi.claid.TypeMapping.DataType;
 import adamma.c4dhi.claid.TypeMapping.Mutator;
 import adamma.c4dhi.claid.TypeMapping.TypeMapping;
 import adamma.c4dhi.claid_platform_impl.CLAID;
-import adamma.c4dhi.claid.TestModule;
+import test.TestModule;
 
 public class claid_java_test {
 	static void method(ArrayList<Integer> ints, IntegerType ...ignore) {

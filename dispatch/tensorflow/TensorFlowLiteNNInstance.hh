@@ -23,10 +23,10 @@ using namespace claid_ml;
 
 
 #ifdef __ANDROID__
-#include "TensorflowAndroidJNIUtils.h"
+#include "TensorFlowAndroidJNIUtils.hh"
 #endif
 
-#include "dispatch/Logger/Logger.hh"
+#include "dispatch/core/Logger/Logger.hh"
 
 //#define __TFNN_USE_GPU 0
 
@@ -155,8 +155,9 @@ namespace claid
             bool runInference();
 
             bool applyInput(const size_t inputID, const void* data, const size_t numBytes);
-            bool applyInput(LayerData* layerData);
+            bool applyInput(LayerData& layerData);
 
+            size_t getLayerDataNumBytes(LayerData& layerData);
 
             void getDimensionVectorFromTensor(TfLiteTensor* tensor, std::vector<int64_t>& dimensions);
 

@@ -44,15 +44,17 @@ config_setting(
 cc_library(
     name = "tflite",
     srcs = ["TensorFlowLiteNNInstance.cc", "TensorFlowLiteNNInstance.hh"],
+    hdrs = glob(["*.hh", "tf_inc/**/*.h"]),
     linkopts = select({
-      ":x86": ["-ltensorflowlite", "-L/home/lastchance/Desktop/ModuleAPIV2/dispatch/tensorflow/build_tensorflow/libs/android/x86"],
-      ":armeabi-v7a": ["-ltensorflowlite", "-L/home/lastchance/Desktop/ModuleAPIV2/dispatch/tensorflow/build_tensorflow/libs/android/armeabi-v7a"],
-      ":arm64-v8a": ["-ltensorflowlite", "-L/home/lastchance/Desktop/ModuleAPIV2/dispatch/tensorflow/build_tensorflow/libs/android/arm64-v8a"],
-      ":x86_64": ["-ltensorflowlite", "-L/home/lastchance/Desktop/ModuleAPIV2/dispatch/tensorflow/build_tensorflow/libs/android/x86_64"],
+      ":x86": ["-ltensorflowlite", "-L/home/lastchance/Desktop/claid_external/libs/android/x86"],
+      ":armeabi-v7a": ["-ltensorflowlite", "-L/home/lastchance/Desktop/claid_external/libs/android/armeabi-v7a"],
+      ":arm64-v8a": ["-ltensorflowlite", "-L/home/lastchance/Desktop/claid_external/libs/android/arm64-v8a"],
+      ":x86_64": ["-ltensorflowlite", "-L/home/lastchance/Desktop/claid_external/libs/android/x86_64"],
       "//conditions:default" : ["-ltensorflowlite", "-L/home/lastchance/Desktop/claid_external/libs/host", "-Iexternal/tensorflow"],
     }),
-    hdrs = glob(["tf_inc/**/*.h"]),
     includes = ["tf_inc/"],
     copts = ["-Itf_inc/"],
     deps = ["//dispatch/core:CLAID"],
+    linkstatic = True,
+    alwayslink = True,
 )

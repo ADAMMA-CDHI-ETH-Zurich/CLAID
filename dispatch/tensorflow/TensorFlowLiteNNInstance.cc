@@ -320,15 +320,15 @@ bool claid::TensorFlowLiteNNInstance::applyInput(const size_t inputID, const voi
  * @return true if data was copied successfully, false otherwise (e.g. invalid layer description,
  * input data containing mory bytes than required, etc.).
  */
-bool claid::TensorFlowLiteNNInstance::applyInput(LayerData* layerData)
+bool claid::TensorFlowLiteNNInstance::applyInput(LayerData& layerData)
 {
-	int id = this->getInputIDFromLayerName(layerData->getLayerDescription().layerName);
+	int id = this->getInputIDFromLayerName(layerData.layer_name());
 	if(id == -1)
 	{
 		this->lastError = TensorFlowLiteNNInstance::ErrorType::ERROR_CANNOT_FIND_INPUT_LAYER_ID_BY_NAME;
 		return false;
 	}
-	return this->applyInput(id, layerData->getRawData(), layerData->getNumBytes());
+	return this->applyInput(id, layerData.data().data(), getLayerDataNumBytes(layerData));
 }
 
 
@@ -361,7 +361,8 @@ bool claid::TensorFlowLiteNNInstance::runInference()
  */
 bool claid::TensorFlowLiteNNInstance::getOutputLayerData(LayerDataVector& layerDataVector)
 {
-	layerDataVector.clear();
+	layerDataVector.Clear();
+
 	size_t outputLayers = this->tfLiteInterpreter->outputs().size();
 
 	for(size_t i = 0; i < outputLayers; i++)
@@ -391,41 +392,57 @@ bool claid::TensorFlowLiteNNInstance::getOutputLayerData(LayerDataVector& layerD
 		{
 			numBytes *= dimensions[i];
 		}
-		LayerDimension layerDimension;
+		LayerData* layerData = layerDataVector.add_layers();
+		LayerDimension* layerDimensionPtr = layerData->mutable_layer_dimension();
+		LayerDimension& layerDimension = *layerDimensionPtr;
 
 		switch(dimensions.size())
 		{
 			case 4:
 			{
-				layerDimension.set(dimensions[0], dimensions[1], dimensions[2], dimensions[3]);
+				layerDimension.set_numbatches(dimensions[0]);
+				layerDimension.set_height(dimensions[1]);
+				layerDimension.set_width(dimensions[2]);
+				layerDimension.set_channels(dimensions[3]);
 			}
 			break;
 			case 3:
 			{
-				layerDimension.set(1, dimensions[0], dimensions[1], dimensions[2]);
+				layerDimension.set_numbatches(1);
+				layerDimension.set_height(dimensions[0]);
+				layerDimension.set_width(dimensions[1]);
+				layerDimension.set_channels(dimensions[2]);
 			}
 			break;
 			case 2:
 			{
-				layerDimension.set(1,1, dimensions[0], dimensions[1]);
+				layerDimension.set_numbatches(1);
+				layerDimension.set_height(1);
+				layerDimension.set_width(dimensions[0]);
+				layerDimension.set_channels(dimensions[1]);
 			}
 			break;
 			case 1:
 			{
-				layerDimension.set(1, 1, 1, dimensions[0]);
+				layerDimension.set_numbatches(1);
+				layerDimension.set_height(1);
+				layerDimension.set_width(1);
+				layerDimension.set_channels(dimensions[0]);
 			}
 			break;
 		}
-	
-	 	LayerDescription layerDescription(this->tfLiteInterpreter->GetOutputName(i), layerDimension);
+
+		const std::string layerName = this->tfLiteInterpreter->GetOutputName(i);
+
 
 
 		void* data = outputTensor->data.f;
-		LayerData layerData(layerDescription, this->networkLayerDataOrder, layerDataType);
-
-		layerDataVector.push_back(layerData);
-
-		layerDataVector[layerDataVector.size() - 1].copyData(data, numBytes);	
+		// LayerDimension is set via mutable_layer_dimension above.
+		// layerData->set_layer_dimension(layerDimension);
+		layerData->set_layer_name(layerName);
+		layerData->set_data_order(this->networkLayerDataOrder);
+		layerData->set_data(data, numBytes);
+		layerData->set_data_type(layerDataType);
 
  		
 	}
@@ -811,6 +828,17 @@ bool claid::TensorFlowLiteNNInstance::getOutputLayerNumBytes(const size_t output
 
 	return true;
 
+}
+
+/**
+ * Returns the number of bytes available in a passed layerData object.
+ * 
+ * @param LayerData layerData
+ * @return size_t number of bytes
+ */
+size_t claid::TensorFlowLiteNNInstance::getLayerDataNumBytes(LayerData& layerData)
+{
+	return layerData.data().size();	
 }
 
 /**

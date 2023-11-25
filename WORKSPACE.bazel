@@ -103,3 +103,8 @@ new_local_repository(
     path = "/home/lastchance/Desktop/claid_external/tensorflow",
     build_file = "BUILD.tensorflow",
 )
+
+local_repository(
+    name = "tensorflow_ext",
+    path = "../claid_external/tensorflow",
+)

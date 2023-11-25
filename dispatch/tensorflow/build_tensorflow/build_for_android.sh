@@ -9,12 +9,12 @@ cross_compile_android()
    cd ${tflite_path}
 
    path=libs/android/${architecture}
-   mkdir -p ${path}
+   mkdir -p ../${path}
 
    bazel build //tensorflow/lite:tensorflowlite --distinct_host_configuration --crosstool_top=//external:android/crosstool --cpu=$architecture --host_crosstool_top=@bazel_tools//tools/cpp:toolchain 
    
-   rm  -f ${path}/libtensorflowlite.so
-   cp bazel-bin/tensorflow/lite/libtensorflowlite.so ${path}/libtensorflowlite.so
+   rm  -f ../${path}/libtensorflowlite.so
+   cp bazel-bin/tensorflow/lite/libtensorflowlite.so ../${path}/libtensorflowlite.so
    cd ${current_path}
 }
 

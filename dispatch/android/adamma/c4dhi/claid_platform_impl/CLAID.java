@@ -23,12 +23,16 @@ package adamma.c4dhi.claid_platform_impl;
 import adamma.c4dhi.claid.JavaCLAIDBase;
 import adamma.c4dhi.claid.Module.ModuleFactory;
 
+import android.content.Context;
+
 public class CLAID extends JavaCLAIDBase
 {
     static
     {
         init("claid_capi_android");
     }
+
+    private static Context context;
     
     // Starts the middleware and attaches to it.
     public static boolean start(final String socketPath, final String configFilePath, final String hostId, final String userId, final String deviceId, ModuleFactory moduleFactory)
@@ -39,14 +43,21 @@ public class CLAID extends JavaCLAIDBase
     // Attaches to the Middleware, but does not start it.
     // Assumes that the middleware is started in another language (e.g., C++ or Dart).
     // HAS to be called AFTER start is called in ANOTHER language.
-    public static boolean attachJavaRuntime(final String socketPath, ModuleFactory factory)
+    public static boolean attachJavaRuntime(Context context, final String socketPath, ModuleFactory factory)
     {
+        CLAID.context = context;
         return attachJavaRuntimeInternal(socketPath, factory);
     }
 
-    public static boolean attachJavaRuntime(long handle, ModuleFactory factory)
+    public static boolean attachJavaRuntime(Context context, long handle, ModuleFactory factory)
     {
+        CLAID.context = context;
         return attachJavaRuntimeInternal(handle, factory);
+    }
+
+    public static Context getContext()
+    {
+        return CLAID.context;
     }
 
     // Implement functions for context management etc.

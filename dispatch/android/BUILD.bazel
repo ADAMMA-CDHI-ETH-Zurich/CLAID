@@ -6,7 +6,7 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "android_claid_cc",
-    srcs = ["native-lib.cpp"],
+    srcs = ["java_capi.cpp"],
     deps = ["//dispatch/core:capi"],
     alwayslink = True,   # include everything in dependents
     linkstatic = True,
@@ -15,7 +15,7 @@ cc_library(
 
 cc_library(
     name = "android_claid_cc_tflite",
-    srcs = ["native-lib.cpp"],
+    srcs = ["java_capi.cpp"],
     deps = ["//dispatch/core:capi",
             "//dispatch/tensorflow:tflite"],
     alwayslink = True,   # include everything in dependents
@@ -24,12 +24,12 @@ cc_library(
 )
 
 android_library(
-    name = "android_claid_lib",
-    srcs = ["test.java"],
-    resource_files = glob(["res/**/*"]),
-    custom_package = "com.example.android.bazel",
-    manifest = "LibraryManifest.xml",
-    deps = [":android_claid_cc"],
+    name = "android_claid_sources",
+    srcs = glob(["adamma/**/*.java"]),
+    deps = [
+        "//dispatch/proto:claidservice_java_proto", 
+        "//dispatch/java:claid_java",
+        "@com_google_protobuf//:protobuf_java",]
 )
 
 # We use the android_binary target to build an Apk, from 
@@ -39,11 +39,16 @@ android_library(
 # Would be cooler if we could build directly an AAR or so, which includes the libs.
 # However this is not yet possible with bazel (but might be in the future): https://github.com/bazelbuild/bazel/issues/348
 
-# Note: The name of the output shared libraries extracted from the apk will be libandroid_claid.so
+# Note: The name of the output shared libraries extracted from the apk will be libclaid_capi_android.so
 android_binary(
     name = "claid_capi_android",
-    deps = [":android_claid_lib"],
+    deps = [":android_claid_cc"],
     manifest = "AndroidManifest.xml",
 )
 
+android_binary(
+    name = "claid_capi_android_tflite",
+    deps = [":android_claid_cc_tflite"],
+    manifest = "AndroidManifest.xml",
+)
 

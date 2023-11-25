@@ -1,4 +1,4 @@
-package adamma.c4dhi.claid;
+package test;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -9,6 +9,15 @@ import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.Module.Channel;
 import adamma.c4dhi.claid.Module.ChannelData;
 import adamma.c4dhi.claid.Module.Module;
+
+
+import adamma.c4dhi.claid.DataPackage;
+import adamma.c4dhi.claid.Blob;
+import adamma.c4dhi.claid.TracePoint;
+import adamma.c4dhi.claid.StringArray;
+import adamma.c4dhi.claid.NumberArray;
+import adamma.c4dhi.claid.NumberMap;
+import adamma.c4dhi.claid.StringMap;
 
 public class TestModule extends Module
 {
