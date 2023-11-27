@@ -14,11 +14,13 @@ namespace claid {
     {
         private:
             SharedQueue<DataPackage> toRemoteClientQueue;
+            SharedQueue<DataPackage> fromRemoteClientQueue;
 
         public:
             ClientTable();
 
-            SharedQueue<DataPackage>& getQueue();
+            SharedQueue<DataPackage>& getFromRemoteClientQueue();
+            SharedQueue<DataPackage>& getToRemoteClientQueue();
 
     };
 }

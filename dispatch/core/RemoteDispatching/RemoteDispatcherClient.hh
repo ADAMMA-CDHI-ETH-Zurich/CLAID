@@ -2,6 +2,7 @@
 
 #include "dispatch/core/shared_queue.hh"
 #include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/core/RemoteDispatching/ClientTable.hh"
 
 #include <grpc/grpc.h>
 #include <grpcpp/create_channel.h>
@@ -23,8 +24,7 @@ namespace claid
                     const std::string& host,
                     const std::string& userToken,
                     const std::string& deviceID,
-                    SharedQueue<DataPackage>& incomingQueue, 
-                    SharedQueue<DataPackage>& outgoingQueue);
+                    ClientTable& clientTable);
             
             void shutdown();
             virtual ~RemoteDispatcherClient() { shutdown(); };
@@ -41,6 +41,8 @@ namespace claid
             const std::string host;
             const std::string userToken;
             const std::string deviceID;
+
+            ClientTable& clientTable;
 
             // Incoming from server -> router (packages we receive from external connection).
             SharedQueue<claidservice::DataPackage>& incomingQueue;

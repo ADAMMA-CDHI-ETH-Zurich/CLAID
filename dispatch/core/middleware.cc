@@ -93,6 +93,14 @@ absl::Status MiddleWare::start() {
     if (!status.ok()) {
         return status;
     }
+
+    status = this->startRemoteDispatcherServer(this->hostId, hostDescriptions);
+    if(!status.ok()) {
+        return status;
+    }
+
+    status = this->startRemoteDispatcherClient(this->hostId, this->userId, this->deviceId, hostDescriptions);
+
     Logger::logInfo("Started Router successfully");
 
     Logger::printfln("Middleware started.");
@@ -113,7 +121,7 @@ absl::Status MiddleWare::startRemoteDispatcherServer(const std::string& currentH
     if(it == hostDescriptions.end())
     {
         return absl::NotFoundError(absl::StrCat(
-            "Failed to lookup server address for host for host \"", currentHost, "\".",
+            "Failed to lookup server address for host \"", currentHost, "\".",
             "The host was not found in the configuration file."
         ));
     }
@@ -121,14 +129,32 @@ absl::Status MiddleWare::startRemoteDispatcherServer(const std::string& currentH
     const HostDescription& hostDescription = it->second;
     if(!hostDescription.isServer)
     {
-        return absl::InvalidArgumentError(absl::StrCat(
-            "Cannot start RemoteDispatcherServer on host \"", currentHost, "\".\n",
-            "The host was not configured as server (isServer = false)."
-        ));
+        if(hostDescription.hostServerAddress != "")
+        {
+            return absl::InvalidArgumentError(absl::StrCat(
+                "Cannot start RemoteDispatcherServer on host \"", currentHost, "\".\n",
+                "The host_server_address is non-empty, but the host was not configured as server (isServer = false).\n"
+                "Either set host_server_address to empty (\"\"), or set isServer = true."
+            ));
+        }
+        else
+        {
+            // If we are not configured as a Server, we will not start the RemoteDispatcherServer.
+            return absl::OkStatus();
+        }
     }
 
     // Find out our port from the host description (if we are a server, then hostDescription.hostServerAddress typically would be a port).
     const std::string address = hostDescription.hostServerAddress;
+
+    if(hostDescription.hostServerAddress == "")
+    {
+        return absl::InvalidArgumentError(absl::StrCat(
+            "Cannot start RemoteDispatcherServer on host \"", currentHost, "\".\n",
+            "Host was configured as Server (isServer = true), but the host_server_address is empty (\"\").\n"
+            "Either specify the host_server_address (\"\"), or set isServer = false."
+        ));
+    }
 
     this->remoteDispatcherServer = make_unique<RemoteDispatcherServer>(address, this->hostUserTable);
 
@@ -218,6 +244,22 @@ absl::Status MiddleWare::shutdown()
     if(!status.ok())
     {
         return status;
+    }
+
+    status = this->masterRouter->stop();
+    if(!status.ok())
+    {
+        return status;
+    }
+
+    if(this->remoteDispatcherServer != nullptr)
+    {
+        this->remoteDispatcherServer->shutdown();
+    }
+
+    if(this->remoteDispatcherClient != nullptr)
+    {
+        this->remoteDispatcherClient->shutdown();
     }
 
     Logger::printfln("Middleware successfully shut down.");

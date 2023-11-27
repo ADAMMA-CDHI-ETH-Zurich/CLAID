@@ -15,18 +15,39 @@ namespace claid
 
     }
 
+    RemoteDispatcherServer::~RemoteDispatcherServer()
+    {
+        if(this->running)
+        {
+            this->shutdown();
+        }
+    }
+
     absl::Status RemoteDispatcherServer::start() 
     {
+        if(this->running)
+        {
+            return absl::AlreadyExistsError("Failed to start RemoteDispatcherServer, server is already running (start was called twice).");
+        }
+
         buildAndStartServer();
         if (!server) {
             return absl::InvalidArgumentError(
                 absl::StrCat("Failed to start RemoteDispatcherServer with address \"", this->addr, "\"."));
         }
+
+        this->running = true;
+
         return absl::OkStatus();
     }
 
     void RemoteDispatcherServer::shutdown() 
     {
+        if(!this->running)
+        {
+            return;
+        }
+        
         std::cout << "RemoteDispatcherServer shutdown 1\n";
         // server->Shutdown() will hang indefintely as long as there are still ongoing RPC calls by any client.
         // The clients call SendReceivePackages to stream data to/from the server. The SendReceivePackage RPC call
@@ -38,6 +59,8 @@ namespace claid
         std::cout << "RemoteDispatcherServer shutdown 2\n";
         server->Wait();
         std::cout << "RemoteDispatcherServer shutdown 3\n";
+
+        this->running = false;
     }
 
     void RemoteDispatcherServer::buildAndStartServer()

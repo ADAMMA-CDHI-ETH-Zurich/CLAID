@@ -51,7 +51,7 @@ std::vector<std::shared_ptr<DataPackage>> packages = {
     makePkt(channel33, mod3, mod3, [](auto& p) { p.set_target_host(test_host); p.set_string_val("package33"); })
 };
 
-void prepareTableAndQueues(ModuleTable& table, SharedQueue<DataPackage>*& outputQueue1, SharedQueue<DataPackage>*& outputQueue2, SharedQueue<DataPackage>*& outputQueue3)
+void prepareModuleTableAndQueues(ModuleTable& table, SharedQueue<DataPackage>*& outputQueue1, SharedQueue<DataPackage>*& outputQueue2, SharedQueue<DataPackage>*& outputQueue3)
 {  
     // Register Modules to different runtimes to simulate routing to different queues.
     table.setNeededModule(mod1, "TestModuleClass1", {});
@@ -90,6 +90,23 @@ void assertQueues(SharedQueue<DataPackage>*& outputQueue1, SharedQueue<DataPacka
     ASSERT_EQ(outputQueue3->pop_front()->string_val(), "package33");
 }
 
+inline HostDescription makeHostDescription(const std::string& hostname, bool isServer, const std::string& hostServerAddress, const std::string& connectTo)
+{
+    HostDescription description;
+    description.hostname = hostname;
+    description.isServer = isServer;
+    description.hostServerAddress = hostServerAddress;
+    description.connectTo = connectTo;
+    return description;
+}
+
+inline void addHostDescription(HostDescriptionMap& map, const std::string& hostname, bool isServer, const std::string& hostServerAddress, const std::string& connectTo)
+{
+   absl::Status status = map.insert(std::make_pair(hostname, makeHostDescription(hostname, isServer, hostServerAddress, connectTo)));
+   ASSERT_EQ(status.ok(), true) << status;
+}
+
+
 TEST(RouterTestSuite, LocalRouterTest)
 {
     ModuleTable table;
@@ -98,9 +115,29 @@ TEST(RouterTestSuite, LocalRouterTest)
     SharedQueue<DataPackage>* outputQueue2;
     SharedQueue<DataPackage>* outputQueue3;
 
-    prepareTableAndQueues(table, outputQueue1, outputQueue2, outputQueue3);
+    prepareModuleTableAndQueues(table, outputQueue1, outputQueue2, outputQueue3);
 
     LocalRouter localRouter(test_host, table);
+
+    for(std::shared_ptr<DataPackage>& package : packages)
+    {
+        absl::Status status = localRouter.routePackage(package);
+        ASSERT_EQ(status.ok(), true) << status;
+    }
+
+    assertQueues(outputQueue1, outputQueue2, outputQueue3);
+}
+
+TEST(RouterTestSuite, ServerRouterTest)
+{   
+    SharedQueue<DataPackage>* outputQueue1;
+    SharedQueue<DataPackage>* outputQueue2;
+    SharedQueue<DataPackage>* outputQueue3;
+
+
+    const std::string currentHost = "test_client";
+    RoutingTree routingTree;
+    HostUserTable hostUserTable;
 
     for(std::shared_ptr<DataPackage>& package : packages)
     {
@@ -119,7 +156,7 @@ TEST(RouterTestSuite, MasterRouterTest)
     SharedQueue<DataPackage>* outputQueue2;
     SharedQueue<DataPackage>* outputQueue3;
 
-    prepareTableAndQueues(table, outputQueue1, outputQueue2, outputQueue3);
+    prepareModuleTableAndQueues(table, outputQueue1, outputQueue2, outputQueue3);
 
     std::shared_ptr<LocalRouter> localRouter = std::make_shared<LocalRouter>(test_host, table);
 

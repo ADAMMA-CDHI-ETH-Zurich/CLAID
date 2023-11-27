@@ -1,16 +1,23 @@
 #include "dispatch/core/RemoteDispatching/RemoteDispatcherClient.hh"
-
+#include "dispatch/core/Logger/Logger.hh"
 
 namespace claid
 {
+
+    RemoteDispatcherClient::~RemoteDispatcherClient()
+    {
+        if(this->running)
+        {
+            shutdown();
+        }
+    }
+
     RemoteDispatcherClient::RemoteDispatcherClient(const std::string& addressToConnectTo,
                     const std::string& host,
                     const std::string& userToken,
                     const std::string& deviceID,
-                    SharedQueue<DataPackage>& incomingQueue, 
-                    SharedQueue<DataPackage>& outgoingQueue) :  host(host), userToken(userToken), deviceID(deviceID),
-                                                                incomingQueue(incomingQueue), 
-                                                                outgoingQueue(outgoingQueue)
+                    ClientTable& clientTable) :     host(host), userToken(userToken), 
+                                                    deviceID(deviceID), clientTable(clientTable)
     {
         // Set up the gRCP channel
         grpcChannel = grpc::CreateChannel(addressToConnectTo, grpc::InsecureChannelCredentials());
@@ -19,11 +26,15 @@ namespace claid
 
     void RemoteDispatcherClient::shutdown() 
     {
+        if(!this->running)
+        {
+            return;
+        }
         std::cout << "Shutting down client 1\n";
         // Closing the outgoing queue will end the writer thread.
         // The writer thread will invoke stream->WritesDone() after the outgoingQueue was closed.
         // This will close the stream and also abort stream->Read() for the reader thread.
-        outgoingQueue.close();
+       
         if (this->writeThread) 
         {
             this->writeThread->join();
@@ -37,6 +48,8 @@ namespace claid
             this->readThread = nullptr;
         }
         std::cout << "Shutting down client 3\n";
+
+        this->running = false;
     }
 
     void makeRemoteRuntimePing(ControlPackage& pkt, const std::string& host, 
@@ -96,6 +109,8 @@ namespace claid
             writeThread = std::make_unique<std::thread>([this]() { processWriting(); });
             readThread = std::make_unique<std::thread>([this]() { processReading(); });
 
+            this->running = true;
+
             return absl::OkStatus();
         }
     }
@@ -105,19 +120,20 @@ namespace claid
         DataPackage dp;
         while(stream->Read(&dp)) 
         {
-            incomingQueue.push_back(std::make_shared<DataPackage>(dp));
+            this->clientTable.getFromRemoteClientQueue().push_back(std::make_shared<DataPackage>(dp));
         }
         std::cout << "RemoteDispatcherClient: Finished reading\n";
     }
 
     void RemoteDispatcherClient::processWriting() 
     {
-        while(true) 
+        while(this->running) 
         {
-            auto pkt = outgoingQueue.pop_front();
+            SharedQueue<DataPackage>& toRemoteClientQueue = this->clientTable.getToRemoteClientQueue();
+            auto pkt = toRemoteClientQueue.pop_front();
             if (!pkt) 
             {
-                if (outgoingQueue.is_closed()) 
+                if (toRemoteClientQueue.is_closed()) 
                 {
                     break;
                 }
@@ -127,11 +143,12 @@ namespace claid
                 if (!stream->Write(*pkt)) 
                 {
                     // Server is down?
+                    Logger::logWarning("Failed to write to remote server. RemoteDispatcherClient is shutting down queue.");
                     break;
                 }
             }
         }
         stream->WritesDone();
-        std::cout << "RemoteDispatcherClient processWriting done";
+        Logger::logInfo("RemoteDispatcherClient processWriting done");
     }
 }
