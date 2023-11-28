@@ -4,6 +4,10 @@
 #include "dispatch/core/Router/ServerRouter.hh"
 #include "dispatch/core/Router/ClientRouter.hh"
 
+#include "dispatch/core/Router/RoutingTree.hh"
+#include "dispatch/core/Router/RoutingTreeParser.hh"
+
+
 #include <vector>
 #include <memory>
 #include <string>
@@ -50,6 +54,16 @@ std::vector<std::shared_ptr<DataPackage>> packages = {
     makePkt(channel32, mod3, mod2, [](auto& p) { p.set_target_host(test_host); p.set_string_val("package32"); }),
     makePkt(channel33, mod3, mod3, [](auto& p) { p.set_target_host(test_host); p.set_string_val("package33"); })
 };
+
+std::shared_ptr<DataPackage> makePackageFromToHost(const std::string& source_host, const std::string& targetHost, const std::string& packageStringVal)
+{
+    std::shared_ptr<DataPackage> dataPackage = std::make_shared<DataPackage>();
+
+    dataPackage->set_source_host(source_host); 
+    dataPackage->set_target_host(targetHost); 
+    dataPackage->set_string_val(packageStringVal);
+    return dataPackage;
+}
 
 void prepareModuleTableAndQueues(ModuleTable& table, SharedQueue<DataPackage>*& outputQueue1, SharedQueue<DataPackage>*& outputQueue2, SharedQueue<DataPackage>*& outputQueue3)
 {  
@@ -128,24 +142,127 @@ TEST(RouterTestSuite, LocalRouterTest)
     assertQueues(outputQueue1, outputQueue2, outputQueue3);
 }
 
+
+void assertHostUserTableQueue(HostUserTable& hostUserTable, const std::string& targetHost)
+{
+    absl::Status status;
+    std::vector<std::shared_ptr<SharedQueue<DataPackage>>> queues;
+    std::shared_ptr<SharedQueue<DataPackage>> queue;
+    std::shared_ptr<DataPackage> package;
+
+
+    status = hostUserTable.lookupOutputQueuesForHost(targetHost, queues);
+    ASSERT_TRUE(status.ok()) << status;
+    ASSERT_EQ(queues.size(), 1) << "Expected exactly one Queue to " << targetHost << ", however got " << queues.size();
+    queue = queues[0];
+    ASSERT_EQ(queue->size(), 1) << "Expected queue for " << targetHost << " to have exactly one package in the queue, but got " << queue->size();
+    package = queue->pop_front();
+    ASSERT_EQ(package->target_host(), targetHost);
+}
+
+// Tests the ServerRouter.
+// Verifies that the ServerRouter outputs packages to the correct queues of directly connected and indirectly connected clients.
+// Indirectly connected clients are clients that connect via another intermediate Router, e.g. Client1 -> Server1 -> Server2.
+// The following test creates 3 Server and 3 client hosts, which are all directly and indirectly connected to Server1.
+// The ServerRouter is configured to run on Server1. The test verifies that the ServerRouter routes all packages accordingly to all connected clients.
 TEST(RouterTestSuite, ServerRouterTest)
 {   
+        std::cout << "T0\n";
+
     SharedQueue<DataPackage>* outputQueue1;
     SharedQueue<DataPackage>* outputQueue2;
     SharedQueue<DataPackage>* outputQueue3;
 
+    HostDescriptionMap hostDescriptions;
+    addHostDescription(hostDescriptions, "Server1", true, "claid1.ethz.ch", "");
+    addHostDescription(hostDescriptions, "Client11", false, "claid3.claid.ethz.ch", "Server1");
+    addHostDescription(hostDescriptions, "Client12", false, "claid3.claid.ethz.ch", "Server1");
+    addHostDescription(hostDescriptions, "Server2", true, "claid2.ethz.ch", "Server1");
+    addHostDescription(hostDescriptions, "Client2", false, "claid3.claid.ethz.ch", "Server2");
+    addHostDescription(hostDescriptions, "Server3", true, "claid3.claid.ethz.ch", "Server2");
+    addHostDescription(hostDescriptions, "Client3", false, "claid3.claid.ethz.ch", "Server3");
 
-    const std::string currentHost = "test_client";
+
+    const std::string currentHost = "Server1";
     RoutingTree routingTree;
-    HostUserTable hostUserTable;
+    RoutingTreeParser routingTreeParser;
 
-    for(std::shared_ptr<DataPackage>& package : packages)
+    absl::Status status;
+    status = routingTreeParser.buildRoutingTree(hostDescriptions, routingTree);
+
+    ASSERT_TRUE(status.ok()) << status;
+
+
+    HostUserTable hostUserTable;
+    
+    // We are Server1, hence in our HostUserTable we only have clients/servers directly connected to us.
+    status = hostUserTable.addRemoteClient("Server1", "UserID01", "DeviceID01");
+    ASSERT_TRUE(status.ok()) << status;
+
+    status = hostUserTable.addRemoteClient("Client11", "UserID02", "DeviceID02");
+    ASSERT_TRUE(status.ok()) << status;
+
+    status = hostUserTable.addRemoteClient("Client12", "UserID03", "DeviceID02");
+    ASSERT_TRUE(status.ok()) << status;
+
+    status = hostUserTable.addRemoteClient("Server2", "UserID04", "DeviceID03");
+    ASSERT_TRUE(status.ok()) << status;
+
+    
+    ServerRouter serverRouter(currentHost, routingTree, hostUserTable);
+
+    std::vector<std::shared_ptr<DataPackage>> serverPackages =
     {
-        absl::Status status = localRouter.routePackage(package);
-        ASSERT_EQ(status.ok(), true) << status;
+        makePackageFromToHost("Server1", "Server2", "packageToServer2"),
+        makePackageFromToHost("Server1", "Server3", "packageToServer3"),
+        makePackageFromToHost("Server1", "Client11", "packageToClient1"),
+        makePackageFromToHost("Server1", "Client12", "packageToClient12"),
+        makePackageFromToHost("Server1", "Client2", "packageToClient2"),
+        makePackageFromToHost("Server1", "Client3", "packageToClient3"),
+    };
+
+    for(std::shared_ptr<DataPackage> package : serverPackages)
+    {
+        serverRouter.routePackage(package);
     }
 
-    assertQueues(outputQueue1, outputQueue2, outputQueue3);
+
+    std::vector<std::shared_ptr<SharedQueue<DataPackage>>> queues;
+
+    status = hostUserTable.lookupOutputQueuesForHost("Server2", queues);
+    ASSERT_TRUE(status.ok()) << status;
+
+    
+    ASSERT_EQ(queues.size(), 1) << "Expected exactly one Queue to Server2, however got " << queues.size();
+    std::shared_ptr<SharedQueue<DataPackage>> queue = queues[0];
+
+    // Packages for Server2, Client2, Server3 and Client3 are all routed via Server2
+    // Hence, we expect 4 packages.
+    ASSERT_EQ(queue->size(), 4) << "Expected queue for Server2 to have exactly one package in the queue, but got " << queue->size();
+    
+
+    std::vector<std::string> expectedTargetHosts = {"Server2", "Server3", "Client2", "Client3"};
+
+    std::shared_ptr<DataPackage> package;
+    for(const std::string& expectedHost : expectedTargetHosts)
+    {
+        package = queue->pop_front();
+        ASSERT_EQ(package->target_host(), expectedHost) 
+            << "Invalid package, expected target host " << expectedHost << " but got " << package->target_host();
+    }
+
+    assertHostUserTableQueue(hostUserTable, "Client11");
+    assertHostUserTableQueue(hostUserTable, "Client12");
+
+    status = hostUserTable.lookupOutputQueuesForHost("Server3", queues);
+    ASSERT_FALSE(status.ok()) << "Expected there to be no Queue to Server3, however got " << queues.size() << " queues";;
+    
+    status = hostUserTable.lookupOutputQueuesForHost("Client3", queues);
+    ASSERT_FALSE(status.ok()) << "Expected there to be no Queue to Server3, however got " << queues.size() << " queues";;
+    
+    
+    
+  //  assertQueues(outputQueue1, outputQueue2, outputQueue3);
 }
 
 TEST(RouterTestSuite, MasterRouterTest)

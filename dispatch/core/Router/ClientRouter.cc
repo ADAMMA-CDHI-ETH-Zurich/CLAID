@@ -31,7 +31,7 @@ namespace claid {
             ));
         }
 
-        this->clientTable.getQueue().push_back(dataPackage);
+        this->clientTable.getToRemoteClientQueue().push_back(dataPackage);
 
         return absl::OkStatus();
     }

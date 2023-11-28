@@ -42,7 +42,9 @@ TEST(RemoteDispatcherTestSuite, ServerTest)
     const std::string userToken = "User01";
     const std::string deviceID = "13:37";
     
-    claid::RemoteDispatcherClient client(address, host, userToken, deviceID, inQueue, outQueue);
+    ClientTable clientTable;
+
+    claid::RemoteDispatcherClient client(address, host, userToken, deviceID, clientTable);
 
     std::cout << "Checkpoint 1\n";
 
