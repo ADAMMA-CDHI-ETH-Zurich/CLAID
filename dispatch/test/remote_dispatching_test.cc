@@ -39,22 +39,29 @@ class SenderModule : public claid::Module
         Logger::logInfo("Initialize called");
         sendChannel = this->publish<std::string>("TestChannel");
 
-        registerPeriodicFunction("PeriodicFunction", &SenderModule::periodicFunction, this, Duration::milliseconds(1000));
+        registerPeriodicFunction("PeriodicFunction", &SenderModule::periodicFunction, this, Duration::milliseconds(10));
     }
 
     void periodicFunction()
     {
         Logger::logInfo("Periodic function");
+        sendChannel.post("TestData");
     }
 };
 
 class ReceiverModule : public claid::Module
 {
-    public:
-        void initialize(const std::map<std::string, std::string>& properties)
-        {
-            
-        }
+    Channel<std::string> receiveChannel;
+
+    void initialize(const std::map<std::string, std::string>& properties)
+    {
+        receiveChannel = this->subscribe<std::string>("TestChannel", &ReceiverModule::onData, this);
+    }
+
+    void onData(ChannelData<std::string> data)
+    {
+        Logger::logInfo("Received data %s", data.getData().c_str());
+    }
 };
 
 REGISTER_MODULE_FACTORY_CUSTOM_NAME(TestSenderModule, SenderModule)
@@ -73,20 +80,19 @@ TEST(RemoteDispatcherTestSuite, ServerTest)
     const char* user_id = "user42";
     const char* device_id = "something_else";
 
-    Logger::logInfo("===== STARTING CLIENT MIDDLEWARE ====");
-
-    CLAID clientMiddleware;
-    bool result = clientMiddleware.start(socket_path_local_1, config_file, client_host_id, user_id, device_id);
-
-    ASSERT_TRUE(result) << "Failed to start client middleware";
-
     Logger::logInfo("===== STARTING SERVER MIDDLEWARE ====");
     
     CLAID serverMiddleware;
-    result = serverMiddleware.start(socket_path_local_2, config_file, server_host_id, user_id, device_id);
+    bool result = serverMiddleware.start(socket_path_local_2, config_file, server_host_id, user_id, device_id);
 
     ASSERT_TRUE(result) << "Failed to start server middleware";
 
+    Logger::logInfo("===== STARTING CLIENT MIDDLEWARE ====");
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    CLAID clientMiddleware;
+    result = clientMiddleware.start(socket_path_local_1, config_file, client_host_id, user_id, device_id);
+
+    ASSERT_TRUE(result) << "Failed to start client middleware";
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000000));
 }

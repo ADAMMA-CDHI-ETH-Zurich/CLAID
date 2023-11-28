@@ -8,6 +8,7 @@ namespace claid
     {
         if(this->running)
         {
+            Logger::logInfo("RemoteDispatcherClient: destructor");
             shutdown();
         }
     }
@@ -104,13 +105,13 @@ namespace claid
                     "Expected ControlType \"", CtrlType_Name(CtrlType::CTRL_REMOTE_PING), "\", but got \"", CtrlType_Name(pingResp.control_val().ctrl_type()), "\""
                 ));
             }
+            this->running = true;
 
             // Start the threads to service the input/output queues.
             writeThread = std::make_unique<std::thread>([this]() { processWriting(); });
             readThread = std::make_unique<std::thread>([this]() { processReading(); });
 
-            this->running = true;
-
+            Logger::logInfo("RemoteDispatcherClient setup successful");
             return absl::OkStatus();
         }
     }
@@ -122,17 +123,21 @@ namespace claid
         {
             this->clientTable.getFromRemoteClientQueue().push_back(std::make_shared<DataPackage>(dp));
         }
-        std::cout << "RemoteDispatcherClient: Finished reading\n";
+        Logger::logInfo("RemoteDispatcherClient stream closed");
+
     }
 
     void RemoteDispatcherClient::processWriting() 
     {
+        Logger::logInfo("RemoteDispatcherClient: processWriting()");
+
         while(this->running) 
         {
             SharedQueue<DataPackage>& toRemoteClientQueue = this->clientTable.getToRemoteClientQueue();
             auto pkt = toRemoteClientQueue.pop_front();
             if (!pkt) 
             {
+                Logger::logInfo("RemoteDispatcherClient: pkt is null");
                 if (toRemoteClientQueue.is_closed()) 
                 {
                     break;

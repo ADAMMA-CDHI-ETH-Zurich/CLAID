@@ -216,8 +216,8 @@ absl::Status MiddleWare::startRemoteDispatcherClient(const std::string& currentH
     }
 
     Logger::logInfo("Starting RemoteDispatcherClient, connecting to address %s", address.c_str());
-    claid::RemoteDispatcherClient client(address, currentHost, currentUser, currentDeviceId, this->clientTable);
-    absl::Status status = client.registerAtServerAndStartStreaming();
+    this->remoteDispatcherClient = std::make_unique<RemoteDispatcherClient>(address, currentHost, currentUser, currentDeviceId, this->clientTable);
+    absl::Status status = this->remoteDispatcherClient->registerAtServerAndStartStreaming();
 
     return absl::OkStatus();
 }
