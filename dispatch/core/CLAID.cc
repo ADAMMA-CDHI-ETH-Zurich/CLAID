@@ -93,7 +93,7 @@ namespace claid {
         moduleDispatcher = nullptr;
         moduleManager = nullptr;
           
-        
+        started = false;
 
         return true;
     }

@@ -106,4 +106,11 @@ TEST(RemoteDispatcherTestSuite, ServerTest)
 
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     serverMiddleware.shutdown();
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+
+    clientMiddleware.shutdown();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
 }

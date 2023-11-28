@@ -31,28 +31,34 @@ namespace claid
         {
             return;
         }
-        std::cout << "Shutting down client 1\n";
+        Logger::logInfo("Stopping RemoteDispatcherClient 1");
         // Closing the outgoing queue will end the writer thread.
         // The writer thread will invoke stream->WritesDone() after the outgoingQueue was closed.
         // This will close the stream and also abort stream->Read() for the reader thread.
        
+        Logger::logInfo("Stopping RemoteDispatcherClient 2");
         this->connectionMonitorRunning = false;
         this->connected = false;
-        this->stream->Finish();
+        Logger::logInfo("Stopping RemoteDispatcherClient 3");
+        
+       // this->stream->Finish();
+        Logger::logInfo("Stopping RemoteDispatcherClient 4");
+
+        Logger::logInfo("Stopping RemoteDispatcherClient 5");
 
         if (this->writeThread) 
         {
             this->writeThread->join();
             this->writeThread = nullptr;
         }
-        std::cout << "Shutting down client 2\n";
+        Logger::logInfo("Stopping RemoteDispatcherClient 6");
 
         if (this->watcherAndReaderThreader) 
         {
             this->watcherAndReaderThreader->join();
             this->watcherAndReaderThreader = nullptr;
         }
-        std::cout << "Shutting down client 3\n";
+        Logger::logInfo("Stopping RemoteDispatcherClient 7");
 
     }
 
