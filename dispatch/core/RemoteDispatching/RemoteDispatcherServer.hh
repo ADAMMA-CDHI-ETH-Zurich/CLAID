@@ -29,7 +29,6 @@ namespace claid
 
     private:
       const std::string addr;
-      HostUserTable& hostUserTable;
 
       bool running = false;
 

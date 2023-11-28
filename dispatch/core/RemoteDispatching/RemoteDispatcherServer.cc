@@ -10,7 +10,7 @@
 namespace claid 
 {
     RemoteDispatcherServer::RemoteDispatcherServer(const std::string& addr, HostUserTable& hostUserTable)
-        : addr(addr), hostUserTable(hostUserTable), remoteServiceImpl(hostUserTable)
+        : addr(addr), remoteServiceImpl(hostUserTable)
     {
 
     }

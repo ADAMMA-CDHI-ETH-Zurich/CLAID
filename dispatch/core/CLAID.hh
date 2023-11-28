@@ -14,26 +14,26 @@ namespace claid
 
     private:
   
-        static std::unique_ptr<DispatcherClient> moduleDispatcher;
-        static std::unique_ptr<ModuleManager> moduleManager;
+        std::unique_ptr<DispatcherClient> moduleDispatcher;
+        std::unique_ptr<ModuleManager> moduleManager;
 
-        static SharedQueue<DataPackage> fromModuleDispatcherQueue;
-        static SharedQueue<DataPackage> toModuleDispatcherQueue;
+        SharedQueue<DataPackage> fromModuleDispatcherQueue;
+        SharedQueue<DataPackage> toModuleDispatcherQueue;
 
-        static bool started;
-        static void* handle;
+        bool started;
+        void* handle;
 
     public:
 
         // Starts the middleware and attaches to it.
-        static bool start(const std::string& socketPath, const std::string& configFilePath, const std::string& hostId, const std::string& userId, const std::string& deviceId);
+        bool start(const std::string& socketPath, const std::string& configFilePath, const std::string& hostId, const std::string& userId, const std::string& deviceId);
         
-        static bool shutdown();
+        bool shutdown();
 
         // Attaches to the Middleware, but does not start it.
         // Assumes that the middleware is started in another language (e.g., C++ or Dart).
         // HAS to be called AFTER start is called in ANOTHER language.
-        static bool attachCppRuntime(void* handle);
+        bool attachCppRuntime(void* handle);
     };
 
 }

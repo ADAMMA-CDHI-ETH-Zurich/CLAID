@@ -1,5 +1,6 @@
 #include "dispatch/core/RemoteDispatching/RemoteDispatcherServer.hh"
 #include "dispatch/core/RemoteDispatching/RemoteDispatcherClient.hh"
+#include "dispatch/core/CLAID.hh"
 
 #include "gtest/gtest.h"
 #include "google/protobuf/util/message_differencer.h"
@@ -29,32 +30,63 @@ RemoteDispatcherClient(const std::string& addressToConnectTo,
                     SharedQueue<DataPackage>& outgoingQueue);
 */
 
+class SenderModule : public claid::Module
+{
+    Channel<std::string> sendChannel;
+
+    void initialize(const std::map<std::string, std::string>& properties)
+    {
+        Logger::logInfo("Initialize called");
+        sendChannel = this->publish<std::string>("TestChannel");
+
+        registerPeriodicFunction("PeriodicFunction", &SenderModule::periodicFunction, this, Duration::milliseconds(1000));
+    }
+
+    void periodicFunction()
+    {
+        Logger::logInfo("Periodic function");
+    }
+};
+
+class ReceiverModule : public claid::Module
+{
+    public:
+        void initialize(const std::map<std::string, std::string>& properties)
+        {
+            
+        }
+};
+
+REGISTER_MODULE_FACTORY_CUSTOM_NAME(TestSenderModule, SenderModule)
+REGISTER_MODULE_FACTORY_CUSTOM_NAME(TestReceiverModule, ReceiverModule)
+
 TEST(RemoteDispatcherTestSuite, ServerTest) 
 {
-    std::cout << "=== TEST BEGIN ===\n";
-    const std::string address = "localhost:1337";
-    HostUserTable hostUserTable;
-    claid::RemoteDispatcherServer server(address, hostUserTable);
-    absl::Status status = server.start();
-    ASSERT_TRUE(status.ok()) << status;
+    // unix domain socket for the client CLAID instance (not for remote communication, only for local dispatching!)
+    const char* socket_path_local_1 = "unix:///tmp/test_grpc_client.sock";
 
-    SharedQueue<DataPackage> inQueue;
-    SharedQueue<DataPackage> outQueue;
-    const std::string host = "host1";
-    const std::string userToken = "User01";
-    const std::string deviceID = "13:37";
+    // unix domain socket for the server CLAID instance (not for remote communication, only for local dispatching!)
+    const char* socket_path_local_2 = "unix:///tmp/test_grpc_server.sock";
+    const char* config_file = "dispatch/test/remote_dispatching_test.json";
+    const char* client_host_id = "test_client";
+    const char* server_host_id = "test_server";
+    const char* user_id = "user42";
+    const char* device_id = "something_else";
 
-    ClientTable clientTable;
+    Logger::logInfo("===== STARTING CLIENT MIDDLEWARE ====");
+
+    CLAID clientMiddleware;
+    bool result = clientMiddleware.start(socket_path_local_1, config_file, client_host_id, user_id, device_id);
+
+    ASSERT_TRUE(result) << "Failed to start client middleware";
+
+    Logger::logInfo("===== STARTING SERVER MIDDLEWARE ====");
     
-    claid::RemoteDispatcherClient client(address, host, userToken, deviceID, clientTable);
+    CLAID serverMiddleware;
+    result = serverMiddleware.start(socket_path_local_2, config_file, server_host_id, user_id, device_id);
 
-    std::cout << "Checkpoint 1\n";
+    ASSERT_TRUE(result) << "Failed to start server middleware";
 
-    status = client.registerAtServerAndStartStreaming();
-    std::cout << "Checkpoint 2\n";
-    ASSERT_TRUE(status.ok()) << status;
-    client.shutdown();
-    std::cout << "Checkpoint 3\n";
 
-    server.shutdown();
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 }

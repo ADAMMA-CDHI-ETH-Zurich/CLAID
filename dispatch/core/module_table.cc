@@ -97,7 +97,7 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         // Find the channel and verify and set the type.
         auto entry = findChannel(channelId);
         if (!entry) {
-            return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Channel \"", channelId, "\"not known"));
+            return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Channel \"", channelId, "\" not known, did you specify it in the configuration file?"));
         }
 
         // If the type was already set and the type doesn't match we return an error.

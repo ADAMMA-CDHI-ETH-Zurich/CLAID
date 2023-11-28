@@ -1,0 +1,39 @@
+{
+	"hosts": [{
+			"hostname": "test_client",
+			"type": "linux",
+			"is_server": false,
+			"connect_to": "test_server",
+			"modules": [
+				{
+					"type": "TestSenderModule",
+					"id": "SenderModule1",
+					"input_channels": [],
+					"output_channels": ["TestChannel"],
+					"properties": {
+						
+					}
+				}
+			]
+		},
+		{
+			"hostname": "test_server",
+			"type": "linux",
+			"is_server": true,
+			"host_server_address": "localhost:1337",
+			"modules": [
+
+				{
+					"type": "TestReceiverModule",
+					"id": "ReceiverModule",
+					"input_channels": [],
+					"output_channels": [],
+					"properties": {
+						
+					}
+				}
+
+			]
+		}
+	]
+}

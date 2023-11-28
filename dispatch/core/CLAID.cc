@@ -7,15 +7,15 @@
 
 
 namespace claid {
-    bool CLAID::started = false;
+    // bool CLAID::started = false;
 
-    std::unique_ptr<DispatcherClient> CLAID::moduleDispatcher;
-    std::unique_ptr<ModuleManager> CLAID::moduleManager;
+    // std::unique_ptr<DispatcherClient> CLAID::moduleDispatcher;
+    // std::unique_ptr<ModuleManager> CLAID::moduleManager;
 
-    SharedQueue<DataPackage> CLAID::fromModuleDispatcherQueue;
-    SharedQueue<DataPackage> CLAID::toModuleDispatcherQueue;
+    // SharedQueue<DataPackage> CLAID::fromModuleDispatcherQueue;
+    // SharedQueue<DataPackage> CLAID::toModuleDispatcherQueue;
 
-    void* CLAID::handle = nullptr;
+    // void* CLAID::handle = nullptr;
     
     bool CLAID::start(const std::string& socketPath, const std::string& configFilePath, const std::string& hostId, const std::string& userId, const std::string& deviceId)
     {

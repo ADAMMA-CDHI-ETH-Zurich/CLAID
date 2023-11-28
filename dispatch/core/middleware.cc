@@ -156,6 +156,7 @@ absl::Status MiddleWare::startRemoteDispatcherServer(const std::string& currentH
         ));
     }
 
+    Logger::logInfo("Starting RemoteDispatcherServer, listening on address %s", address.c_str());
     this->remoteDispatcherServer = make_unique<RemoteDispatcherServer>(address, this->hostUserTable);
 
     return this->remoteDispatcherServer->start();
@@ -169,8 +170,54 @@ absl::Status MiddleWare::startRemoteDispatcherClient(const std::string& currentH
         return absl::AlreadyExistsError("Failed to start client for connection to external server; RemoteDispatcherClient already exists.");
     }
 
-    //     claid::RemoteDispatcherClient client(address, host, userToken, deviceID, inQueue, outQueue);
-    // absl::Status status = client.registerAtServerAndStartStreaming();
+    auto it = hostDescriptions.find(currentHost);
+    if(it == hostDescriptions.end())
+    {
+        return absl::NotFoundError(absl::StrCat(
+            "Couldn't find host current host \"", currentHost, "\" in host descriptions"
+        ));
+    }
+
+    const HostDescription& hostDescription = it->second;
+    const std::string& targetServer = hostDescription.connectTo;
+
+    if(targetServer == "")
+    {
+        Logger::logInfo("Not starting RemoteDispatcherClient, because targetServer is empty (this host will not connect to an external host).");
+        return absl::OkStatus();
+    }
+
+    auto it2 = hostDescriptions.find(targetServer);
+    if(it2 == hostDescriptions.end())
+    {
+        return absl::NotFoundError(absl::StrCat(
+            "Current host \"", currentHost, "\" was configured to connect to server \"", targetServer, "\", ",
+            "but the server was not found in the host description, i.e., it does not exist in the configuration file."
+        ));
+    }
+
+    const HostDescription& serverDescription = it2->second;
+
+    if(!serverDescription.isServer)
+    {
+        return absl::InvalidArgumentError(absl::StrCat(
+            "Current host \"", currentHost, "\" was configured to connect to server \"", targetServer, "\", ",
+            "but the server was not configured as server in the configuration file (is_server is false)"
+        ));
+    }
+
+    const std::string& address = serverDescription.hostServerAddress;
+    if(address == "")
+    {
+        return absl::InvalidArgumentError(absl::StrCat(
+            "Current host \"", currentHost, "\" was configured to connect to server \"", targetServer, "\", ",
+            "but the hostServerAddress of \"", targetServer, "\" is empty and therefore invalid."
+        ));
+    }
+
+    Logger::logInfo("Starting RemoteDispatcherClient, connecting to address %s", address.c_str());
+    claid::RemoteDispatcherClient client(address, currentHost, currentUser, currentDeviceId, this->clientTable);
+    absl::Status status = client.registerAtServerAndStartStreaming();
 
     return absl::OkStatus();
 }

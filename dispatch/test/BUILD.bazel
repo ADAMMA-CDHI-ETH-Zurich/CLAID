@@ -10,6 +10,7 @@ filegroup(
     srcs = [
         "test_config.json",
         "cpp_runtime_test.json",
+        "remote_dispatching_test.json",
     ],
 )
 
@@ -42,8 +43,11 @@ cc_test(
   srcs = ["remote_dispatching_test.cc"],
   deps = [
     ":testmessages_cc_proto",
-    "//dispatch/core:remote_dispatching",
+    "//dispatch/core:capi",
   ] + FRAMEWORK_DEPS,
+  data = [
+    ":test_configs",
+  ]
 )
 
 cc_binary(
