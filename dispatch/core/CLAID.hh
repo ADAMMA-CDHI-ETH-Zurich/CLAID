@@ -34,6 +34,9 @@ namespace claid
         // Assumes that the middleware is started in another language (e.g., C++ or Dart).
         // HAS to be called AFTER start is called in ANOTHER language.
         bool attachCppRuntime(void* handle);
+
+        bool isConnectedToRemoteServer() const;
+        absl::Status getRemoteClientStatus() const;
     };
 
 }

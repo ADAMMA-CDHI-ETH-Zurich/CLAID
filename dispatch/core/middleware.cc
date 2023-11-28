@@ -100,8 +100,10 @@ absl::Status MiddleWare::start() {
     }
 
     status = this->startRemoteDispatcherClient(this->hostId, this->userId, this->deviceId, hostDescriptions);
-
-    Logger::logInfo("Started Router successfully");
+    if(!status.ok())
+    {
+        return status;
+    }
 
     Logger::printfln("Middleware started.");
 
@@ -165,9 +167,11 @@ absl::Status MiddleWare::startRemoteDispatcherServer(const std::string& currentH
 absl::Status MiddleWare::startRemoteDispatcherClient(const std::string& currentHost, const std::string& currentUser,
                 const std::string& currentDeviceId, const HostDescriptionMap& hostDescriptions)
 {
-    if(this->remoteDispatcherServer != nullptr)
+    if(this->remoteDispatcherClient != nullptr)
     {
-        return absl::AlreadyExistsError("Failed to start client for connection to external server; RemoteDispatcherClient already exists.");
+        return absl::AlreadyExistsError(absl::StrCat(
+            "Failed to start RemoteDispatcherClient on the current host \"", currentHost, "\"; RemoteDispatcherClient already exists."
+        ));
     }
 
     auto it = hostDescriptions.find(currentHost);
@@ -217,7 +221,12 @@ absl::Status MiddleWare::startRemoteDispatcherClient(const std::string& currentH
 
     Logger::logInfo("Starting RemoteDispatcherClient, connecting to address %s", address.c_str());
     this->remoteDispatcherClient = std::make_unique<RemoteDispatcherClient>(address, currentHost, currentUser, currentDeviceId, this->clientTable);
-    absl::Status status = this->remoteDispatcherClient->registerAtServerAndStartStreaming();
+    absl::Status status = this->remoteDispatcherClient->start();
+
+    if(!status.ok())
+    {
+        return status;
+    }
 
     return absl::OkStatus();
 }
@@ -293,11 +302,7 @@ absl::Status MiddleWare::shutdown()
         return status;
     }
 
-    status = this->masterRouter->stop();
-    if(!status.ok())
-    {
-        return status;
-    }
+
 
     if(this->remoteDispatcherServer != nullptr)
     {
@@ -357,4 +362,17 @@ const std::string& MiddleWare::getSocketPath() const
 {
     std::cout << " got socket path " << socketPath << "\n";
     return socketPath;
+}
+
+bool MiddleWare::isConnectedToRemoteServer() const
+{
+    return this->remoteDispatcherClient != nullptr && this->remoteDispatcherClient->isConnected();
+}
+
+absl::Status MiddleWare::getRemoteClientStatus() const
+{
+    return this->remoteDispatcherClient != nullptr ?
+         this->remoteDispatcherClient->getLastStatus() : 
+            absl::UnavailableError("Status of RemoteDispatcherClient not available, because the RemoteDispatcherClient does not exist.");
+
 }

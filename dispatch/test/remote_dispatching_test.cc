@@ -39,7 +39,7 @@ class SenderModule : public claid::Module
         Logger::logInfo("Initialize called");
         sendChannel = this->publish<std::string>("TestChannel");
 
-        registerPeriodicFunction("PeriodicFunction", &SenderModule::periodicFunction, this, Duration::milliseconds(10));
+        registerPeriodicFunction("PeriodicFunction", &SenderModule::periodicFunction, this, Duration::milliseconds(1000));
     }
 
     void periodicFunction()
@@ -80,19 +80,30 @@ TEST(RemoteDispatcherTestSuite, ServerTest)
     const char* user_id = "user42";
     const char* device_id = "something_else";
 
-    Logger::logInfo("===== STARTING SERVER MIDDLEWARE ====");
-    
-    CLAID serverMiddleware;
-    bool result = serverMiddleware.start(socket_path_local_2, config_file, server_host_id, user_id, device_id);
-
-    ASSERT_TRUE(result) << "Failed to start server middleware";
+    bool result;
 
     Logger::logInfo("===== STARTING CLIENT MIDDLEWARE ====");
 
     CLAID clientMiddleware;
     result = clientMiddleware.start(socket_path_local_1, config_file, client_host_id, user_id, device_id);
-
     ASSERT_TRUE(result) << "Failed to start client middleware";
+   
+    // We deliberately start the clientMiddleware first. This will cause the connection attempt
+    // of the RemoteDispatcherClient to fail, because the server is not started yet.
+    // The RemoteDispatcherClient should then try at a later time (every 2 seconds);
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000000));
+    Logger::logInfo("===== STARTING SERVER MIDDLEWARE ====");
+    
+    CLAID serverMiddleware;
+    result = serverMiddleware.start(socket_path_local_2, config_file, server_host_id, user_id, device_id);
+    ASSERT_TRUE(result) << "Failed to start server middleware";
+   
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(4100));
+    ASSERT_TRUE(clientMiddleware.isConnectedToRemoteServer()) << clientMiddleware.getRemoteClientStatus();
+
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    serverMiddleware.shutdown();
 }

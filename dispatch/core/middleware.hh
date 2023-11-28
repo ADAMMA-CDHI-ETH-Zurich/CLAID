@@ -36,10 +36,12 @@ namespace claid
             );
 
             absl::Status start();
-           
             absl::Status shutdown();
 
             const std::string& getSocketPath() const;
+
+            bool isConnectedToRemoteServer() const;
+            absl::Status getRemoteClientStatus() const;
 
             virtual ~MiddleWare();
         private:

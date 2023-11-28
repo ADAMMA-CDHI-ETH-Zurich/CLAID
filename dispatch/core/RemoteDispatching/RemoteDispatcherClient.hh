@@ -29,12 +29,19 @@ namespace claid
             void shutdown();
             virtual ~RemoteDispatcherClient();
 
-            absl::Status registerAtServerAndStartStreaming();
+            absl::Status start();
+
+            bool isConnected() const;
+            absl::Status getLastStatus() const;
 
         private:
             void processReading();
             void processWriting();
             
+            void connectAndMonitorConnection();
+            
+
+
         private:
 
             // Current host (i.e., the identifier of the current instance/configuration of CLAID).
@@ -42,7 +49,10 @@ namespace claid
             const std::string userToken;
             const std::string deviceID;
 
-            bool running;
+            bool connected = false;
+            bool connectionMonitorRunning = false;
+            absl::Status lastStatus;
+
 
             ClientTable& clientTable;
 
@@ -52,7 +62,11 @@ namespace claid
             
             std::shared_ptr<grpc::ClientContext> streamContext;
             std::shared_ptr<grpc::ClientReaderWriter<claidservice::DataPackage, claidservice::DataPackage>> stream;
-            std::unique_ptr<std::thread> readThread;
+
+            // Thread that establishes and monitors the connection to the remote server.
+            // If connected, this thread reads packages.
+            // Upon disconnet, the reading stops and the thread tries to reconnect.
+            std::unique_ptr<std::thread> watcherAndReaderThreader;
             std::unique_ptr<std::thread> writeThread;
 
     };

@@ -92,6 +92,30 @@ namespace claid {
         
         moduleDispatcher = nullptr;
         moduleManager = nullptr;
+          
+        
+
         return true;
+    }
+
+    bool CLAID::isConnectedToRemoteServer() const
+    {
+        if(handle == nullptr)
+        {
+            return false;
+        }   
+        claid::MiddleWare* middleware = static_cast<claid::MiddleWare*>(handle);
+        return middleware->isConnectedToRemoteServer();
+    }
+
+    absl::Status CLAID::getRemoteClientStatus() const
+    {
+        if(handle == nullptr)
+        {
+            return absl::UnavailableError("Cannot determine status of the RemoteDispatcherClient, because middleware is not running");
+        }   
+
+        claid::MiddleWare* middleware = static_cast<claid::MiddleWare*>(handle);
+        return middleware->getRemoteClientStatus();
     }
 }
