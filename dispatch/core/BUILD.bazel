@@ -15,16 +15,16 @@ cc_binary(
 
 cc_library(
     name = "capi",
-    srcs = [
+    srcs = glob([
         "capi.cc",
         "middleware.cc",
-        "CLAID.cc",
-    ],
-    hdrs = [
+      #  "DataCollection/**/*.cc",
+        "CLAID.cc"]),
+    hdrs = glob([
         "capi.h",
         "middleware.hh",
-        "CLAID.hh"
-    ],
+      #  "DataCollection/**/*.hh",
+        "CLAID.hh"]),
     deps = [
         ":CLAID",
     ],

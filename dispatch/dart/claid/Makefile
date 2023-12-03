@@ -96,7 +96,8 @@ build_android_with_tflite: copy_android_sources
 copy_android_sources:
 	rm -fr android/src/main/java/adamma/c4dhi/claid
 	mkdir -p android/src/main/java/adamma/c4dhi
-	cp -r ../../java/adamma/c4dhi/claid android/src/main/java/adamma/c4dhi/claid
+	cp -r ../../java/runtime/adamma/c4dhi/claid android/src/main/java/adamma/c4dhi/claid
+	cp -r ../../android/platform/adamma/c4dhi/** android/src/main/java/adamma/c4dhi/
 	rm -fr android/src/proto
 	cp -r ../../proto/ android/src/proto
 	rm android/src/proto/BUILD.bazel

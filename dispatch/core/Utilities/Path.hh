@@ -20,8 +20,8 @@
 #pragma once
 
 #include <string>
-#include "Utilities/Time.hh"
-#include "Utilities/StringUtils.hh"
+#include "dispatch/core/Utilities/Time.hh"
+#include "dispatch/core/Utilities/StringUtils.hh"
 
 namespace claid
 {

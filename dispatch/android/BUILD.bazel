@@ -10,7 +10,7 @@ cc_library(
     deps = ["//dispatch/core:capi"],
     alwayslink = True,   # include everything in dependents
     linkstatic = True,
-    linkopts =["-landroid", "-llog"]
+    linkopts =["-landroid", "-llog", "-lm", "-ldl"]
 )
 
 cc_library(
@@ -20,7 +20,7 @@ cc_library(
             "//dispatch/tensorflow:tflite"],
     alwayslink = True,   # include everything in dependents
     linkstatic = True,
-    linkopts =["-landroid", "-llog"]
+    linkopts =["-landroid", "-llog", "-lm", "-ldl"]
 )
 
 android_library(

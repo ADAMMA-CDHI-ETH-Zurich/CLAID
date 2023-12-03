@@ -28,7 +28,7 @@
 #include "dispatch/core/Module/ModuleRef.hh"
 #include "dispatch/core/Module/Publisher.hh"
 #include "dispatch/core/Module/Subscriber.hh"
-
+#include "dispatch/core/Module/PropertyHelper.hh"
 
 namespace claid
 {

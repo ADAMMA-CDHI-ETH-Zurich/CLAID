@@ -47,10 +47,10 @@ android {
 
     sourceSets{
 
-        main.java.srcDirs += ["../../../sources"]
+        main.java.srcDirs += ["../../../platform"]
         main.java.srcDirs += ["../../../../java/runtime"]
         main.proto.srcDirs += "../../../../proto"
-        // main.jniLibs.srcDirs = ['../../../../dependencies/libs/']
+        main.jniLibs.srcDirs = ['../blobs/']
     }
 
     compileOptions {
