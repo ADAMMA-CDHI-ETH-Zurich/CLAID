@@ -57,8 +57,8 @@ build_middleware:
 
 # Build the Android Apk, extract the libs from the Apk and copy them to the blobs folder.
 # Make sure to use CC=gcc, not clang! Otherwise build fails
-.PHONY: build_android
-build_android: copy_android_sources
+.PHONY: build_android_libs
+build_android_libs: copy_android_sources
 	mkdir -p blobs
 	cd ../../..; rm -rf $(TARGET_LIBS_ANDROID)
 	CC=gcc bazel build //dispatch/android:$(OUTPUT_APK_ANDROID_NAME) --fat_apk_cpu=arm64-v8a,armeabi-v7a
@@ -73,7 +73,7 @@ build_android: copy_android_sources
 
 # Build the Android Apk with CLAID including tflite, extract the libs from the Apk and copy them to the blobs folder.
 # Make sure to use CC=gcc, not clang! Otherwise build fails.
-.PHONY: build_android_with_tflite
+.PHONY: build_android_with_tflite_libs
 build_android_with_tflite: copy_android_sources
 	mkdir -p blobs
 	cd ../../..; rm -rf $(TARGET_LIBS_ANDROID)

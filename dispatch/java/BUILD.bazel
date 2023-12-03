@@ -19,13 +19,13 @@ cc_binary(
 
 java_library(
     name = "java_local_dispatching",
-    srcs = glob(["adamma/c4dhi/claid/LocalDispatching/*.java",
-                "adamma/c4dhi/claid/Module/*.java",
-                "adamma/c4dhi/claid/Logger/*.java",
-                "adamma/c4dhi/claid/TypeMapping/*.java",
-                "adamma/c4dhi/claid/Module/Scheduling/*.java",
-                "io/grpc/android/UdsChannelBuilder.java",
-                "android/net/LocalSocketAddress/Namespace.java"]),
+    srcs = glob(["runtime/adamma/c4dhi/claid/LocalDispatching/*.java",
+                "runtime/adamma/c4dhi/claid/Module/*.java",
+                "runtime/adamma/c4dhi/claid/Logger/*.java",
+                "runtime/adamma/c4dhi/claid/TypeMapping/*.java",
+                "runtime/adamma/c4dhi/claid/Module/Scheduling/*.java",
+                "stub/io/grpc/android/UdsChannelBuilder.java",
+                "stub/android/net/LocalSocketAddress/Namespace.java"]),
     deps = [        
         "//dispatch/proto:claidservice_java_proto",
         "//dispatch/proto:claidservice_java_grpc",
@@ -39,10 +39,10 @@ java_library(
 
 java_library(
     name = "claid_java",
-    srcs = glob(["adamma/c4dhi/claid/**/*.java",
-                "adamma/c4dhi/claid_platform_impl/**/*.java",
-                "io/grpc/android/UdsChannelBuilder.java",
-                "android/net/LocalSocketAddress/Namespace.java"]),
+    srcs = glob(["runtime/adamma/c4dhi/claid/**/*.java",
+                "platform/adamma/c4dhi/claid_platform_impl/**/*.java",
+                "stub/io/grpc/android/UdsChannelBuilder.java",
+                "stub/android/net/LocalSocketAddress/Namespace.java"]),
     deps = [":java_local_dispatching",
         ":claid_capi_java",
         "@com_google_protobuf//java/core",

@@ -48,7 +48,7 @@ TEST(RemoteDispatcherTestSuite, ServerTest)
 
     std::cout << "Checkpoint 1\n";
 
-    absl::Status status = client.registerAtServerAndStartStreaming();
+    absl::Status status = client.start();
     std::cout << "Checkpoint 2\n";
     ASSERT_TRUE(status.ok()) << status;
     client.shutdown();
