@@ -24,6 +24,11 @@
 
 namespace claid
 {
+    FileSaver::FileSaver()
+    {
+
+    }
+    
     absl::Status FileSaver::initialize(const std::string& what, const std::string& storagePath, const std::string& fileNameFomat, const std::string& fileType)
     {  
         this->what = what;

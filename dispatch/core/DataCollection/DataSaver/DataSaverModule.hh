@@ -32,7 +32,7 @@ namespace claid
 
         private:
             FileSaver fileSaver;
-            Channel<google::protobuf::Message> dataChannel;
+           // Channel<google::protobuf::Message> dataChannel;
 
             void initialize(const std::map<std::string, std::string>& properties);
 

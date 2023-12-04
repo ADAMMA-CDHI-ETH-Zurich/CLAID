@@ -20,7 +20,7 @@ namespace claid
         SharedQueue<DataPackage> fromModuleDispatcherQueue;
         SharedQueue<DataPackage> toModuleDispatcherQueue;
 
-        bool started;
+        bool started = false;
         void* handle;
 
     public:
