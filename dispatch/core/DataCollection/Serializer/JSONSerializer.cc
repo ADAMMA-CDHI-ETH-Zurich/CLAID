@@ -1,10 +1,12 @@
 #include "dispatch/core/DataCollection/Serializer/JSONSerializer.hh"
+#include "dispatch/core/DataCollection/Serializer/DataSerializerFactory.hh"
+
 
 #include "google/protobuf/util/json_util.h"
 
 namespace claid {
 
-absl::Status JSONSerializer::startNewFile(const std::string& filePath) 
+absl::Status JSONSerializer::beginNewFile(const std::string& filePath) 
 {
     this->currentFilePath = filePath;
     this->data = nullptr;
@@ -35,7 +37,7 @@ absl::Status JSONSerializer::finishFile()
     return absl::OkStatus();
 }
 
-absl::Status JSONSerializer::onNewData(std::shared_ptr<google::protobuf::Message> newData)
+absl::Status JSONSerializer::onNewData(std::shared_ptr<const google::protobuf::Message> newData)
 {
     if(this->data == nullptr)
     {
@@ -59,3 +61,5 @@ absl::Status JSONSerializer::onNewData(std::shared_ptr<google::protobuf::Message
 }
 
 }
+
+REGISTER_DATA_SERIALIZER(JSONSerializer, claid::JSONSerializer, std::vector<std::string>({"JSON", "json"}));

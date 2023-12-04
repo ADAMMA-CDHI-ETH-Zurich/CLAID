@@ -64,6 +64,9 @@ namespace claid
         void moduleError(const std::string& error) const;
         void moduleWarning(const std::string& warning) const;
 
+        void moduleError(absl::Status error) const;
+        void moduleWarning(absl::Status warning) const;
+
         void setId(const std::string& id);
         std::string getId() const;
 
@@ -139,8 +142,8 @@ namespace claid
 
 #define REGISTER_MODULE(moduleName, className)\
     static_assert(std::is_base_of<claid::Module, className>::value, "Tried to register a class as Module (see above), which did not inherit from BaseModule. Did you forget to inherit from Module or BaseModule?");\
-    REGISTER_MODULE_FACTORY(moduleName, className)
+    REGISTER_MODULE_FACTORY_CUSTOM_NAME(moduleName, className)
 
-#define REGISTER_MODULE_CUSTOM_NAME(className)\
-    static_assert(std::is_base_of<claid::Module, className>::value, "Tried to register a class as Module (see above), which did not inherit from BaseModule. Did you forget to inherit from Module or BaseModule?");\
-    REGISTER_MODULE_FACTORY_CUSTOM_NAME(className)
+// #define REGISTER_MODULE(className)\
+//     static_assert(std::is_base_of<claid::Module, className>::value, "Tried to register a class as Module (see above), which did not inherit from BaseModule. Did you forget to inherit from Module or BaseModule?");\
+//     REGISTER_MODULE_FACTORY_CUSTOM_NAME(className)

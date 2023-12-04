@@ -39,6 +39,11 @@ namespace claid{
             return *this->data.get();
         }
 
+        std::shared_ptr<const T> getDataAsPtr()
+        {
+            return this->data;
+        }
+
         const Time& getTimestamp()
         {
             return this->timestamp;

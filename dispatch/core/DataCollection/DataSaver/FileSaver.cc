@@ -20,42 +20,48 @@
 
 #include "dispatch/core/DataCollection/DataSaver/DataSaverModule.hh"
 #include "dispatch/core/Utilities/FileUtils.hh"
+#include "dispatch/core/DataCollection/Serializer/DataSerializerFactory.hh"
+
 namespace claid
 {
-    void FileSaver::initialize(const std::map<std::string, std::string>& properties, DataSaverModule* parentModule)
+    absl::Status FileSaver::initialize(const std::string& what, const std::string& storagePath, const std::string& fileNameFomat, const std::string& fileType)
     {  
+        this->what = what;
+        this->storagePath = storagePath;
+        this->fileNameFormat = fileNameFomat;
+        this->fileType = fileType;
 
-        
-
-        this->parentModule = parentModule;
-        this->dataChannel = this->parentModule->subscribe<Untyped>(this->what, &FileSaver::onData, this);
+        this->serializer = DataSerializerFactory::getInstance()->getSerializerForDataType(fileType);
+        if(this->serializer == nullptr)
+        {
+            return absl::NotFoundError(absl::StrCat("Unable to find serializer for data type \"", fileType, "\"."));
+        }
 
         std::string channelName = this->what;
         claid::StringUtils::stringReplaceAll(channelName, "/", "_");
         claid::StringUtils::stringReplaceAll(this->storagePath, "\%channel_name", channelName);
 
-        this->createStorageFolder(Path(""));
-        this->createTmpFolderIfRequired(Path(""));
+        absl::Status status = this->createStorageFolder(Path(""));
+        if(!status.ok())
+        {
+            return status;
+        }
 
+        status = this->createTmpFolderIfRequired(Path(""));
+        if(!status.ok())
+        {
+            return status;
+        }
+
+        return absl::OkStatus();
     }
 
-    void FileSaver::onData(ChannelData<Untyped> data)
-    {
-        this->storeData(data);
-    }
-
-    void FileSaver::storeData(ChannelData<Untyped>& data)
-    {
-        std::string dataTypeName = this->dataChannel.getChannelDataTypeName();
-        std::string reflectorName = this->serializer->getReflectorName();
-
-        data.applySerializerToData(this->serializer, !this->excludeHeader);
-
-       
+    absl::Status FileSaver::onNewData(ChannelData<google::protobuf::Message>& data)
+    {       
         std::string pathStr = this->fileNameFormat;
         // This has to be done BEFORE calling strftime! Otherwise strftime will throw an exception, 
         // if any of custom %identifier values are present.
-        claid::StringUtils::stringReplaceAll(pathStr, "\%sequence_id", std::to_string(data.getSequenceID()));
+       // claid::StringUtils::stringReplaceAll(pathStr, "\%sequence_id", std::to_string(data.getSequenceID()));
         claid::StringUtils::stringReplaceAll(pathStr, "\%timestamp", std::to_string(data.getTimestamp().toUnixTimestampMilliseconds()));
        
         pathStr = data.getTimestamp().strftime(pathStr.c_str());
@@ -65,22 +71,36 @@ namespace claid
         uint64_t timestampMs = data.getTimestamp().toUnixTimestampMilliseconds();
 
 
-            
+        absl::Status status;
         if(path != this->currentPath)
         {
             Logger::printfln("FileSaver::storeData changing file Timestamp %s %s %s %s", std::to_string(timestampMs).c_str(), pathStr.c_str(), currentPath.toString().c_str(), this->what.c_str());
             this->currentPath = path;
-            beginNewFile(this->currentPath);
+            status = beginNewFile(this->currentPath);
+            if(!status.ok())
+            {
+                return status;
+            }
         }
 
-        bool append = true;
-        this->serializer->writeDataToFile(this->getCurrentFilePath(), this->currentFile);
+        status = this->serializer->onNewData(data.getDataAsPtr());
+
+        return status;
     }
 
-    void FileSaver::beginNewFile(const Path& path)
+    absl::Status FileSaver::beginNewFile(const Path& path)
     {
-        this->createStorageFolder(path);
-        this->createTmpFolderIfRequired(path);
+        absl::Status status = this->createStorageFolder(path);
+        if(!status.ok())
+        {
+            return status;
+        }
+
+        status = this->createTmpFolderIfRequired(path);
+        if(!status.ok())
+        {
+            return status;
+        }
 
         if(this->tmpStoragePath != "")
         {
@@ -92,19 +112,20 @@ namespace claid
             this->currentFilePath = (Path::join(this->storagePath, path).toString());
         }
 
-        if(this->currentFile.is_open())
+        status = this->serializer->finishFile();
+        if(!status.ok())
         {
-            this->currentFile.flush();
-            this->currentFile.close();
-        }
-        this->currentFile = std::ofstream(this->currentFilePath, std::ios::app);
-        if(!this->currentFile.is_open())
-        {
-            CLAID_THROW(claid::Exception, "FileSaver: Failed to open file \" " << this->currentFilePath << "\"");
+            return status;
         }
 
-        bool append = true;
-        this->serializer->writeHeaderToFile(this->getCurrentFilePath(), this->currentFile);
+        status = this->serializer->beginNewFile(path.toString());
+        if(!status.ok())
+        {
+            return status;
+        }
+
+
+        return absl::OkStatus();
     }
 
     std::string FileSaver::getCurrentFilePath()
@@ -112,11 +133,11 @@ namespace claid
         return this->currentFilePath;
     }
 
-    void FileSaver::storeDataHeader(const Path& path)
-    {
-        bool append = true;
-        this->serializer->writeHeaderToFile(path, this->currentFile);
-    }
+    // void FileSaver::storeDataHeader(const Path& path)
+    // {
+    //     bool append = true;
+    //     this->serializer->writeHeaderToFile(path, this->currentFile);
+    // }
 
     void FileSaver::getCurrentPathRelativeToStorageFolder(Path& path, const Time timestamp)
     {
@@ -125,32 +146,34 @@ namespace claid
         //path = Path::join(this->storagePath, path.toString());
     }
      
-    void FileSaver::createDirectoriesRecursively(const std::string& path)
+    absl::Status FileSaver::createDirectoriesRecursively(const std::string& path)
     {
         if(FileUtils::dirExists(path))
         {
-            return;
+            return absl::OkStatus();
         }
         if(!FileUtils::createDirectoriesRecursively(path))
         {
-            CLAID_THROW(Exception, "Error in FileSaver of DataSaverModule: Failed to create one or more directories of the following path: " << path);
+            return absl::UnavailableError(absl::StrCat("Error in FileSaver of DataSaverModule: Failed to create one or more directories of the following path: \"", path, "\""));
         }
+
+        return absl::OkStatus();
     }
 
-    void FileSaver::createStorageFolder(const Path& currentSavePath)
+    absl::Status FileSaver::createStorageFolder(const Path& currentSavePath)
     {
         std::string folderPath = Path::join(this->storagePath, currentSavePath.getFolderPath()).toString();
-        this->createDirectoriesRecursively(folderPath);
+        return this->createDirectoriesRecursively(folderPath);
     }
 
-    void FileSaver::createTmpFolderIfRequired(const Path& currentSavePath)
+    absl::Status FileSaver::createTmpFolderIfRequired(const Path& currentSavePath)
     {
         if(this->tmpStoragePath == "")
         {
-            return;
+            return absl::OkStatus();
         }
         std::string folderPath = Path::join(this->tmpStoragePath, currentSavePath.getFolderPath()).toString();
-        this->createDirectoriesRecursively(folderPath);
+        return this->createDirectoriesRecursively(folderPath);
     }
 
     // In some cases, it might be benefical to first store files in a temporary location,

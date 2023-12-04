@@ -37,9 +37,6 @@ namespace claid
             }
         }
 
-
-  
-
         static void splitStringToVector(const std::string& str, const std::string delimiter, std::vector<std::string>& output)
         {
             output.clear();

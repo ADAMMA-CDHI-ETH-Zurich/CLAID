@@ -1,9 +1,9 @@
 /***************************************************************************
 * Copyright (C) 2023 ETH Zurich
 * Core AI & Digital Biomarker, Acoustic and Inflammatory Biomarkers (ADAMMA)
-* Centre for Digital Health Interventions (c4dhi.org)
+* Centre for Digital Health Interventions
 * 
-* Authors: Patrick Langer, Stephan Altmüller, Francesco Feher
+* Authors: Patrick Langer
 * 
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,27 +17,30 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ***************************************************************************/
-
 #pragma once
-#include "dispatch/core/Module/Module.hh"
-#include "dispatch/core/DataCollection/DataSaver/FileSaver.hh"
-#include <fstream>
 
-#include <google/protobuf/message.h>
+#include "dispatch/core/DataCollection/Serializer/DataSerializerFactory.hh"
 
 namespace claid
 {
-    class DataSaverModule : public claid::Module
-    {
+	template<typename T>
+	class DataSerializerFactoryTyped : public DataSerializerFactoryBase
+	{
 
-        private:
-            FileSaver fileSaver;
-            Channel<google::protobuf::Message> dataChannel;
+		public:
+			DataSerializerFactoryTyped(const std::vector<std::string> dataFormatNames) : DataSerializerFactoryBase(dataFormatNames)
+			{
 
-            void initialize(const std::map<std::string, std::string>& properties);
+			}
 
-            
+			std::shared_ptr<DataSerializer> getInstanceUntyped()
+			{
+				return std::static_pointer_cast<DataSerializer>(std::make_shared<T>());
+			}
 
-            
-    };
+			std::shared_ptr<T> getInstance()
+			{
+				return std::make_shared<T>();
+			}
+	};
 }

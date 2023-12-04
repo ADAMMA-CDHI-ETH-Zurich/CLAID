@@ -18,12 +18,12 @@ cc_library(
     srcs = glob([
         "capi.cc",
         "middleware.cc",
-      #  "DataCollection/**/*.cc",
+        "DataCollection/**/*.cc",
         "CLAID.cc"]),
     hdrs = glob([
         "capi.h",
         "middleware.hh",
-      #  "DataCollection/**/*.hh",
+        "DataCollection/**/*.hh",
         "CLAID.hh"]),
     deps = [
         ":CLAID",
@@ -32,6 +32,16 @@ cc_library(
     alwayslink = True,   # include everything in dependents
 )
 
+cc_library(
+    name = "data_collection",
+    srcs = glob([
+        "DataCollection/**/*.cc",]),
+    hdrs = glob([
+        "DataCollection/**/*.hh"]),
+    deps = [
+        ":CLAID",
+    ],
+)
 
 cc_library(
     name = "CLAID",
@@ -56,6 +66,9 @@ cc_library(
         "@com_google_protobuf//:protobuf",
     ],
 )
+
+
+
 
 cc_library(
     name="cpp_modules",

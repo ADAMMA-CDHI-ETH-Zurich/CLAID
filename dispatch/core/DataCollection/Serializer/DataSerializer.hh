@@ -75,10 +75,12 @@ class DataSerializer
 
     public:
 
-        virtual absl::Status startNewFile(const std::string& file) = 0;
+        virtual ~DataSerializer() {}
+        
+        virtual absl::Status beginNewFile(const std::string& file) = 0;
         virtual absl::Status finishFile() = 0;
 
-        virtual absl::Status onNewData(std::shared_ptr<google::protobuf::Message> data) = 0;
+        virtual absl::Status onNewData(std::shared_ptr<const google::protobuf::Message> data) = 0;
 };
 
 }

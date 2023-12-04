@@ -21,7 +21,7 @@
 #include "dispatch/core/DataCollection/DataSaver/DataSaverModule.hh"
 namespace claid
 {
-    void initialize(const std::map<std::string, std::string>& propertiesMap)
+    void DataSaverModule::initialize(const std::map<std::string, std::string>& propertiesMap)
     {
         PropertyHelper properties(propertiesMap);
 
@@ -44,8 +44,12 @@ namespace claid
             this->moduleError(absl::StrCat("Missing properties: [", unknownProperties, "]. Please sepcify the properties in the configuration file."));
         }
 
-        this->fileSaver.initialize(this);
+        absl::Status status = this->fileSaver.initialize(what, storagePath, fileNameFormat, fileType);
+        if(!status.ok())
+        {
+            this->moduleError(status);
+        }
     }
 }
 
-REGISTER_MODULE("DataSaverModule", claid::DataSaverModule)
+REGISTER_MODULE(DataSaverModule, claid::DataSaverModule)

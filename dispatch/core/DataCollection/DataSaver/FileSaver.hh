@@ -21,7 +21,6 @@
 #pragma once
 
 #include "dispatch/core/DataCollection/Serializer/DataSerializer.hh"
-#include "dispatch/core/CLAID.hh"
 #include "dispatch/core/Utilities/Path.hh"
 
 #include <fstream>
@@ -33,20 +32,19 @@ namespace claid
     class FileSaver
     {
         private:
-            std::shared_ptr<AbstractSerializer> serializer;
+            std::shared_ptr<DataSerializer> serializer;
             std::string what;
             std::string storagePath;
             std::string fileNameFormat;
+            std::string fileType;
+
             bool excludeHeader;
             
             std::string tmpStoragePath;
             std::string currentFilePath;
 
-            std::ofstream currentFile;
 
-            DataSaverModule* parentModule = nullptr;
             Path currentPath;
-            Channel<Untyped> dataChannel;
 
         public:
 
@@ -61,23 +59,20 @@ namespace claid
             std::string getCurrentFilePath();
 
             FileSaver();
-            FileSaver(DataSaverModule* parentModule);
 
-            void initialize(const std::map<std::string, std::string>& properties, DataSaverModule* parentModule);
-            void onData(ChannelData<Untyped> data);
-            void storeData(ChannelData<Untyped>& d);
-            void storeDataHeader(const Path& path);
+            absl::Status initialize(const std::string& what, const std::string& storagePath, const std::string& fileNameFomat, const std::string& fileType);
+            absl::Status onNewData(ChannelData<google::protobuf::Message>& data);
+            // void storeDataHeader(const Path& path);
     
             void getCurrentPathRelativeToStorageFolder(Path& path, const Time timestamp);
-            void createDirectoriesRecursively(const std::string& path);
-            void beginNewFile(const Path& path);
-            void openFile(const std::string& path);
+            absl::Status createDirectoriesRecursively(const std::string& path);
+            absl::Status beginNewFile(const Path& path);
             
 
             void moveTemporaryFilesToStorageDestination();
 
-            void createStorageFolder(const Path& currentSavePath);
-            void createTmpFolderIfRequired(const Path& currentSavePath);
+            absl::Status createStorageFolder(const Path& currentSavePath);
+            absl::Status createTmpFolderIfRequired(const Path& currentSavePath);
 
 
     };

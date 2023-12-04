@@ -9,9 +9,9 @@ class JSONSerializer : public DataSerializer
 
     public:
 
-        absl::Status startNewFile(const std::string& filePath) override final;
+        absl::Status beginNewFile(const std::string& filePath) override final;
         absl::Status finishFile() override final;
-        absl::Status onNewData(std::shared_ptr<google::protobuf::Message> data) override final;
+        absl::Status onNewData(std::shared_ptr<const google::protobuf::Message> data) override final;
 
     private:    
         std::string currentFilePath;

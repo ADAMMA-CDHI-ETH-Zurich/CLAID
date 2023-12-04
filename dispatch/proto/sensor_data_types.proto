@@ -35,3 +35,17 @@ message AudioData
     AudioChannels channels = 5;
 }
 
+// Follows open mHealth standard.
+message AccelerationSample
+{
+    float acceleration_x = 1;
+    float acceleration_y = 2;
+    float acceleration_z = 3;
+    string sensor_body_location = 4;
+    uint64 unix_timestamp_in_ms = 5;
+}
+
+message AccelerationData
+{
+    repeated AccelerationSample samples = 1;
+}

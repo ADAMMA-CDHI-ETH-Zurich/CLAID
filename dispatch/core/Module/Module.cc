@@ -43,6 +43,23 @@ namespace claid
         Logger::log(SeverityLevel::WARNING, warningMsg);
     }
 
+
+    void Module::moduleError(absl::Status error) const
+    {
+        std::stringstream ss;
+        ss << error;
+        std::string errorStr = ss.str();
+        this->moduleError(errorStr);
+    }
+
+    void Module::moduleWarning(absl::Status warning) const
+    {
+        std::stringstream ss;
+        ss << warning;
+        std::string warningStr = ss.str();
+        this->moduleWarning(warningStr);
+    }
+
     bool Module::start(ChannelSubscriberPublisher* subscriberPublisher, const std::map<std::string, std::string>& properties) 
     {
         if (this->isInitialized) 
