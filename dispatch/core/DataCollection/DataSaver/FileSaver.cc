@@ -28,9 +28,14 @@ namespace claid
     {
 
     }
-    
+
     absl::Status FileSaver::initialize(const std::string& what, const std::string& storagePath, const std::string& fileNameFomat, const std::string& fileType)
     {  
+        if(this->initialized)
+        {
+            return absl::InvalidArgumentError("FileSaver: Initialize wa scalled twice");
+        }
+
         this->what = what;
         this->storagePath = storagePath;
         this->fileNameFormat = fileNameFomat;
@@ -58,29 +63,37 @@ namespace claid
             return status;
         }
 
+        this->initialized = true;
+
         return absl::OkStatus();
     }
 
     absl::Status FileSaver::onNewData(ChannelData<google::protobuf::Message>& data)
+    {
+        return FileSaver::onNewData(data.getDataAsPtr(), data.getTimestamp());
+    }
+
+    absl::Status FileSaver::onNewData(std::shared_ptr<const google::protobuf::Message> data, const Time& timestamp)
     {       
         std::string pathStr = this->fileNameFormat;
         // This has to be done BEFORE calling strftime! Otherwise strftime will throw an exception, 
         // if any of custom %identifier values are present.
        // claid::StringUtils::stringReplaceAll(pathStr, "\%sequence_id", std::to_string(data.getSequenceID()));
-        claid::StringUtils::stringReplaceAll(pathStr, "\%timestamp", std::to_string(data.getTimestamp().toUnixTimestampMilliseconds()));
+        claid::StringUtils::stringReplaceAll(pathStr, "\%timestamp", std::to_string(timestamp.toUnixTimestampMilliseconds()));
        
-        pathStr = data.getTimestamp().strftime(pathStr.c_str());
+        pathStr = timestamp.strftime(pathStr.c_str());
 
         Path path(pathStr);
+        path = Path::join(this->storagePath, path);
 
-        uint64_t timestampMs = data.getTimestamp().toUnixTimestampMilliseconds();
+        uint64_t timestampMs = timestamp.toUnixTimestampMilliseconds();
 
 
         absl::Status status;
         if(path != this->currentPath)
         {
-            Logger::printfln("FileSaver::storeData changing file Timestamp %s %s %s %s", std::to_string(timestampMs).c_str(), pathStr.c_str(), currentPath.toString().c_str(), this->what.c_str());
             this->currentPath = path;
+            Logger::printfln("FileSaver::storeData changing file Timestamp %s %s %s %s", std::to_string(timestampMs).c_str(), pathStr.c_str(), currentPath.toString().c_str(), this->what.c_str());
             status = beginNewFile(this->currentPath);
             if(!status.ok())
             {
@@ -88,8 +101,8 @@ namespace claid
             }
         }
 
-        status = this->serializer->onNewData(data.getDataAsPtr());
-
+        status = this->serializer->onNewData(data);
+        hasReceivedData = true;
         return status;
     }
 
@@ -117,12 +130,17 @@ namespace claid
             this->currentFilePath = (Path::join(this->storagePath, path).toString());
         }
 
-        status = this->serializer->finishFile();
-        if(!status.ok())
+        if(hasReceivedData)
         {
-            return status;
+            status = this->serializer->finishFile();
+            if(!status.ok())
+            {
+                return status;
+            }
         }
+        
 
+        Logger::logInfo("PATH %s", path.toString().c_str());
         status = this->serializer->beginNewFile(path.toString());
         if(!status.ok())
         {
@@ -167,7 +185,7 @@ namespace claid
 
     absl::Status FileSaver::createStorageFolder(const Path& currentSavePath)
     {
-        std::string folderPath = Path::join(this->storagePath, currentSavePath.getFolderPath()).toString();
+        std::string folderPath = this->storagePath;//Path::join(this->storagePath, currentSavePath.getFolderPath()).toString();
         return this->createDirectoriesRecursively(folderPath);
     }
 
@@ -210,5 +228,24 @@ namespace claid
                 Logger::printfln("Moving file %s to %s failed.", Path::join(this->tmpStoragePath, relativePath).toString().c_str(), Path::join(this->storagePath, relativePath).toString().c_str());
             }
         }
+    }
+
+    absl::Status FileSaver::endFileSaving()
+    {
+        if(!this->initialized)
+        {
+            return absl::InvalidArgumentError("FileSaver: Failed to end file saving. Initialize was not called.");
+        }
+
+        absl::Status status = this->serializer->finishFile();
+        if(!status.ok())
+        {
+            return status;
+        }
+
+        this->initialized = false;
+
+
+        return absl::OkStatus();
     }
 }

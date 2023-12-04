@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package claid_sensor_data;
+package claid;
 
 option go_package = "claid.ethz.ch/claid_sensor_data";
 

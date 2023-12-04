@@ -14,6 +14,19 @@ filegroup(
     ],
 )
 
+
+cc_test(
+  name = "file_saver_test",
+  size = "small",
+  srcs = ["file_saver_test.cc"],
+  deps = [
+    ":test_helpers",
+    "//dispatch/proto:claidservice_cc_proto",
+    "//dispatch/core:data_collection"
+  ] + FRAMEWORK_DEPS,
+)
+
+
 cc_test(
   name = "local_dispatching_test",
   size = "small",

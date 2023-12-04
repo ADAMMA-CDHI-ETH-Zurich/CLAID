@@ -22,6 +22,7 @@
 
 #include "dispatch/core/DataCollection/Serializer/DataSerializer.hh"
 #include "dispatch/core/Utilities/Path.hh"
+#include "dispatch/core/Module/ChannelData.hh"
 
 #include <fstream>
 
@@ -46,24 +47,7 @@ namespace claid
 
             Path currentPath;
 
-        public:
-
-            // template<typename Reflector>
-            // void reflect(Reflector& reflector)
-            // {
-            // reflector.member("serializer", serializer, "");
-
-            // }
-   
-
             std::string getCurrentFilePath();
-
-            FileSaver();
-
-            absl::Status initialize(const std::string& what, const std::string& storagePath, const std::string& fileNameFomat, const std::string& fileType);
-            absl::Status onNewData(ChannelData<google::protobuf::Message>& data);
-            // void storeDataHeader(const Path& path);
-    
             void getCurrentPathRelativeToStorageFolder(Path& path, const Time timestamp);
             absl::Status createDirectoriesRecursively(const std::string& path);
             absl::Status beginNewFile(const Path& path);
@@ -74,6 +58,33 @@ namespace claid
             absl::Status createStorageFolder(const Path& currentSavePath);
             absl::Status createTmpFolderIfRequired(const Path& currentSavePath);
 
+            bool initialized = false;
+
+            bool hasReceivedData = false;
+
+        public:
+
+            // template<typename Reflector>
+            // void reflect(Reflector& reflector)
+            // {
+            // reflector.member("serializer", serializer, "");
+
+            // }
+   
+
+            
+
+            FileSaver();
+
+            absl::Status initialize(const std::string& what, const std::string& storagePath, const std::string& fileNameFomat, const std::string& fileType);
+            absl::Status onNewData(ChannelData<google::protobuf::Message>& data);
+            absl::Status onNewData(std::shared_ptr<const google::protobuf::Message> data, const Time& timestamp);
+
+            absl::Status endFileSaving();
+
+            // void storeDataHeader(const Path& path);
+                
+            
 
     };
 }
