@@ -14,3 +14,7 @@ all: build
 
 .PHONY: build_android_libs
 build_android_libs: build_android
+
+.PHONY: aar_package
+aar_package: build_android_libs
+	cd aar/claid && ./gradlew build

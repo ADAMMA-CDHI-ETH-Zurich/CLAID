@@ -229,7 +229,7 @@ namespace claid {
         typename std::enable_if<std::is_same<T, AnyProtoType>::value, Mutator<T>>::type
         static getMutator()
         {
-            Logger::logInfo("Is protobuf typ pe in typemapper");
+            Logger::logInfo("Is AnyProtoType in typemapper");
         
             return Mutator<T>(
                 [](DataPackage& packet, const T& value) 

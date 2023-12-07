@@ -11,7 +11,22 @@ filegroup(
         "test_config.json",
         "cpp_runtime_test.json",
         "remote_dispatching_test.json",
+        "data_saver_json_test.json",
     ],
+)
+
+cc_test(
+  name = "data_saver_json_test",
+  size = "small",
+  srcs = ["data_saver_json_test.cc"],
+  deps = [
+    ":test_helpers",
+    "//dispatch/proto:claidservice_cc_proto",
+    "//dispatch/core:capi"
+  ] + FRAMEWORK_DEPS,
+  data = [
+    ":test_configs",
+  ]
 )
 
 

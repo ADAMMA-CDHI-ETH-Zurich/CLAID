@@ -21,6 +21,7 @@
 #pragma once
 #include "dispatch/core/Module/Module.hh"
 #include "dispatch/core/DataCollection/DataSaver/FileSaver.hh"
+#include "dispatch/core/Module/TypeMapping/AnyProtoType.hh"
 #include <fstream>
 
 #include <google/protobuf/message.h>
@@ -32,9 +33,11 @@ namespace claid
 
         private:
             FileSaver fileSaver;
-           // Channel<google::protobuf::Message> dataChannel;
+            Channel<AnyProtoType> dataChannel;
 
             void initialize(const std::map<std::string, std::string>& properties);
+
+            void onData(ChannelData<AnyProtoType> data);
 
             
 

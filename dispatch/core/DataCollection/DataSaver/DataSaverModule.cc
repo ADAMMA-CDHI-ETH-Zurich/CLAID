@@ -49,7 +49,18 @@ namespace claid
         {
             this->moduleError(status);
         }
+        Logger::logInfo("DataChannel subscribe");
+        this->dataChannel = this->subscribe(what, &DataSaverModule::onData, this);
     }
+
+    void DataSaverModule::onData(ChannelData<AnyProtoType> data)
+    {
+        const AnyProtoType& value = data.getData();
+        std::shared_ptr<const google::protobuf::Message> msg = value.getMessage();
+
+        this->fileSaver.onNewData(msg, data.getTimestamp());
+    }
+
 }
 
 REGISTER_MODULE(DataSaverModule, claid::DataSaverModule)
