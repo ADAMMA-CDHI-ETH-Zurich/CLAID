@@ -9,7 +9,7 @@
 
 #include "dispatch/proto/claidservice.grpc.pb.h"
 #include "dispatch/core/Module/TypeMapping/ProtoCodec.hh"
-
+#include "dispatch/core/Module/TypeMapping/AnyProtoType.hh"
 
 using claidservice::DataPackage;
 using claidservice::NumberMap;
@@ -23,20 +23,13 @@ namespace claid {
     {
         static std::map<std::string, ProtoCodec> protoCodecMap;
 
-        template<typename T>
-        static ProtoCodec& getProtoCodec(const T* instance) 
+        static ProtoCodec& getProtoCodec(const google::protobuf::Message* instance) 
         {
-           
-
             const std::string fullName =  instance->GetDescriptor()->full_name();
             auto it = protoCodecMap.find(fullName);
             if(it == protoCodecMap.end())
             {
-                std::shared_ptr<T> instance = std::make_shared<T>();
-
-                std::shared_ptr<const google::protobuf::Message> msg 
-                    = std::static_pointer_cast<const google::protobuf::Message>(instance);
-
+                std::shared_ptr<const google::protobuf::Message> msg(instance->New());
                 ProtoCodec codec(msg);
                 protoCodecMap.insert(make_pair(fullName, codec));
                 return protoCodecMap[fullName];
@@ -216,6 +209,12 @@ namespace claid {
                 [](const DataPackage& packet, T& returnValue) 
                 { 
                     ProtoCodec& protoCodec = getProtoCodec(&returnValue);
+
+                    if(packet.payload_oneof_case() != DataPackage::PayloadOneofCase::kBlobVal)
+                    {
+                        Logger::logError("Invalid package, payload type mismatch! Expected \"%d\" but got \"%d\"", DataPackage::PayloadOneofCase::kBlobVal, packet.payload_oneof_case());
+                        throw std::invalid_argument("ProtoCodec.decode failed. Wrong payload type.");
+                    }
                     
                     if(!protoCodec.decode(packet.blob_val(), static_cast<google::protobuf::Message*>(&returnValue)))
                     {
@@ -224,6 +223,85 @@ namespace claid {
                 }
             );
         }
+
+
+        template<typename T>
+        typename std::enable_if<std::is_same<T, AnyProtoType>::value, Mutator<T>>::type
+        static getMutator()
+        {
+            Logger::logInfo("Is protobuf typ pe in typemapper");
+        
+            return Mutator<T>(
+                [](DataPackage& packet, const T& value) 
+                { 
+                    std::shared_ptr<const google::protobuf::Message> message = value.getMessage();
+                    if(message == nullptr)
+                    {
+                        throw std::invalid_argument("Failed to get data of type AnyProtoMessage from DataPacakge. Value of AnyProtoMessage is nullptr");
+                    }
+
+                    ProtoCodec& protoCodec = getProtoCodec(message.get());
+
+                    Blob& blob = *packet.mutable_blob_val();
+
+                    if(!protoCodec.encode(value.getMessage().get(), blob))
+                    {
+                        throw std::invalid_argument("ProtoCodec.encode failed for AnyProtoType");
+                    }
+
+                },
+                [](const DataPackage& packet, T& returnValue) 
+                { 
+                    
+
+
+                    if(packet.payload_oneof_case() != DataPackage::PayloadOneofCase::kBlobVal)
+                    {
+                        Logger::logError("Invalid package, payload type mismatch! Expected \"%d\" but got \"%d\"", DataPackage::PayloadOneofCase::kBlobVal, packet.payload_oneof_case());
+                        throw std::invalid_argument("ProtoCodec.decode failed. Wrong payload type.");
+                    }
+
+                    const Blob& blob = packet.blob_val();
+                    const std::string messageType = blob.message_type();
+                    const google::protobuf::Descriptor* desc =
+                        google::protobuf::DescriptorPool::generated_pool()
+                            ->FindMessageTypeByName(messageType);
+
+                    if(desc == nullptr)
+                    {
+                        Logger::logError("Failed to deserialize protobuf message from blob. Cannot find descriptor for message \"%s\"."
+                            "This message is unknown to the current instance of CLAID. This might happen, if the message was sent by a remotely "
+                            "connected instanceof CLAID, which has implemented a new Protobuf message. Make sure that both, the current and remotely connected instance "
+                            "of CLAID know the same protobuf types.", messageType.c_str());
+                        throw std::invalid_argument("ProtoCodec.decode failed for AnyProtoType");
+                    }
+
+                    const google::protobuf::Message* protoType =
+                        google::protobuf::MessageFactory::generated_factory()->GetPrototype(desc);
+
+
+                    if(desc == nullptr)
+                    {
+                        Logger::logError("Failed to deserialize protobuf message from blob. Cannot find type for message \"%s\", but could find descriptor. This should not happen.", messageType.c_str());
+                        throw std::invalid_argument("ProtoCodec.decode failed for AnyProtoType");
+                    }
+
+
+                    std::shared_ptr<google::protobuf::Message> msg(protoType->New());
+
+                    if(!msg->ParseFromString(packet.blob_val().payload()))
+                    {
+                        throw std::invalid_argument("ProtoCodec.decode failed for AnyProtoType");
+                    }
+
+                    returnValue.setMessage(msg);
+                    
+                    
+                }
+            );
+        }
+
+        
     };
 
 }

@@ -62,6 +62,9 @@ TEST(MutatorTestSuite, MutatorTest) {
     auto mut33 = TypeMapping::getMutator<std::map<std::string, std::string>>();
 
     auto mut34 = TypeMapping::getMutator<NumberMap>();
+
+    auto mut35 = TypeMapping::getMutator<AnyProtoType>();
+
 }
 
 

@@ -46,21 +46,35 @@ public:
 
 
 
-    void encode(const google::protobuf::Message* protoMessage, Blob& returnBlob) 
+    bool encode(const google::protobuf::Message* protoMessage, Blob& returnBlob) 
     {
+        const std::string name = protoMessage->GetDescriptor()->full_name();
+        if(name != fullName)
+        {
+            return false;
+        }
+
         std::string serializedData = protoMessage->SerializeAsString();
 
         returnBlob.set_codec(Codec::CODEC_PROTO);
         returnBlob.set_payload(serializedData);
 
         returnBlob.set_message_type(fullName);
+
+        return true;
     }
 
     bool decode(const Blob& blob, google::protobuf::Message* returnValue) 
     {
         if(returnValue == nullptr)
         {
-            Logger::logError("Failed to parse protobuf message from Blob. The returnValue is nullptr");
+            Logger::logError("Failed to parse protobuf message from Blob. The returnValue is null.");
+            return false;
+        }
+     
+        const std::string name = returnValue->GetDescriptor()->full_name();
+        if(name != fullName)
+        {
             return false;
         }
         try 
@@ -80,6 +94,23 @@ public:
             Logger::logError("Failed to parse protobuf message from Blob: %s", e.what());
             return false;
         }
+    }
+
+    std::shared_ptr<google::protobuf::Message> decodeIntoNewInstance(const Blob& blob)
+    {
+        if(this->msg == nullptr)
+        {
+            return nullptr;
+        }
+
+        std::shared_ptr<google::protobuf::Message> newInstance(this->msg->New());
+
+        if(!decode(blob, newInstance.get()))
+        {
+            return nullptr;
+        }
+
+        return newInstance;
     }
 };
 }
