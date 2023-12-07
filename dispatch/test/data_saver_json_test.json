@@ -21,8 +21,8 @@
 					"output_channels": [],
 					"properties": {
 						"what": "Data",
-						"storagePath": "/tmp/data_saver_json_test",
-						"fileNameFormat": "test_data_%S",
+						"storagePath": "data_saver_json_test",
+						"fileNameFormat": "test_data.json",
 						"fileType": "json"
 						
 					}

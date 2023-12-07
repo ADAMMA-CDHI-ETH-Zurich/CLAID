@@ -64,10 +64,17 @@ TEST(DataSaverTestSuite, DataSaverJsonTest)
 
     CLAID claid;
     bool result = claid.start(socket_path, config_file, host_id, user_id, device_id);
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-
     ASSERT_TRUE(result);
+
+
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
     claid.shutdown();
     std::cout << "Waiting\n";
 
+    std::ifstream file("data_saver_json_test/test_data.json");
+    ASSERT_TRUE(file.is_open());
+
+    // TODO: Verify file content.
 }

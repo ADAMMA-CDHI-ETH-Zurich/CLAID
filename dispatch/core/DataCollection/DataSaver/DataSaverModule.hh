@@ -36,10 +36,11 @@ namespace claid
             Channel<AnyProtoType> dataChannel;
 
             void initialize(const std::map<std::string, std::string>& properties);
+            void terminate();
 
             void onData(ChannelData<AnyProtoType> data);
 
-            
+                
 
             
     };

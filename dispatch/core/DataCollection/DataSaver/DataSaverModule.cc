@@ -61,6 +61,11 @@ namespace claid
         this->fileSaver.onNewData(msg, data.getTimestamp());
     }
 
+    void DataSaverModule::terminate()
+    {
+        this->fileSaver.endFileSaving();
+    }
+
 }
 
 REGISTER_MODULE(DataSaverModule, claid::DataSaverModule)
