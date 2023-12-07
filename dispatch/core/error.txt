@@ -1,0 +1,1295 @@
+Loading: 
+Loading: 
+Loading: 0 packages loaded
+Analyzing: target //dispatch/core:remote_dispatching (0 packages loaded, 0 targets configured)
+INFO: Analyzed target //dispatch/core:remote_dispatching (0 packages loaded, 0 targets configured).
+INFO: Found 1 target...
+[0 / 1] [Prepa] BazelWorkspaceStatusAction stable-status.txt
+ERROR: /home/lastchance/Desktop/ModuleAPIV2/dispatch/core/BUILD.bazel:119:11: Compiling dispatch/core/Router/ClientRouter.cc failed: (Exit 1): gcc failed: error executing command (from target //dispatch/core:routing) /usr/bin/gcc -U_FORTIFY_SOURCE -fstack-protector -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -fno-omit-frame-pointer '-std=c++0x' -MD -MF ... (remaining 186 arguments skipped)
+
+Use --sandbox_debug to see verbose messages from the sandbox and retain the sandbox build root for debugging
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h: In instantiation of 'bool __gnu_cxx::__ops::_Iter_equals_val<_Value>::operator()(_Iterator) [with _Iterator = __gnu_cxx::__normal_iterator<claid::RoutingNode**, std::vector<claid::RoutingNode*> >; _Value = const std::__cxx11::basic_string<char>]':
+/usr/include/c++/9/bits/stl_algo.h:120:14:   required from '_RandomAccessIterator std::__find_if(_RandomAccessIterator, _RandomAccessIterator, _Predicate, std::random_access_iterator_tag) [with _RandomAccessIterator = __gnu_cxx::__normal_iterator<claid::RoutingNode**, std::vector<claid::RoutingNode*> >; _Predicate = __gnu_cxx::__ops::_Iter_equals_val<const std::__cxx11::basic_string<char> >]'
+/usr/include/c++/9/bits/stl_algo.h:161:23:   required from '_Iterator std::__find_if(_Iterator, _Iterator, _Predicate) [with _Iterator = __gnu_cxx::__normal_iterator<claid::RoutingNode**, std::vector<claid::RoutingNode*> >; _Predicate = __gnu_cxx::__ops::_Iter_equals_val<const std::__cxx11::basic_string<char> >]'
+/usr/include/c++/9/bits/stl_algo.h:3944:28:   required from '_IIter std::find(_IIter, _IIter, const _Tp&) [with _IIter = __gnu_cxx::__normal_iterator<claid::RoutingNode**, std::vector<claid::RoutingNode*> >; _Tp = std::__cxx11::basic_string<char>]'
+./dispatch/core/Router/RoutingTree.hh:189:109:   required from here
+/usr/include/c++/9/bits/predefined_ops.h:241:17: error: no match for 'operator==' (operand types are 'claid::RoutingNode*' and 'const std::__cxx11::basic_string<char>')
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/stl_algobase.h:67,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_iterator.h:883:5: note: candidate: 'template<class _IteratorL, class _IteratorR, class _Container> bool __gnu_cxx::operator==(const __gnu_cxx::__normal_iterator<_IteratorL, _Container>&, const __gnu_cxx::__normal_iterator<_IteratorR, _Container>&)'
+  883 |     operator==(const __normal_iterator<_IteratorL, _Container>& __lhs,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_iterator.h:883:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const __gnu_cxx::__normal_iterator<_IteratorL, _Container>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/stl_algobase.h:67,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_iterator.h:890:5: note: candidate: 'template<class _Iterator, class _Container> bool __gnu_cxx::operator==(const __gnu_cxx::__normal_iterator<_Iterator, _Container>&, const __gnu_cxx::__normal_iterator<_Iterator, _Container>&)'
+  890 |     operator==(const __normal_iterator<_Iterator, _Container>& __lhs,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_iterator.h:890:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const __gnu_cxx::__normal_iterator<_Iterator, _Container>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/stl_algobase.h:64,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_pair.h:448:5: note: candidate: 'template<class _T1, class _T2> constexpr bool std::operator==(const std::pair<_T1, _T2>&, const std::pair<_T1, _T2>&)'
+  448 |     operator==(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_pair.h:448:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::pair<_T1, _T2>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/stl_algobase.h:67,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_iterator.h:325:5: note: candidate: 'template<class _Iterator> constexpr bool std::operator==(const std::reverse_iterator<_Iterator>&, const std::reverse_iterator<_Iterator>&)'
+  325 |     operator==(const reverse_iterator<_Iterator>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_iterator.h:325:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::reverse_iterator<_Iterator>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/stl_algobase.h:67,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_iterator.h:363:5: note: candidate: 'template<class _IteratorL, class _IteratorR> constexpr bool std::operator==(const std::reverse_iterator<_Iterator>&, const std::reverse_iterator<_IteratorR>&)'
+  363 |     operator==(const reverse_iterator<_IteratorL>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_iterator.h:363:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::reverse_iterator<_Iterator>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/stl_algobase.h:67,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_iterator.h:1136:5: note: candidate: 'template<class _IteratorL, class _IteratorR> constexpr bool std::operator==(const std::move_iterator<_IteratorL>&, const std::move_iterator<_IteratorR>&)'
+ 1136 |     operator==(const move_iterator<_IteratorL>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_iterator.h:1136:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::move_iterator<_IteratorL>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/stl_algobase.h:67,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_iterator.h:1142:5: note: candidate: 'template<class _Iterator> constexpr bool std::operator==(const std::move_iterator<_IteratorL>&, const std::move_iterator<_IteratorL>&)'
+ 1142 |     operator==(const move_iterator<_Iterator>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_iterator.h:1142:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::move_iterator<_IteratorL>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/char_traits.h:40,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/postypes.h:222:5: note: candidate: 'template<class _StateT> bool std::operator==(const std::fpos<_StateT>&, const std::fpos<_StateT>&)'
+  222 |     operator==(const fpos<_StateT>& __lhs, const fpos<_StateT>& __rhs)
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/postypes.h:222:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::fpos<_StateT>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/string:41,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/allocator.h:167:5: note: candidate: 'template<class _T1, class _T2> bool std::operator==(const std::allocator<_CharT>&, const std::allocator<_T2>&)'
+  167 |     operator==(const allocator<_T1>&, const allocator<_T2>&)
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/allocator.h:167:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::allocator<_CharT>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/basic_string.h:48,
+                 from /usr/include/c++/9/string:55,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/string_view:471:5: note: candidate: 'template<class _CharT, class _Traits> constexpr bool std::operator==(std::basic_string_view<_CharT, _Traits>, std::basic_string_view<_CharT, _Traits>)'
+  471 |     operator==(basic_string_view<_CharT, _Traits> __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/string_view:471:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'std::basic_string_view<_CharT, _Traits>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/basic_string.h:48,
+                 from /usr/include/c++/9/string:55,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/string_view:477:5: note: candidate: 'template<class _CharT, class _Traits> constexpr bool std::operator==(std::basic_string_view<_CharT, _Traits>, std::__detail::__idt<std::basic_string_view<_CharT, _Traits> >)'
+  477 |     operator==(basic_string_view<_CharT, _Traits> __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/string_view:477:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'std::basic_string_view<_CharT, _Traits>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/basic_string.h:48,
+                 from /usr/include/c++/9/string:55,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/string_view:483:5: note: candidate: 'template<class _CharT, class _Traits> constexpr bool std::operator==(std::__detail::__idt<std::basic_string_view<_CharT, _Traits> >, std::basic_string_view<_CharT, _Traits>)'
+  483 |     operator==(__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/string_view:483:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   'std::__cxx11::basic_string<char>' is not derived from 'std::basic_string_view<_CharT, _Traits>'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/string:55,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/basic_string.h:6144:5: note: candidate: 'template<class _CharT, class _Traits, class _Alloc> bool std::operator==(const std::__cxx11::basic_string<_CharT, _Traits, _Allocator>&, const std::__cxx11::basic_string<_CharT, _Traits, _Allocator>&)'
+ 6144 |     operator==(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/basic_string.h:6144:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::__cxx11::basic_string<_CharT, _Traits, _Allocator>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/string:55,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/basic_string.h:6152:5: note: candidate: 'template<class _CharT> typename __gnu_cxx::__enable_if<std::__is_char<_Tp>::__value, bool>::__type std::operator==(const std::__cxx11::basic_string<_CharT>&, const std::__cxx11::basic_string<_CharT>&)'
+ 6152 |     operator==(const basic_string<_CharT>& __lhs,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/basic_string.h:6152:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::__cxx11::basic_string<_CharT>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/string:55,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/basic_string.h:6166:5: note: candidate: 'template<class _CharT, class _Traits, class _Alloc> bool std::operator==(const _CharT*, const std::__cxx11::basic_string<_CharT, _Traits, _Allocator>&)'
+ 6166 |     operator==(const _CharT* __lhs,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/basic_string.h:6166:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   deduced conflicting types for parameter '_CharT' ('claid::RoutingNode' and 'char')
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/string:55,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/basic_string.h:6178:5: note: candidate: 'template<class _CharT, class _Traits, class _Alloc> bool std::operator==(const std::__cxx11::basic_string<_CharT, _Traits, _Allocator>&, const _CharT*)'
+ 6178 |     operator==(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/basic_string.h:6178:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::__cxx11::basic_string<_CharT, _Traits, _Allocator>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/tuple:39,
+                 from /usr/include/c++/9/functional:54,
+                 from /usr/include/c++/9/pstl/glue_algorithm_defs.h:13,
+                 from /usr/include/c++/9/algorithm:71,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:38,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/array:252:5: note: candidate: 'template<class _Tp, long unsigned int _Nm> bool std::operator==(const std::array<_Tp, _Nm>&, const std::array<_Tp, _Nm>&)'
+  252 |     operator==(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
+      |     ^~~~~~~~
+/usr/include/c++/9/array:252:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::array<_Tp, _Nm>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/functional:54,
+                 from /usr/include/c++/9/pstl/glue_algorithm_defs.h:13,
+                 from /usr/include/c++/9/algorithm:71,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:38,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/tuple:1419:5: note: candidate: 'template<class ... _TElements, class ... _UElements> constexpr bool std::operator==(const std::tuple<_Tps ...>&, const std::tuple<_Elements ...>&)'
+ 1419 |     operator==(const tuple<_TElements...>& __t,
+      |     ^~~~~~~~
+/usr/include/c++/9/tuple:1419:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::tuple<_Tps ...>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/functional:59,
+                 from /usr/include/c++/9/pstl/glue_algorithm_defs.h:13,
+                 from /usr/include/c++/9/algorithm:71,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:38,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/std_function.h:746:5: note: candidate: 'template<class _Res, class ... _Args> bool std::operator==(const std::function<_Res(_ArgTypes ...)>&, std::nullptr_t)'
+  746 |     operator==(const function<_Res(_Args...)>& __f, nullptr_t) noexcept
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/std_function.h:746:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::function<_Res(_ArgTypes ...)>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/functional:59,
+                 from /usr/include/c++/9/pstl/glue_algorithm_defs.h:13,
+                 from /usr/include/c++/9/algorithm:71,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:38,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/std_function.h:752:5: note: candidate: 'template<class _Res, class ... _Args> bool std::operator==(std::nullptr_t, const std::function<_Res(_ArgTypes ...)>&)'
+  752 |     operator==(nullptr_t, const function<_Res(_Args...)>& __f) noexcept
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/std_function.h:752:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   'const std::__cxx11::basic_string<char>' is not derived from 'const std::function<_Res(_ArgTypes ...)>'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/node_handle.h:39,
+                 from /usr/include/c++/9/bits/hashtable.h:37,
+                 from /usr/include/c++/9/unordered_map:46,
+                 from /usr/include/c++/9/functional:61,
+                 from /usr/include/c++/9/pstl/glue_algorithm_defs.h:13,
+                 from /usr/include/c++/9/algorithm:71,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:38,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/optional:983:5: note: candidate: 'template<class _Tp, class _Up> constexpr std::__optional_relop_t<decltype ((declval<_Tp>() == declval<_Up>()))> std::operator==(const std::optional<_Tp>&, const std::optional<_Up>&)'
+  983 |     operator==(const optional<_Tp>& __lhs, const optional<_Up>& __rhs)
+      |     ^~~~~~~~
+/usr/include/c++/9/optional:983:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::optional<_Tp>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/node_handle.h:39,
+                 from /usr/include/c++/9/bits/hashtable.h:37,
+                 from /usr/include/c++/9/unordered_map:46,
+                 from /usr/include/c++/9/functional:61,
+                 from /usr/include/c++/9/pstl/glue_algorithm_defs.h:13,
+                 from /usr/include/c++/9/algorithm:71,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:38,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/optional:1034:5: note: candidate: 'template<class _Tp> constexpr bool std::operator==(const std::optional<_Tp>&, std::nullopt_t)'
+ 1034 |     operator==(const optional<_Tp>& __lhs, nullopt_t) noexcept
+      |     ^~~~~~~~
+/usr/include/c++/9/optional:1034:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::optional<_Tp>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/node_handle.h:39,
+                 from /usr/include/c++/9/bits/hashtable.h:37,
+                 from /usr/include/c++/9/unordered_map:46,
+                 from /usr/include/c++/9/functional:61,
+                 from /usr/include/c++/9/pstl/glue_algorithm_defs.h:13,
+                 from /usr/include/c++/9/algorithm:71,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:38,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/optional:1039:5: note: candidate: 'template<class _Tp> constexpr bool std::operator==(std::nullopt_t, const std::optional<_Tp>&)'
+ 1039 |     operator==(nullopt_t, const optional<_Tp>& __rhs) noexcept
+      |     ^~~~~~~~
+/usr/include/c++/9/optional:1039:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   'const std::__cxx11::basic_string<char>' is not derived from 'const std::optional<_Tp>'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/node_handle.h:39,
+                 from /usr/include/c++/9/bits/hashtable.h:37,
+                 from /usr/include/c++/9/unordered_map:46,
+                 from /usr/include/c++/9/functional:61,
+                 from /usr/include/c++/9/pstl/glue_algorithm_defs.h:13,
+                 from /usr/include/c++/9/algorithm:71,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:38,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/optional:1095:5: note: candidate: 'template<class _Tp, class _Up> constexpr std::__optional_relop_t<decltype ((declval<_Tp>() == declval<_Up>()))> std::operator==(const std::optional<_Tp>&, const _Up&)'
+ 1095 |     operator==(const optional<_Tp>& __lhs, const _Up& __rhs)
+      |     ^~~~~~~~
+/usr/include/c++/9/optional:1095:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::optional<_Tp>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/node_handle.h:39,
+                 from /usr/include/c++/9/bits/hashtable.h:37,
+                 from /usr/include/c++/9/unordered_map:46,
+                 from /usr/include/c++/9/functional:61,
+                 from /usr/include/c++/9/pstl/glue_algorithm_defs.h:13,
+                 from /usr/include/c++/9/algorithm:71,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:38,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/optional:1101:5: note: candidate: 'template<class _Tp, class _Up> constexpr std::__optional_relop_t<decltype ((declval<_Up>() == declval<_Tp>()))> std::operator==(const _Up&, const std::optional<_Tp>&)'
+ 1101 |     operator==(const _Up& __lhs, const optional<_Tp>& __rhs)
+      |     ^~~~~~~~
+/usr/include/c++/9/optional:1101:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   'const std::__cxx11::basic_string<char>' is not derived from 'const std::optional<_Tp>'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/unordered_map:47,
+                 from /usr/include/c++/9/functional:61,
+                 from /usr/include/c++/9/pstl/glue_algorithm_defs.h:13,
+                 from /usr/include/c++/9/algorithm:71,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:38,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/unordered_map.h:2093:5: note: candidate: 'template<class _Key1, class _Tp1, class _Hash1, class _Pred1, class _Alloc1> bool std::operator==(const std::unordered_map<_Key1, _Tp1, _Hash1, _Pred1, _Alloc1>&, const std::unordered_map<_Key1, _Tp1, _Hash1, _Pred1, _Alloc1>&)'
+ 2093 |     operator==(const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/unordered_map.h:2093:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::unordered_map<_Key1, _Tp1, _Hash1, _Pred1, _Alloc1>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/unordered_map:47,
+                 from /usr/include/c++/9/functional:61,
+                 from /usr/include/c++/9/pstl/glue_algorithm_defs.h:13,
+                 from /usr/include/c++/9/algorithm:71,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:38,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/unordered_map.h:2105:5: note: candidate: 'template<class _Key1, class _Tp1, class _Hash1, class _Pred1, class _Alloc1> bool std::operator==(const std::unordered_multimap<_Key1, _Tp1, _Hash1, _Pred1, _Alloc1>&, const std::unordered_multimap<_Key1, _Tp1, _Hash1, _Pred1, _Alloc1>&)'
+ 2105 |     operator==(const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/unordered_map.h:2105:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::unordered_multimap<_Key1, _Tp1, _Hash1, _Pred1, _Alloc1>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/vector:67,
+                 from /usr/include/c++/9/functional:62,
+                 from /usr/include/c++/9/pstl/glue_algorithm_defs.h:13,
+                 from /usr/include/c++/9/algorithm:71,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:38,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_vector.h:1888:5: note: candidate: 'template<class _Tp, class _Alloc> bool std::operator==(const std::vector<_Tp, _Alloc>&, const std::vector<_Tp, _Alloc>&)'
+ 1888 |     operator==(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_vector.h:1888:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::vector<_Tp, _Alloc>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/ios_base.h:46,
+                 from /usr/include/c++/9/ios:42,
+                 from /usr/include/c++/9/ostream:38,
+                 from /usr/include/c++/9/iostream:39,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:39,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/system_error:292:3: note: candidate: 'bool std::operator==(const std::error_code&, const std::error_code&)'
+  292 |   operator==(const error_code& __lhs, const error_code& __rhs) noexcept
+      |   ^~~~~~~~
+/usr/include/c++/9/system_error:292:32: note:   no known conversion for argument 1 from 'claid::RoutingNode*' to 'const std::error_code&'
+  292 |   operator==(const error_code& __lhs, const error_code& __rhs) noexcept
+      |              ~~~~~~~~~~~~~~~~~~^~~~~
+/usr/include/c++/9/system_error:297:3: note: candidate: 'bool std::operator==(const std::error_code&, const std::error_condition&)'
+  297 |   operator==(const error_code& __lhs, const error_condition& __rhs) noexcept
+      |   ^~~~~~~~
+/usr/include/c++/9/system_error:297:32: note:   no known conversion for argument 1 from 'claid::RoutingNode*' to 'const std::error_code&'
+  297 |   operator==(const error_code& __lhs, const error_condition& __rhs) noexcept
+      |              ~~~~~~~~~~~~~~~~~~^~~~~
+/usr/include/c++/9/system_error:304:3: note: candidate: 'bool std::operator==(const std::error_condition&, const std::error_code&)'
+  304 |   operator==(const error_condition& __lhs, const error_code& __rhs) noexcept
+      |   ^~~~~~~~
+/usr/include/c++/9/system_error:304:37: note:   no known conversion for argument 1 from 'claid::RoutingNode*' to 'const std::error_condition&'
+  304 |   operator==(const error_condition& __lhs, const error_code& __rhs) noexcept
+      |              ~~~~~~~~~~~~~~~~~~~~~~~^~~~~
+/usr/include/c++/9/system_error:311:3: note: candidate: 'bool std::operator==(const std::error_condition&, const std::error_condition&)'
+  311 |   operator==(const error_condition& __lhs,
+      |   ^~~~~~~~
+/usr/include/c++/9/system_error:311:37: note:   no known conversion for argument 1 from 'claid::RoutingNode*' to 'const std::error_condition&'
+  311 |   operator==(const error_condition& __lhs,
+      |              ~~~~~~~~~~~~~~~~~~~~~~~^~~~~
+In file included from /usr/include/c++/9/bits/locale_facets.h:48,
+                 from /usr/include/c++/9/bits/basic_ios.h:37,
+                 from /usr/include/c++/9/ios:44,
+                 from /usr/include/c++/9/ostream:38,
+                 from /usr/include/c++/9/iostream:39,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:39,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/streambuf_iterator.h:208:5: note: candidate: 'template<class _CharT, class _Traits> bool std::operator==(const std::istreambuf_iterator<_CharT, _Traits>&, const std::istreambuf_iterator<_CharT, _Traits>&)'
+  208 |     operator==(const istreambuf_iterator<_CharT, _Traits>& __a,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/streambuf_iterator.h:208:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::istreambuf_iterator<_CharT, _Traits>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/memory:80,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:40,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/unique_ptr.h:715:5: note: candidate: 'template<class _Tp, class _Dp, class _Up, class _Ep> bool std::operator==(const std::unique_ptr<_Tp, _Dp>&, const std::unique_ptr<_Up, _Ep>&)'
+  715 |     operator==(const unique_ptr<_Tp, _Dp>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/unique_ptr.h:715:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::unique_ptr<_Tp, _Dp>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/memory:80,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:40,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/unique_ptr.h:721:5: note: candidate: 'template<class _Tp, class _Dp> bool std::operator==(const std::unique_ptr<_Tp, _Dp>&, std::nullptr_t)'
+  721 |     operator==(const unique_ptr<_Tp, _Dp>& __x, nullptr_t) noexcept
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/unique_ptr.h:721:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::unique_ptr<_Tp, _Dp>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/memory:80,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:40,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/unique_ptr.h:726:5: note: candidate: 'template<class _Tp, class _Dp> bool std::operator==(std::nullptr_t, const std::unique_ptr<_Tp, _Dp>&)'
+  726 |     operator==(nullptr_t, const unique_ptr<_Tp, _Dp>& __x) noexcept
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/unique_ptr.h:726:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   'const std::__cxx11::basic_string<char>' is not derived from 'const std::unique_ptr<_Tp, _Dp>'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/shared_ptr.h:52,
+                 from /usr/include/c++/9/memory:81,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:40,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/shared_ptr_base.h:1412:5: note: candidate: 'template<class _Tp1, class _Tp2, __gnu_cxx::_Lock_policy _Lp> bool std::operator==(const std::__shared_ptr<_Tp1, _Lp>&, const std::__shared_ptr<_Tp2, _Lp>&)'
+ 1412 |     operator==(const __shared_ptr<_Tp1, _Lp>& __a,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/shared_ptr_base.h:1412:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::__shared_ptr<_Tp1, _Lp>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/shared_ptr.h:52,
+                 from /usr/include/c++/9/memory:81,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:40,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/shared_ptr_base.h:1418:5: note: candidate: 'template<class _Tp, __gnu_cxx::_Lock_policy _Lp> bool std::operator==(const std::__shared_ptr<_Tp, _Lp>&, std::nullptr_t)'
+ 1418 |     operator==(const __shared_ptr<_Tp, _Lp>& __a, nullptr_t) noexcept
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/shared_ptr_base.h:1418:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::__shared_ptr<_Tp, _Lp>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/bits/shared_ptr.h:52,
+                 from /usr/include/c++/9/memory:81,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:40,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/shared_ptr_base.h:1423:5: note: candidate: 'template<class _Tp, __gnu_cxx::_Lock_policy _Lp> bool std::operator==(std::nullptr_t, const std::__shared_ptr<_Tp, _Lp>&)'
+ 1423 |     operator==(nullptr_t, const __shared_ptr<_Tp, _Lp>& __a) noexcept
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/shared_ptr_base.h:1423:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   'const std::__cxx11::basic_string<char>' is not derived from 'const std::__shared_ptr<_Tp, _Lp>'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/memory:81,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:40,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/shared_ptr.h:383:5: note: candidate: 'template<class _Tp, class _Up> bool std::operator==(const std::shared_ptr<_Tp>&, const std::shared_ptr<_Tp>&)'
+  383 |     operator==(const shared_ptr<_Tp>& __a, const shared_ptr<_Up>& __b) noexcept
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/shared_ptr.h:383:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::shared_ptr<_Tp>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/memory:81,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:40,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/shared_ptr.h:388:5: note: candidate: 'template<class _Tp> bool std::operator==(const std::shared_ptr<_Tp>&, std::nullptr_t)'
+  388 |     operator==(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/shared_ptr.h:388:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::shared_ptr<_Tp>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/memory:81,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:40,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/shared_ptr.h:393:5: note: candidate: 'template<class _Tp> bool std::operator==(std::nullptr_t, const std::shared_ptr<_Tp>&)'
+  393 |     operator==(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/shared_ptr.h:393:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   'const std::__cxx11::basic_string<char>' is not derived from 'const std::shared_ptr<_Tp>'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/iterator:66,
+                 from external/com_google_absl/absl/strings/string_view.h:35,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/stubs/_virtual_includes/lite/google/protobuf/stubs/common.h:44,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:130,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stream_iterator.h:134:5: note: candidate: 'template<class _Tp, class _CharT, class _Traits, class _Dist> bool std::operator==(const std::istream_iterator<_Tp, _CharT, _Traits, _Dist>&, const std::istream_iterator<_Tp, _CharT, _Traits, _Dist>&)'
+  134 |     operator==(const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stream_iterator.h:134:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::istream_iterator<_Tp, _CharT, _Traits, _Dist>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/deque:67,
+                 from external/com_google_absl/absl/crc/internal/crc_cord_state.h:20,
+                 from external/com_google_absl/absl/strings/cord.h:79,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:134,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_deque.h:286:5: note: candidate: 'template<class _Tp, class _Ref, class _Ptr> bool std::operator==(const std::_Deque_iterator<_Tp, _Ref, _Ptr>&, const std::_Deque_iterator<_Tp, _Ref, _Ptr>&)'
+  286 |     operator==(const _Deque_iterator<_Tp, _Ref, _Ptr>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_deque.h:286:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::_Deque_iterator<_Tp, _Ref, _Ptr>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/deque:67,
+                 from external/com_google_absl/absl/crc/internal/crc_cord_state.h:20,
+                 from external/com_google_absl/absl/strings/cord.h:79,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:134,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_deque.h:293:5: note: candidate: 'template<class _Tp, class _RefL, class _PtrL, class _RefR, class _PtrR> bool std::operator==(const std::_Deque_iterator<_Tp, _Ref, _Ptr>&, const std::_Deque_iterator<_Tp, _RefR, _PtrR>&)'
+  293 |     operator==(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_deque.h:293:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::_Deque_iterator<_Tp, _Ref, _Ptr>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/deque:67,
+                 from external/com_google_absl/absl/crc/internal/crc_cord_state.h:20,
+                 from external/com_google_absl/absl/strings/cord.h:79,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/io/_virtual_includes/io/google/protobuf/io/coded_stream.h:134,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:24,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_deque.h:2312:5: note: candidate: 'template<class _Tp, class _Alloc> bool std::operator==(const std::deque<_Tp, _Alloc>&, const std::deque<_Tp, _Alloc>&)'
+ 2312 |     operator==(const deque<_Tp, _Alloc>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_deque.h:2312:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::deque<_Tp, _Alloc>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/unordered_set:47,
+                 from external/com_google_absl/absl/algorithm/container.h:49,
+                 from external/com_google_absl/absl/container/flat_hash_map.h:38,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/descriptor.h:69,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/message.h:127,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/generated_message_bases.h:41,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:27,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/unordered_set.h:1705:5: note: candidate: 'template<class _Value1, class _Hash1, class _Pred1, class _Alloc1> bool std::operator==(const std::unordered_set<_Value1, _Hash1, _Pred1, _Alloc1>&, const std::unordered_set<_Value1, _Hash1, _Pred1, _Alloc1>&)'
+ 1705 |     operator==(const unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/unordered_set.h:1705:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::unordered_set<_Value1, _Hash1, _Pred1, _Alloc1>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/unordered_set:47,
+                 from external/com_google_absl/absl/algorithm/container.h:49,
+                 from external/com_google_absl/absl/container/flat_hash_map.h:38,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/descriptor.h:69,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/message.h:127,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/generated_message_bases.h:41,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:27,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/unordered_set.h:1717:5: note: candidate: 'template<class _Value1, class _Hash1, class _Pred1, class _Alloc1> bool std::operator==(const std::unordered_multiset<_Value1, _Hash1, _Pred1, _Alloc1>&, const std::unordered_multiset<_Value1, _Hash1, _Pred1, _Alloc1>&)'
+ 1717 |     operator==(const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/unordered_set.h:1717:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::unordered_multiset<_Value1, _Hash1, _Pred1, _Alloc1>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/forward_list:40,
+                 from external/com_google_absl/absl/hash/internal/hash.h:29,
+                 from external/com_google_absl/absl/hash/hash.h:85,
+                 from external/com_google_absl/absl/container/internal/hash_function_defaults.h:55,
+                 from external/com_google_absl/absl/container/flat_hash_map.h:41,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/descriptor.h:69,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/message.h:127,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/generated_message_bases.h:41,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:27,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/forward_list.tcc:393:5: note: candidate: 'template<class _Tp, class _Alloc> bool std::operator==(const std::forward_list<_Tp, _Alloc>&, const std::forward_list<_Tp, _Alloc>&)'
+  393 |     operator==(const forward_list<_Tp, _Alloc>& __lx,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/forward_list.tcc:393:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::forward_list<_Tp, _Alloc>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/list:63,
+                 from external/com_google_absl/absl/hash/internal/hash.h:33,
+                 from external/com_google_absl/absl/hash/hash.h:85,
+                 from external/com_google_absl/absl/container/internal/hash_function_defaults.h:55,
+                 from external/com_google_absl/absl/container/flat_hash_map.h:41,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/descriptor.h:69,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/message.h:127,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/generated_message_bases.h:41,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:27,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_list.h:1991:5: note: candidate: 'template<class _Tp, class _Alloc> bool std::operator==(const std::__cxx11::list<_Tp, _Alloc>&, const std::__cxx11::list<_Tp, _Alloc>&)'
+ 1991 |     operator==(const list<_Tp, _Alloc>& __x, const list<_Tp, _Alloc>& __y)
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_list.h:1991:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::__cxx11::list<_Tp, _Alloc>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/map:61,
+                 from external/com_google_absl/absl/hash/internal/hash.h:34,
+                 from external/com_google_absl/absl/hash/hash.h:85,
+                 from external/com_google_absl/absl/container/internal/hash_function_defaults.h:55,
+                 from external/com_google_absl/absl/container/flat_hash_map.h:41,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/descriptor.h:69,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/message.h:127,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/generated_message_bases.h:41,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:27,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_map.h:1455:5: note: candidate: 'template<class _Key, class _Tp, class _Compare, class _Alloc> bool std::operator==(const std::map<_Key, _Tp, _Compare, _Allocator>&, const std::map<_Key, _Tp, _Compare, _Allocator>&)'
+ 1455 |     operator==(const map<_Key, _Tp, _Compare, _Alloc>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_map.h:1455:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::map<_Key, _Tp, _Compare, _Allocator>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/map:62,
+                 from external/com_google_absl/absl/hash/internal/hash.h:34,
+                 from external/com_google_absl/absl/hash/hash.h:85,
+                 from external/com_google_absl/absl/container/internal/hash_function_defaults.h:55,
+                 from external/com_google_absl/absl/container/flat_hash_map.h:41,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/descriptor.h:69,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/message.h:127,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/generated_message_bases.h:41,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:27,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_multimap.h:1119:5: note: candidate: 'template<class _Key, class _Tp, class _Compare, class _Alloc> bool std::operator==(const std::multimap<_Key, _Tp, _Compare, _Allocator>&, const std::multimap<_Key, _Tp, _Compare, _Allocator>&)'
+ 1119 |     operator==(const multimap<_Key, _Tp, _Compare, _Alloc>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_multimap.h:1119:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::multimap<_Key, _Tp, _Compare, _Allocator>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/set:61,
+                 from external/com_google_absl/absl/hash/internal/hash.h:36,
+                 from external/com_google_absl/absl/hash/hash.h:85,
+                 from external/com_google_absl/absl/container/internal/hash_function_defaults.h:55,
+                 from external/com_google_absl/absl/container/flat_hash_map.h:41,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/descriptor.h:69,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/message.h:127,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/generated_message_bases.h:41,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:27,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_set.h:979:5: note: candidate: 'template<class _Key, class _Compare, class _Alloc> bool std::operator==(const std::set<_Key, _Compare, _Allocator>&, const std::set<_Key, _Compare, _Allocator>&)'
+  979 |     operator==(const set<_Key, _Compare, _Alloc>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_set.h:979:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::set<_Key, _Compare, _Allocator>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from /usr/include/c++/9/set:62,
+                 from external/com_google_absl/absl/hash/internal/hash.h:36,
+                 from external/com_google_absl/absl/hash/hash.h:85,
+                 from external/com_google_absl/absl/container/internal/hash_function_defaults.h:55,
+                 from external/com_google_absl/absl/container/flat_hash_map.h:41,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/descriptor.h:69,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/message.h:127,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/generated_message_bases.h:41,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:27,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_multiset.h:964:5: note: candidate: 'template<class _Key, class _Compare, class _Alloc> bool std::operator==(const std::multiset<_Key, _Compare, _Allocator>&, const std::multiset<_Key, _Compare, _Allocator>&)'
+  964 |     operator==(const multiset<_Key, _Compare, _Alloc>& __x,
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_multiset.h:964:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::multiset<_Key, _Compare, _Allocator>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from external/com_google_absl/absl/types/variant.h:50,
+                 from external/com_google_absl/absl/hash/internal/hash.h:56,
+                 from external/com_google_absl/absl/hash/hash.h:85,
+                 from external/com_google_absl/absl/container/internal/hash_function_defaults.h:55,
+                 from external/com_google_absl/absl/container/flat_hash_map.h:41,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/descriptor.h:69,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/message.h:127,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/generated_message_bases.h:41,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:27,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/variant:1186:3: note: candidate: 'template<class ... _Types> constexpr bool std::operator==(const std::variant<_Types ...>&, const std::variant<_Types ...>&)'
+ 1186 |   _VARIANT_RELATION_FUNCTION_TEMPLATE(==, equal)
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/c++/9/variant:1186:3: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::variant<_Types ...>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from external/com_google_absl/absl/types/variant.h:50,
+                 from external/com_google_absl/absl/hash/internal/hash.h:56,
+                 from external/com_google_absl/absl/hash/hash.h:85,
+                 from external/com_google_absl/absl/container/internal/hash_function_defaults.h:55,
+                 from external/com_google_absl/absl/container/flat_hash_map.h:41,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/descriptor.h:69,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/message.h:127,
+                 from bazel-out/k8-fastbuild/bin/external/com_google_protobuf/src/google/protobuf/_virtual_includes/protobuf_nowkt/google/protobuf/generated_message_bases.h:41,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:27,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/variant:1186:3: note: candidate: 'constexpr bool std::operator==(std::monostate, std::monostate)'
+ 1186 |   _VARIANT_RELATION_FUNCTION_TEMPLATE(==, equal)
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/c++/9/variant:1186:3: note:   no known conversion for argument 1 from 'claid::RoutingNode*' to 'std::monostate'
+ 1186 |   _VARIANT_RELATION_FUNCTION_TEMPLATE(==, equal)
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/c++/9/stack:61,
+                 from ./dispatch/core/Router/RoutingTree.hh:4,
+                 from ./dispatch/core/Router/Router.hh:7,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/stl_stack.h:313:5: note: candidate: 'template<class _Tp, class _Seq> bool std::operator==(const std::stack<_Tp, _Seq>&, const std::stack<_Tp, _Seq>&)'
+  313 |     operator==(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
+      |     ^~~~~~~~
+/usr/include/c++/9/bits/stl_stack.h:313:5: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   mismatched types 'const std::stack<_Tp, _Seq>' and 'claid::RoutingNode*'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+In file included from ./dispatch/core/Router/Router.hh:14,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/thread:276:3: note: candidate: 'bool std::operator==(std::thread::id, std::thread::id)'
+  276 |   operator==(thread::id __x, thread::id __y) noexcept
+      |   ^~~~~~~~
+/usr/include/c++/9/thread:276:25: note:   no known conversion for argument 1 from 'claid::RoutingNode*' to 'std::thread::id'
+  276 |   operator==(thread::id __x, thread::id __y) noexcept
+      |              ~~~~~~~~~~~^~~
+In file included from /usr/include/c++/9/string:41,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/allocator.h:155:7: note: candidate: 'bool std::operator==(const std::allocator<char>&, const std::allocator<char>&)'
+  155 |       operator==(const allocator&, const allocator&) _GLIBCXX_NOTHROW
+      |       ^~~~~~~~
+/usr/include/c++/9/bits/allocator.h:155:18: note:   no known conversion for argument 1 from 'claid::RoutingNode*' to 'const std::allocator<char>&'
+  155 |       operator==(const allocator&, const allocator&) _GLIBCXX_NOTHROW
+      |                  ^~~~~~~~~~~~~~~~
+In file included from /usr/include/x86_64-linux-gnu/c++/9/bits/c++allocator.h:33,
+                 from /usr/include/c++/9/bits/allocator.h:46,
+                 from /usr/include/c++/9/string:41,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/ext/new_allocator.h:166:2: note: candidate: 'template<class _Up> bool __gnu_cxx::operator==(const __gnu_cxx::new_allocator<char>&, const __gnu_cxx::new_allocator<_Tp>&)'
+  166 |  operator==(const new_allocator&, const new_allocator<_Up>&)
+      |  ^~~~~~~~
+/usr/include/c++/9/ext/new_allocator.h:166:2: note:   template argument deduction/substitution failed:
+In file included from /usr/include/c++/9/bits/stl_algobase.h:71,
+                 from /usr/include/c++/9/bits/char_traits.h:39,
+                 from /usr/include/c++/9/string:40,
+                 from bazel-out/k8-fastbuild/bin/dispatch/proto/claidservice.pb.h:8,
+                 from ./dispatch/core/Router/Router.hh:3,
+                 from ./dispatch/core/Router/ClientRouter.hh:3,
+                 from dispatch/core/Router/ClientRouter.cc:1:
+/usr/include/c++/9/bits/predefined_ops.h:241:17: note:   'const std::__cxx11::basic_string<char>' is not derived from 'const __gnu_cxx::new_allocator<_Tp>'
+  241 |  { return *__it == _M_value; }
+      |           ~~~~~~^~~~~~~~~~~
+[3 / 14] Compiling dispatch/core/RemoteDispatching/RemoteClientHandler.cc; 1s linux-sandbox ... (9 actions running)
+Target //dispatch/core:remote_dispatching failed to build
+Use --verbose_failures to see the command lines of failed build steps.
+INFO: Elapsed time: 2.133s, Critical Path: 2.01s
+INFO: 12 processes: 12 internal.
+FAILED: Build did NOT complete successfully

@@ -8,6 +8,8 @@
 #include "dispatch/core/Traits/is_specialization_of.hh"
 
 #include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/core/Module/TypeMapping/ProtoCodec.hh"
+
 
 using claidservice::DataPackage;
 using claidservice::NumberMap;
@@ -19,6 +21,31 @@ namespace claid {
 
     class TypeMapping
     {
+        static std::map<std::string, ProtoCodec> protoCodecMap;
+
+        template<typename T>
+        static ProtoCodec& getProtoCodec(const T* instance) 
+        {
+           
+
+            const std::string fullName =  instance->GetDescriptor()->full_name();
+            auto it = protoCodecMap.find(fullName);
+            if(it == protoCodecMap.end())
+            {
+                std::shared_ptr<T> instance = std::make_shared<T>();
+
+                std::shared_ptr<const google::protobuf::Message> msg 
+                    = std::static_pointer_cast<const google::protobuf::Message>(instance);
+
+                ProtoCodec codec(msg);
+                protoCodecMap.insert(make_pair(fullName, codec));
+                return protoCodecMap[fullName];
+            }
+
+            return it->second;
+        }
+        
+
     public:
 
         // Number
@@ -28,7 +55,7 @@ namespace claid {
         {
             return Mutator<T>(
                 [](DataPackage& packet, const T& value) { packet.set_number_val(value); },
-                [](const DataPackage& packet) { return packet.number_val(); }
+                [](const DataPackage& packet, T& returnValue) { returnValue = packet.number_val(); }
             );
         }
 
@@ -39,7 +66,7 @@ namespace claid {
         {
             return Mutator<bool>(
                 [](DataPackage& packet, const bool& value) { packet.set_bool_val(value); },
-                [](const DataPackage& packet) { return packet.bool_val(); }
+                [](const DataPackage& packet, T& returnValue) { returnValue = packet.bool_val(); }
             );
         }
 
@@ -50,7 +77,7 @@ namespace claid {
         {
             return Mutator<std::string>(
                 [](DataPackage& packet, const std::string& value) { packet.set_string_val(value); },
-                [](const DataPackage& packet) { return packet.string_val(); }
+                [](const DataPackage& packet, T& returnValue) { returnValue = packet.string_val(); }
             );
         }
 
@@ -70,17 +97,16 @@ namespace claid {
                         numberArray->add_val(number);
                     }
                 },
-                [](const DataPackage& packet) 
+                [](const DataPackage& packet, T& returnValue) 
                 { 
                     const NumberArray& numberArray = packet.number_array_val();
 
-                    T array(numberArray.val_size());
+                    returnValue = T(numberArray.val_size());
                     for (int i = 0; i < numberArray.val_size(); i++) 
                     {
-                        array[i] = numberArray.val(i);
+                        returnValue[i] = numberArray.val(i);
                     }
 
-                    return array;
                     
                 }
             );
@@ -100,18 +126,15 @@ namespace claid {
                         stringArray->add_val(str);
                     }
                 },
-                [](const DataPackage& packet) 
+                [](const DataPackage& packet, T& returnValue) 
                 { 
                     const StringArray& stringArray = packet.string_array_val();
 
-                    T array(stringArray.val_size());
+                    returnValue = T(stringArray.val_size());
                     for (int i = 0; i < stringArray.val_size(); i++) 
                     {
-                        array[i] = stringArray.val(i);
-                    }
-
-                    return array;
-                    
+                        returnValue[i] = stringArray.val(i);
+                    }                   
                 }
             );
         }
@@ -133,16 +156,14 @@ namespace claid {
                         (*numberMap->mutable_val())[pair.first] = pair.second;
                     }
                 },
-                [](const DataPackage& packet) 
+                [](const DataPackage& packet, T& returnValue) 
                 { 
-                    T result;
+                    returnValue.clear();
                     const NumberMap& numberMap = packet.number_map();
                     for (const auto& pair : numberMap.val()) 
                     {
-                        result[pair.first] = pair.second;
+                        returnValue[pair.first] = pair.second;
                     }
-                    
-                    return result;
                 }
             );
         }
@@ -161,16 +182,45 @@ namespace claid {
                         (*stringMap->mutable_val())[pair.first] = pair.second;
                     }
                 },
-                [](const DataPackage& packet) 
+                [](const DataPackage& packet, T& returnValue) 
                 { 
-                    T result;
+                    returnValue.clear();
+
                     const StringMap& stringMap = packet.string_map();
                     for (const auto& pair : stringMap.val()) 
                     {
-                        result[pair.first] = pair.second;
+                        returnValue[pair.first] = pair.second;
                     }
                     
-                    return result;
+                }
+            );
+        }
+
+        template<typename T>
+        typename std::enable_if<std::is_base_of<google::protobuf::Message, T>::value, Mutator<T>>::type
+        static getMutator()
+        {
+            Logger::logInfo("Is protobuf typ pe in typemapper");
+        
+            return Mutator<T>(
+                [](DataPackage& packet, const T& value) 
+                { 
+
+                    ProtoCodec& protoCodec = getProtoCodec(&value);
+
+                    Blob& blob = *packet.mutable_blob_val();
+
+                    protoCodec.encode(static_cast<const google::protobuf::Message*>(&value), blob);
+
+                },
+                [](const DataPackage& packet, T& returnValue) 
+                { 
+                    ProtoCodec& protoCodec = getProtoCodec(&returnValue);
+                    
+                    if(!protoCodec.decode(packet.blob_val(), static_cast<google::protobuf::Message*>(&returnValue)))
+                    {
+                        throw std::invalid_argument("ProtoCodec.decode failed");
+                    }
                 }
             );
         }

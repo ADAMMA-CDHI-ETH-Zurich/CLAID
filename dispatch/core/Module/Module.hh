@@ -143,7 +143,4 @@ namespace claid
 #define REGISTER_MODULE(moduleName, className)\
     static_assert(std::is_base_of<claid::Module, className>::value, "Tried to register a class as Module (see above), which did not inherit from BaseModule. Did you forget to inherit from Module or BaseModule?");\
     REGISTER_MODULE_FACTORY_CUSTOM_NAME(moduleName, className)
-
-// #define REGISTER_MODULE(className)\
-//     static_assert(std::is_base_of<claid::Module, className>::value, "Tried to register a class as Module (see above), which did not inherit from BaseModule. Did you forget to inherit from Module or BaseModule?");\
-//     REGISTER_MODULE_FACTORY_CUSTOM_NAME(className)
+    

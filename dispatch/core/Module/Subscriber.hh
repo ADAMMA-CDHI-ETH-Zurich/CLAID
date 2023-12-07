@@ -49,10 +49,12 @@ namespace claid{
 
         void onNewData(std::shared_ptr<DataPackage> package) override final
         {
-            const T& value = this->mutator.getPackagePayload(*package);
+            std::shared_ptr<T> data = std::make_shared<T>();
+
+            this->mutator.getPackagePayload(*package, *data);
 
             // Create a new copy of the data so we can take ownership.
-            ChannelData<T> channelData = ChannelData<T>::fromCopy(value, Time::fromUnixTimestampMilliseconds(package->unix_timestamp_ms()), package->source_user_token());
+            ChannelData<T> channelData(data, Time::fromUnixTimestampMilliseconds(package->unix_timestamp_ms()), package->source_user_token());
             this->invokeCallback(channelData);
         }
     };
