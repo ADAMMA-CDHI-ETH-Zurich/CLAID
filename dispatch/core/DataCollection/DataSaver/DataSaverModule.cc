@@ -58,12 +58,20 @@ namespace claid
         const AnyProtoType& value = data.getData();
         std::shared_ptr<const google::protobuf::Message> msg = value.getMessage();
 
-        this->fileSaver.onNewData(msg, data.getTimestamp());
+        absl::Status status = this->fileSaver.onNewData(msg, data.getTimestamp());
+        if(!status.ok())
+        {
+            moduleError(status);
+        }
     }
 
     void DataSaverModule::terminate()
     {
-        this->fileSaver.endFileSaving();
+        absl::Status status = this->fileSaver.endFileSaving();
+        if(!status.ok())
+        {
+            moduleError(status);
+        }
     }
 
 }

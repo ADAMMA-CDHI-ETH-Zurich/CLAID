@@ -7,7 +7,15 @@ public class Logger {
     public static void log(SeverityLevel level, final String message)
     {
         String output = "[" + getTimeString() + " | CLAID - " + level.toString() + "] " + message + "\n";
-        System.out.println(output);
+
+        if(level == SeverityLevel.ERROR || level == SeverityLevel.FATAL)
+        {
+            System.err.println(output);
+        }
+        else
+        {
+            System.out.println(output);
+        }
     }
 
     public static void logInfo(final String message)

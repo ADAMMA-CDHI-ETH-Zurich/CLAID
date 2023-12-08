@@ -43,11 +43,11 @@ android_library(
 android_binary(
     name = "claid_capi_android",
     deps = [":android_claid_cc"],
-    manifest = "AndroidManifest.xml",
+    manifest = "aar/claid/app/src/main/AndroidManifest.xml",
 )
 
 android_binary(
     name = "claid_capi_android_tflite",
     deps = [":android_claid_cc_tflite"],
-    manifest = "AndroidManifest.xml",
+    manifest = "aar/claid/app/src/main/AndroidManifest.xml",
 )
