@@ -93,7 +93,17 @@ absl::Status MiddleWare::start() {
     if (!status.ok()) {
         return status;
     }
-    Logger::logInfo("Started Router successfully");
+
+    status = this->startRemoteDispatcherServer(this->hostId, hostDescriptions);
+    if(!status.ok()) {
+        return status;
+    }
+
+    status = this->startRemoteDispatcherClient(this->hostId, this->userId, this->deviceId, hostDescriptions);
+    if(!status.ok())
+    {
+        return status;
+    }
 
     Logger::printfln("Middleware started.");
 
@@ -113,7 +123,7 @@ absl::Status MiddleWare::startRemoteDispatcherServer(const std::string& currentH
     if(it == hostDescriptions.end())
     {
         return absl::NotFoundError(absl::StrCat(
-            "Failed to lookup server address for host for host \"", currentHost, "\".",
+            "Failed to lookup server address for host \"", currentHost, "\".",
             "The host was not found in the configuration file."
         ));
     }
@@ -121,15 +131,34 @@ absl::Status MiddleWare::startRemoteDispatcherServer(const std::string& currentH
     const HostDescription& hostDescription = it->second;
     if(!hostDescription.isServer)
     {
-        return absl::InvalidArgumentError(absl::StrCat(
-            "Cannot start RemoteDispatcherServer on host \"", currentHost, "\".\n",
-            "The host was not configured as server (isServer = false)."
-        ));
+        if(hostDescription.hostServerAddress != "")
+        {
+            return absl::InvalidArgumentError(absl::StrCat(
+                "Cannot start RemoteDispatcherServer on host \"", currentHost, "\".\n",
+                "The host_server_address is non-empty, but the host was not configured as server (isServer = false).\n"
+                "Either set host_server_address to empty (\"\"), or set isServer = true."
+            ));
+        }
+        else
+        {
+            // If we are not configured as a Server, we will not start the RemoteDispatcherServer.
+            return absl::OkStatus();
+        }
     }
 
     // Find out our port from the host description (if we are a server, then hostDescription.hostServerAddress typically would be a port).
     const std::string address = hostDescription.hostServerAddress;
 
+    if(hostDescription.hostServerAddress == "")
+    {
+        return absl::InvalidArgumentError(absl::StrCat(
+            "Cannot start RemoteDispatcherServer on host \"", currentHost, "\".\n",
+            "Host was configured as Server (isServer = true), but the host_server_address is empty (\"\").\n"
+            "Either specify the host_server_address (\"\"), or set isServer = false."
+        ));
+    }
+
+    Logger::logInfo("Starting RemoteDispatcherServer, listening on address %s", address.c_str());
     this->remoteDispatcherServer = make_unique<RemoteDispatcherServer>(address, this->hostUserTable);
 
     return this->remoteDispatcherServer->start();
@@ -138,13 +167,66 @@ absl::Status MiddleWare::startRemoteDispatcherServer(const std::string& currentH
 absl::Status MiddleWare::startRemoteDispatcherClient(const std::string& currentHost, const std::string& currentUser,
                 const std::string& currentDeviceId, const HostDescriptionMap& hostDescriptions)
 {
-    if(this->remoteDispatcherServer != nullptr)
+    if(this->remoteDispatcherClient != nullptr)
     {
-        return absl::AlreadyExistsError("Failed to start client for connection to external server; RemoteDispatcherClient already exists.");
+        return absl::AlreadyExistsError(absl::StrCat(
+            "Failed to start RemoteDispatcherClient on the current host \"", currentHost, "\"; RemoteDispatcherClient already exists."
+        ));
     }
 
-    //     claid::RemoteDispatcherClient client(address, host, userToken, deviceID, inQueue, outQueue);
-    // absl::Status status = client.registerAtServerAndStartStreaming();
+    auto it = hostDescriptions.find(currentHost);
+    if(it == hostDescriptions.end())
+    {
+        return absl::NotFoundError(absl::StrCat(
+            "Couldn't find host current host \"", currentHost, "\" in host descriptions"
+        ));
+    }
+
+    const HostDescription& hostDescription = it->second;
+    const std::string& targetServer = hostDescription.connectTo;
+
+    if(targetServer == "")
+    {
+        Logger::logInfo("Not starting RemoteDispatcherClient, because targetServer is empty (this host will not connect to an external host).");
+        return absl::OkStatus();
+    }
+
+    auto it2 = hostDescriptions.find(targetServer);
+    if(it2 == hostDescriptions.end())
+    {
+        return absl::NotFoundError(absl::StrCat(
+            "Current host \"", currentHost, "\" was configured to connect to server \"", targetServer, "\", ",
+            "but the server was not found in the host description, i.e., it does not exist in the configuration file."
+        ));
+    }
+
+    const HostDescription& serverDescription = it2->second;
+
+    if(!serverDescription.isServer)
+    {
+        return absl::InvalidArgumentError(absl::StrCat(
+            "Current host \"", currentHost, "\" was configured to connect to server \"", targetServer, "\", ",
+            "but the server was not configured as server in the configuration file (is_server is false)"
+        ));
+    }
+
+    const std::string& address = serverDescription.hostServerAddress;
+    if(address == "")
+    {
+        return absl::InvalidArgumentError(absl::StrCat(
+            "Current host \"", currentHost, "\" was configured to connect to server \"", targetServer, "\", ",
+            "but the hostServerAddress of \"", targetServer, "\" is empty and therefore invalid."
+        ));
+    }
+
+    Logger::logInfo("Starting RemoteDispatcherClient, connecting to address %s", address.c_str());
+    this->remoteDispatcherClient = std::make_unique<RemoteDispatcherClient>(address, currentHost, currentUser, currentDeviceId, this->clientTable);
+    absl::Status status = this->remoteDispatcherClient->start();
+
+    if(!status.ok())
+    {
+        return status;
+    }
 
     return absl::OkStatus();
 }
@@ -220,6 +302,18 @@ absl::Status MiddleWare::shutdown()
         return status;
     }
 
+
+
+    if(this->remoteDispatcherServer != nullptr)
+    {
+        this->remoteDispatcherServer->shutdown();
+    }
+
+    if(this->remoteDispatcherClient != nullptr)
+    {
+        this->remoteDispatcherClient->shutdown();
+    }
+
     Logger::printfln("Middleware successfully shut down.");
     running = false;
     return absl::OkStatus();
@@ -268,4 +362,17 @@ const std::string& MiddleWare::getSocketPath() const
 {
     std::cout << " got socket path " << socketPath << "\n";
     return socketPath;
+}
+
+bool MiddleWare::isConnectedToRemoteServer() const
+{
+    return this->remoteDispatcherClient != nullptr && this->remoteDispatcherClient->isConnected();
+}
+
+absl::Status MiddleWare::getRemoteClientStatus() const
+{
+    return this->remoteDispatcherClient != nullptr ?
+         this->remoteDispatcherClient->getLastStatus() : 
+            absl::UnavailableError("Status of RemoteDispatcherClient not available, because the RemoteDispatcherClient does not exist.");
+
 }

@@ -61,7 +61,9 @@ class HostUserTable
     // which *connected* users run a certain host.
     std::map<std::string, std::vector<std::string>> hostToUserMap;
     
-    std::mutex hostUserTableMutex;
+    // Recursive_mutex, because a calling thread might 
+    // make sub calls to lookupOutputQueueForHostUser e.g. from the lookupOutputQueuesForHost function.
+    std::recursive_mutex hostUserTableMutex;
 
 
 

@@ -18,8 +18,8 @@ namespace claid
   {
     public:
       RemoteDispatcherServer(const std::string& addr, HostUserTable& hostUserTable);
-      RemoteDispatcherServer(const std::string& addr);
-      virtual ~RemoteDispatcherServer() {};
+      
+      virtual ~RemoteDispatcherServer();
 
       absl::Status start();
       void shutdown();
@@ -29,7 +29,8 @@ namespace claid
 
     private:
       const std::string addr;
-      HostUserTable& hostUserTable;
+
+      bool running = false;
 
       RemoteServiceImpl remoteServiceImpl;
       std::unique_ptr<grpc::Server> server;

@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package claid;
+
+option go_package = "claid.ethz.ch/claid_sensor_data";
+
+option java_package = "adamma.c4dhi.claid_sensor_data";
+option java_outer_classname = "ClaidSensorData";
+option java_multiple_files = true;
+
+enum AudioEncoding
+{
+    ENCODING_PCM_8BIT = 0;
+    ENCODING_PCM_16BIT = 1;
+    ENCODING_PCM_FLOAT = 2;
+    ENCODING_PCM_24_BIT_PACKED = 3;
+    ENCODING_PCM_32_BIT = 4;
+}
+
+enum AudioChannels
+{
+    CHANNEL_MONO = 0;
+    CHANNEL_STEREO = 1;
+    CHANNEL_QUAD = 2;
+    CHANNEL_5POINT1 = 3;
+    CHANNEL_7POINT1_SURROUND = 4;
+}
+
+message AudioData
+{
+    bytes data = 1;
+    int32 sampling_rate = 2;
+    int32 bit_rate = 3;
+    AudioEncoding encoding = 4;
+    AudioChannels channels = 5;
+}
+
+// Follows open mHealth standard.
+message AccelerationSample
+{
+    float acceleration_x = 1;
+    float acceleration_y = 2;
+    float acceleration_z = 3;
+    string sensor_body_location = 4;
+    uint64 unix_timestamp_in_ms = 5;
+}
+
+message AccelerationData
+{
+    repeated AccelerationSample samples = 1;
+}

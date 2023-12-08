@@ -7,15 +7,15 @@
 
 
 namespace claid {
-    bool CLAID::started = false;
+    // bool CLAID::started = false;
 
-    std::unique_ptr<DispatcherClient> CLAID::moduleDispatcher;
-    std::unique_ptr<ModuleManager> CLAID::moduleManager;
+    // std::unique_ptr<DispatcherClient> CLAID::moduleDispatcher;
+    // std::unique_ptr<ModuleManager> CLAID::moduleManager;
 
-    SharedQueue<DataPackage> CLAID::fromModuleDispatcherQueue;
-    SharedQueue<DataPackage> CLAID::toModuleDispatcherQueue;
+    // SharedQueue<DataPackage> CLAID::fromModuleDispatcherQueue;
+    // SharedQueue<DataPackage> CLAID::toModuleDispatcherQueue;
 
-    void* CLAID::handle = nullptr;
+    // void* CLAID::handle = nullptr;
     
     bool CLAID::start(const std::string& socketPath, const std::string& configFilePath, const std::string& hostId, const std::string& userId, const std::string& deviceId)
     {
@@ -92,6 +92,30 @@ namespace claid {
         
         moduleDispatcher = nullptr;
         moduleManager = nullptr;
+          
+        started = false;
+
         return true;
+    }
+
+    bool CLAID::isConnectedToRemoteServer() const
+    {
+        if(handle == nullptr)
+        {
+            return false;
+        }   
+        claid::MiddleWare* middleware = static_cast<claid::MiddleWare*>(handle);
+        return middleware->isConnectedToRemoteServer();
+    }
+
+    absl::Status CLAID::getRemoteClientStatus() const
+    {
+        if(handle == nullptr)
+        {
+            return absl::UnavailableError("Cannot determine status of the RemoteDispatcherClient, because middleware is not running");
+        }   
+
+        claid::MiddleWare* middleware = static_cast<claid::MiddleWare*>(handle);
+        return middleware->getRemoteClientStatus();
     }
 }

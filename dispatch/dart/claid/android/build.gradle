@@ -67,7 +67,10 @@ android {
 
     sourceSets {
         main.proto.srcDirs += "src/proto"
+        main.jniLibs.srcDirs = ['../blobs/android']
     }
+
+
 
     buildTypes {
         release {

@@ -161,6 +161,7 @@ namespace claid
 
     absl::Status MasterRouter::stop()
     {
+        Logger::logInfo("MasterRouter:: stop called");
         if(!this->active)
         {
             return absl::InvalidArgumentError("Failed to stop MasterRouter. Router is not running.");

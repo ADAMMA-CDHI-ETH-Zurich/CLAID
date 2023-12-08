@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package claid_ml;
+
+option go_package = "claid.ethz.ch/claid_ml";
+
+option java_package = "adamma.c4dhi.claid_ml";
+option java_outer_classname = "ClaidMachineLearning";
+option java_multiple_files = true;
+
+message LayerDimension
+{
+    int32 numBatches = 1;
+    int32 height = 2;
+    int32 width = 3;
+    int32 channels = 4;
+}
+
+enum LayerDataType
+{
+    INT8 = 0;
+    UINT8 = 1;
+    INT16 = 2;
+    UINT16 = 3;
+    INT32 = 4;
+    UINT32 = 5;
+    FLOAT32 = 6;   
+}
+
+enum LayerDataOrder
+{
+    NCHW = 0;
+    NHWC = 1;
+    CHW = 2;
+    HWC = 3;
+    NW = 4;
+}
+
+message LayerData
+{
+    bytes data = 1;
+    string layer_name = 2;
+    LayerDimension layer_dimension = 3;
+    LayerDataType data_type = 4;
+    LayerDataOrder data_order = 5;
+}
+
+message LayerDataVector
+{
+    repeated LayerData layers = 1;
+}

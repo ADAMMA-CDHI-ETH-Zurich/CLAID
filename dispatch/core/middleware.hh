@@ -36,15 +36,12 @@ namespace claid
             );
 
             absl::Status start();
-            absl::Status startRemoteDispatcherServer(const std::string& currentHost, const HostDescriptionMap& hostDescriptions);
-            
-            absl::Status startRemoteDispatcherClient(const std::string& currentHost, const std::string& currentUser, 
-                const std::string& currentDeviceId, const HostDescriptionMap& hostDescriptions);
-            
-            absl::Status startRouter(const std::string& currentHost, const HostDescriptionMap& hostDescriptions, const ModuleDescriptionMap& moduleDescriptions);
             absl::Status shutdown();
 
             const std::string& getSocketPath() const;
+
+            bool isConnectedToRemoteServer() const;
+            absl::Status getRemoteClientStatus() const;
 
             virtual ~MiddleWare();
         private:
@@ -86,6 +83,13 @@ namespace claid
                 const ModuleDescriptionMap& moduleDescriptions,
                 const ChannelDescriptionMap& channelDescriptions,
                 claid::ModuleTable& moduleTable);
+
+            absl::Status startRemoteDispatcherServer(const std::string& currentHost, const HostDescriptionMap& hostDescriptions);
+            
+            absl::Status startRemoteDispatcherClient(const std::string& currentHost, const std::string& currentUser, 
+                const std::string& currentDeviceId, const HostDescriptionMap& hostDescriptions);
+            
+            absl::Status startRouter(const std::string& currentHost, const HostDescriptionMap& hostDescriptions, const ModuleDescriptionMap& moduleDescriptions);
 
 
     };

@@ -42,11 +42,13 @@ TEST(RemoteDispatcherTestSuite, ServerTest)
     const std::string userToken = "User01";
     const std::string deviceID = "13:37";
     
-    claid::RemoteDispatcherClient client(address, host, userToken, deviceID, inQueue, outQueue);
+    ClientTable clientTable;
+
+    claid::RemoteDispatcherClient client(address, host, userToken, deviceID, clientTable);
 
     std::cout << "Checkpoint 1\n";
 
-    absl::Status status = client.registerAtServerAndStartStreaming();
+    absl::Status status = client.start();
     std::cout << "Checkpoint 2\n";
     ASSERT_TRUE(status.ok()) << status;
     client.shutdown();

@@ -7,8 +7,13 @@ namespace claid {
 
     }
 
-    SharedQueue<DataPackage>& ClientTable::getQueue()
+    SharedQueue<DataPackage>& ClientTable::getFromRemoteClientQueue()
     {
-        return toRemoteClientQueue;
+        return this->fromRemoteClientQueue;
+    }
+
+    SharedQueue<DataPackage>& ClientTable::getToRemoteClientQueue()
+    {
+        return this->toRemoteClientQueue;
     }
 }

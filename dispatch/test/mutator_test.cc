@@ -1,6 +1,10 @@
 #include "dispatch/core/Module/TypeMapping/TypeMapping.hh"
 #include "gtest/gtest.h"
 
+#include "dispatch/proto/claidservice.grpc.pb.h"
+
+using claidservice::DataPackage;
+
 #include <string>
 #include <vector>
 #include <map>
@@ -57,5 +61,69 @@ TEST(MutatorTestSuite, MutatorTest) {
     // stringMap
     auto mut33 = TypeMapping::getMutator<std::map<std::string, std::string>>();
 
-    // TODO: PROTO
+    auto mut34 = TypeMapping::getMutator<NumberMap>();
+
+    auto mut35 = TypeMapping::getMutator<AnyProtoType>();
+
+}
+
+
+TEST(MutatorTestSuite, ProtoMutateTest) {
+    auto mutator = TypeMapping::getMutator<NumberArray>();
+
+    DataPackage package;
+
+    // NumberArray is a protobuf type.
+    // Normally, you wouldn't use NumberArray directly, because the Mutator
+    // automatically converts between vector and NumberArray.
+    // If using NumberArray directly, the Mutator will serialize it as proto message using ProtoCodec.
+
+    NumberArray protoTestVal;
+    protoTestVal.add_val(42);
+    protoTestVal.add_val(1337);
+
+    mutator.setPackagePayload(package, protoTestVal);
+
+    NumberArray returnVal;
+    mutator.getPackagePayload(package, returnVal);
+
+    ASSERT_EQ(returnVal.val_size(), 2) << "Expected 2 elements in deserialized NumberArray";
+
+    ASSERT_EQ(returnVal.val(0), 42) << "Expected value 42";
+    ASSERT_EQ(returnVal.val(1), 1337) << "Expected value 1337";
+
+
+    
+}
+
+TEST(MutatorTestSuite, AnyProtoTest) {
+    auto mutator = TypeMapping::getMutator<AnyProtoType>();
+
+    DataPackage package;
+
+    // NumberArray is a protobuf type.
+    // Normally, you wouldn't use NumberArray directly, because the Mutator
+    // automatically converts between vector and NumberArray.
+    // If using NumberArray directly, the Mutator will serialize it as proto message using ProtoCodec.
+
+    std::shared_ptr<NumberArray> protoTestVal(new NumberArray);
+    protoTestVal->add_val(42);
+    protoTestVal->add_val(1337);
+
+    mutator.setPackagePayload(package, AnyProtoType(protoTestVal));
+
+    AnyProtoType returnVal;
+    mutator.getPackagePayload(package, returnVal);
+
+
+    auto message = std::static_pointer_cast<const NumberArray>(returnVal.getMessage());
+
+
+    ASSERT_EQ(message->val_size(), 2) << "Expected 2 elements in deserialized NumberArray";
+
+    ASSERT_EQ(message->val(0), 42) << "Expected value 42";
+    ASSERT_EQ(message->val(1), 1337) << "Expected value 1337";
+
+
+
 }

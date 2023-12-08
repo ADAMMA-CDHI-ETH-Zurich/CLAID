@@ -127,8 +127,8 @@ class ModuleManager {
       final fn = _factories[mod.moduleClass];
       if (fn == null) {
         
-        //throw UnsupportedError(
-        //    "module factory ${mod.moduleClass} is not registered");
+        throw UnsupportedError(
+            "module factory ${mod.moduleClass} is not registered");
         continue;
       }
       final instance = fn();

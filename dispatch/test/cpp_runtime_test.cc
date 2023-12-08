@@ -66,11 +66,12 @@ TEST(CppRuntimeTestSuite, CppRuntimeTest)
     const char* device_id = "something_else";
     std::cout << "T2\n";
 
-    bool result = CLAID::start(socket_path, config_file, host_id, user_id, device_id);
+    CLAID claid;
+    bool result = claid.start(socket_path, config_file, host_id, user_id, device_id);
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
     ASSERT_TRUE(result);
-    CLAID::shutdown();
+    claid.shutdown();
     std::cout << "Waiting\n";
 
 }

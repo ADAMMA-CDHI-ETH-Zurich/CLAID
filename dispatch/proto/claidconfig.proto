@@ -12,8 +12,8 @@ message HostConfig {
   string hostname = 1; 
   string type = 2;
   bool is_server = 3;
-  optional string host_server_address = 4; // If is_server, then this identifies the address of the server. Must be fully specified.
-  optional string connect_to = 5; // If specified, the host will connect to this address. 
+  string host_server_address = 4; // If is_server, then this identifies the address of the server. Must be fully specified.
+  string connect_to = 5; // If specified, the host will connect to this address. 
                                   // The host can either be a Client connection to a Server, or a Server connecting to another Server.
   repeated ModuleConfig modules = 6;
 }

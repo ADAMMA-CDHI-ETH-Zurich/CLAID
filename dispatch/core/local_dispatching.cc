@@ -446,7 +446,7 @@ bool DispatcherClient::startRuntime(const InitRuntimeRequest& req) {
         Empty empty;
         Status status = stub->InitRuntime(&context,req, &empty);
         if (!status.ok()) {
-            claid::Logger::printfln("Couldn't init request: %s", status.error_message().c_str());
+            claid::Logger::printfln("Could not init request: %s", status.error_message().c_str());
             return false;
         }
     }

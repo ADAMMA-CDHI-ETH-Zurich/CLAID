@@ -10,8 +10,37 @@ filegroup(
     srcs = [
         "test_config.json",
         "cpp_runtime_test.json",
+        "remote_dispatching_test.json",
+        "data_saver_json_test.json",
     ],
 )
+
+cc_test(
+  name = "data_saver_json_test",
+  size = "small",
+  srcs = ["data_saver_json_test.cc"],
+  deps = [
+    ":test_helpers",
+    "//dispatch/proto:claidservice_cc_proto",
+    "//dispatch/core:capi"
+  ] + FRAMEWORK_DEPS,
+  data = [
+    ":test_configs",
+  ]
+)
+
+
+cc_test(
+  name = "file_saver_test",
+  size = "small",
+  srcs = ["file_saver_test.cc"],
+  deps = [
+    ":test_helpers",
+    "//dispatch/proto:claidservice_cc_proto",
+    "//dispatch/core:data_collection"
+  ] + FRAMEWORK_DEPS,
+)
+
 
 cc_test(
   name = "local_dispatching_test",
@@ -42,8 +71,11 @@ cc_test(
   srcs = ["remote_dispatching_test.cc"],
   deps = [
     ":testmessages_cc_proto",
-    "//dispatch/core:remote_dispatching",
+    "//dispatch/core:capi",
   ] + FRAMEWORK_DEPS,
+  data = [
+    ":test_configs",
+  ]
 )
 
 cc_binary(

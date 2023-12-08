@@ -16,12 +16,33 @@ cc_binary(
 )
 
 
-java_binary(
-    name = "claid_java_test",
-    srcs = glob(["adamma/c4dhi/claid/**/*.java",
-                "adamma/c4dhi/claid_platform_impl/**/*.java",
-                "io/grpc/android/UdsChannelBuilder.java",
-                "android/net/LocalSocketAddress/Namespace.java"]),
+
+java_library(
+    name = "java_local_dispatching",
+    srcs = glob(["runtime/adamma/c4dhi/claid/LocalDispatching/*.java",
+                "runtime/adamma/c4dhi/claid/Module/*.java",
+                "runtime/adamma/c4dhi/claid/Logger/*.java",
+                "runtime/adamma/c4dhi/claid/TypeMapping/*.java",
+                "runtime/adamma/c4dhi/claid/Module/Scheduling/*.java",
+                "stub/io/grpc/android/UdsChannelBuilder.java",
+                "stub/android/net/LocalSocketAddress/Namespace.java"]),
+    deps = [        
+        "//dispatch/proto:claidservice_java_proto",
+        "//dispatch/proto:claidservice_java_grpc",
+        "@io_grpc_grpc_java//api",
+        "@io_grpc_grpc_java//stub",
+        "@com_google_protobuf//java/core",
+        "@io_grpc_grpc_java//netty:shaded_maven"],
+    javacopts = ["-Xep:BanJNDI:WARN",],
+)
+
+
+java_library(
+    name = "claid_java",
+    srcs = glob(["runtime/adamma/c4dhi/claid/**/*.java",
+                "platform/adamma/c4dhi/claid_platform_impl/**/*.java",
+                "stub/io/grpc/android/UdsChannelBuilder.java",
+                "stub/android/net/LocalSocketAddress/Namespace.java"]),
     deps = [":java_local_dispatching",
         ":claid_capi_java",
         "@com_google_protobuf//java/core",
@@ -38,23 +59,21 @@ java_binary(
 )
 
 
-java_library(
-    name = "java_local_dispatching",
-    srcs = glob(["adamma/c4dhi/claid/LocalDispatching/*.java",
-                "adamma/c4dhi/claid/Module/*.java",
-                "adamma/c4dhi/claid/Logger/*.java",
-                "adamma/c4dhi/claid/TypeMapping/*.java",
-                "adamma/c4dhi/claid/Module/Scheduling/*.java",
-                "io/grpc/android/UdsChannelBuilder.java",
-                "android/net/LocalSocketAddress/Namespace.java"]),
-    deps = [        
+
+java_binary(
+    name = "claid_java_test",
+    srcs = ["test/claid_java_test.java", "test/TestModule.java"],
+    deps = [":java_local_dispatching",
+        ":claid_java",
+        "@com_google_protobuf//java/core",
+        "@io_grpc_grpc_java//api",
+        "@io_grpc_grpc_java//protobuf",
+        "@io_grpc_grpc_java//stub",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_apache_tomcat_annotations_api",
         "//dispatch/proto:claidservice_java_proto",
         "//dispatch/proto:claidservice_java_grpc",
-        "@io_grpc_grpc_java//api",
-        "@io_grpc_grpc_java//stub",
-        "@com_google_protobuf//java/core",
         "@io_grpc_grpc_java//netty:shaded_maven"],
     javacopts = ["-Xep:BanJNDI:WARN",],
-
 
 )

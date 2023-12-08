@@ -1,5 +1,5 @@
 #include "dispatch/core/RemoteDispatching/HostUserTable.hh"
-
+#include "dispatch/core/Logger/Logger.hh"
 
 namespace claid
 {
@@ -13,14 +13,14 @@ HostUserTable::HostUserTable() : fromClientsQueue(std::make_shared<SharedQueue<D
 absl::Status HostUserTable::lookupOutputQueueForHostUser(const std::string& host, 
     const std::string& userToken, std::shared_ptr<SharedQueue<DataPackage>>& queue)
 {
-    std::lock_guard<std::mutex> lock(this->hostUserTableMutex);
+    std::lock_guard<std::recursive_mutex> lock(this->hostUserTableMutex);
     RemoteClientKey key = makeRemoteClientKey(host, userToken);
 
     auto it = this->hostUserQueueMap.find(key);
     if(it == this->hostUserQueueMap.end())
     {
         return absl::NotFoundError(absl::StrCat(
-            "HostUserTable unable to find queue for client \"", host, ":", userToken, "\".\n",
+            "HostUserTable unable to find queue for user \"", userToken, "\" on host \"", host, "\".\n",
             "The client was not found in the host user map."
         ));
     }
@@ -34,8 +34,9 @@ absl::Status HostUserTable::lookupOutputQueuesForHost(const std::string& host,
     std::vector<std::shared_ptr<SharedQueue<DataPackage>>>& queues)
 {
     queues.clear();
+        Logger::logInfo("T14");
 
-    std::lock_guard<std::mutex> lock(this->hostUserTableMutex);
+    std::lock_guard<std::recursive_mutex> lock(this->hostUserTableMutex);
 
     auto it = this->hostToUserMap.find(host);
     if(it == this->hostToUserMap.end())
@@ -45,13 +46,20 @@ absl::Status HostUserTable::lookupOutputQueuesForHost(const std::string& host,
             "Host was not found and possibly has not been registered yet."
         ));
     }
+        Logger::logInfo("T15");
 
     const std::vector<std::string>& listOfUsers = it->second;
 
     for(const std::string& user : listOfUsers)
     {
+                Logger::logInfo("T16");
+
         std::shared_ptr<SharedQueue<DataPackage>> queue;
+                        Logger::logInfo("T17");
+
         absl::Status status = this->lookupOutputQueueForHostUser(host, user, queue);
+                        Logger::logInfo("T18");
+
         if(!status.ok())
         {
             return status;
@@ -65,7 +73,7 @@ absl::Status HostUserTable::lookupOutputQueuesForHost(const std::string& host,
 
 absl::Status HostUserTable::addRemoteClient(const std::string& host, const std::string& userToken, const std::string& deviceID)
 {
-    std::lock_guard<std::mutex> lock(this->hostUserTableMutex);
+    std::lock_guard<std::recursive_mutex> lock(this->hostUserTableMutex);
 
     RemoteClientKey key = makeRemoteClientKey(host, userToken);
     
@@ -98,7 +106,7 @@ absl::Status HostUserTable::addRemoteClient(const std::string& host, const std::
 
 absl::Status HostUserTable::removeRemoteClient(const std::string& host, const std::string& userToken, const std::string& deviceID)
 {
-    std::lock_guard<std::mutex> lock(this->hostUserTableMutex);
+    std::lock_guard<std::recursive_mutex> lock(this->hostUserTableMutex);
 
     RemoteClientKey key = makeRemoteClientKey(host, userToken);
 

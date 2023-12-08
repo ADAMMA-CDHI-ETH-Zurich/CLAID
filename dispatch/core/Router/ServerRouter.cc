@@ -13,15 +13,17 @@ namespace claid
 
     absl::Status ServerRouter::routePackage(std::shared_ptr<DataPackage> dataPackage) 
     {
+
         const std::string& sourceHost = dataPackage->source_host();
         const std::string& sourceModule = dataPackage->source_module();
 
         const std::string& targetHost = dataPackage->target_host();
         const std::string& targetModule = dataPackage->target_module();
-
-        Logger::logInfo("ClientRouter routing package from host \"%s\" (Module \"%s\"), "
+        Logger::logInfo("Test");
+        Logger::logInfo("ServerRouter routing package from host \"%s\" (Module \"%s\"), "
                         "destined for host \"%s\" (Module \"%s\").", sourceHost.c_str(), sourceModule.c_str(), targetHost.c_str(), targetModule.c_str());
-        
+
+
         if(!canReachHost(targetHost))
         {
             return absl::InvalidArgumentError(absl::StrCat(
@@ -50,11 +52,12 @@ namespace claid
         {
             // If the target user_token is set to *, we route to all users.
             // If not, only to a specific user.
-            bool routeToAllUsers = dataPackage->target_user_token() == "*";
+            bool routeToAllUsers = dataPackage->target_user_token() == "";
 
             if(routeToAllUsers)
             {
                 std::vector<std::shared_ptr<SharedQueue<DataPackage>>> queues;
+
                 status = this->hostUserTable.lookupOutputQueuesForHost(nextHost, queues);
 
                 if(!status.ok() || queues.size() == 0)
@@ -71,9 +74,11 @@ namespace claid
                 {
                     queue->push_back(dataPackage);
                 }
+
             }
             else
             {
+
                 const std::string& targetUserToken = dataPackage->target_user_token();
                 std::shared_ptr<SharedQueue<DataPackage>> queue;
                 status = this->hostUserTable.lookupOutputQueueForHostUser(nextHost, targetUserToken, queue);
@@ -83,7 +88,7 @@ namespace claid
                     std::stringstream ss;
                     ss << status;
                     Logger::logWarning("ServerRouter failed to route package from host \"%s\" to user \"%s\" running host \"%s\", "
-                    "Error was: %s", sourceHost.c_str(), targetUserToken.c_str(), targetHost.c_str(), targetHost.c_str(), ss.str().c_str());
+                    "Error was: %s", sourceHost.c_str(), targetUserToken.c_str(), targetHost.c_str(), ss.str().c_str());
 
                     return absl::OkStatus();
                 }

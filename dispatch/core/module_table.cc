@@ -97,7 +97,7 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         // Find the channel and verify and set the type.
         auto entry = findChannel(channelId);
         if (!entry) {
-            return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Channel \"", channelId, "\"not known"));
+            return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Channel \"", channelId, "\" not known, did you specify it in the configuration file?"));
         }
 
         // If the type was already set and the type doesn't match we return an error.
@@ -110,7 +110,11 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         bool isSource = (moduleId == src);
         const string& val = isSource ? src : tgt;
         if (!entry->addSet(val, isSource)) {
-            return Status(grpc::INVALID_ARGUMENT, "Source or target '" + val + "' not expected.");
+            return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
+                "Module \"", val, "\" ", isSource ? "published" : "subscribed", " channel \"", channelId, "\", ",
+                "but the channel was not specified in the configuration file. Make sure to add the channel as ", 
+                isSource ? "output channel" : "input channel", " of Module \"", val,  "\" in the configuration file."
+            ));
         }
         Logger::logInfo("Setting channel %s %d", channelId.c_str(), chanPkt.payload_oneof_case());
 

@@ -1,16 +1,24 @@
 #include "dispatch/core/RemoteDispatching/RemoteDispatcherClient.hh"
-
+#include "dispatch/core/Logger/Logger.hh"
 
 namespace claid
 {
+
+    RemoteDispatcherClient::~RemoteDispatcherClient()
+    {
+        if(this->connectionMonitorRunning)
+        {
+            Logger::logInfo("RemoteDispatcherClient: destructor");
+            shutdown();
+        }
+    }
+
     RemoteDispatcherClient::RemoteDispatcherClient(const std::string& addressToConnectTo,
                     const std::string& host,
                     const std::string& userToken,
                     const std::string& deviceID,
-                    SharedQueue<DataPackage>& incomingQueue, 
-                    SharedQueue<DataPackage>& outgoingQueue) :  host(host), userToken(userToken), deviceID(deviceID),
-                                                                incomingQueue(incomingQueue), 
-                                                                outgoingQueue(outgoingQueue)
+                    ClientTable& clientTable) :     host(host), userToken(userToken), 
+                                                    deviceID(deviceID), clientTable(clientTable)
     {
         // Set up the gRCP channel
         grpcChannel = grpc::CreateChannel(addressToConnectTo, grpc::InsecureChannelCredentials());
@@ -19,24 +27,39 @@ namespace claid
 
     void RemoteDispatcherClient::shutdown() 
     {
-        std::cout << "Shutting down client 1\n";
+        if(!this->connectionMonitorRunning)
+        {
+            return;
+        }
+        Logger::logInfo("Stopping RemoteDispatcherClient 1");
         // Closing the outgoing queue will end the writer thread.
         // The writer thread will invoke stream->WritesDone() after the outgoingQueue was closed.
         // This will close the stream and also abort stream->Read() for the reader thread.
-        outgoingQueue.close();
+       
+        Logger::logInfo("Stopping RemoteDispatcherClient 2");
+        this->connectionMonitorRunning = false;
+        this->connected = false;
+        Logger::logInfo("Stopping RemoteDispatcherClient 3");
+        
+       // this->stream->Finish();
+        Logger::logInfo("Stopping RemoteDispatcherClient 4");
+
+        Logger::logInfo("Stopping RemoteDispatcherClient 5");
+
         if (this->writeThread) 
         {
             this->writeThread->join();
             this->writeThread = nullptr;
         }
-        std::cout << "Shutting down client 2\n";
+        Logger::logInfo("Stopping RemoteDispatcherClient 6");
 
-        if (this->readThread) 
+        if (this->watcherAndReaderThreader) 
         {
-            this->readThread->join();
-            this->readThread = nullptr;
+            this->watcherAndReaderThreader->join();
+            this->watcherAndReaderThreader = nullptr;
         }
-        std::cout << "Shutting down client 3\n";
+        Logger::logInfo("Stopping RemoteDispatcherClient 7");
+
     }
 
     void makeRemoteRuntimePing(ControlPackage& pkt, const std::string& host, 
@@ -49,55 +72,102 @@ namespace claid
         pkt.mutable_remote_client_info()->set_device_id(deviceID);
     }
 
-    absl::Status RemoteDispatcherClient::registerAtServerAndStartStreaming() 
+    void RemoteDispatcherClient::connectAndMonitorConnection() 
     {
-        // Setup stream and send ping package, containg the user_token and device_id.
-        // if (true)
+        while(this->connectionMonitorRunning)
         {
-            // Set timeout for API
-            // std::chrono::system_clock::time_point deadline =
-            //     std::chrono::system_clock::now() + std::chrono::seconds(10);
-            // context.set_deadline(deadline);
-
+            Logger::logInfo("RemoteDispatcherClient is trying to establish a connection.");
             streamContext = std::make_shared<grpc::ClientContext>();
+
+            auto deadline = std::chrono::system_clock::now() + std::chrono::seconds(2);
+            bool connected = grpcChannel->WaitForConnected(deadline);
+
+
+            grpc_connectivity_state state = grpcChannel->GetState(/* try_to_connect */ true);
+
+            if (!(connected && state == GRPC_CHANNEL_READY))
+            {
+                Logger::logInfo("UNAVAILABLE");
+                this->lastStatus = absl::UnavailableError("RemoteDispatcherClient failed to connect to remote server. Server unreachable.");
+                continue;
+            }
+
             stream = stub->SendReceivePackages(streamContext.get());
 
-
+            if(!stream)
+            {
+                this->lastStatus = absl::UnavailableError("RemoteDispatcherClient failed to connect to remote server. Stream is null.");
+            }
+            
             claidservice::DataPackage pingRequestPackage;
             makeRemoteRuntimePing(*pingRequestPackage.mutable_control_val(), this->host, this->userToken, this->deviceID);
+
+            Logger::logInfo("Sending ping package");
+
+
 
             if (!stream->Write(pingRequestPackage)) 
             {
                 grpc::Status status = stream->Finish();
-                return absl::InvalidArgumentError(absl::StrCat(
+                this->lastStatus = absl::InvalidArgumentError(absl::StrCat(
                     "RemoteDispatcherClient failed to send ping package to server. Received error \"", status.error_message(), "\"\n"
                 ));
-            }
+            }                
+        
 
+            
+
+
+            Logger::logInfo("Waiting for ping response");
 
             // Wait for the valid response ping
             DataPackage pingResp;
             if (!stream->Read(&pingResp)) {
                 auto status = stream->Finish();
-                return absl::InvalidArgumentError(absl::StrCat(
+                this->lastStatus = absl::InvalidArgumentError(absl::StrCat(
                     "RemoteDispatcherClient failed to receive a ping package from the server. Received error \"", status.error_message(), "\"."
                 ));
             }
 
             if (pingResp.control_val().ctrl_type() != CtrlType::CTRL_REMOTE_PING) 
             {
-                return absl::InvalidArgumentError(absl::StrCat(
+                this->lastStatus = absl::InvalidArgumentError(absl::StrCat(
                     "RemoteDispatcherClient received ControlPackage package from server during handshake, however the package has an unexpected ControlType.\n",
                     "Expected ControlType \"", CtrlType_Name(CtrlType::CTRL_REMOTE_PING), "\", but got \"", CtrlType_Name(pingResp.control_val().ctrl_type()), "\""
                 ));
             }
+            this->connected = true;
+            this->lastStatus = absl::OkStatus();
 
-            // Start the threads to service the input/output queues.
+            // Start the thread to service the input/output queues.
             writeThread = std::make_unique<std::thread>([this]() { processWriting(); });
-            readThread = std::make_unique<std::thread>([this]() { processReading(); });
+            
+            Logger::logInfo("RemoteDispatcherClient setup successful");
+            
+            // Blocks as long as we are connected
+            processReading();
 
-            return absl::OkStatus();
+            Logger::logInfo("RemoteDispatcherClient lost connection, stopping reader and writer.");
+            this->connected = false;
+            this->stream->Finish();
+            
+            writeThread->join();
+            writeThread = nullptr;
+            Logger::logInfo("RemoteDispatcherClient is reset.");
         }
+        
+    
+    }
+
+    absl::Status RemoteDispatcherClient::start()
+    {
+        if(this->connectionMonitorRunning)
+        {
+            return absl::AlreadyExistsError("RemoteDispatcherClient was started twice");
+        }
+        this->connectionMonitorRunning = true;
+        watcherAndReaderThreader = std::make_unique<std::thread>([this]() { connectAndMonitorConnection(); });
+        return absl::OkStatus();
     }
 
     void RemoteDispatcherClient::processReading() 
@@ -105,19 +175,24 @@ namespace claid
         DataPackage dp;
         while(stream->Read(&dp)) 
         {
-            incomingQueue.push_back(std::make_shared<DataPackage>(dp));
+            this->clientTable.getFromRemoteClientQueue().push_back(std::make_shared<DataPackage>(dp));
         }
-        std::cout << "RemoteDispatcherClient: Finished reading\n";
+        Logger::logInfo("RemoteDispatcherClient stream closed");
+
     }
 
     void RemoteDispatcherClient::processWriting() 
     {
-        while(true) 
+        Logger::logInfo("RemoteDispatcherClient: processWriting()");
+
+        while(this->connected) 
         {
-            auto pkt = outgoingQueue.pop_front();
+            SharedQueue<DataPackage>& toRemoteClientQueue = this->clientTable.getToRemoteClientQueue();
+            auto pkt = toRemoteClientQueue.pop_front();
             if (!pkt) 
             {
-                if (outgoingQueue.is_closed()) 
+                Logger::logInfo("RemoteDispatcherClient: pkt is null");
+                if (toRemoteClientQueue.is_closed()) 
                 {
                     break;
                 }
@@ -127,11 +202,22 @@ namespace claid
                 if (!stream->Write(*pkt)) 
                 {
                     // Server is down?
+                    Logger::logWarning("Failed to write to remote server. RemoteDispatcherClient is lost connection.");
                     break;
                 }
             }
         }
         stream->WritesDone();
-        std::cout << "RemoteDispatcherClient processWriting done";
+        Logger::logInfo("RemoteDispatcherClient processWriting done");
+    }
+
+    bool RemoteDispatcherClient::isConnected() const
+    {
+        return this->connected;
+    }
+    
+    absl::Status RemoteDispatcherClient::getLastStatus() const
+    {
+        return this->lastStatus;   
     }
 }

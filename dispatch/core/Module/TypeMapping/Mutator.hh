@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <functional>
+#include "dispatch/core/Logger/Logger.hh"
 
 #include "dispatch/proto/claidservice.grpc.pb.h"
 
@@ -15,7 +16,7 @@ class Mutator
     // Hence, the setter has to return a new DataPacke.
 
     std::function<void(DataPackage&, const T&)> setter;
-    std::function<T(const DataPackage& )> getter;
+    std::function<void (const DataPackage&, T& )> getter;
     
 public:
     Mutator()
@@ -24,7 +25,7 @@ public:
     }
 
     Mutator(std::function<void(DataPackage&, const T&)> setter, 
-        std::function<T(const DataPackage&)> getter) : setter(setter), getter(getter)
+        std::function<void (const DataPackage&, T& )> getter) : setter(setter), getter(getter)
     {
 
     }
@@ -34,9 +35,9 @@ public:
         setter(packet, value);
     }
 
-    T getPackagePayload(const DataPackage& packet) 
+    void getPackagePayload(const DataPackage& packet, T& returnValue) 
     {
-        return getter(packet);
+        getter(packet, returnValue);
     }
 };
 
