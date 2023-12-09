@@ -74,9 +74,11 @@ absl::Status HostUserTable::lookupOutputQueuesForHost(const std::string& host,
 absl::Status HostUserTable::addRemoteClient(const std::string& host, const std::string& userToken, const std::string& deviceID)
 {
     std::lock_guard<std::recursive_mutex> lock(this->hostUserTableMutex);
+        Logger::logInfo("hostusrtable 1");
 
     RemoteClientKey key = makeRemoteClientKey(host, userToken);
-    
+            Logger::logInfo("hostusrtable 2");
+
     auto it = this->hostUserQueueMap.find(key);
 
     if(it != this->hostUserQueueMap.end())
@@ -86,10 +88,12 @@ absl::Status HostUserTable::addRemoteClient(const std::string& host, const std::
             "A user with these identifiers was already registered before."
         ));
     }
+        Logger::logInfo("hostusrtable 4");
 
     std::shared_ptr<SharedQueue<DataPackage>> queue = std::make_shared<SharedQueue<DataPackage>>();
     this->hostUserQueueMap.insert(std::make_pair(key, queue));
     std::vector<std::string>& listOfUsers = this->hostToUserMap[host];
+        Logger::logInfo("hostusrtable 4");
 
     auto it2 = std::find(listOfUsers.begin(), listOfUsers.end(), userToken);
     if(it2 != listOfUsers.end())
@@ -100,6 +104,7 @@ absl::Status HostUserTable::addRemoteClient(const std::string& host, const std::
         ));
     }
     listOfUsers.push_back(userToken);
+        Logger::logInfo("hostusrtable 5");
 
     return absl::OkStatus();
 }
@@ -115,9 +120,9 @@ absl::Status HostUserTable::removeRemoteClient(const std::string& host, const st
 
         if(it == this->hostUserQueueMap.end())
         {
-            return absl::AlreadyExistsError(absl::StrCat(
+            return absl::NotFoundError(absl::StrCat(
                 "HostUserTable cannot remove remote client \"", host, ":", userToken, "\".\n",
-                "A user with these identifiers was nnot registered."
+                "A user with these identifiers was not registered."
             ));
         }
         this->hostUserQueueMap.erase(it);

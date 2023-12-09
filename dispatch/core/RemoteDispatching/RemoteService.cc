@@ -1,5 +1,5 @@
 #include "dispatch/core/RemoteDispatching/RemoteService.hh"
-
+#include "dispatch/core/Logger/Logger.hh"
 namespace claid
 {
 
@@ -48,6 +48,7 @@ namespace claid
         status = remoteClientHandler->startWriterThread(stream);
         if(!status.ok())
         {
+            Logger::logWarning("RemoteClientHandler failed to accept client: %s", status.error_message().c_str());
             return status;
         }
         std::cout << "Done starting writer thread\n";
@@ -103,19 +104,20 @@ namespace claid
             ));
             return nullptr;
         }
-
         // Allocate a RemoteClientHandler
         absl::Status abslStatus = 
             this->hostUserTable.addRemoteClient(
                 remoteClientInfo.host(), remoteClientInfo.user_token(), remoteClientInfo.device_id());
 
+
         if(!abslStatus.ok())
         {
+            Logger::logInfo("RemoteService fail %s", abslStatus.ToString().c_str());
             status = grpc::Status(grpc::CANCELLED, abslStatus.ToString());
             return nullptr;
         }
 
-       
+
         std::shared_ptr<SharedQueue<DataPackage>> fromRemoteClientQueue = this->hostUserTable.inputQueue();
         std::shared_ptr<SharedQueue<DataPackage>> toRemoteClientQueue;
         
@@ -155,6 +157,14 @@ namespace claid
 
         it->second->shutdown();
         this->remoteClientHandlers.erase(it); // Removes the unique_ptr from the map, which will cause the managed object to be deleted.
+        
+        absl::Status status = this->hostUserTable.removeRemoteClient(remoteClientInfo.host(), remoteClientInfo.user_token(), remoteClientInfo.device_id());
+
+        if(!status.ok())
+        {
+            Logger::logWarning("Failed to remove host %s:%s:%s from HostUserTable: %s", 
+            remoteClientInfo.host().c_str(), remoteClientInfo.user_token().c_str(), remoteClientInfo.device_id().c_str(),  status.ToString().c_str());
+        }
     }
 
     void RemoteServiceImpl::shutdown()

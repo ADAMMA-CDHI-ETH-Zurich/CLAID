@@ -86,4 +86,19 @@ class ClaidCoreBindings {
               ffi.Pointer<ffi.Void>)>>('get_socket_path');
   late final _get_socket_path = _get_socket_pathPtr
       .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Void>)>();
+
+  ffi.Pointer<ffi.Void> attach_cpp_runtime(
+    ffi.Pointer<ffi.Void> handle,
+  ) {
+    return _attach_cpp_runtime(
+      handle,
+    );
+  }
+
+  late final _attach_cpp_runtimePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Void> Function(
+              ffi.Pointer<ffi.Void>)>>('attach_cpp_runtime');
+  late final _attach_cpp_runtime = _attach_cpp_runtimePtr
+      .asFunction<ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Void>)>();
 }

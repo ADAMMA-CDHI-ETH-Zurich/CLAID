@@ -31,34 +31,27 @@ namespace claid
         {
             return;
         }
-        Logger::logInfo("Stopping RemoteDispatcherClient 1");
         // Closing the outgoing queue will end the writer thread.
         // The writer thread will invoke stream->WritesDone() after the outgoingQueue was closed.
         // This will close the stream and also abort stream->Read() for the reader thread.
        
-        Logger::logInfo("Stopping RemoteDispatcherClient 2");
         this->connectionMonitorRunning = false;
         this->connected = false;
-        Logger::logInfo("Stopping RemoteDispatcherClient 3");
         
        // this->stream->Finish();
-        Logger::logInfo("Stopping RemoteDispatcherClient 4");
 
-        Logger::logInfo("Stopping RemoteDispatcherClient 5");
 
         if (this->writeThread) 
         {
             this->writeThread->join();
             this->writeThread = nullptr;
         }
-        Logger::logInfo("Stopping RemoteDispatcherClient 6");
 
         if (this->watcherAndReaderThreader) 
         {
             this->watcherAndReaderThreader->join();
             this->watcherAndReaderThreader = nullptr;
         }
-        Logger::logInfo("Stopping RemoteDispatcherClient 7");
 
     }
 
@@ -92,13 +85,16 @@ namespace claid
                 continue;
             }
 
+            Logger::logInfo("RemoteDispatcherClient 1.");
             stream = stub->SendReceivePackages(streamContext.get());
 
+            Logger::logInfo("RemoteDispatcherClient 2.");
             if(!stream)
             {
                 this->lastStatus = absl::UnavailableError("RemoteDispatcherClient failed to connect to remote server. Stream is null.");
             }
-            
+            Logger::logInfo("RemoteDispatcherClient 3.");
+
             claidservice::DataPackage pingRequestPackage;
             makeRemoteRuntimePing(*pingRequestPackage.mutable_control_val(), this->host, this->userToken, this->deviceID);
 
@@ -143,7 +139,7 @@ namespace claid
             writeThread = std::make_unique<std::thread>([this]() { processWriting(); });
             
             Logger::logInfo("RemoteDispatcherClient setup successful");
-            
+            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
             // Blocks as long as we are connected
             processReading();
 
@@ -172,6 +168,7 @@ namespace claid
 
     void RemoteDispatcherClient::processReading() 
     {
+        Logger::logInfo("ProcessReading");
         DataPackage dp;
         while(stream->Read(&dp)) 
         {
