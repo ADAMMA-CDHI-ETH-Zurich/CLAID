@@ -11,6 +11,8 @@ extern "C"
     void shutdown_core(void* handle);
     const char* get_socket_path(void* handle);
 
+    void* attach_cpp_runtime(void* handle);
+
 #ifdef __cplusplus
 }
 #endif

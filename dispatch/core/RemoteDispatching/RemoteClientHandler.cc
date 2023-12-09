@@ -1,5 +1,5 @@
 #include "dispatch/core/RemoteDispatching/RemoteClientHandler.hh"
-
+#include "dispatch/core/Logger/Logger.hh"
 namespace claid
 {
     RemoteClientHandler::RemoteClientHandler(SharedQueue<claidservice::DataPackage>& inQueue,
@@ -59,14 +59,20 @@ namespace claid
             // If we got a null pointer we are done
             if (!pkt) 
             {
+                Logger::logWarning("RemoteClientHandler::processWriting received null package");
                 break;
             }
 
             if (!stream->Write(*pkt)) 
             {
                 // Re-enqueue package.
+                Logger::logWarning("RemoteClientHandler::processWriting failed to write, reenqueuing package");
                 this->outgoingQueue.push_front(pkt);
                 break;
+            }
+            else
+            {
+                Logger::logWarning("RemoteClientHandler::processWriting wrote package successfully");
             }
         }
         std::cout << "Done with writer thread of RemoteClientHandler!" << std::endl;

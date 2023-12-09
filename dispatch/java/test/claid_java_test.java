@@ -54,15 +54,15 @@ public class claid_java_test {
 
 
 		// If Linux/Android:
-		// if(!CLAID.start("unix:///tmp/test_socket.grpc", "/home/lastchance/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory))
-		// {
-		// 	System.exit(0);
-		// }
-		// If macOS or Windows:
-		if(!CLAID.start("localhost:1337", "/Users/planger/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory))
+		if(!CLAID.start("unix:///tmp/test_socket.grpc", "/home/lastchance/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory))
 		{
 			System.exit(0);
 		}
+		// If macOS or Windows:
+		// if(!CLAID.start("localhost:1337", "/Users/planger/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory))
+		// {
+		// 	System.exit(0);
+		// }
 
 		System.out.println(TypeMapping.getNewInstance(Double.class).getClass().getName());
 		while(true);

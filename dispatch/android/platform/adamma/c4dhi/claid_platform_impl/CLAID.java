@@ -39,6 +39,13 @@ import java.io.OutputStream;
 import java.lang.IllegalArgumentException;
 
 
+import android.content.Intent;
+import android.os.Build;
+import android.os.PowerManager;
+import android.provider.Settings;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+
 public class CLAID extends JavaCLAIDBase
 {
     static
@@ -66,12 +73,10 @@ public class CLAID extends JavaCLAIDBase
 
         if(configFilePath.startsWith("assets://"))
         {
-            File appDataDir = context.getFilesDir();
+          
+            String appDataDirPath = getAppDataDirectory(context);
 
-            // Get the absolute path to the app's data directory
-            String appDataDirPath = appDataDir.getAbsolutePath();
-
-            String tmpConfigPath = appDataDir + "/claid_config.json";
+            String tmpConfigPath = appDataDirPath + "/claid_config.json";
 
             String assetFileName = configFilePath.substring("assets://".length());
             if(!copyFileFromAssetsToPath(context, assetFileName, tmpConfigPath))
@@ -90,10 +95,9 @@ public class CLAID extends JavaCLAIDBase
     {
         CLAID.context = context;
 
-        File appDataDir = context.getFilesDir();
-
+   
         // Get the absolute path to the app's data directory
-        String appDataDirPath = appDataDir.getAbsolutePath();
+        String appDataDirPath = getAppDataDirectory(context);
 
         String socketPath = "unix://" + appDataDirPath + "/claid_local.grpc";
 
@@ -102,10 +106,7 @@ public class CLAID extends JavaCLAIDBase
 
     public static boolean startInPersistentService(Context context, final String configFilePath, final String hostId, final String userId, final String deviceId, PersistentModuleFactory moduleFactory)
     {
-        File appDataDir = context.getFilesDir();
-
-        // Get the absolute path to the app's data directory
-        String appDataDirPath = appDataDir.getAbsolutePath();
+        String appDataDirPath = getAppDataDirectory(context);
 
         String socketPath = "unix://" + appDataDirPath + "/claid_local.grpc";
 
@@ -119,7 +120,10 @@ public class CLAID extends JavaCLAIDBase
             Logger.logError("Failed to start CLAID in persistent service. The provided PersistentModuleFactory has not been created with CLAID.getPersistentModuleFactory()." +
             "Use CLAID.getPersistentModuleFactory() to retrieve a PersistentModuleFactory, and then pass ist to CLAID.startInPersistentService(...), after you have registered your Module classes.");
         }
+      
+        CLAID.context = context;
 
+        
 
         // Start service from a separate thread.
         // The ServiceManager might need to request permissions, which has to be done in a separate thread when using CLAID's Permission classes.
@@ -293,10 +297,91 @@ public class CLAID extends JavaCLAIDBase
 
     public static void onUnrecoverableException(final String exception)
     {
-        Logger.logError(exception);
+        Logger.logFatal(exception);
         throw new RuntimeException(exception);
         // android.os.Process.killProcess(android.os.Process.myPid());
         // System.exit(0);
+    }
+
+    public static boolean isBatteryOptimizationDisabled(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            return powerManager.isIgnoringBatteryOptimizations(context.getPackageName());
+        }
+        // For versions prior to Android M, battery optimization is not applicable.
+        return true;
+    }
+
+    public static void requestBatteryOptimizationExemption(Context context) {
+        
+        if(isBatteryOptimizationDisabled(context))
+        {
+            return;
+        }
+
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+            if(isCLAIDContextAnActivity())
+            {
+                android.app.Activity activity = (android.app.Activity) CLAID.getContext();
+                
+                activity.runOnUiThread(() ->
+                    new AlertDialog.Builder(context)
+                    .setMessage("On the next page, please disable battery optimizations. This is required to make CLAID run in the background as long as possible.")
+                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            showBatteryOptimizationIntent(context);
+                        }
+                    })
+                    .show());
+            }
+            else
+            {
+                showBatteryOptimizationIntent(context);
+            }
+
+            
+        
+
+            
+        }
+    }
+
+    private static void showBatteryOptimizationIntent(Context context)
+    {
+        Intent intent = new Intent();
+        String packageName = context.getPackageName();
+        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+    
+
+        if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
+            intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+            intent.setData(android.net.Uri.parse("package:" + packageName));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        }
+    }
+
+    public static boolean isCLAIDContextAnActivity()
+    {
+        if(CLAID.context == null)
+        {
+            return false;
+        }
+
+        return (CLAID.context instanceof android.app.Activity);
+    }
+
+    public static String getAppDataDirectory(Context context)
+    {
+        File appDataDir = context.getFilesDir();
+
+        // Get the absolute path to the app's data directory
+        String appDataDirPath = appDataDir.getAbsolutePath();
+        return appDataDirPath;
     }
 
     // Implement functions for context management etc.

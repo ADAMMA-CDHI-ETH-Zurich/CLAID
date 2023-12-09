@@ -138,6 +138,7 @@ InitRuntimeRequest ModuleManager::makeInitRuntimeRequest()
 
 absl::Status ModuleManager::start()
 {
+    Logger::logInfo("CLAID C++ runtime start called");
     if(this->running)
     {
         return absl::AlreadyExistsError("Cannot start C++ Module manager. Start has been called twice.");
@@ -175,6 +176,7 @@ absl::Status ModuleManager::start()
 
     this->fromModuleDispatcherReaderThread = std::thread(&ModuleManager::readFromModulesDispatcher, this);
 
+    Logger::logInfo("CLAID C++ runtime started successfully!");
 
     return absl::OkStatus();
 }

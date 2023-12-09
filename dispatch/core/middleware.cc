@@ -239,7 +239,7 @@ absl::Status MiddleWare::startRouter(const std::string& currentHost, const HostD
         return absl::AlreadyExistsError("Failed to start router: RoutingQueueMerger already exists.");
     }
 
-    this->routingQueueMerger = makeUniqueRoutingQueueMerger(this->masterInputQueue, this->moduleTable.inputQueue(), *this->hostUserTable.inputQueue());
+    this->routingQueueMerger = makeUniqueRoutingQueueMerger(this->masterInputQueue, this->moduleTable.inputQueue(), *this->hostUserTable.inputQueue(), this->clientTable.getFromRemoteClientQueue());
 
     absl::Status status = this->routingQueueMerger->start();
     if(!status.ok())
@@ -294,6 +294,7 @@ absl::Status MiddleWare::shutdown()
 
     moduleTable.inputQueue().close();
     this->hostUserTable.inputQueue()->close();
+    this->clientTable.getFromRemoteClientQueue().close();
 
     Logger::printfln("Stopping RoutingQueueMerger");
     status = this->routingQueueMerger->stop();

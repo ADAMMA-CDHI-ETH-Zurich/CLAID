@@ -20,10 +20,23 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
-
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application>
+         <receiver
+            android:name="adamma.c4dhi.claid_android.CLAIDServices.OnBootReceiver"
+            android:enabled="true"
+            android:exported="true">
+
+            <intent-filter>
+                <!-- REGISTER TO RECEIVE BOOT_COMPLETED EVENTS -->
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+
+            </intent-filter>    
+        </receiver>
+
     <!-- TODO adjust for Android 14 |health|fileManagement|dataSync -->
         <service android:foregroundServiceType="microphone|location|camera" android:name="adamma.c4dhi.claid_android.CLAIDServices.MaximumPermissionsPerpetualService" />
     </application>

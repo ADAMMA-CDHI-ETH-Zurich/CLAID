@@ -21,6 +21,9 @@ public abstract class JavaCLAIDBase
     private static native long startCore(final String socketPath, 
         final String configFilePath, final String hostId, final String userId, final String deviceId);
     private static native void shutdownCore(long handle);
+
+    // Attaches C++ runtime to the middleware and returns a handle to the C++ runtime.
+    private static native long attachCppRuntime(long handle);
     private static native String getSocketPath(long handle);
     
     private static ModuleDispatcher moduleDispatcher;
@@ -28,6 +31,7 @@ public abstract class JavaCLAIDBase
 
     private static boolean started = false;
     private static long handle;
+    private static long cppRuntimeHandle;
 
     
 
@@ -48,10 +52,19 @@ public abstract class JavaCLAIDBase
             return false;
         }
 
+        cppRuntimeHandle = attachCppRuntime(handle);
+        if(cppRuntimeHandle == 0)
+        {
+            Logger.logError("Failed to start CLAID C++ Runtime.");
+            return false;
+        }
+
         if(!attachJavaRuntimeInternal(socketPath, moduleFactory))
         {
             return false;
         }
+
+        
 
         started = true;
 

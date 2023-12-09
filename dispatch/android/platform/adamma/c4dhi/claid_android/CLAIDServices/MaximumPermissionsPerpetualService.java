@@ -12,6 +12,8 @@
 
 package adamma.c4dhi.claid_android.CLAIDServices;
 
+import adamma.c4dhi.claid_android.CLAIDServices.ServiceRestartDescription;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -23,7 +25,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
-
+import android.content.Context;
 import android.content.pm.ServiceInfo;
 
 
@@ -38,7 +40,7 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
 {
   
     private static final String CLASS_TAG = MaximumPermissionsPerpetualService.class.getName();
-    private boolean isRunning = false;
+    public static boolean isRunning = false;
     public static final String CHANNEL_ID = "MaximumPermissionsPerpetualServiceChannel";
 
 
@@ -87,42 +89,48 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
         {
             startForeground(1, notification);
         }
-        if(!this.isRunning)
+        if(!isRunning)
         {
-            this.isRunning = true;
+            isRunning = true;
             
             
             if (intent != null) 
             {                
-                String socketPath = intent.getStringExtra("socketPath");
-                String configFilePath = intent.getStringExtra("configFilePath");
-                String hostId = intent.getStringExtra("hostId");
-                String userId = intent.getStringExtra("userId");
-                String deviceId = intent.getStringExtra("deviceId");
+                ServiceRestartDescription description = new ServiceRestartDescription();
+                final String restartDescriptionPath = CLAID.getAppDataDirectory(this) + "/" + "claid_service_restart_description.dat";
 
-                if (socketPath == null || socketPath.isEmpty()) {
-                    Logger.logError("CLAID MaximumPermissionsPerpetualService failed to start: socketPath not specified in intent or is null/empty.");
-                    System.exit(0);
+                if(!description.deserializeFromFile(restartDescriptionPath))
+                {
+                    final String msg = "Failed to restart MaximumPermissionsPerpetualService. Cannot load ServiceRestartDescription from file \"" + description + "\"";
+                    // This will throw a RuntimeException
+                    CLAID.onUnrecoverableException(msg);
+                }
+
+                String socketPath = description.get("socketPath");
+                String configFilePath = description.get("configFilePath");
+                String hostId = description.get("hostId");
+                String userId = description.get("userId");
+                String deviceId = description.get("deviceId");
+
+                if (socketPath == null || socketPath.isEmpty()) 
+                {
+                    CLAID.onUnrecoverableException("CLAID MaximumPermissionsPerpetualService failed to start: socketPath not specified in intent or is null/empty.");
                 }
 
                 if (configFilePath == null || configFilePath.isEmpty()) {
-                    Logger.logError("CLAID MaximumPermissionsPerpetualService failed to start: configFilePath not specified in intent or is null/empty.");
-                    System.exit(0);
+                    CLAID.onUnrecoverableException("CLAID MaximumPermissionsPerpetualService failed to start: configFilePath not specified in intent or is null/empty.");
                 }
 
                 if (hostId == null || hostId.isEmpty()) {
-                    Logger.logError("CLAID MaximumPermissionsPerpetualService failed to start: hostId not specified in intent or is null/empty.");
-                    System.exit(0);
+                    CLAID.onUnrecoverableException("CLAID MaximumPermissionsPerpetualService failed to start: hostId not specified in intent or is null/empty.");
                 }
 
                 if (userId == null || userId.isEmpty()) {
-                    Logger.logError("CLAID MaximumPermissionsPerpetualService failed to start: userId not specified in intent or is null/empty.");
-                    System.exit(0);
+                    CLAID.onUnrecoverableException("CLAID MaximumPermissionsPerpetualService failed to start: userId not specified in intent or is null/empty.");
                 }
 
                 if (deviceId == null || deviceId.isEmpty()) {
-                    Logger.logError("CLAID MaximumPermissionsPerpetualService failed to start: deviceId not specified in intent or is null/empty.");
-                    System.exit(0);
+                    CLAID.onUnrecoverableException("CLAID MaximumPermissionsPerpetualService failed to start: deviceId not specified in intent or is null/empty.");
                 }
 
                 // Do something with the extra value
@@ -130,14 +138,21 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
             }
             else
             {
-                Logger.logError("Failed to start CLAID Service. Intent is null, so probably REDELIVER_INTENT failed.");
-                System.exit(0);
+                CLAID.onUnrecoverableException("Failed to start CLAID Service. Intent is null, so probably REDELIVER_INTENT failed.");
             }
         }
 
-        // This will tell the OS to restart the service if it crashed or was terminated due to low resources.
-        // Also will redeliver the intent, which is required because it contains the path to the CLAID config.
-        return START_REDELIVER_INTENT;
+        if(ServiceManager.shouldRestartMaximumPermissionsPerpetualServiceOnTermination(this))
+        {
+            // This will tell the OS to restart the service if it crashed or was terminated due to low resources.
+            // Also will redeliver the intent, which is required because it contains the path to the CLAID config.
+            return START_REDELIVER_INTENT;
+        }
+        else
+        {
+            return START_NOT_STICKY;
+        }
+        
     }
 
     void onServiceStarted(final String socketPath, final String configFilePath, final String hostId, final String userId, final String deviceId)
@@ -150,8 +165,16 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
     }
 
     @Override
-    public void onDestroy()
+    public void onDestroy() 
     {
+        Logger.logInfo("MaximumPermissionsPerpetualService onDestroy called");
+        isRunning = false;
+        stopForeground(true);
+
+        // call MyReceiver which will restart this service via a worker
+        Intent broadcastIntent = new Intent(this, ServiceRestarterReceiver.class);
+        sendBroadcast(broadcastIntent);
+
         super.onDestroy();
     }
 
@@ -175,7 +198,7 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
         }
     }
 
-    public static boolean requestRequiredPermissions()
+    public static boolean requestRequiredPermissions(Context context)
     {
         if(!CLAID.hasMicrophonePermission())
         {
@@ -197,6 +220,10 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
             {
                 return false;
             }
+        }
+        if(!CLAID.isBatteryOptimizationDisabled(context))
+        {
+           CLAID.requestBatteryOptimizationExemption(context); 
         }
         return true;
     }

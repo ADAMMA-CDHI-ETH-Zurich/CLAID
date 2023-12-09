@@ -4,6 +4,7 @@
 #include "dispatch/core/Logger/Logger.hh"
 #include "dispatch/core/capi.h"
 
+#include "dispatch/core/CLAID.hh"
 
 extern "C"
 {
@@ -54,6 +55,20 @@ const char* get_socket_path(void* handle) {
     }
     claid::Logger::printfln("Cannot get socket path from middleware, handle is null.");
     return "";
+}
+
+__attribute__((visibility("default"))) __attribute__((used))
+void* attach_cpp_runtime(void* handle)
+{
+    claid::CLAID* claid = new claid::CLAID();
+    if(!claid->attachCppRuntime(handle))
+    {
+        claid::Logger::logError("CLAID capi failed to attach_cpp_runtime.");
+        delete claid;
+        return nullptr;
+    }
+    
+    return claid;
 }
 
 }

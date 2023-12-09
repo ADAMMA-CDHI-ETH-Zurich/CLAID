@@ -56,6 +56,13 @@ extern "C"
         shutdown_core(nativeHandle);
     }
 
+    JNIEXPORT long JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_attachCppRuntime
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle) 
+    {
+        void* nativeHandle = reinterpret_cast<void*>(handle);
+        return reinterpret_cast<jlong>(attach_cpp_runtime(nativeHandle));
+    }
+
     JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_getSocketPath
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) {
         void* nativeHandle = reinterpret_cast<void*>(handle);

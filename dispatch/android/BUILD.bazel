@@ -23,14 +23,14 @@ cc_library(
     linkopts =["-landroid", "-llog", "-lm", "-ldl"]
 )
 
-android_library(
-    name = "android_claid_sources",
-    srcs = glob(["platform/adamma/**/*.java"]),
-    deps = [
-        "//dispatch/proto:claidservice_java_proto", 
-        "//dispatch/java:claid_java",
-        "@com_google_protobuf//:protobuf_java",]
-)
+# android_library(
+#     name = "android_claid_sources",
+#     srcs = glob(["platform/adamma/**/*.java"]),
+#     deps = [
+#         "//dispatch/proto:claidservice_java_proto", 
+#         "//dispatch/java:claid_java",
+#         "@com_google_protobuf//:protobuf_java",]
+# )
 
 # We use the android_binary target to build an Apk, from 
 # which we can extract the shared libraries. We do not actually need this app,

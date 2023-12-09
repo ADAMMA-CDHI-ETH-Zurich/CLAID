@@ -1,6 +1,10 @@
 package(default_visibility = ["//visibility:public"])
 
 
+cc_binary(name = "claidcmd",
+    srcs=["claidcmd.cc"],
+    deps = [":capi"]
+)
 
 cc_binary(
     name = "claid_capi",

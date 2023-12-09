@@ -56,6 +56,7 @@ namespace claid
 
             if(routeToAllUsers)
             {
+                Logger::logInfo("ServerRouter routing to all users");
                 std::vector<std::shared_ptr<SharedQueue<DataPackage>>> queues;
 
                 status = this->hostUserTable.lookupOutputQueuesForHost(nextHost, queues);
@@ -72,6 +73,7 @@ namespace claid
 
                 for(std::shared_ptr<SharedQueue<DataPackage>> queue : queues)
                 {
+                    Logger::logInfo("ServerRouter routing to all users, inserting to queue");
                     queue->push_back(dataPackage);
                 }
 
@@ -93,6 +95,7 @@ namespace claid
                     return absl::OkStatus();
                 }
 
+                Logger::logInfo("ServerRouter routing to one user, inserting to queue");
                 queue->push_back(dataPackage);
             }
 
@@ -122,11 +125,12 @@ namespace claid
                     " and therefore only one instance of that host should exist."
                 ));
             }
+            Logger::logInfo("ServerRouter routing to intermediate server, inserting to queue");
 
             queues[0]->push_back(dataPackage);
 
         }
-
+        Logger::logInfo("ServerRouter routed package successfully");
         return absl::OkStatus();
     }
 
