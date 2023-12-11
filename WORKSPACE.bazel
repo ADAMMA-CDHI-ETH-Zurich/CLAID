@@ -17,6 +17,9 @@ load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
 
 grpc_extra_deps()
 
+load("@com_github_grpc_grpc//bazel:python_rules.bzl", "py_proto_library", "py_grpc_library")
+
+
 http_archive(
   name = "com_google_googletest",
   urls = ["https://github.com/google/googletest/archive/8a6feabf04bec8fb125e0df0ad1195c42350725f.zip"],
@@ -108,3 +111,4 @@ local_repository(
     name = "tensorflow_ext",
     path = "../claid_external/tensorflow",
 )
+

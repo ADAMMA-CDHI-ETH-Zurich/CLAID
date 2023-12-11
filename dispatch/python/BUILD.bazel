@@ -1,0 +1,12 @@
+py_binary(
+    name = "py_claid",
+    srcs = glob(["**/*.py"]),
+    deps = [
+        "//dispatch/proto:claidservice_py_proto"
+    ],
+    data = [
+        "//dispatch/core:claid_capi",
+    ],
+)
+
+
