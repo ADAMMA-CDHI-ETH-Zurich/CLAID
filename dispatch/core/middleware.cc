@@ -17,6 +17,7 @@ MiddleWare::MiddleWare(const string& socketPath, const string& configurationPath
 
 MiddleWare::~MiddleWare() {
 
+    Logger::logInfo("Middleware destructor");
     if(!running)
     {
         return;
@@ -361,7 +362,11 @@ absl::Status MiddleWare::populateModuleTable(
 
 const std::string& MiddleWare::getSocketPath() const
 {
+    Logger::logInfo("Attach cpp runtime 2.1.1 %c", socketPath[0]);
+
     std::cout << " got socket path " << socketPath << "\n";
+    Logger::logInfo("Attach cpp runtime 2.1.2");
+
     return socketPath;
 }
 

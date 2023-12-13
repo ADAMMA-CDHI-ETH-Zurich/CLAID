@@ -4,6 +4,7 @@ from helpers.c_binding_helpers import strings_to_c_strings
 import ctypes
 import pathlib
 from module.module_factory import ModuleFactory
+from logger.logger import Logger
 
 
 class CLAID():
@@ -16,10 +17,19 @@ class CLAID():
         self.__cpp_runtime_handle = 0
         self.__started = False
 
+        print("Loading CLAID lib")
         print(type(CLAID.claid_c_lib))
         if(isinstance(CLAID.claid_c_lib, int)):
             libname = pathlib.Path().absolute() / "dispatch/core/libclaid_capi.dylib"
             CLAID.claid_c_lib = ctypes.CDLL(libname)
+
+            # Required, otherwise claid_c_lib.attach_cpp_runtime will fail (same for shutdown_core etc).
+            CLAID.claid_c_lib.start_core.restype = ctypes.c_void_p
+            CLAID.claid_c_lib.attach_cpp_runtime.argtypes = [ctypes.c_void_p]
+            CLAID.claid_c_lib.shutdown_core.argtypes = [ctypes.c_void_p]
+
+            CLAID.claid_c_lib.get_socket_path.argtypes = [ctypes.c_void_p]
+            CLAID.claid_c_lib.get_socket_path.restype = ctypes.c_char_p
 
 
     def startCustomSocket(self, socket_path, config_file_path, host_id, user_id, device_id, module_factory):
@@ -33,6 +43,21 @@ class CLAID():
         socket_path, config_file_path, host_id, user_id, device_id = strings_to_c_strings([socket_path, config_file_path, host_id, user_id, device_id])
 
         self.__handle = CLAID.claid_c_lib.start_core(socket_path, config_file_path, host_id, user_id, device_id)
+
+        if(self.__handle == 0):
+            raise Exception("Failed to start CLAID middleware.")
+        
+        Logger.log_info("Successfully started CLAID middleware")
+        Logger.log_info("Attaching C++ runtime")
+
+        self.__cpp_runtime_handle = CLAID.claid_c_lib.attach_cpp_runtime(self.__handle)
+
+        if(self.__cpp_runtime_handle == 0):
+            raise Exception("Failed to start CLAID, could not start C++ runtime")
+        
+
+        Logger.log_info("Successfully started CLAID")
+
 
     def start(self, config_file_path, host_id, user_id, device_id, module_factory):
         self.startCustomSocket("unix:///tmp/claid_socket.grpc", config_file_path, host_id, user_id, device_id, module_factory)

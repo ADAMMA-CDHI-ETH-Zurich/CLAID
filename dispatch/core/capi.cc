@@ -28,6 +28,7 @@ void* start_core(const char* socket_path, const char* config_file, const char* h
         delete middleWare;
         return nullptr;
     }
+    claid::Logger::logInfo("CLAID middleware started, returning handle %u %s", middleWare, middleWare->getSocketPath().c_str());
     return static_cast<void*>(middleWare);
 }
 
@@ -35,7 +36,9 @@ __attribute__((visibility("default"))) __attribute__((used))
 void shutdown_core(void* handle) {
     if (handle) {
         auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
+
         auto status = middleWare->shutdown();
+
         if (!status.ok()) 
         {
             // TODO: replace with proper logging.
@@ -60,6 +63,7 @@ const char* get_socket_path(void* handle) {
 __attribute__((visibility("default"))) __attribute__((used))
 void* attach_cpp_runtime(void* handle)
 {
+    claid::Logger::logInfo("Attach C++ runtime called %u", handle);
     claid::CLAID* claid = new claid::CLAID();
     if(!claid->attachCppRuntime(handle))
     {
@@ -67,6 +71,7 @@ void* attach_cpp_runtime(void* handle)
         delete claid;
         return nullptr;
     }
+    claid::Logger::logInfo("Successfully attached C++ runtime to handle %u", handle);
     
     return claid;
 }

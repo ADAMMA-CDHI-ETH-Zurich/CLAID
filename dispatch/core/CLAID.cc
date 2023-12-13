@@ -50,20 +50,26 @@ namespace claid {
     // HAS to be called AFTER start is called in ANOTHER language.
     bool CLAID::attachCppRuntime(void* handle)
     {
+        Logger::logInfo("Attach cpp runtime 1");
         if(started)
         {
             Logger::logError("CLAID middleware start was called twice!");
             return false;
         }
+        Logger::logInfo("Attach cpp runtime 2 %u", handle);
 
         claid::MiddleWare* middleware = static_cast<claid::MiddleWare*>(handle);
+        Logger::logInfo("Attach cpp runtime 2.1");
 
         const std::string& socketPath = middleware->getSocketPath();
+        Logger::logInfo("Attach cpp runtime 2.2");
 
         const std::set<std::string> registeredModuleClasses = ModuleFactory::getInstance()->getRegisteredModuleClasses();
+        Logger::logInfo("Attach cpp runtime 3");
 
         moduleDispatcher = make_unique<DispatcherClient>(socketPath, fromModuleDispatcherQueue, toModuleDispatcherQueue, registeredModuleClasses);
         moduleManager = make_unique<ModuleManager>(*moduleDispatcher, fromModuleDispatcherQueue, toModuleDispatcherQueue);
+        Logger::logInfo("Attach cpp runtime 4");
 
         absl::Status status = moduleManager->start();
 
@@ -74,7 +80,8 @@ namespace claid {
             Logger::logFatal("%s", ss.str().c_str());
             return false;
         }
-        
+                Logger::logInfo("Attach cpp runtime 5");
+
         started = true;
         return true;
     }
