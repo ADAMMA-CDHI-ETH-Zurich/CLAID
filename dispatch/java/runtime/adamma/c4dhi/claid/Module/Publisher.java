@@ -30,8 +30,11 @@ public class Publisher<T>
         DataPackage.Builder builder = DataPackage.newBuilder();
         builder.setSourceModule(this.moduleId);
         builder.setChannel(this.channelName);
+        builder.setUnixTimestampMs(System.currentTimeMillis());
         DataPackage dataPackage = builder.build();
+
         dataPackage = this.mutator.setPackagePayload(dataPackage, data);
+
 
         this.toModuleManagerQueue.add(dataPackage);
     }        

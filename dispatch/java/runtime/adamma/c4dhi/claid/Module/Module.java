@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -39,11 +41,18 @@ public abstract class Module
     {
     }
 
+    public void moduleFatal(final String error)
+    {
+        String errorMsg = "Module \"" + this.id + "\": " + error;
+        Logger.log(SeverityLevel.FATAL, errorMsg);
+        throw new RuntimeException(errorMsg);
+    }
+
     public void moduleError(final String error)
     {
         String errorMsg = "Module \"" + this.id + "\": " + error;
         Logger.log(SeverityLevel.ERROR, errorMsg);
-        System.exit(0);
+        throw new RuntimeException(errorMsg);
     }
 
     protected void moduleWarning(final String warning)

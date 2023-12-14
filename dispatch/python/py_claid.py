@@ -24,16 +24,9 @@ value = {"test": 42, "test2" : 33}
 mutator.set_package_payload(package, value)
 print(package)
 print(mutator.get_package_payload(package))
-exit(0)
+
 
 import pathlib
-
-
-print(pathlib.Path().absolute())
-libname = pathlib.Path().absolute() / "dispatch/core/libclaid_capi.dylib"
-lib = ctypes.CDLL(libname)
-
-print("Starting core")
 
 module_factory = ModuleFactory()
 claid = CLAID()

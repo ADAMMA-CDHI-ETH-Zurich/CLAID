@@ -121,9 +121,11 @@ cc_library(
     name = "remote_dispatching",
     srcs = glob([
         "RemoteDispatching/*.cc",
+        "Utilities/**/*.cc",
     ]),
     hdrs = glob([
         "RemoteDispatching/*.hh",
+        "Utilities/**/*.hh",
         ] + [
         "shared_queue.hh",
     ]),

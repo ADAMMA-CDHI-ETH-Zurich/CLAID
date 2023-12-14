@@ -143,6 +143,7 @@ namespace claid
 
         this->timers.insert(std::make_pair(name, scheduledRunnable));
         this->runnableDispatcher.addRunnable(scheduledRunnable);
+        Logger::printfln("Registered periodic runnable %s", name.c_str());
     }
 
     void Module::registerScheduledFunction(const std::string& name, const Time& startTime, std::function<void()> function) 

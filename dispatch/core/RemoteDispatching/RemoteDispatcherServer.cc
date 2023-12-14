@@ -3,6 +3,8 @@
 #include <grpcpp/server_builder.h>
 #include <grpcpp/create_channel.h>
 
+#include <grpc++/server_context.h>
+
 #include <google/protobuf/text_format.h>
 
 
@@ -68,6 +70,19 @@ namespace claid
         grpc::ServerBuilder builder;
         builder.AddListeningPort(addr, grpc::InsecureServerCredentials());
         builder.RegisterService(&remoteServiceImpl);
+        builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_TIME_MS,
+                                    10 * 60 * 1000 /*10 min*/);
+        builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_TIMEOUT_MS,
+                                    20 * 1000 /*20 sec*/);
+        builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
+        builder.AddChannelArgument(
+            GRPC_ARG_HTTP2_MIN_RECV_PING_INTERVAL_WITHOUT_DATA_MS,
+            10 * 1000 /*10 sec*/);
+        builder.SetMaxReceiveMessageSize(1024 * 1024 * 1024);  // 1 GB
+
+        // Set the maximum send message size (in bytes) for the server
+        builder.SetMaxSendMessageSize(1024 * 1024 * 1024);  // 1 GB
+
         server = builder.BuildAndStart();
     }
 }

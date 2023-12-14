@@ -56,6 +56,7 @@ namespace claid
 
     void DataSaverModule::onData(ChannelData<AnyProtoType> data)
     {
+        Logger::logInfo("DataSaverModule %s on data ", this->getId().c_str());
         const AnyProtoType& value = data.getData();
         std::shared_ptr<const google::protobuf::Message> msg = value.getMessage();
 

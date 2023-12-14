@@ -63,14 +63,15 @@ message DataPackage {
 }
 
 enum CtrlType {
-  CTRL_UNSPECIFIED     = 0;
-  CTRL_RUNTIME_PING    = 1;  // Client sends this upon connect and periodically if no packages have been sent
-  CTRL_REMOTE_PING     = 2;  // RemoteClient sends this upon connect to a RemoteDispatcherServer upon connect.
-  CTRL_CONN_CANCEL     = 3;  // Signal by the client that it is about to cancel the request.
-  // CTRL_MODULE_READY = 4;  // sent to module when the local middleware is ready
-  // CTRL_STATUS       = 5;  // Sent from a middleware client up the tree
-  // CTRL_ACTION       = 6;  // sent to module when the local middleware is ready
-  CTRL_ERROR           = 7;  // Error occured
+  CTRL_UNSPECIFIED      = 0;
+  CTRL_RUNTIME_PING     = 1;  // Client sends this upon connect and periodically if no packages have been sent
+  CTRL_REMOTE_PING      = 2;  // RemoteClient sends this upon connect to a RemoteDispatcherServer upon connect.
+  CTRL_REMOTE_PING_PONG = 3;  // Response to a CTRL_REMOTE_PING.
+  CTRL_CONN_CANCEL      = 4;  // Signal by the client that it is about to cancel the request.
+  // CTRL_MODULE_READY  = 5;  // sent to module when the local middleware is ready
+  // CTRL_STATUS        = 6;  // Sent from a middleware client up the tree
+  // CTRL_ACTION        = 7;  // sent to module when the local middleware is ready
+  CTRL_ERROR            = 8;  // Error occured
 }
 
 // Note for Stephan: I removed the "optional" labels, as protoc did complain about them:

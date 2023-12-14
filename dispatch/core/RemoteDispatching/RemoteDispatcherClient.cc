@@ -3,6 +3,7 @@
 
 namespace claid
 {
+    Duration RemoteDispatcherClient::MAX_TIME_WITHOUT_PACKAGE_BEFORE_TESTING_TIMEOUT = Duration::minutes(5);
 
     RemoteDispatcherClient::~RemoteDispatcherClient()
     {
@@ -21,7 +22,22 @@ namespace claid
                                                     deviceID(deviceID), clientTable(clientTable)
     {
         // Set up the gRCP channel
-        grpcChannel = grpc::CreateChannel(addressToConnectTo, grpc::InsecureChannelCredentials());
+        grpc::ChannelArguments args;
+        // Sample way of setting keepalive arguments on the client channel. Here we
+        // are configuring a keepalive time period of 20 seconds, with a timeout of 10
+        // seconds. Additionally, pings will be sent even if there are no calls in
+        // flight on an active connection.
+        args.SetInt(GRPC_ARG_KEEPALIVE_TIME_MS, 10 * 60 * 1000 /* 10 minutes sec*/);
+        args.SetInt(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 20 * 1000 /*10 sec*/);
+        args.SetInt(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
+        args.SetInt(GRPC_ARG_MAX_RECEIVE_MESSAGE_LENGTH, 1024 * 1024 * 1024);  // 1 GB
+    
+        // Set the maximum send message size (in bytes)
+        args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 1024 * 1024 * 1024);  // 1 GB
+    
+
+
+        grpcChannel = grpc::CreateCustomChannel(addressToConnectTo, grpc::InsecureChannelCredentials(), args);
         stub = claidservice::ClaidRemoteService::NewStub(grpcChannel);
     }
 
@@ -65,6 +81,7 @@ namespace claid
         pkt.mutable_remote_client_info()->set_device_id(deviceID);
     }
 
+
     void RemoteDispatcherClient::connectAndMonitorConnection() 
     {
         while(this->connectionMonitorRunning)
@@ -72,7 +89,8 @@ namespace claid
             Logger::logInfo("RemoteDispatcherClient is trying to establish a connection.");
             streamContext = std::make_shared<grpc::ClientContext>();
 
-            auto deadline = std::chrono::system_clock::now() + std::chrono::seconds(2);
+            const int RECONNECT_TIMEOUT_SECONDS = 60;
+            auto deadline = std::chrono::system_clock::now() + std::chrono::seconds(RECONNECT_TIMEOUT_SECONDS);
             bool connected = grpcChannel->WaitForConnected(deadline);
 
 
@@ -80,7 +98,7 @@ namespace claid
 
             if (!(connected && state == GRPC_CHANNEL_READY))
             {
-                Logger::logInfo("UNAVAILABLE");
+                Logger::logInfo("SERVER UNAVAILABLE");
                 this->lastStatus = absl::UnavailableError("RemoteDispatcherClient failed to connect to remote server. Server unreachable.");
                 continue;
             }
@@ -92,6 +110,7 @@ namespace claid
             if(!stream)
             {
                 this->lastStatus = absl::UnavailableError("RemoteDispatcherClient failed to connect to remote server. Stream is null.");
+                continue;
             }
             Logger::logInfo("RemoteDispatcherClient 3.");
 
@@ -135,6 +154,8 @@ namespace claid
             this->connected = true;
             this->lastStatus = absl::OkStatus();
 
+            this->lastTimePackageWasSent = Time::now();
+
             // Start the thread to service the input/output queues.
             writeThread = std::make_unique<std::thread>([this]() { processWriting(); });
             
@@ -145,7 +166,16 @@ namespace claid
 
             Logger::logInfo("RemoteDispatcherClient lost connection, stopping reader and writer.");
             this->connected = false;
-            this->stream->Finish();
+            this->stream->WritesDone();
+
+            // TODO: Check if we have to call stream->Finish().
+            // By this point, the stream should already be cancelled/ended, becase processReading keeps blocking
+            // as long as the stream is open and read is successful. If we reach this part of the code, that means
+            // stream->Read() failed. Also, if the Server rejects our connection request (e.g., because there is already
+            // a client connected with the same user id), the application would crash if we call stream->Finish() due to 
+            // "API misuse of type GRPC_CALL_ERROR_TOO_MANY_OPERATIONS observed".
+           // this->stream->Finish();
+            
             
             writeThread->join();
             writeThread = nullptr;
@@ -172,11 +202,51 @@ namespace claid
         DataPackage dp;
         while(stream->Read(&dp)) 
         {
-            this->clientTable.getFromRemoteClientQueue().push_back(std::make_shared<DataPackage>(dp));
+            processPacket(dp);
         }
         Logger::logInfo("RemoteDispatcherClient stream closed");
 
     }
+
+    void RemoteDispatcherClient::processPacket(DataPackage& pkt)
+    {
+
+        if (!pkt.has_control_val())
+        {
+            this->clientTable.getFromRemoteClientQueue().push_back(std::make_shared<DataPackage>(pkt));
+            return;
+        }
+        // Process the control values
+        auto ctrlType = pkt.control_val().ctrl_type();
+        switch(ctrlType) 
+        {
+            case CtrlType::CTRL_REMOTE_PING:
+            {
+                // Received ping, TODO add response.
+                std::shared_ptr<DataPackage> response = std::make_shared<DataPackage>();
+                response->set_target_host(pkt.source_host());
+                auto ctrlMsg = response->mutable_control_val();
+                ctrlMsg->set_ctrl_type(CtrlType::CTRL_REMOTE_PING_PONG);
+                this->clientTable.getFromRemoteClientQueue().push_back(response);
+                break;
+            }
+            case CtrlType::CTRL_REMOTE_PING_PONG:
+            {
+                // Do nothing.
+                break;
+            }
+            default: 
+            {
+                Logger::logWarning("Invalid ctrl type in RemoteDispatcherClient");
+                break;
+            }
+        }
+
+
+    }
+
+
+        
 
     void RemoteDispatcherClient::processWriting() 
     {
@@ -196,15 +266,43 @@ namespace claid
             } 
             else 
             {
+                // If the last time we send a package is > then CONNECTION_TIMEOUT_INTERVAL,
+                // we first send a ping package to the Server to test whether the connection is alive.
+                // If we or the server lost connection to the internet, then the connection might have faded silently,
+                // and our gRPC stream has not noticed it yet, because we have not sent a package for a while.
+                // Hence, before we send the actual package, we first send a ping package to test whether the stream is alive.
+                // We do not care about the response to that ping, but only whether stream->Write() still returns successfully.
+                // If it does not, the connection is dead and we reenqueue the package to be sent later, when we have reconnected.
+
+                Time currentTime = Time::now();
+                Duration timeSinceLastPackage = currentTime.subtract(this->lastTimePackageWasSent);
+                if(timeSinceLastPackage > MAX_TIME_WITHOUT_PACKAGE_BEFORE_TESTING_TIMEOUT)
+                {
+                    claidservice::DataPackage pingRequestPackage;
+                    makeRemoteRuntimePing(*pingRequestPackage.mutable_control_val(), this->host, this->userToken, this->deviceID);
+                    if(!stream->Write(pingRequestPackage))
+                    {
+                        Logger::logWarning("RemoteDispatcherClient tried to send a message to the server after not having sent a message for %d minutes.\n",
+                                           "Since a package has not been sent for a while, a ping package was sent to the server to test whether the connection is still alive.\n",
+                                           "Such a ping package will be sent before an actual package, if the last actual package was sent more than %d minutes ago.\n",
+                                           "While sending that ping package, it was noticed that the connection is actually dead. Hence, we are closing the connection on\n",
+                                           "The side of the RemoteDispatcherClient as well and try to reconnect soon. The actual package will be reenqueued to be sent once the connection is reestablished.");
+                        toRemoteClientQueue.push_front(pkt);
+                        break;
+                    }
+                    
+                }
+                
+
                 if (!stream->Write(*pkt)) 
                 {
                     // Server is down?
                     Logger::logWarning("Failed to write to remote server. RemoteDispatcherClient is lost connection.");
                     break;
                 }
+                this->lastTimePackageWasSent = Time::now();
             }
         }
-        stream->WritesDone();
         Logger::logInfo("RemoteDispatcherClient processWriting done");
     }
 

@@ -51,7 +51,7 @@ namespace claid
         claid::StringUtils::stringReplaceAll(channelName, "/", "_");
         claid::StringUtils::stringReplaceAll(this->storagePath, "\%channel_name", channelName);
 
-        absl::Status status = this->createStorageFolder(Path(""));
+        absl::Status status = this->createStorageFolder(Path(this->storagePath));
         if(!status.ok())
         {
             return status;
@@ -108,6 +108,7 @@ namespace claid
 
     absl::Status FileSaver::beginNewFile(const Path& path)
     {
+        Logger::logInfo("Beginning new file");
         absl::Status status = this->createStorageFolder(path);
         if(!status.ok())
         {
@@ -185,7 +186,8 @@ namespace claid
 
     absl::Status FileSaver::createStorageFolder(const Path& currentSavePath)
     {
-        std::string folderPath = this->storagePath;//Path::join(this->storagePath, currentSavePath.getFolderPath()).toString();
+        Logger::logInfo("Getting currentSavePath: %s %s", currentPath.toString().c_str(), currentPath.getFolderPath().c_str());
+        std::string folderPath = currentPath.getFolderPath();
         return this->createDirectoriesRecursively(folderPath);
     }
 

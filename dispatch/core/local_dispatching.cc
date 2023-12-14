@@ -100,6 +100,7 @@ Status RuntimeDispatcher::processReading(ServerReaderWriter<DataPackage, DataPac
         processPacket(inPkt, status);
         if (!status.ok()) {
             // TODO: remove once we have a cleanup function added.
+            Logger::logWarning("Local RuntimeDispatcher::processReading got invalid status, stopping reading: %s", status.error_message().c_str());
             return status;
         }
     }
@@ -274,8 +275,8 @@ Status ServiceImpl::SendReceivePackages(ServerContext* context,
 
     claid::Logger::printfln("Start reading");
     status = rtDispatcher->processReading(stream);
+    claid::Logger::printfln("Reading is done, shutting down writer thread.");
     rtDispatcher->shutdownWriterThread();
-    claid::Logger::printfln("Shutdown writer thread");
 
     removeRuntimeDispatcher(inPkt.control_val().runtime());
 
@@ -385,11 +386,14 @@ void DispatcherServer::shutdown() {
 }
 
 void DispatcherServer::buildAndStartServer() {
-  ServerBuilder builder;
-  builder.AddListeningPort(addr, grpc::InsecureServerCredentials());
-  builder.RegisterService(&serviceImpl);
-  server = builder.BuildAndStart();
-}
+    ServerBuilder builder;
+    builder.AddListeningPort(addr, grpc::InsecureServerCredentials());
+    builder.RegisterService(&serviceImpl);
+    builder.SetMaxReceiveMessageSize(1024 * 1024 * 1024);  // 1 GB
+    // Set the maximum send message size (in bytes) for the server
+    builder.SetMaxSendMessageSize(1024 * 1024 * 1024);  // 1 GB
+    server = builder.BuildAndStart();
+    }
 
 DispatcherClient::DispatcherClient(const string& socketPath,
         SharedQueue<DataPackage>& inQueue,
@@ -397,8 +401,14 @@ DispatcherClient::DispatcherClient(const string& socketPath,
         const set<string>& supportedModClasses) :
         incomingQueue(inQueue), outgoingQueue(outQueue),
         moduleClasses(supportedModClasses) {
+
     // Set up the gRCP channel
-    grpcChannel = grpc::CreateChannel(socketPath, grpc::InsecureChannelCredentials());
+    grpc::ChannelArguments args;
+
+    args.SetInt(GRPC_ARG_MAX_RECEIVE_MESSAGE_LENGTH, 1024 * 1024 * 1024);  // 1 GB
+    args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 1024 * 1024 * 1024);  // 1 GB
+
+    grpcChannel = grpc::CreateCustomChannel(socketPath, grpc::InsecureChannelCredentials(), args);
     stub = ClaidService::NewStub(grpcChannel);
 
 }

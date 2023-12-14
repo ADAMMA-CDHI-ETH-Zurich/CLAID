@@ -24,6 +24,7 @@ public abstract class JavaCLAIDBase
 
     // Attaches C++ runtime to the middleware and returns a handle to the C++ runtime.
     private static native long attachCppRuntime(long handle);
+    
     private static native String getSocketPath(long handle);
     
     private static ModuleDispatcher moduleDispatcher;

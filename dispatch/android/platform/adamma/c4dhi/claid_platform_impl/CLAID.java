@@ -45,6 +45,13 @@ import android.os.PowerManager;
 import android.provider.Settings;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.os.PowerManager;
+
+import android.os.Build;
+
+import android.content.pm.PackageManager;
+
+import static android.content.Context.POWER_SERVICE;
 
 public class CLAID extends JavaCLAIDBase
 {
@@ -64,6 +71,8 @@ public class CLAID extends JavaCLAIDBase
     // to register Modules only when a custom Application class is available.
     private static PersistentModuleFactory persistentModuleFactory = null;
     
+    private static PowerManager.WakeLock claidWakeLock;
+
     // Starts the middleware and attaches to it.
     public static boolean start(Context context, final String socketPath, final String configFilePath, final String hostId, final String userId, final String deviceId, ModuleFactory moduleFactory)
     {
@@ -383,6 +392,85 @@ public class CLAID extends JavaCLAIDBase
         String appDataDirPath = appDataDir.getAbsolutePath();
         return appDataDirPath;
     }
+
+    public static File getMediaDirPath(Context context)
+    {
+        File[] files = context.getExternalMediaDirs();
+
+        for(File f : files)
+        {
+            Logger.logInfo("CLAID_FILE " + f);
+
+        }
+        return files[0];
+    }
+
+
+
+    // This function registers a WakeLock, which will prevent the
+    // device from going to sleep/doze. 
+    // This is mainly relevant for WearOS applications,
+    // which go into doze very quickly/aggressively, even if a Service is running.
+    // On regular Smartphones, this is mostly not necessary if a Service is used.
+    public static boolean enableKeepAppAwake()
+    {  
+        if(claidWakeLock == null)
+        {
+            if(context == null)
+            {
+                return false;
+            }
+            PowerManager powerManager = (PowerManager) context.getSystemService(POWER_SERVICE);
+            claidWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                    "CLAID::PartialWakeLock");
+        }
+
+        if(claidWakeLock.isHeld())
+        {
+            return true;
+        }
+
+        claidWakeLock.acquire();
+        return true;
+    }
+
+    public static boolean disableKeepAppAwake()
+    {
+        if(claidWakeLock == null)
+        {
+            return true;
+        }
+
+        if(!claidWakeLock.isHeld())
+        {
+            return true;
+        }
+
+        claidWakeLock.release();
+        return true;
+    }
+
+    public static boolean disableKeepAppAwake(Integer waitTimeMs)
+    {
+        try
+        {
+            Thread.sleep(waitTimeMs);
+        }
+        catch(InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+
+        return disableKeepAppAwake();
+    }
+
+    public static boolean isWearOS() {
+        // Check if the device is running Wear OS
+        PackageManager pm = context.getPackageManager();
+        return pm.hasSystemFeature(PackageManager.FEATURE_WATCH);
+    }
+
+
 
     // Implement functions for context management etc.
 }

@@ -6,6 +6,7 @@ import pathlib
 from module.module_factory import ModuleFactory
 from logger.logger import Logger
 
+import platform
 
 class CLAID():
 
@@ -20,7 +21,23 @@ class CLAID():
         print("Loading CLAID lib")
         print(type(CLAID.claid_c_lib))
         if(isinstance(CLAID.claid_c_lib, int)):
-            libname = pathlib.Path().absolute() / "dispatch/core/libclaid_capi.dylib"
+
+            # Get the current operating system
+            current_os = platform.system()
+            platform_library_extension = ""
+            # Check the operating system
+            if current_os == "Linux":
+                platform_library_extension = ".so"
+            elif current_os == "Darwin":
+                platform_library_extension = ".dylib"
+            elif current_os == "Windows":
+                platform_library_extension = ".dll"
+     
+            
+            if platform_library_extension == "":
+                raise Exception("Failed to load CLAID library into Python. Unsupported OS \"{}\". Supported are only Linux, Darwin (macOS) and Windows").format(current_os)
+
+            libname = pathlib.Path().absolute() / "dispatch/core/libclaid_capi{}".format(platform_library_extension)
             CLAID.claid_c_lib = ctypes.CDLL(libname)
 
             # Required, otherwise claid_c_lib.attach_cpp_runtime will fail (same for shutdown_core etc).

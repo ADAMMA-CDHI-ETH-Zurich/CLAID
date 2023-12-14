@@ -2,7 +2,8 @@ py_binary(
     name = "py_claid",
     srcs = glob(["**/*.py"]),
     deps = [
-        "//dispatch/proto:claidservice_py_proto"
+        "//dispatch/proto:claidservice_py_proto",
+        "//dispatch/proto:claidservice_py_grpc"
     ],
     data = [
         "//dispatch/core:claid_capi",

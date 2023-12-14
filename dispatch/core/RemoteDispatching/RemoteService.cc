@@ -102,6 +102,7 @@ namespace claid
                 "and device id \"", remoteClientInfo.device_id(), "\".\n",
                 "A user with these identifiers already exists."
             ));
+            Logger::logWarning("%s", status.error_message().c_str());
             return nullptr;
         }
         // Allocate a RemoteClientHandler
@@ -128,6 +129,7 @@ namespace claid
         if(!abslStatus.ok())
         {
             status = grpc::Status(grpc::CANCELLED, abslStatus.ToString());
+            Logger::logInfo("RemoteService fail %s", abslStatus.ToString().c_str());
             return nullptr;
         }
 

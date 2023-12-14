@@ -34,7 +34,7 @@ extern "C"
     JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_sayHelloDD
   (JNIEnv* env, jobject thisObject) {
     std::cout << "Hello from C++ !!" << std::endl;
-}
+    }
 
     
     JNIEXPORT jlong JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_startCore
@@ -56,7 +56,7 @@ extern "C"
         shutdown_core(nativeHandle);
     }
 
-    JNIEXPORT long JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_attachCppRuntime
+    JNIEXPORT jlong JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_attachCppRuntime
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) 
     {
         void* nativeHandle = reinterpret_cast<void*>(handle);

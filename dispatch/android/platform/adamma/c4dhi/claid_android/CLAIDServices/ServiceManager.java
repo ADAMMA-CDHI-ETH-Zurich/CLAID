@@ -94,7 +94,7 @@ public class ServiceManager
             // do check for AutoStart permission
             Logger.logInfo("Starting CLAIDService enqueing periodic work");
 
-            workManager.enqueueUniquePeriodicWork(UNIQUE_WORK_NAME, ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE, request);
+            workManager.enqueueUniquePeriodicWork(UNIQUE_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, request);
         }
         else
         {

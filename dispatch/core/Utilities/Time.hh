@@ -126,6 +126,26 @@ struct Duration
 		std::chrono::minutes m(minutes);
 		return Duration(std::chrono::duration_cast<std::chrono::microseconds>(m));
 	}
+
+	bool operator==(const Duration& other) const
+	{
+		return this->getNanoSeconds() == other.getNanoSeconds();
+	}
+
+	bool operator<(const Duration& other) const 
+	{
+		return this->getNanoSeconds() < other.getNanoSeconds();
+	}
+
+	bool operator>(const Duration& other) const 
+	{
+		return this->getNanoSeconds() > other.getNanoSeconds();
+	}
+
+	bool operator>=(const Duration& other) const 
+	{
+		return this->getNanoSeconds() >= other.getNanoSeconds();
+	}
 };
 
 
@@ -293,6 +313,11 @@ public:
 		std::chrono::duration<int64_t, std::nano> operator-(const Time& t) const
 		{
 			return this->timePoint - t.timePoint;
+		}
+
+		Duration subtract(const Time& t)
+		{
+			return Duration(std::chrono::milliseconds(this->toUnixTimestampMilliseconds() - t.toUnixTimestampMilliseconds()));
 		}
 
 		Time operator+(const Duration& d) const

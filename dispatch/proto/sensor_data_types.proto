@@ -38,9 +38,9 @@ message AudioData
 // Follows open mHealth standard.
 message AccelerationSample
 {
-    float acceleration_x = 1;
-    float acceleration_y = 2;
-    float acceleration_z = 3;
+    double acceleration_x = 1;
+    double acceleration_y = 2;
+    double acceleration_z = 3;
     string sensor_body_location = 4;
     uint64 unix_timestamp_in_ms = 5;
 }
@@ -54,4 +54,17 @@ message DataFile
 {
     string relative_path = 1;
     bytes file_data = 2;
+}
+
+message HeartRateSample
+{
+    int32 hr = 1;
+    int32 hrInterBeatInterval = 2;
+    int32 status = 3;
+    uint64 unix_timestamp_in_ms = 4;
+}
+
+message HeartRateData
+{
+    repeated HeartRateSample samples = 1;
 }

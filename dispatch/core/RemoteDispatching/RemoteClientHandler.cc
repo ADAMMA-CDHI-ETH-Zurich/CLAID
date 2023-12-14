@@ -1,5 +1,9 @@
 #include "dispatch/core/RemoteDispatching/RemoteClientHandler.hh"
 #include "dispatch/core/Logger/Logger.hh"
+
+using claidservice::CtrlType;
+
+
 namespace claid
 {
     RemoteClientHandler::RemoteClientHandler(SharedQueue<claidservice::DataPackage>& inQueue,
@@ -110,6 +114,21 @@ namespace claid
         auto ctrlType = pkt.control_val().ctrl_type();
         switch(ctrlType) 
         {
+            case CtrlType::CTRL_REMOTE_PING:
+            {
+                // Received ping, TODO add response.
+                std::shared_ptr<DataPackage> response = std::make_shared<DataPackage>();
+                response->set_target_host(pkt.source_host());
+                auto ctrlMsg = response->mutable_control_val();
+                ctrlMsg->set_ctrl_type(CtrlType::CTRL_REMOTE_PING_PONG);
+                this->incomingQueue.push_back(response);
+                break;
+            }
+            case CtrlType::CTRL_REMOTE_PING_PONG:
+            {
+                // Do nothing.
+                break;
+            }
             default: 
             {
                 status = grpc::Status(grpc::INVALID_ARGUMENT, "Invalid ctrl type in RemoteClientHandler");

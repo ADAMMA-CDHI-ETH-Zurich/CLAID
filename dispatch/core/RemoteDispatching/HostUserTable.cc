@@ -88,7 +88,6 @@ absl::Status HostUserTable::addRemoteClient(const std::string& host, const std::
             "A user with these identifiers was already registered before."
         ));
     }
-        Logger::logInfo("hostusrtable 4");
 
     std::shared_ptr<SharedQueue<DataPackage>> queue = std::make_shared<SharedQueue<DataPackage>>();
     this->hostUserQueueMap.insert(std::make_pair(key, queue));

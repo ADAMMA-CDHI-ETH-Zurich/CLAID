@@ -3,6 +3,7 @@
 #include "dispatch/core/shared_queue.hh"
 #include "dispatch/proto/claidservice.grpc.pb.h"
 #include "dispatch/core/RemoteDispatching/ClientTable.hh"
+#include "dispatch/core/Utilities/Time.hh"
 
 #include <grpc/grpc.h>
 #include <grpcpp/create_channel.h>
@@ -37,8 +38,10 @@ namespace claid
         private:
             void processReading();
             void processWriting();
+            void processPacket(DataPackage& pkt);
             
             void connectAndMonitorConnection();
+
             
 
 
@@ -53,6 +56,9 @@ namespace claid
             bool connectionMonitorRunning = false;
             absl::Status lastStatus;
 
+            Time lastTimePackageWasSent;
+
+            static Duration MAX_TIME_WITHOUT_PACKAGE_BEFORE_TESTING_TIMEOUT;
 
             ClientTable& clientTable;
 
