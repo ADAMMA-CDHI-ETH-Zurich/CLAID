@@ -81,14 +81,15 @@ class SharedQueue
             return out;
         }
 
-		std::shared_ptr<T> pop_front(bool& observerRunning)  // returns null_ptr if empty 
+		std::shared_ptr<T> interruptable_pop_front()  // returns null_ptr if empty 
         {
             std::unique_lock<std::mutex> lock(m);
 			
             // Have to account for spurious wakeups?
-			cv.wait(lock, [&]() { return closed || !queue.empty() || !observerRunning;});
-			std::cout << "shared queu ewakeup\n";
-			if (queue.empty())
+
+			cv.wait(lock);
+			std::cout << "shared queue wakeup\n";
+			if (queue.empty() || closed)
 				return nullptr;
 
 			std::shared_ptr<T> out = queue.front();
@@ -96,6 +97,11 @@ class SharedQueue
 
             return out;
         }
+
+		void interruptOnce()
+		{
+			cv.notify_one();
+		}
 
 		size_t size()
 		{

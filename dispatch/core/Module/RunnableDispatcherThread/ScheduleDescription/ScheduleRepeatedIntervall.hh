@@ -20,6 +20,7 @@
 #pragma once
 
 #include "ScheduleDescription.hh"
+#include "dispatch/core/Logger/Logger.hh"
 
 namespace claid
 {
@@ -38,12 +39,12 @@ namespace claid
         
         virtual ~ScheduleRepeatedIntervall() {};
 
-        bool doesRunnableHaveToBeRepeated()
+        bool doesRunnableHaveToBeRepeated() override final
         {
             return true;
         }
 
-        void updateExecutionTime()
+        void updateExecutionTime() override final
         {
             // Does not exist for ScheduleOnce. 
             // A ScheduledRunnable with ScheduleDescription
@@ -52,7 +53,7 @@ namespace claid
             // std::cout << executionTime.strftime("Next schedule %H:%M:%S\n") << "\n";
         }
 
-        Time getExecutionTime()
+        Time getExecutionTime() override final
         {
             return this->executionTime;
         }

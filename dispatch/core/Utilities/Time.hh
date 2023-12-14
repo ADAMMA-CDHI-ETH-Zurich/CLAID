@@ -25,6 +25,8 @@
 #include <sstream>
 #include <iomanip>
 
+#include "dispatch/core/Logger/Logger.hh"
+
 namespace claid
 {
 struct Duration 
@@ -158,7 +160,6 @@ private:
 	bool valid = false;
 
 public:
-    std::chrono::time_point<std::chrono::system_clock> timePoint;
 
 
     Time() : valid(true)
@@ -171,7 +172,7 @@ public:
 
 	}
 
-    Time(std::chrono::time_point<std::chrono::system_clock> timePoint) : Base(timePoint), valid(true), timePoint(timePoint)
+    Time(std::chrono::time_point<std::chrono::system_clock> timePoint) : Base(timePoint), valid(true)
     {
 		
     }
@@ -308,12 +309,6 @@ public:
 
 public:
 
-		/** @name Operators */
-		//@{
-		std::chrono::duration<int64_t, std::nano> operator-(const Time& t) const
-		{
-			return this->timePoint - t.timePoint;
-		}
 
 		Duration subtract(const Time& t)
 		{
@@ -322,18 +317,28 @@ public:
 
 		Time operator+(const Duration& d) const
 		{
-			return this->timePoint + std::chrono::microseconds(d.val);
+			Time a = *this;
+			a += std::chrono::microseconds(d.val);
+
+			return a;
 		}
 
-		Time operator+=(const Duration& d) 
+		Time& operator+=(const Duration& d) 
 		{
-			this->timePoint += std::chrono::microseconds(d.val);
-			return *this;
+			return (Time&) Base::operator+=(d.val);
 		}
 		
 		Time operator-(const Duration& d) const
 		{
-			return this->timePoint - std::chrono::microseconds(d.val);
+			Time a = *this;
+			a -= std::chrono::microseconds(d.val);
+
+			return a;
+		}
+
+		Time& operator-=(const Duration& d) 
+		{
+			return (Time&) Base::operator-=(d.val);
 		}
 
 		bool operator==(const Time& other) const

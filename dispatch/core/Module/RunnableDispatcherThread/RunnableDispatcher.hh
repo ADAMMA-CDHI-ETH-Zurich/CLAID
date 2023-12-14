@@ -130,14 +130,17 @@ namespace claid
                     {
                         std::unique_lock<std::mutex> lock(this->mutex);
 
+                        Time plannedExecutionTime = scheduledRunnable.schedule->getExecutionTime();
                         scheduledRunnable.schedule->updateExecutionTime();
 
-                        Time newExecutionTime = scheduledRunnable.schedule->getExecutionTime();
+                        std::string plannedExecutionTimeStr = plannedExecutionTime.strftime("%d.%m.%y %H:%M:%S");
                         std::string currentExecutionStr = Time::now().strftime("%d.%m.%y %H:%M:%S");
+
+                        Time newExecutionTime = scheduledRunnable.schedule->getExecutionTime();
                         std::string nextExecutionStr = newExecutionTime.strftime("%d.%m.%y %H:%M:%S");
 
 
-                        Logger::logInfo("Runnable has been executed at %s, scheduling next execution for %s", currentExecutionStr.c_str(), nextExecutionStr.c_str());
+                        Logger::logInfo("Runnable, scheduled for execution at %s, has been executed at %s, scheduling next execution for %s", plannedExecutionTimeStr.c_str(), currentExecutionStr.c_str(), nextExecutionStr.c_str());
 
                         // Reinsert the runnable with new scheduled execution time.
                         // Note, that the runnable was removed from scheduledRunnables in the getAndRemoveDueRunnables() function.

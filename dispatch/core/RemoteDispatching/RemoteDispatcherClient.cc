@@ -91,6 +91,9 @@ namespace claid
 
             const int RECONNECT_TIMEOUT_SECONDS = 60;
             auto deadline = std::chrono::system_clock::now() + std::chrono::seconds(RECONNECT_TIMEOUT_SECONDS);
+            // Note: If the server is unreachable, this will wait 60 seconds.
+            // HOWEVER: If the server is reachable, but it denies our request (does not accept connection), this will not wait.
+            // ONLY waits if server is NOT reachable. Does NOT wait if we connect successfully OR server rejects us :)
             bool connected = grpcChannel->WaitForConnected(deadline);
 
 
@@ -167,6 +170,7 @@ namespace claid
             Logger::logInfo("RemoteDispatcherClient lost connection, stopping reader and writer.");
             this->connected = false;
             this->stream->WritesDone();
+            this->clientTable.getToRemoteClientQueue().interruptOnce();
 
             // TODO: Check if we have to call stream->Finish().
             // By this point, the stream should already be cancelled/ended, becase processReading keeps blocking
@@ -176,7 +180,7 @@ namespace claid
             // "API misuse of type GRPC_CALL_ERROR_TOO_MANY_OPERATIONS observed".
            // this->stream->Finish();
             
-            
+            Logger::logInfo("RemoteDispatcherClient waiting for writerThread to join.");
             writeThread->join();
             writeThread = nullptr;
             Logger::logInfo("RemoteDispatcherClient is reset.");
@@ -255,9 +259,12 @@ namespace claid
         while(this->connected) 
         {
             SharedQueue<DataPackage>& toRemoteClientQueue = this->clientTable.getToRemoteClientQueue();
-            auto pkt = toRemoteClientQueue.pop_front();
+            auto pkt = toRemoteClientQueue.interruptable_pop_front();
             if (!pkt) 
             {
+                // It's alright, null pkt can happen due to spurious wakeups or when toRemoteClientQueue.interruptOnce() is called.
+                // interruptable_pop_front() waits but can be woken up due to spurious wakeups, in contrast to pop_front() which will always 
+                // ever return if data is really available, or the channel is closed.
                 Logger::logInfo("RemoteDispatcherClient: pkt is null");
                 if (toRemoteClientQueue.is_closed()) 
                 {
