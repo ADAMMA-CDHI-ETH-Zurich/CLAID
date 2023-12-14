@@ -82,7 +82,7 @@ cc_library(
         "Module/**/*.cc",
         "Traits/*.cc",
         "Utilities/**/*.cc",
-    
+        "Exception/**/*.cc",
     ]),
     hdrs = glob([
         "Module/**/*.hh",
@@ -90,6 +90,7 @@ cc_library(
         "Utilities/**/*.hh",
         "shared_queue.hh",
         "module_table.hh",
+        "Exception/**/*.hh",
     ]),
     deps = [
         ":proto_util",

@@ -89,9 +89,9 @@ namespace claid
             Logger::logInfo("RemoteDispatcherClient is trying to establish a connection.");
             streamContext = std::make_shared<grpc::ClientContext>();
 
-            const int RECONNECT_TIMEOUT_SECONDS = 60;
+            const int RECONNECT_TIMEOUT_SECONDS = 10;
             auto deadline = std::chrono::system_clock::now() + std::chrono::seconds(RECONNECT_TIMEOUT_SECONDS);
-            // Note: If the server is unreachable, this will wait 60 seconds.
+            // Note: If the server is unreachable, this will wait 10 seconds.
             // HOWEVER: If the server is reachable, but it denies our request (does not accept connection), this will not wait.
             // ONLY waits if server is NOT reachable. Does NOT wait if we connect successfully OR server rejects us :)
             bool connected = grpcChannel->WaitForConnected(deadline);

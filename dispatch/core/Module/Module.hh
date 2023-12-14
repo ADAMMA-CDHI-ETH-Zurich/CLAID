@@ -61,9 +61,11 @@ namespace claid
         Module();
         virtual ~Module() {}
         
+        void moduleFatal(const std::string& error) const;
         void moduleError(const std::string& error) const;
         void moduleWarning(const std::string& warning) const;
 
+        void moduleFatal(absl::Status error) const;
         void moduleError(absl::Status error) const;
         void moduleWarning(absl::Status warning) const;
 

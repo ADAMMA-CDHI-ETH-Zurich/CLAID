@@ -41,14 +41,14 @@ namespace claid
             std::string unknownProperties;
             properties.unknownPropertiesToString(unknownProperties);
 
-            this->moduleError(absl::StrCat("Missing properties: [", unknownProperties, "]. Please sepcify the properties in the configuration file."));
+            this->moduleFatal(absl::StrCat("Missing properties: [", unknownProperties, "]. Please sepcify the properties in the configuration file."));
             return;
         }
 
         absl::Status status = this->fileSaver.initialize(what, storagePath, fileNameFormat, fileType);
         if(!status.ok())
         {
-            this->moduleError(status);
+            this->moduleFatal(status);
         }
         Logger::logInfo("DataChannel subscribe");
         this->dataChannel = this->subscribe(what, &DataSaverModule::onData, this);

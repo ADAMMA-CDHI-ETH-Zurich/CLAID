@@ -41,6 +41,11 @@ namespace claid
         this->fileNameFormat = fileNameFomat;
         this->fileType = fileType;
 
+        if(this->storagePath.size() > 0 && this->storagePath[this->storagePath.size() - 1] != '/')
+        {
+            this->storagePath += "/";
+        }
+
         this->serializer = DataSerializerFactory::getInstance()->getSerializerForDataType(fileType);
         if(this->serializer == nullptr)
         {
@@ -50,6 +55,7 @@ namespace claid
         std::string channelName = this->what;
         claid::StringUtils::stringReplaceAll(channelName, "/", "_");
         claid::StringUtils::stringReplaceAll(this->storagePath, "\%channel_name", channelName);
+        
 
         absl::Status status = this->createStorageFolder(Path(this->storagePath));
         if(!status.ok())
@@ -186,8 +192,8 @@ namespace claid
 
     absl::Status FileSaver::createStorageFolder(const Path& currentSavePath)
     {
-        Logger::logInfo("Getting currentSavePath: %s %s", currentPath.toString().c_str(), currentPath.getFolderPath().c_str());
-        std::string folderPath = currentPath.getFolderPath();
+        Logger::logInfo("Getting currentSavePath: %s %s", currentSavePath.toString().c_str(), currentSavePath.getFolderPath().c_str());
+        std::string folderPath = currentSavePath.getFolderPath();
         return this->createDirectoriesRecursively(folderPath);
     }
 

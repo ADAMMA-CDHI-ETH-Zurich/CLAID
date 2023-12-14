@@ -1,6 +1,5 @@
 
 #include "dispatch/core/Exception/Exception.hh"
-#include "dispatch/core/ExceptionHandler/ExceptionHandler.hh"
 
 namespace claid {
 

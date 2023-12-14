@@ -11,19 +11,11 @@
 #include <chrono>
 #include <thread>
 #include "dispatch/core/Logger/Logger.hh"
-#include "dispatch/core/ExceptionHandler/ExceptionHandler.hh"
 #define CLAID_THROW(ex, msg)\
 {\
 	std::ostringstream ex_str;\
 	ex_str << msg;\
-    claid::Logger::printfln("%s", ex_str.str().c_str());\
-	claid::Logger::printfln("\n");\
 	std::this_thread::sleep_for(std::chrono::milliseconds(500));\
-	if(claid::ExceptionHandler::isExeceptionHandlerRegistered())\
-	{\
-		claid::ExceptionHandler::invokeExceptionHandler(ex_str.str(), __FILE__, __LINE__);\
-		std::this_thread::sleep_for(std::chrono::milliseconds(15000));\
-	}\
 	throw ex(ex_str.str(), __FILE__, __LINE__);\
 }
 // std::this_thread::sleep_for(std::chrono::milliseconds(1000));

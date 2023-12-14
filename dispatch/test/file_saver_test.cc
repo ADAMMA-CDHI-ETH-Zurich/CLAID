@@ -35,7 +35,7 @@ TEST(FileSaverTestSuite, FileSaverTest)
 
     const char* config_file = "dispatch/test/cpp_runtime_test.json";
     const std::string what = "test_data";
-    const std::string storagePath = "/tmp/data_test";
+    const std::string storagePath = "data_test";
     const std::string fileNameFormat = "test.json";
     const std::string dataType = "json";
 

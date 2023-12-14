@@ -22,6 +22,7 @@
 #include "dispatch/core/Module/RunnableDispatcherThread/FunctionRunnable.hh"
 #include "dispatch/core/Module/RunnableDispatcherThread/ScheduleDescription/ScheduleOnce.hh"
 #include "dispatch/core/Module/RunnableDispatcherThread/ScheduleDescription/ScheduleRepeatedIntervall.hh"
+#include "dispatch/core/Exception/Exception.hh"
 #include "absl/strings/str_split.h"
 
 namespace claid
@@ -30,6 +31,12 @@ namespace claid
     {
     }
 
+    void Module::moduleFatal(const std::string& error) const
+    {
+        std::string errorMsg = "Module \"" + id + "\": " + error;
+        Logger::log(SeverityLevel::FATAL, errorMsg);
+        CLAID_THROW(claid::Exception, errorMsg);
+    }
 
     void Module::moduleError(const std::string& error) const
     {
@@ -43,6 +50,13 @@ namespace claid
         Logger::log(SeverityLevel::WARNING, warningMsg);
     }
 
+    void Module::moduleFatal(absl::Status error) const
+    {
+        std::stringstream ss;
+        ss << error;
+        std::string errorStr = ss.str();
+        this->moduleFatal(errorStr);
+    }
 
     void Module::moduleError(absl::Status error) const
     {
