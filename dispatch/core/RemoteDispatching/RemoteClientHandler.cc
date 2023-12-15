@@ -56,6 +56,7 @@ namespace claid
 
     void RemoteClientHandler::processWriting(grpc::ServerReaderWriter<DataPackage, DataPackage>* stream) 
     {
+        this->writeStream = stream;
         while(this->active) 
         {
             auto pkt = this->outgoingQueue.pop_front();
@@ -67,6 +68,7 @@ namespace claid
                 break;
             }
 
+            std::unique_lock<std::mutex>(this->pingMutex);
             if (!stream->Write(*pkt)) 
             {
                 // Re-enqueue package.
@@ -142,6 +144,21 @@ namespace claid
         std::cout << "Shutting down RemoteClientHandler\n";
         this->active = false;
         this->shutdownWriterThread();
+        this->writeStream = nullptr;
+    }
+
+    bool RemoteClientHandler::sendPingToClient()
+    {
+        
+        std::unique_lock<std::mutex>(this->pingMutex);
+        if(this->writeStream == nullptr)
+        {
+            return false;
+        }
+        DataPackage pkt;
+        pkt.mutable_control_val()->set_ctrl_type(CtrlType::CTRL_REMOTE_PING);
+                
+        return this->writeStream->Write(pkt);
     }
 
 }

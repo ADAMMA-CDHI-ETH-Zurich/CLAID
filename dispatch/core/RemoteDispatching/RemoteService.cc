@@ -97,13 +97,19 @@ namespace claid
         std::cout << "RemoteClientHandlers size " << this->remoteClientHandlers.size() << "\n";
         if (it != this->remoteClientHandlers.end()) 
         {
-            status = grpc::Status(grpc::ALREADY_EXISTS, absl::StrCat(
-                "Failed to create RemoteClient handler for client with user token \"", remoteClientInfo.user_token(), "\"",
-                "and device id \"", remoteClientInfo.device_id(), "\".\n",
+            if(isClientStillReachable(*it->second))
+            {
+                status = grpc::Status(grpc::ALREADY_EXISTS, absl::StrCat(
+                "Failed to create RemoteClient handler for client with user token \"", remoteClientInfo.user_token(), "\".",
                 "A user with these identifiers already exists."
-            ));
-            Logger::logWarning("%s", status.error_message().c_str());
-            return nullptr;
+                ));
+                Logger::logWarning("%s", status.error_message().c_str());
+                return nullptr;
+            }
+            else
+            {
+                this->stopAndRemoveRemoteClientHandler(remoteClientInfo);
+            }
         }
         // Allocate a RemoteClientHandler
         absl::Status abslStatus = 
@@ -177,4 +183,10 @@ namespace claid
             clientHandler.second->shutdown();
         }
     }
+
+    bool RemoteServiceImpl::isClientStillReachable(RemoteClientHandler& handler)
+    {
+        return handler.sendPingToClient();
+    }
+
 }

@@ -235,7 +235,7 @@ void ModuleManager::onPackageReceivedFromModulesDispatcher(std::shared_ptr<DataP
 
     if(dataPackage->has_control_val())
     {
-        Logger::logInfo("ModuleManager received DataPackage with controlVal %d", dataPackage->control_val());
+        Logger::logInfo("ModuleManager received DataPackage with controlVal %d", dataPackage->control_val().ctrl_type());
         handlePackageWithControlVal(dataPackage);
         return;
     }
@@ -295,6 +295,11 @@ void ModuleManager::handlePackageWithControlVal(std::shared_ptr<DataPackage> pac
             }
             break;
         }
+        default:
+        {
+            Logger::logWarning("ModuleManager received package with unsupported control val %d", package->control_val().ctrl_type());
+        }
+        break;
     }
 }
 

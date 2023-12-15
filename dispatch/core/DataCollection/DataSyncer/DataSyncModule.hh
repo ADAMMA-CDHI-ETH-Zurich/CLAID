@@ -169,7 +169,20 @@ namespace claid
                     Logger::printfln("!!!PERIODIC SYNC!!!");
                     sendFileList();
                 }
-                
+            }
+
+            // Get's called by the middleware once we connect to a remote server.
+            void onConnectedToRemoteServer()
+            {
+                if(millisecondsSinceLastMessageFromFileReceiver() >= this->syncingPeriodInMs)
+                {
+                    // If we were not able to contact the DataReceiverModule for a while,
+                    // we retry upon successfull connection to a remote server, assuming 
+                    // that the DataReceiverModule is not running on the same host.
+                    // If it is running on the same host, this code will never be executed,
+                    // since we will always receive a timely response from the DataReceiverModule.
+                    this->periodicSync();
+                }
             }
 
             absl::Status loadDataFileFromPath(const std::string& path, DataFile& dataFile)

@@ -30,6 +30,8 @@ namespace claid
 
         void shutdown();
 
+        bool isClientStillReachable(RemoteClientHandler& handler);
+
     private:
 
         RemoteClientHandler* addRemoteClientHandler(const RemoteClientInfo& remoteClientInfo, grpc::Status& status);

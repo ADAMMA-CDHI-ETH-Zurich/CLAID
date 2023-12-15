@@ -33,6 +33,8 @@ namespace claid
 
         void shutdown();
 
+        bool sendPingToClient();
+
     private:
         void processWriting(grpc::ServerReaderWriter<claidservice::DataPackage, claidservice::DataPackage>* stream);
         void processPacket(claidservice::DataPackage& pkt, grpc::Status& status);
@@ -45,7 +47,10 @@ namespace claid
         // Outgoing from router -> client (packages we send to external connection, i.e., connected client).
         SharedQueue<claidservice::DataPackage>& outgoingQueue;
 
+        grpc::ServerReaderWriter<claidservice::DataPackage, claidservice::DataPackage>* writeStream = nullptr;
+
         std::mutex writeThreadMutex; // protects the write thread
+        std::mutex pingMutex;
         std::unique_ptr<std::thread> writeThread;
 
         const std::string userToken;
