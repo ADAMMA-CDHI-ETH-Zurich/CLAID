@@ -235,7 +235,8 @@ void ModuleManager::onPackageReceivedFromModulesDispatcher(std::shared_ptr<DataP
 
     if(dataPackage->has_control_val())
     {
-        Logger::logError("ModuleManager received DataPackage with controlVal. The controlVal should have been handled by DispatcherClient.");
+        Logger::logInfo("ModuleManager received DataPackage with controlVal %d", dataPackage->control_val());
+        handlePackageWithControlVal(dataPackage);
         return;
     }
 
@@ -273,4 +274,29 @@ void ModuleManager::onPackageReceivedFromModulesDispatcher(std::shared_ptr<DataP
     Logger::logInfo("ModuleManager done invoking subscribers.", subscriberList.size());
 
 }
+
+void ModuleManager::handlePackageWithControlVal(std::shared_ptr<DataPackage> package)
+{
+    switch(package->control_val().ctrl_type())
+    {
+        case CtrlType::CTRL_CONNECTED_TO_REMOTE_SERVER:
+        {
+            for(auto& modulesEntry : this->runningModules)
+            {
+                modulesEntry.second->notifyConnectedToRemoteServer();
+            }
+            break;
+        }
+        case CtrlType::CTRL_DISCONNECTED_FROM_REMOTE_SERVER:
+        {
+            for(auto& modulesEntry : this->runningModules)
+            {
+                modulesEntry.second->notifyDisconnectedFromRemoteServer();
+            }
+            break;
+        }
+    }
+}
+
+
 }

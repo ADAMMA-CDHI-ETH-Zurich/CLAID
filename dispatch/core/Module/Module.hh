@@ -75,6 +75,9 @@ namespace claid
         bool start(ChannelSubscriberPublisher* subscriberPublisher, const std::map<std::string, std::string>& properties);
         void shutdown();
 
+        void notifyConnectedToRemoteServer();
+        void notifyDisconnectedFromRemoteServer();
+
     protected:
 
 
@@ -83,6 +86,9 @@ namespace claid
 
         void terminateInternal();
         virtual void terminate();
+
+        virtual void onConnectedToRemoteServer();
+        virtual void onDisconnectedFromRemoteServer();
 
         void registerPeriodicFunction(const std::string& name, std::function<void()> callback, const Duration& interval);
         void registerPeriodicFunction(const std::string& name, std::function<void()> function, const Duration& interval, const Time& startTime);

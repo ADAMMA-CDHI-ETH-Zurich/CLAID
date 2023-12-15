@@ -8,6 +8,7 @@
 #include "dispatch/core/proto_util.hh"
 
 using claidservice::DataPackage;
+using claidservice::CtrlType;
 using claidservice::ModuleListResponse;
 using claidservice::ModuleListResponse_ModuleDescriptor;
 using claidservice::InitRuntimeRequest;
@@ -45,6 +46,10 @@ namespace claid {
 
             InitRuntimeRequest makeInitRuntimeRequest();
 
+            void readFromModulesDispatcher();
+            void onPackageReceivedFromModulesDispatcher(std::shared_ptr<DataPackage> dataPackage);
+            void handlePackageWithControlVal(std::shared_ptr<DataPackage> package);
+
         public:
             ModuleManager(DispatcherClient& dispatcher,
                 SharedQueue<DataPackage>& fromModuleDispatcherQueue,
@@ -54,8 +59,7 @@ namespace claid {
             absl::Status start();
             void stop();
           
-            void readFromModulesDispatcher();
-            void onPackageReceivedFromModulesDispatcher(std::shared_ptr<DataPackage> dataPackage);
-         
+           
+
     };
 }

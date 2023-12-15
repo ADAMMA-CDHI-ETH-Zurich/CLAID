@@ -15,6 +15,9 @@ namespace claid
             ModuleTable& moduleTable;
             const std::string currentHost;
 
+            absl::Status routeControlPackage(std::shared_ptr<DataPackage> package);
+            void routeToAllRuntimes(std::shared_ptr<DataPackage> package);
+
         public:
         
             LocalRouter(const std::string& currentHost, ModuleTable& moduleTable);

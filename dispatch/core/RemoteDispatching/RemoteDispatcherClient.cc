@@ -164,8 +164,12 @@ namespace claid
             
             Logger::logInfo("RemoteDispatcherClient setup successful");
             std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+            this->onConnectedToServer();
             // Blocks as long as we are connected
             processReading();
+
+            this->onDisconnectedFromServer();
 
             Logger::logInfo("RemoteDispatcherClient lost connection, stopping reader and writer.");
             this->connected = false;
@@ -316,6 +320,37 @@ namespace claid
     bool RemoteDispatcherClient::isConnected() const
     {
         return this->connected;
+    }
+
+    void RemoteDispatcherClient::onConnectedToServer()
+    {
+        SharedQueue<DataPackage>& outQueue = this->clientTable.getFromRemoteClientQueue();
+
+        // Send a package to the middleware to notify that we are connected to the serversuccessfully.
+        // The middleware might forward this package to all local modules to notify them about the successfull connection.
+
+        std::shared_ptr<DataPackage> onConnectPackage = std::make_shared<DataPackage>();
+
+        onConnectPackage->mutable_control_val()->set_ctrl_type(CtrlType::CTRL_CONNECTED_TO_REMOTE_SERVER);
+        onConnectPackage->set_source_host(this->host);
+        onConnectPackage->set_target_host(this->host);
+
+        outQueue.push_back(onConnectPackage);
+    }
+
+    void RemoteDispatcherClient::onDisconnectedFromServer()
+    {
+        SharedQueue<DataPackage>& outQueue = this->clientTable.getFromRemoteClientQueue();
+
+        // Send a package to the middleware to notify that we are disconnected from the server.
+        // The middleware might forward this package to all local modules to notify them about the successfull connection.
+
+        std::shared_ptr<DataPackage> onDisconnectPackage = std::make_shared<DataPackage>();
+
+        onDisconnectPackage->mutable_control_val()->set_ctrl_type(CtrlType::CTRL_DISCONNECTED_FROM_REMOTE_SERVER);
+        onDisconnectPackage->set_source_host(this->host);
+        onDisconnectPackage->set_target_host(this->host);
+        outQueue.push_back(onDisconnectPackage);
     }
     
     absl::Status RemoteDispatcherClient::getLastStatus() const

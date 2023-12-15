@@ -47,6 +47,16 @@ class SenderModule : public claid::Module
         Logger::logInfo("Periodic function");
         sendChannel.post("TestData");
     }
+
+    void onConnectedToRemoteServer()
+    {
+  
+    }
+
+    void onDisconnectedFromRemoteServer()
+    {
+
+    }
 };
 
 class ReceiverModule : public claid::Module

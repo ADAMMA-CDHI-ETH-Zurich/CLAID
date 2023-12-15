@@ -9,6 +9,10 @@ namespace claid {
 
     absl::Status LocalRouter::routePackage(std::shared_ptr<DataPackage> dataPackage)
     {
+        if(dataPackage->has_control_val())
+        {
+            return routeControlPackage(dataPackage);
+        }
         const std::string& sourceHost = dataPackage->source_host();
         const std::string& sourceModule = dataPackage->source_module();
 
@@ -29,6 +33,22 @@ namespace claid {
         inputQueueForRuntime->push_back(dataPackage);
         return absl::OkStatus();
     }
+
+    absl::Status LocalRouter::routeControlPackage(std::shared_ptr<DataPackage> package)
+    {
+        this->routeToAllRuntimes(package);
+        return absl::OkStatus();
+    }
+
+    void LocalRouter::routeToAllRuntimes(std::shared_ptr<DataPackage> package)
+    {
+        auto allQueues = this->moduleTable.getAllQueues();
+        for(auto queue : allQueues)
+        {
+            queue->push_back(package);
+        }
+    }
+
 
     bool LocalRouter::canReachHost(const std::string& hostname)
     {

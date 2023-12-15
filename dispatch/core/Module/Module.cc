@@ -235,5 +235,35 @@ namespace claid
     {
 
     }
+
+    void Module::onConnectedToRemoteServer()
+    {
+
+    }
+  
+    void Module::onDisconnectedFromRemoteServer()
+    {
+
+    }
+
+    void Module::notifyConnectedToRemoteServer()
+    {
+        std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>([this] { this->onConnectedToRemoteServer();}));
+
+        this->runnableDispatcher.addRunnable(
+            ScheduledRunnable(
+                std::static_pointer_cast<Runnable>(functionRunnable), 
+                ScheduleOnce(Time::now())));
+    }
+        
+    void Module::notifyDisconnectedFromRemoteServer()
+    {
+        std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>([this] { this->onDisconnectedFromRemoteServer();}));
+
+        this->runnableDispatcher.addRunnable(
+            ScheduledRunnable(
+                std::static_pointer_cast<Runnable>(functionRunnable), 
+                ScheduleOnce(Time::now())));
+    }
 }
 

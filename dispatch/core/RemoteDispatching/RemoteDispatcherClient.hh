@@ -42,7 +42,8 @@ namespace claid
             
             void connectAndMonitorConnection();
 
-            
+            void onConnectedToServer();
+            void onDisconnectedFromServer();
 
 
         private:

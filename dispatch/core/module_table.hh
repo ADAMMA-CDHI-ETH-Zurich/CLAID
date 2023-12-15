@@ -43,6 +43,8 @@ class ModuleTable {
     virtual ~ModuleTable() {}
     inline SharedQueue<claidservice::DataPackage>& inputQueue() {return fromModuleQueue;}
     SharedQueue<claidservice::DataPackage>* lookupOutputQueue(const std::string& moduleId);
+    std::vector<std::shared_ptr<SharedQueue<claidservice::DataPackage>>> getAllQueues();
+
     void setProperties(const ModuleTableProperties& props);
 
     // Sets the information about the modules that have to be provided by

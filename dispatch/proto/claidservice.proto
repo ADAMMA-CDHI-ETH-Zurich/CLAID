@@ -72,6 +72,8 @@ enum CtrlType {
   // CTRL_STATUS        = 6;  // Sent from a middleware client up the tree
   // CTRL_ACTION        = 7;  // sent to module when the local middleware is ready
   CTRL_ERROR            = 8;  // Error occured
+  CTRL_CONNECTED_TO_REMOTE_SERVER       = 9; // If RemoteDispatcherClient connected to a Server
+  CTRL_DISCONNECTED_FROM_REMOTE_SERVER  = 10;
 }
 
 // Note for Stephan: I removed the "optional" labels, as protoc did complain about them:
