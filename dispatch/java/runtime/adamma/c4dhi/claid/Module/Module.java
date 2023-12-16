@@ -531,6 +531,26 @@ public abstract class Module
         }
     }
 
+    protected void onConnectedToRemoteServer()
+    {
+
+    }
+  
+    protected void onDisconnectedFromRemoteServer()
+    {
+
+    }
+
+    public void notifyConnectedToRemoteServer()
+    {
+        this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> onConnectedToRemoteServer()));
+    }
+        
+    public void notifyDisconnectedFromRemoteServer()
+    {
+        this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> onDisconnectedFromRemoteServer()));
+    }
+
 
 //         String name, Duration period, RegisteredCallback callback) =>
 //     _scheduler.registerPeriodicFunction(_modId, name, period, callback);

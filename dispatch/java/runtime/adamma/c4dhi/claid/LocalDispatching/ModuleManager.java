@@ -24,7 +24,8 @@ import adamma.c4dhi.claid.Runtime;
 import adamma.c4dhi.claid.ModuleListRequest;
 import adamma.c4dhi.claid.ModuleListResponse;
 import adamma.c4dhi.claid.ModuleListResponse.ModuleDescriptor;
-
+import adamma.c4dhi.claid.ControlPackage;
+import adamma.c4dhi.claid.CtrlType;
 
 import io.grpc.stub.StreamObserver;
 
@@ -229,8 +230,9 @@ public class ModuleManager
 
         if(dataPackage.hasControlVal())
         {
-            Logger.logError("ModuleManager received DataPackage with controlVal. The controlVal should have been handled by ModuleDispatcher");
-            return;
+           // Logger.logError("ModuleManager received DataPackage with controlVal. The controlVal should have been handled by ModuleDispatcher");
+           handlePackageWithControlVal(dataPackage); 
+           return;
         }
 
         /*String hostName = hostAndModule[0];
@@ -267,6 +269,29 @@ public class ModuleManager
         for(AbstractSubscriber subscriber : subscriberList)
         {
             subscriber.onNewData(dataPackage);
+        }
+    }
+
+
+    private void handlePackageWithControlVal(DataPackage packet)
+    {
+        if(packet.getControlVal().getCtrlType() == CtrlType.CTRL_CONNECTED_TO_REMOTE_SERVER)
+        {
+            for(Map.Entry<String, Module> modulesEntry : this.runningModules.entrySet())
+            {
+                modulesEntry.getValue().notifyConnectedToRemoteServer();
+            }
+        }
+        else if(packet.getControlVal().getCtrlType() == CtrlType.CTRL_DISCONNECTED_FROM_REMOTE_SERVER)
+        {
+            for(Map.Entry<String, Module> modulesEntry : this.runningModules.entrySet())
+            {
+                modulesEntry.getValue().notifyDisconnectedFromRemoteServer();
+            }
+        }
+        else
+        {
+            Logger.logWarning("ModuleManager received package with unsupported control val " + packet.getControlVal().getCtrlType());
         }
     }
 
