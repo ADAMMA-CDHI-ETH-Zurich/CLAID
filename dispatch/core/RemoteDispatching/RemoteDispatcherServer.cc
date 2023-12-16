@@ -73,11 +73,11 @@ namespace claid
         builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_TIME_MS,
                                     10 * 60 * 1000 /*10 min*/);
         builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_TIMEOUT_MS,
-                                    20 * 1000 /*20 sec*/);
+                                    60 * 1000 /*60 sec*/);
         builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
         builder.AddChannelArgument(
             GRPC_ARG_HTTP2_MIN_RECV_PING_INTERVAL_WITHOUT_DATA_MS,
-            10 * 1000 /*10 sec*/);
+            30 * 1000 /*30 sec*/);
         builder.SetMaxReceiveMessageSize(1024 * 1024 * 1024);  // 1 GB
 
         // Set the maximum send message size (in bytes) for the server

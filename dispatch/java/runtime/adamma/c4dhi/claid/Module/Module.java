@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import javax.swing.Timer;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ public abstract class Module
 
     private boolean isInitializing = false;
     private boolean isInitialized = false;
+    private boolean isTerminating = false;
 
     Map<String, ScheduledRunnable> timers = new HashMap<>();
 
@@ -100,7 +102,42 @@ public abstract class Module
         return true;
     }
 
-    protected void initializeInternal(Map<String, String> properties)
+    public boolean shutdown()
+    {
+        if(!this.isInitialized)
+        {
+            moduleError("Cannot shutdown Module. Module is not running (i.e., start was never called).");
+            return false;
+        }
+
+        if(this.isTerminating)
+        {
+            moduleError("Failed to shutdown Module. Module.shutdown() was already called.");
+        }
+        
+        this.isTerminating = true;
+
+        this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> terminateInternal()));
+
+
+        while(!this.isTerminating)
+        {
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                moduleError("Failed to wait for initialize function to finish: " + e.getMessage());
+                return false;
+            }
+        }
+        
+        this.runnableDispatcher.stop();
+        return true;
+    }
+
+  
+    private void initializeInternal(Map<String, String> properties)
     {
         this.initialize(properties);
         this.isInitialized = true;
@@ -109,6 +146,18 @@ public abstract class Module
     protected void initialize(Map<String, String> properties)
     {
         System.out.println("Module base initialize");
+    }
+
+    private void terminateInternal()
+    {
+        this.terminate();
+        this.unregisterAllPeriodicFunctions();
+        this.isTerminating = false;
+    }
+
+    protected void terminate()
+    {
+        
     }
 
     public void setId(String id)
@@ -472,6 +521,14 @@ public abstract class Module
 
         FunctionRunnable runnable = new FunctionRunnable(function, new ScheduleOnce(dateTime));
         timers.put(name, runnable);
+    }
+
+    private void unregisterAllPeriodicFunctions()
+    {
+        for(Map.Entry<String, ScheduledRunnable> entry : this.timers.entrySet())
+        {
+            entry.getValue().invalidate();
+        }
     }
 
 

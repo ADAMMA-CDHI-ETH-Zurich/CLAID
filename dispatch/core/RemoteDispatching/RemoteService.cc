@@ -100,7 +100,7 @@ namespace claid
             if(isClientStillReachable(*it->second))
             {
                 status = grpc::Status(grpc::ALREADY_EXISTS, absl::StrCat(
-                "Failed to create RemoteClient handler for client with user token \"", remoteClientInfo.user_token(), "\".",
+                "Failed to create RemoteClient handler for client with user token \"", remoteClientInfo.user_token(), "\". ",
                 "A user with these identifiers already exists."
                 ));
                 Logger::logWarning("%s", status.error_message().c_str());
