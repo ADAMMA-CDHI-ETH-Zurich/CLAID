@@ -32,7 +32,7 @@ java_library(
         "@io_grpc_grpc_java//api",
         "@io_grpc_grpc_java//stub",
         "@com_google_protobuf//java/core",
-        "@io_grpc_grpc_java//netty:shaded_maven"],
+        "@io_grpc_grpc_java//netty:netty"],
     javacopts = ["-Xep:BanJNDI:WARN",],
 )
 
@@ -53,7 +53,7 @@ java_library(
         "@maven//:org_apache_tomcat_annotations_api",
         "//dispatch/proto:claidservice_java_proto",
         "//dispatch/proto:claidservice_java_grpc",
-        "@io_grpc_grpc_java//netty:shaded_maven"],
+        "@io_grpc_grpc_java//netty:netty"],
     javacopts = ["-Xep:BanJNDI:WARN",],
 
 )
@@ -73,7 +73,7 @@ java_binary(
         "@maven//:org_apache_tomcat_annotations_api",
         "//dispatch/proto:claidservice_java_proto",
         "//dispatch/proto:claidservice_java_grpc",
-        "@io_grpc_grpc_java//netty:shaded_maven"],
+        "@io_grpc_grpc_java//netty:netty"],
     javacopts = ["-Xep:BanJNDI:WARN",],
 
 )
