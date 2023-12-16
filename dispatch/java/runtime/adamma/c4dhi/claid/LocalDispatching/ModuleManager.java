@@ -70,7 +70,7 @@ public class ModuleManager
     {
         if(!this.moduleFactory.isModuleClassRegistered(moduleClass))
         {
-            System.out.println("ModuleManager: Failed to instantiate Module of class \"" + moduleClass + "\" (id: " + moduleId + "\")\n" +
+            Logger.logError"ModuleManager: Failed to instantiate Module of class \"" + moduleClass + "\" (id: " + moduleId + "\")\n" +
             "A Module with this class is not registered to the ModuleFactory.");
         
             return false;
@@ -91,7 +91,7 @@ public class ModuleManager
 
             if(!this.instantiateModule(moduleId, moduleClass))
             {
-                System.out.println("Failed to instantiate Module \"" + moduleId + "\" (class: \"" + moduleClass + "\").\n" +
+                Logger.logError"Failed to instantiate Module \"" + moduleId + "\" (class: \"" + moduleClass + "\").\n" +
                 "The Module class was not registered to the ModuleFactory.");
                 return false;
             }
@@ -103,15 +103,14 @@ public class ModuleManager
     {
         for(ModuleDescriptor descriptor : moduleList.getDescriptorsList())
         {
-            System.out.println(moduleList.getDescriptorsList());
+            
             String moduleId = descriptor.getModuleId();
             String moduleClass = descriptor.getModuleClass();
 
             String key = moduleId;
-            System.out.println(key + "  " + this.runningModules);
             if(!this.runningModules.containsKey(key))
             {
-                System.out.println("Failed to initialize Module \"" + moduleId + "\" (class: \"" + moduleClass + "\").\n" +
+                Logger.logError"Failed to initialize Module \"" + moduleId + "\" (class: \"" + moduleClass + "\").\n" +
                 "The Module was not loaded.");
                 
              
@@ -149,7 +148,6 @@ public class ModuleManager
 
     public boolean start()
     {
-        System.out.println(this.moduleFactory.getRegisteredModuleClasses());
         ModuleListResponse moduleList = this.dispatcher.getModuleList(this.moduleFactory.getRegisteredModuleClasses());
         Logger.logInfo("Received ModuleListResponse: " + moduleList);
         if(!instantiateModules(moduleList))

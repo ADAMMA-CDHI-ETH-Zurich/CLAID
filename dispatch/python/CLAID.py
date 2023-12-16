@@ -6,6 +6,9 @@ import pathlib
 from module.module_factory import ModuleFactory
 from logger.logger import Logger
 
+from local_dispatching.module_dispatcher import ModuleDispatcher
+from module.module_factory import ModuleFactory
+
 import platform
 
 class CLAID():
@@ -72,9 +75,20 @@ class CLAID():
         if(self.__cpp_runtime_handle == 0):
             raise Exception("Failed to start CLAID, could not start C++ runtime")
         
+        self.attach_python_runtime(socket_path)
 
         Logger.log_info("Successfully started CLAID")
 
 
     def start(self, config_file_path, host_id, user_id, device_id, module_factory):
         self.startCustomSocket("unix:///tmp/claid_socket.grpc", config_file_path, host_id, user_id, device_id, module_factory)
+
+    def attach_python_runtime(self, socket_path):
+
+        if(self.__started):
+            Logger.log_error("CLAID middleware start was called twice!")
+            return False
+
+        self.__module_dispatcher = ModuleDispatcher(socket_path)
+
+        self.__module_manager = ModuleManager(moduleDispatcher, factory);

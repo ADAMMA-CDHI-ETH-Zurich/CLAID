@@ -1,0 +1,91 @@
+from typing import Type, TypeVar, List, Dict, Union
+from queue import SimpleQueue
+from module.abstract_subscriber import AbstractSubscriber
+from module.type_mapping.type_mapping import TypeMapping
+from module.type_mapping.mutator import Mutator
+from module.channel import Channel
+
+from dispatch.proto.claidservice_pb2 import DataPackage
+
+# Assuming you have a Python protobuf equivalent for claidservice::DataPackage
+# from your_protobuf_module import DataPackage
+
+T = TypeVar('T')
+
+
+class ChannelSubscriberPublisher:
+    def __init__(self, to_module_manager_stream):
+        self.__example_packages_for_each_module: Dict[str, List[DataPackage]] = {}
+        self.__module_channels_subscriber_map: Dict[tuple, List[AbstractSubscriber]] = {}
+        self.__to_module_manager_stream = to_module_manager_stream
+
+    def prepare_example_package(self, data_type_example, module_id: str, channel_name: str, is_publisher: bool) -> DataPackage:
+        data_package = DataPackage()
+
+        if is_publisher:
+            data_package.source_module = module_id
+        else:
+            data_package.target_module = module_id
+
+        data_package.channel = channel_name
+
+        # Assuming there's a function set_package_payload to set the payload
+        mutator = TypeMapping.get_mutator(example_instance=data_type_example)
+        mutator.set_package_payload(data_package, data_type_example.__class__())
+
+        return data_package
+
+    def publish(self, module, channel_name: str) -> Channel:
+        module_id = module.get_id()
+        example_package = self.prepare_example_package(module_id, channel_name, True)
+
+        print(f"Inserting package for Module {module_id}")
+        self.__example_packages_for_each_module.setdefault(module_id, []).append(example_package)
+
+        publisher = Publisher(module_id, channel_name, self.to_module_manager_queue)
+        return Channel(module, channel_name, publisher)
+
+    def subscribe(self, module, channel_name: str, subscriber: AbstractSubscriber) -> Channel:
+        module_id = module.get_id()
+        example_package = self.prepare_example_package(module_id, channel_name, False)
+
+        # setdefault() method returns the value of the item with the specified key.
+        # If the key does not exist, insert the key, with the specified value, see example below
+        self.__example_packages_for_each_module.setdefault(module_id, []).append(example_package)
+        self.insert_subscriber(channel_name, module_id, subscriber)
+
+        return Channel(module, channel_name, subscriber)
+
+    def insert_subscriber(self, channel_name: str, module_id: str, subscriber: AbstractSubscriber):
+        channel_module_key = (channel_name, module_id)
+
+        if channel_module_key not in self.module_channels_subscriber_map:
+            self.__module_channels_subscriber_map[channel_module_key] = []
+
+        self.__module_channels_subscriber_map[channel_module_key].append(subscriber)
+
+    def get_subscriber_instances_of_module(self, channel_name: str, module_id: str) -> List[AbstractSubscriber]:
+        channel_module_key = (channel_name, module_id)
+
+        return self.__module_channels_subscriber_map.get(channel_module_key, [])
+
+    def get_channel_template_packages_for_module(self, module_id: str) -> List[DataPackage]:
+        return self.example_packages_for_each_module.get(module_id, [])
+
+    def is_data_package_compatible_with_channel(self, data_package: DataPackage, receiver_module: str) -> bool:
+        channel_name = data_package.channel
+
+        if receiver_module in self.example_packages_for_each_module:
+            for template_package in self.example_packages_for_each_module[receiver_module]:
+                if template_package.channel == channel_name:
+                    return template_package.payload_oneof_case == data_package.payload_oneof_case
+
+        return False
+
+    def get_payload_case_of_channel(self, channel_name: str, receiver_module: str) -> DataPackage.PayloadOneofCase:
+        if receiver_module in self.example_packages_for_each_module:
+            for template_package in self.example_packages_for_each_module[receiver_module]:
+                if template_package.channel == channel_name:
+                    return template_package.payload_oneof_case
+
+        return DataPackage.PayloadOneofCase.PAYLOAD_ONEOF_NOT_SET
