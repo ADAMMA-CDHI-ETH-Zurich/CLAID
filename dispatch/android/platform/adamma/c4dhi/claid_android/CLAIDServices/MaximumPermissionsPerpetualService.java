@@ -214,6 +214,12 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
                 return false;
             }
         }
+        Logger.loginfo("Checking battery optimization");
+        if(!CLAID.isBatteryOptimizationDisabled(context))
+        {
+            Logger.logInfo("Requesting exemption from battery optimization");
+           CLAID.requestBatteryOptimizationExemption(context); 
+        }
         if(!CLAID.hasStoragePermission())
         {
             if(!CLAID.requestStoragePermission())
@@ -221,10 +227,7 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
                 return false;
             }
         }
-        if(!CLAID.isBatteryOptimizationDisabled(context))
-        {
-           CLAID.requestBatteryOptimizationExemption(context); 
-        }
+        
         return true;
     }
 }
