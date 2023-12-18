@@ -70,7 +70,7 @@ public class ModuleManager
     {
         if(!this.moduleFactory.isModuleClassRegistered(moduleClass))
         {
-            Logger.logError"ModuleManager: Failed to instantiate Module of class \"" + moduleClass + "\" (id: " + moduleId + "\")\n" +
+            Logger.logError("ModuleManager: Failed to instantiate Module of class \"" + moduleClass + "\" (id: " + moduleId + "\")\n" +
             "A Module with this class is not registered to the ModuleFactory.");
         
             return false;
@@ -91,7 +91,7 @@ public class ModuleManager
 
             if(!this.instantiateModule(moduleId, moduleClass))
             {
-                Logger.logError"Failed to instantiate Module \"" + moduleId + "\" (class: \"" + moduleClass + "\").\n" +
+                Logger.logError("Failed to instantiate Module \"" + moduleId + "\" (class: \"" + moduleClass + "\").\n" +
                 "The Module class was not registered to the ModuleFactory.");
                 return false;
             }
@@ -110,7 +110,7 @@ public class ModuleManager
             String key = moduleId;
             if(!this.runningModules.containsKey(key))
             {
-                Logger.logError"Failed to initialize Module \"" + moduleId + "\" (class: \"" + moduleClass + "\").\n" +
+                Logger.logError("Failed to initialize Module \"" + moduleId + "\" (class: \"" + moduleClass + "\").\n" +
                 "The Module was not loaded.");
                 
              

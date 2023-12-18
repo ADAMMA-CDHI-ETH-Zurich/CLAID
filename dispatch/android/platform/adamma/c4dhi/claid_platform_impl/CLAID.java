@@ -304,6 +304,19 @@ public class CLAID extends JavaCLAIDBase
         return permission.isGranted();
     }
 
+    public static boolean hasNotificationPermission()
+    {
+        return new NotificationPermission().isGranted();
+    }
+
+    public static boolean requestNotificationPermission()
+    {
+        NotificationPermission permission = new NotificationPermission();
+        permission.blockingRequest();
+
+        return permission.isGranted();
+    }
+
     public static void onUnrecoverableException(final String exception)
     {
         Logger.logFatal(exception);
@@ -313,8 +326,14 @@ public class CLAID extends JavaCLAIDBase
     }
 
     public static boolean isBatteryOptimizationDisabled(Context context) {
+        Logger.logInfo("Checking battery optimization 1");
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Logger.logInfo("Checking battery optimizatio2");
+
             PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            Logger.logInfo("Checking battery optimization 3 " + context.getPackageName());
+
             return powerManager.isIgnoringBatteryOptimizations(context.getPackageName());
         }
         // For versions prior to Android M, battery optimization is not applicable.
@@ -332,30 +351,58 @@ public class CLAID extends JavaCLAIDBase
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
-            if(isCLAIDContextAnActivity())
+            if(!CLAID.isWearOS(context))
             {
-                android.app.Activity activity = (android.app.Activity) CLAID.getContext();
-                
-                activity.runOnUiThread(() ->
-                    new AlertDialog.Builder(context)
-                    .setMessage("On the next page, please disable battery optimizations. This is required to make CLAID run in the background as long as possible.")
-                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            showBatteryOptimizationIntent(context);
-                        }
-                    })
-                    .show());
+                if(context instanceof android.app.Activity)
+                {
+                    android.app.Activity activity = (android.app.Activity) context;
+                    
+                    activity.runOnUiThread(() ->
+                        new AlertDialog.Builder(context)
+                        .setMessage("On the next page, please disable battery optimizations. This is required to make CLAID run in the background as long as possible.")
+                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                showBatteryOptimizationIntent(context);
+                            }
+                        })
+                        .show());
+                }
+                else
+                {
+                    showBatteryOptimizationIntent(context);
+                }
             }
             else
             {
-                showBatteryOptimizationIntent(context);
+                String batteryOptmizationMessage = 
+                "For CLAID services to run as long as possible and being able to restart silently from the background, it is necessary\n" +
+                "to disable battery optimizations for this App. On WearOS, however, it is currently not possible " + 
+                "to request the user to disable battery optimizations (in contrast to regular Android).\n" +
+                "On WearOS, battery optimizations can currently ONLY be disabled using ADB (Android Debug Bridge).\n" + 
+                "Connect ADB to your device and enter the following command: \"adb shell dumpsys deviceidle whitelist +" + context.getPackageName() + "\".\n" +
+                "Restart the App afterwards, and battery optimizations should be disabled. You can verify this using CLAID.isBatteryOptimizationDisabled().";
+
+                if(context instanceof android.app.Activity)
+                {
+                    android.app.Activity activity = (android.app.Activity) context;
+                    
+                    activity.runOnUiThread(() ->
+                        new AlertDialog.Builder(context)
+                        .setMessage(batteryOptmizationMessage)
+                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                showBatteryOptimizationIntent(context);
+                            }
+                        })
+                        .show());
+                }
+                else
+                {
+                    Logger.logError(batteryOptmizationMessage);
+                }
             }
-
-            
-        
-
-            
         }
     }
 
@@ -464,7 +511,7 @@ public class CLAID extends JavaCLAIDBase
         return disableKeepAppAwake();
     }
 
-    public static boolean isWearOS() {
+    public static boolean isWearOS(Context context) {
         // Check if the device is running Wear OS
         PackageManager pm = context.getPackageManager();
         return pm.hasSystemFeature(PackageManager.FEATURE_WATCH);

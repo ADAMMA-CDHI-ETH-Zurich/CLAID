@@ -28,6 +28,7 @@ import android.util.Log;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
 
+import androidx.core.app.NotificationCompat;
 
 import adamma.c4dhi.claid.Logger.Logger;
 
@@ -48,30 +49,20 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
     public void onCreate()
     {
         super.onCreate();
+        createNotificationChannel();
+
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        createNotificationChannel();
-        Intent notificationIntent = new Intent(this, MaximumPermissionsPerpetualService.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this,
-                0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+      
 
 
 
-        Notification.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder = new Notification.Builder(this, CHANNEL_ID);
-        } else {
-            builder = new Notification.Builder(this);
-        }
+  
 
-        builder.setContentTitle("CLAID Foreground Service")
-            .setContentText("CLAID Foreground Service is running.")
-            .setOngoing(true);
-
-        Notification notification = builder.build();
+        Notification notification = buildNotification();
 
         // TODO: Add support for Android 14:
 /*        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -82,6 +73,7 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
         }
         else  */if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
         {
+            Logger.logInfo("Starting service >= Android R");
             startForeground(1, notification,    ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION | ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA | 
                                                 ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE );
         }
@@ -144,6 +136,7 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
 
         if(ServiceManager.shouldRestartMaximumPermissionsPerpetualServiceOnTermination(this))
         {
+            Logger.logInfo("Starting CLAID Service with START_REDELIVER_INTENT");
             // This will tell the OS to restart the service if it crashed or was terminated due to low resources.
             // Also will redeliver the intent, which is required because it contains the path to the CLAID config.
             return START_REDELIVER_INTENT;
@@ -191,15 +184,36 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
             NotificationChannel serviceChannel = new NotificationChannel(
                     CHANNEL_ID,
                     "Foreground Service Channel",
-                    NotificationManager.IMPORTANCE_DEFAULT
+                    NotificationManager.IMPORTANCE_HIGH
             );
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(serviceChannel);
         }
     }
 
+    private Notification buildNotification()
+    {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+        .setSmallIcon(adamma.c4dhi.claid.R.drawable.ic_launcher_foreground)
+        .setContentTitle("CLAID Foreground Service")
+        .setContentText("CLAID Foreground Service is running.")
+        .setOngoing(true);
+
+        return builder.build();
+    }
+
     public static boolean requestRequiredPermissions(Context context)
     {
+        // Required for our Service to show an ongoing notification.
+        // This notification is required to prevent that our process
+        // goes into idle state, which would allow the Android OS to kill it.
+        if(!CLAID.hasNotificationPermission())
+        {
+            if(!CLAID.requestNotificationPermission())
+            {
+                return false;
+            }
+        }
         if(!CLAID.hasMicrophonePermission())
         {
             if(!CLAID.requestMicrophonePermission())
@@ -214,11 +228,11 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
                 return false;
             }
         }
-        Logger.loginfo("Checking battery optimization");
+        Logger.logInfo("Checking battery optimization ");
         if(!CLAID.isBatteryOptimizationDisabled(context))
         {
             Logger.logInfo("Requesting exemption from battery optimization");
-           CLAID.requestBatteryOptimizationExemption(context); 
+            CLAID.requestBatteryOptimizationExemption(context); 
         }
         if(!CLAID.hasStoragePermission())
         {

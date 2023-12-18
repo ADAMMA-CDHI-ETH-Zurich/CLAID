@@ -27,7 +27,7 @@ public class StoragePermission extends Permission {
     @Override
     public boolean isGranted() {
         // There is currently no way to request becoming an ExternalStorageManager on WearOS.
-        if(CLAID.isWearOS())
+        if(CLAID.isWearOS(CLAID.getContext()))
         {
             return wearOSHasStoragePermissions();
         }
@@ -56,14 +56,14 @@ public class StoragePermission extends Permission {
     public void startIntentWithExtras(String[] permissions, int requestCode, String dialogTitle, String dialogBody)
     {
         Logger.logInfo("Start intent with extras.");
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R ||  CLAID.isWearOS())
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R ||  CLAID.isWearOS(CLAID.getContext()))
         {
             super.startIntentWithExtras(permissions, requestCode, dialogTitle, dialogBody);
         }
         else {
 
-            Logger.logInfo("Is WearOS ? " + CLAID.isWearOS());
-            if(!CLAID.isWearOS())
+            Logger.logInfo("Is WearOS ? " + CLAID.isWearOS(CLAID.getContext()));
+            if(!CLAID.isWearOS(CLAID.getContext()))
             {
                 // Manage all files intent not (yet) available on WearOS. 
                 // Currently, there is no option available to manage all files on WearOS.
