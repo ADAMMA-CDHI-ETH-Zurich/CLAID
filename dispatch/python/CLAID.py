@@ -7,10 +7,11 @@ from module.module_factory import ModuleFactory
 from logger.logger import Logger
 
 from local_dispatching.module_dispatcher import ModuleDispatcher
+from local_dispatching.module_manager import ModuleManager
 from module.module_factory import ModuleFactory
 
 import platform
-
+import asyncio
 class CLAID():
 
     
@@ -44,13 +45,13 @@ class CLAID():
             CLAID.claid_c_lib = ctypes.cdll.LoadLibrary(libname)
 
             # Required, otherwise claid_c_lib.attach_cpp_runtime will fail (same for shutdown_core etc).
-            # CLAID.claid_c_lib.start_core.restype = ctypes.c_void_p
-            # CLAID.claid_c_lib.start_core.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-            # CLAID.claid_c_lib.attach_cpp_runtime.argtypes = [ctypes.c_void_p]
-            # CLAID.claid_c_lib.shutdown_core.argtypes = [ctypes.c_void_p]
+            CLAID.claid_c_lib.start_core.restype = ctypes.c_void_p
+            CLAID.claid_c_lib.start_core.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+            CLAID.claid_c_lib.attach_cpp_runtime.argtypes = [ctypes.c_void_p]
+            CLAID.claid_c_lib.shutdown_core.argtypes = [ctypes.c_void_p]
 
-            # CLAID.claid_c_lib.get_socket_path.argtypes = [ctypes.c_void_p]
-            # CLAID.claid_c_lib.get_socket_path.restype = ctypes.c_char_p
+            CLAID.claid_c_lib.get_socket_path.argtypes = [ctypes.c_void_p]
+            CLAID.claid_c_lib.get_socket_path.restype = ctypes.c_char_p
 
 
     def startCustomSocket(self, socket_path, config_file_path, host_id, user_id, device_id, module_factory):
@@ -76,21 +77,22 @@ class CLAID():
         if(self.__cpp_runtime_handle == 0):
             raise Exception("Failed to start CLAID, could not start C++ runtime")
         
-        if not self.attach_python_runtime(socket_path):
+        if not self.attach_python_runtime(socket_path, module_factory):
             raise Exception("Failed to attach Python runtime")
 
         Logger.log_info("Successfully started CLAID")
 
+        while(True):
+            pass
 
     def start(self, config_file_path, host_id, user_id, device_id, module_factory):
         self.startCustomSocket("unix:///tmp/claid_socket.grpc", config_file_path, host_id, user_id, device_id, module_factory)
 
-    def attach_python_runtime(self, socket_path):
-
-        if(self.__started):
-            Logger.log_error("CLAID middleware start was called twice!")
-            return False
+    def attach_python_runtime(self, socket_path, module_factory):
 
         self.__module_dispatcher = ModuleDispatcher(socket_path)
 
-        self.__module_manager = ModuleManager(moduleDispatcher, factory)
+        self.__module_manager = ModuleManager(self.__module_dispatcher, module_factory)
+        print("starting Pyathon runtime")
+
+        return self.__module_manager.start_test()

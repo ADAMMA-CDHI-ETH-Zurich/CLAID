@@ -1,4 +1,5 @@
 from module.module import Module
+from logger.logger import Logger 
 
 class ModuleFactory:
     def __init__(self):
@@ -21,8 +22,11 @@ class ModuleFactory:
                 module.set_id(module_id)
                 return module
             except Exception as e:
-                print(e)
+                Logger.log_error(f"Failed to instantiate module \"{module_id}\" of class \"{class_name}\".\n"
+                f"Got error: {e}")
                 return None
+        Logger.log_error(f"Failed to instantiate module \"{module_id}\" of class \"{class_name}\". Class was not registered.\n"
+        f"Registered classes are: {self.registered_module_classes}")
         return None
 
     def is_module_class_registered(self, module_class):

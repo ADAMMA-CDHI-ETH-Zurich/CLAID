@@ -7,6 +7,8 @@ from module.channel import Channel
 
 from dispatch.proto.claidservice_pb2 import DataPackage
 
+from dispatch.proto.claidservice_pb2 import * 
+
 # Assuming you have a Python protobuf equivalent for claidservice::DataPackage
 # from your_protobuf_module import DataPackage
 
@@ -70,22 +72,22 @@ class ChannelSubscriberPublisher:
         return self.__module_channels_subscriber_map.get(channel_module_key, [])
 
     def get_channel_template_packages_for_module(self, module_id: str) -> List[DataPackage]:
-        return self.example_packages_for_each_module.get(module_id, [])
+        return self.__example_packages_for_each_module.get(module_id, [])
 
     def is_data_package_compatible_with_channel(self, data_package: DataPackage, receiver_module: str) -> bool:
         channel_name = data_package.channel
 
-        if receiver_module in self.example_packages_for_each_module:
-            for template_package in self.example_packages_for_each_module[receiver_module]:
+        if receiver_module in self.__example_packages_for_each_module:
+            for template_package in self.__example_packages_for_each_module[receiver_module]:
                 if template_package.channel == channel_name:
                     return template_package.payload_oneof_case == data_package.payload_oneof_case
 
         return False
 
-    def get_payload_case_of_channel(self, channel_name: str, receiver_module: str) -> DataPackage.PayloadOneofCase:
-        if receiver_module in self.example_packages_for_each_module:
-            for template_package in self.example_packages_for_each_module[receiver_module]:
+    def get_payload_case_of_channel(self, channel_name: str, receiver_module: str) -> str:
+        if receiver_module in self.__example_packages_for_each_module:
+            for template_package in self.__example_packages_for_each_module[receiver_module]:
                 if template_package.channel == channel_name:
-                    return template_package.payload_oneof_case
+                    return template_package.WhichOneof("payload")
 
-        return DataPackage.PayloadOneofCase.PAYLOAD_ONEOF_NOT_SET
+        return "PAYLOAD_ONEOF_NOT_SET"

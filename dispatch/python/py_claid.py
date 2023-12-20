@@ -11,7 +11,8 @@ from local_dispatching.module_dispatcher import ModuleDispatcher
 from module.module_factory import ModuleFactory
 
 import platform
-# from CLAID import CLAID
+from CLAID import CLAID
+from module.module import Module
 # from module.module_factory import ModuleFactory
 # from module.module import Module
 # # sys.path.append(pathlib.Path().absolute() / "external/google/protobuf/internal")
@@ -25,16 +26,25 @@ import platform
 # dispatcher = ModuleDispatcher("unix:///tmp/test.grpc")
 
 
-# module_factory = ModuleFactory()
-# claid = CLAID()
-# claid.start("/Users/planger/Development/ModuleAPIV2/dispatch/test/data_saver_json_test.json", "test_client", "user", "device", module_factory)
-socket = "unix:///tmp/claid_socket.grpc".encode('utf-8')
-config = "/Users/planger/Development/ModuleAPIV2/dispatch/test/remote_dispatching_test.json".encode('utf-8')
-client = "test_client".encode('utf-8')
-libname = "/Users/planger/Development/ModuleAPIV2/bazel-bin/dispatch/core/libclaid_capi.dylib"
-lib = ctypes.CDLL(libname)
-# const char* socket_path, const char* config_file, const char* host_id, const char* user_id, const char* device_id
-lib.start_core(socket, config, client, "test", "test", "test")
+class TestClass(Module):
+    def __init__(self):
+        super().__init__()
+        pass
+
+    def initialize(self, properties):
+        pass
+
+module_factory = ModuleFactory()
+module_factory.register_module(TestClass)
+claid = CLAID()
+claid.start("/Users/planger/Development/ModuleAPIV2/dispatch/python/test_config.json", "test_client", "user", "device", module_factory)
+# socket = "unix:///tmp/claid_socket.grpc".encode('utf-8')
+# config = "/Users/planger/Development/ModuleAPIV2/dispatch/test/remote_dispatching_test.json".encode('utf-8')
+# client = "test_client".encode('utf-8')
+# libname = "/Users/planger/Development/ModuleAPIV2/bazel-bin/dispatch/core/libclaid_capi.dylib"
+# lib = ctypes.CDLL(libname)
+# # const char* socket_path, const char* config_file, const char* host_id, const char* user_id, const char* device_id
+# lib.start_core(socket, config, client, "test", "test", "test")
 
 # mutator = TypeMapping.get_mutator(value)
 

@@ -1,7 +1,7 @@
 from logger.severity_level import SeverityLevel
 
 from datetime import datetime
-
+import sys
 
 
 class Logger:

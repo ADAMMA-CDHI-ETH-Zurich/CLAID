@@ -1,0 +1,19 @@
+{
+	"hosts": [{
+			"hostname": "test_client",
+			"type": "android",
+			"is_server": false,
+			"modules": [
+				{
+					"type": "TestClass",
+					"id": "TestClass",
+					"input_channels": [],
+					"output_channels": [],
+					"properties": {
+						
+					}
+				}
+            ]
+		}
+	]
+}
