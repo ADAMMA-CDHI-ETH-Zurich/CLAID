@@ -1,26 +1,40 @@
 import ctypes
 import sys
-from CLAID import CLAID
+import dispatch.proto.claidconfig_pb2
+import dispatch.proto.sensor_data_types_pb2
+import ctypes
+import pathlib
 from module.module_factory import ModuleFactory
-from module.module import Module
-# sys.path.append(pathlib.Path().absolute() / "external/google/protobuf/internal")
-
-from module.type_mapping.type_mapping import TypeMapping
-from module.type_mapping.mutator import Mutator
-
-from dispatch.proto.claidservice_pb2 import DataPackage
-from typing import List
-import numpy as np
-
-package = DataPackage()
-
+from logger.logger import Logger
 
 from local_dispatching.module_dispatcher import ModuleDispatcher
+from module.module_factory import ModuleFactory
 
-value = {str:int}
+import platform
+# from CLAID import CLAID
+# from module.module_factory import ModuleFactory
+# from module.module import Module
+# # sys.path.append(pathlib.Path().absolute() / "external/google/protobuf/internal")
+# import pathlib
+# from module.type_mapping.type_mapping import TypeMapping
+# from module.type_mapping.mutator import Mutator
 
-dispatcher = ModuleDispatcher("unix:///tmp/test.grpc")
 
+# value = {str:int}
+
+# dispatcher = ModuleDispatcher("unix:///tmp/test.grpc")
+
+
+# module_factory = ModuleFactory()
+# claid = CLAID()
+# claid.start("/Users/planger/Development/ModuleAPIV2/dispatch/test/data_saver_json_test.json", "test_client", "user", "device", module_factory)
+socket = "unix:///tmp/claid_socket.grpc".encode('utf-8')
+config = "/Users/planger/Development/ModuleAPIV2/dispatch/test/remote_dispatching_test.json".encode('utf-8')
+client = "test_client".encode('utf-8')
+libname = "/Users/planger/Development/ModuleAPIV2/bazel-bin/dispatch/core/libclaid_capi.dylib"
+lib = ctypes.CDLL(libname)
+# const char* socket_path, const char* config_file, const char* host_id, const char* user_id, const char* device_id
+lib.start_core(socket, config, client, "test", "test", "test")
 
 # mutator = TypeMapping.get_mutator(value)
 
@@ -31,13 +45,3 @@ dispatcher = ModuleDispatcher("unix:///tmp/test.grpc")
 
 
 # import pathlib
-
-# module_factory = ModuleFactory()
-# claid = CLAID()
-# claid.start("/Users/planger/Development/ModuleAPIV2/dispatch/test/remote_dispatching_test.json", "test_client", "user", "device", module_factory)
-# # socket = "unix:///tmp/claid_socket.grpc".encode('utf-8')
-# # config = "/Users/planger/Development/ModuleAPIV2/dispatch/test/remote_dispatching_test.json".encode('utf-8')
-# # client = "test_client".encode('utf-8')
-
-# # # const char* socket_path, const char* config_file, const char* host_id, const char* user_id, const char* device_id
-# # lib.start_core(socket, config, client, "test", "test", "test")

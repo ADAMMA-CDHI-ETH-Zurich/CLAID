@@ -1,12 +1,22 @@
+filegroup(
+    name = "test_configs",
+    srcs = [
+        "test_config.json",
+    ],
+)
+
+
 py_binary(
     name = "py_claid",
     srcs = glob(["**/*.py"]),
     deps = [
-        "//dispatch/proto:claidservice_py_proto",
-        "//dispatch/proto:claidservice_py_grpc"
+
     ],
     data = [
         "//dispatch/core:claid_capi",
+        ":test_configs",
+        "//dispatch/proto:claidservice_py_proto",
+        "//dispatch/proto:claidservice_py_grpc"
     ],
 )
 

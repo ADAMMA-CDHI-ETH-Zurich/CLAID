@@ -41,15 +41,16 @@ class CLAID():
                 raise Exception("Failed to load CLAID library into Python. Unsupported OS \"{}\". Supported are only Linux, Darwin (macOS) and Windows").format(current_os)
 
             libname = pathlib.Path().absolute() / "dispatch/core/libclaid_capi{}".format(platform_library_extension)
-            CLAID.claid_c_lib = ctypes.CDLL(libname)
+            CLAID.claid_c_lib = ctypes.cdll.LoadLibrary(libname)
 
             # Required, otherwise claid_c_lib.attach_cpp_runtime will fail (same for shutdown_core etc).
-            CLAID.claid_c_lib.start_core.restype = ctypes.c_void_p
-            CLAID.claid_c_lib.attach_cpp_runtime.argtypes = [ctypes.c_void_p]
-            CLAID.claid_c_lib.shutdown_core.argtypes = [ctypes.c_void_p]
+            # CLAID.claid_c_lib.start_core.restype = ctypes.c_void_p
+            # CLAID.claid_c_lib.start_core.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+            # CLAID.claid_c_lib.attach_cpp_runtime.argtypes = [ctypes.c_void_p]
+            # CLAID.claid_c_lib.shutdown_core.argtypes = [ctypes.c_void_p]
 
-            CLAID.claid_c_lib.get_socket_path.argtypes = [ctypes.c_void_p]
-            CLAID.claid_c_lib.get_socket_path.restype = ctypes.c_char_p
+            # CLAID.claid_c_lib.get_socket_path.argtypes = [ctypes.c_void_p]
+            # CLAID.claid_c_lib.get_socket_path.restype = ctypes.c_char_p
 
 
     def startCustomSocket(self, socket_path, config_file_path, host_id, user_id, device_id, module_factory):
@@ -75,7 +76,8 @@ class CLAID():
         if(self.__cpp_runtime_handle == 0):
             raise Exception("Failed to start CLAID, could not start C++ runtime")
         
-        self.attach_python_runtime(socket_path)
+        if not self.attach_python_runtime(socket_path):
+            raise Exception("Failed to attach Python runtime")
 
         Logger.log_info("Successfully started CLAID")
 
@@ -91,4 +93,4 @@ class CLAID():
 
         self.__module_dispatcher = ModuleDispatcher(socket_path)
 
-        self.__module_manager = ModuleManager(moduleDispatcher, factory);
+        self.__module_manager = ModuleManager(moduleDispatcher, factory)

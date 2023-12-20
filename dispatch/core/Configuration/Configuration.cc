@@ -16,7 +16,7 @@ namespace claid
     {
         google::protobuf::util::JsonParseOptions options2;
         absl::Status status = JsonStringToMessage(json, &this->config, options2);
-
+        Logger::logInfo("status %s", status.ToString().c_str());
         return status;
     }
 
@@ -39,6 +39,7 @@ namespace claid
         {
             return status;
         }
+        Logger::logInfo("Loaded file from string %s\n", jsonContent.c_str());
 
         return this->fromJSONString(jsonContent);
     }

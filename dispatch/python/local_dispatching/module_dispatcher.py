@@ -1,5 +1,3 @@
-import grpc
-
 from dispatch.proto.claidconfig_pb2 import *
 from dispatch.proto.sensor_data_types_pb2 import *
 from dispatch.proto.claidservice_pb2 import * 
@@ -18,107 +16,86 @@ class ModuleDispatcher:
 
         self.stub = ClaidServiceStub(self.grpc_channel)
 
+        # self.to_dispatcher_queue = asyncio.Queue()
+        self.from_dispatcher_queue = asyncio.Queue()
 
-    def get_module_list(self, registered_module_classes):
+
+    async def get_module_list(self, registered_module_classes):
         request = ModuleListRequest(
             runtime=Runtime.RUNTIME_PYTHON,
             supported_module_classes=registered_module_classes
         )
         Logger.log_info(f"Sending ModuleListRequest: {request}")
 
-        response = None
-        response_observer = SynchronizedStreamObserver()
+      
 
         Logger.log_info("Java Runtime: Calling getModuleList(...)")
-        self.stub.getModuleList(request, response_observer)
+        response = await self.stub.getModuleList(request)
 
-        response = response_observer.await_result()
-
-        if response_observer.error_occurred():
-            Logger.log_error(f"Error occurred in getModuleList() of JAVA_RUNTIME: {response_observer.get_error_message()}")
+        if response is None:
+            Logger.log_error(f"Error occurred in getModuleList() of PYTHON_RUNTIME: {response_observer.get_error_message()}")
             exit(0)
 
         print(f"Response: {response}")
         return response
 
-    # def init_runtime(self, channel_example_packages):
-    #     init_runtime_request = InitRuntimeRequest()
+    async def init_runtime(self, channel_example_packages):
+        init_runtime_request = InitRuntimeRequest()
 
-    #     for module_id, channel_packages in channel_example_packages.items():
-    #         module_channels = InitRuntimeRequest.ModuleChannels(
-    #             module_id=module_id,
-    #             channel_packets=channel_packages
-    #         )
-    #         init_runtime_request.modules.append(module_channels)
+        for module_id, channel_packages in channel_example_packages:
+            module_channels = InitRuntimeRequest.ModuleChannels(
+                module_id=module_id,
+                channel_packets=channel_packages
+            )
+            init_runtime_request.modules.append(module_channels)
 
-    #     init_runtime_request.runtime = Runtime.RUNTIME_PYTHON
+        init_runtime_request.runtime = Runtime.RUNTIME_PYTHON
 
-    #     response = None
-    #     response_observer = SynchronizedStreamObserver()
+    
+        Logger.log_info("Java Runtime: Calling initRuntime(...)")
+        response = await self.stub.initRuntime(init_runtime_request, response_observer)
 
-    #     Logger.log_info("Java Runtime: Calling initRuntime(...)")
-    #     self.stub.initRuntime(init_runtime_request, response_observer)
 
-    #     response = response_observer.await_result()
+        if response is None:
+            Logger.log_error(f"Error occurred in initRuntime() of JAVA_RUNTIME: {response_observer.get_error_message()}")
+            return False
 
-    #     if response_observer.error_occurred():
-    #         Logger.log_error(f"Error occurred in initRuntime() of JAVA_RUNTIME: {response_observer.get_error_message()}")
-    #         exit(0)
+        return True
 
-    #     return True
+    def make_control_runtime_ping(self):
+        package = DataPackage()
+        control_package = ControlPackage(
+            ctrl_type=CtrlType.CTRL_RUNTIME_PING,
+            runtime=Runtime.RUNTIME_JAVA
+        )
 
-    # def make_control_runtime_ping(self):
-    #     builder = DataPackage()
-    #     control_package_builder = ControlPackage(
-    #         ctrl_type=CtrlType.CTRL_RUNTIME_PING,
-    #         runtime=Runtime.RUNTIME_JAVA
-    #     )
+        package.control_val = control_package
+        return package
 
-    #     builder.control_val.CopyFrom(control_package_builder)
-    #     return builder
+  
 
-    # def make_input_stream_observer(self, on_data, on_error, on_completed):
-    #     def stream_observer(incoming_package):
-    #         on_data(incoming_package)
+    def send_receive_packages(self):
 
-    #     return grpc.stream.StreamObserver(
-    #         on_next=stream_observer,
-    #         on_error=on_error,
-    #         on_completed=on_completed
-    #     )
+        self.to_dispatcher_queue = self.stub.sendReceivePackages(self.from_dispatcher_queue)
 
-    # def send_receive_packages(self, in_consumer):
-    #     self.in_consumer = in_consumer
+        if self.to_dispatcher_queue is None:
+            Logger.log_error("Failed to initialize streaming to/from middleware: stub.sendReceivePackages return value is None.")
+            return False
 
-    #     if in_consumer is None:
-    #         Logger.log_fatal("Invalid argument in ModuleDispatcher::sendReceivePackages. Provided consumer is null.")
-    #         return False
+        self.waiting_for_ping_response = True
+        ping_req = self.make_control_runtime_ping()
+        self.out_stream.on_next(ping_req)
 
-    #     self.in_stream = self.make_input_stream_observer(
-    #         lambda data_package: self.on_middleware_stream_package_received(data_package),
-    #         lambda error: self.on_middleware_stream_error(error),
-    #         lambda: self.on_middleware_stream_completed()
-    #     )
+        self.await_ping_package()
 
-    #     self.out_stream = self.stub.sendReceivePackages(self.in_stream)
+        return True
 
-    #     if self.out_stream is None:
-    #         return False
-
-    #     self.waiting_for_ping_response = True
-    #     ping_req = self.make_control_runtime_ping()
-    #     self.out_stream.on_next(ping_req)
-
-    #     self.await_ping_package()
-
-    #     return True
-
-    # def await_ping_package(self):
-    #     while self.waiting_for_ping_response:
-    #         try:
-    #             time.sleep(0.05)
-    #         except InterruptedException as e:
-    #             Logger.log_error(f"ModuleDispatcher error in awaitPingPackage: {e}")
+    def await_ping_package(self):
+        while self.waiting_for_ping_response:
+            try:
+                time.sleep(0.05)
+            except InterruptedException as e:
+                Logger.log_error(f"ModuleDispatcher error in awaitPingPackage: {e}")
 
     # def on_middleware_stream_package_received(self, packet):
     #     Logger.log_info(f"Java Runtime received message from middleware: {packet}")
