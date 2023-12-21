@@ -5,7 +5,9 @@ from module.scheduling.schedule_once import ScheduleOnce
 from module.channel_data import ChannelData
 from module.type_mapping.mutator import Mutator
 from module.type_mapping.type_mapping import TypeMapping
-
+from module.scheduling.function_runnable_with_params import FunctionRunnableWithParams
+from module.scheduling.scheduled_runnable import ScheduledRunnable
+from datetime import datetime
 class Subscriber(AbstractSubscriber):
     def __init__(self, data_type_example_instance, callback, callback_dispatcher):
         self.callback = callback
@@ -20,7 +22,7 @@ class Subscriber(AbstractSubscriber):
         self.callback_dispatcher.add_runnable(
             ScheduledRunnable(
                 function_runnable,
-                ScheduleOnce(Time.now())
+                ScheduleOnce(datetime.now())
             )
         )
 
@@ -30,8 +32,8 @@ class Subscriber(AbstractSubscriber):
 
         channel_data = ChannelData(
             data,
-            datetime.fromtimestamp(package.unix_timestamp_ms() / 1000.0),
-            package.source_user_token()
+            datetime.fromtimestamp(package.unix_timestamp_ms / 1000.0),
+            package.source_user_token
         )
 
         self.invoke_callback(channel_data)

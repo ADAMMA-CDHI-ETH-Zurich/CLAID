@@ -5,6 +5,7 @@ from module.scheduling.runnable_dispatcher import RunnableDispatcher
 from module.scheduling.function_runnable import FunctionRunnable
 from module.scheduling.schedule_repeated_intervall import ScheduleRepeatedIntervall
 from module.channel import Channel
+from module.subscriber import Subscriber
 
 from abc import ABC, abstractmethod
 
@@ -92,8 +93,8 @@ class Module(ABC):
             self.module_error(f'Cannot subscribe channel "{channel_name}". Subscribing is only allowed during initialization (i.e., the first call of the initialize function).')
             return Channel.new_invalid_channel(channel_name)
 
-        subscriber = Subscriber(callback, self.runnable_dispatcher)
-        return self.__subscriber_publisher.subscribe(self, channel_name, subscriber)
+        subscriber = Subscriber(channel_type_example_instance, callback, self.__runnable_dispatcher)
+        return self.__subscriber_publisher.subscribe(channel_type_example_instance, self,  channel_name, subscriber)
 
 
     def register_periodic_function(self, name, callback, interval_timedelta):

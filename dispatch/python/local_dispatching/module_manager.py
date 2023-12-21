@@ -133,7 +133,7 @@ class ModuleManager():
             Logger.log_error("ModuleManager received DataPackage, however SubscriberPublisher is Null.")
             return
 
-        if not self.__channel_subscriber_publisher.is_data_package_compatible_with_channel(data_package):
+        if not self.__channel_subscriber_publisher.is_data_package_compatible_with_channel(data_package, module_id):
             Logger.log_info(f"ModuleManager received package with target for Module \"{module_id}\" on Channel \"{channel_name}\",\n"
                             f"however the data type of payload of the package did not match the data type of the Channel.\n"
                             f"Expected payload type \"{self.__channel_subscriber_publisher.get_payload_case_of_channel(channel_name).name}\" but got \"{data_package.payload_oneof_case.name}")
@@ -161,11 +161,7 @@ class ModuleManager():
         while self.running:
             for data_package in self.__from_module_dispatcher_queue:
                 if data_package is not None:
-                    self.on_data_package_from_module(data_package)
+                    self.on_data_package_received_from_module_dispatcher(data_package)
                 else:
                     print("Read from modules null")
 
-    def on_data_package_from_module(self, data_package):
-        Logger.log_info(f"ModuleManager received local package from Module \"{data_package.source_module}\".")
-        Logger.log_info(f"{data_package} ")
-        self.__module_dispatcher.post_package(data_package)

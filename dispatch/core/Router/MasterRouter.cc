@@ -219,7 +219,7 @@ namespace claid
         {
             return absl::NotFoundError(absl::StrCat(
                 "MasterRouter failed to determine destination for package sent by Module \"", package->source_module(), "\" running on host \"", package->source_host(), "\".\n",
-                "Neither the the \"target_module\" nor \"target_host\" field has been set for the package."
+                "Neither the the \"target_module\" nor \"target_host\" field has been set for the package. Is there a subscriber for that channel?"
             ));
         }
 

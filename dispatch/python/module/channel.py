@@ -7,16 +7,23 @@ from module.channel_access_rights import ChannelAccessRights
 
 
 class Channel():
-    def __init__(self, channel_id: str = "", access_rights: ChannelAccessRights = ChannelAccessRights.NONE,
-                 parent = None, publisher: Publisher = None, subscriber: Subscriber = None,
-                 callback_registered: bool = False, valid: bool = False):
-        self.channel_id = channel_id
-        self.access_rights = access_rights
+    def __init__(self, parent, channel_id, publisher_or_subscriber):
+
         self.parent = parent
-        self.publisher = publisher
-        self.subscriber = subscriber
-        self.callback_registered = callback_registered
-        self.valid = valid
+        self.channel_id = channel_id
+
+        if isinstance(publisher_or_subscriber, Publisher):
+            self.valid = True
+            self.publisher = publisher_or_subscriber
+            self.access_rights = ChannelAccessRights.WRITE
+        elif isinstance(publisher_or_subscriber, Subscriber):
+            self.valid = True
+            self.subscriber = publisher_or_subscriber
+            self.access_rights = ChannelAccessRights.READ
+        else:
+            self.valid = False
+
+       
 
     @classmethod
     def new_invalid_channel(cls, channel_id: str) -> 'Channel':

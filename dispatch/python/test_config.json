@@ -7,7 +7,7 @@
 				{
 					"type": "TestModule",
 					"id": "TestModule",
-					"input_channels": [],
+					"input_channels": ["TestChannel"],
 					"output_channels": ["TestChannel"],
 					"properties": {
 						

@@ -4,15 +4,13 @@ from module.scheduling.runnable import Runnable
 
 class FunctionRunnableWithParams(Runnable):
     def __init__(self, function=None):
+        super().__init__()
         self.function = function
         self.stack = tuple()
 
     def run(self):
 
-        if(self.object == None):
-            self.function(self.stack)
-        else:
-            self.object.
+        self.function(*self.stack)
 
     def set_params(self, *params):
         self.stack = params

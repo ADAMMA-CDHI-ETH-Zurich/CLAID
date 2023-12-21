@@ -48,9 +48,9 @@ class ChannelSubscriberPublisher:
         publisher = Publisher(data_type_example, module_id, channel_name, self.__to_module_manager_queue)
         return Channel(module, channel_name, publisher)
 
-    def subscribe(self, module, channel_name: str, subscriber: AbstractSubscriber) -> Channel:
+    def subscribe(self, data_type_example, module, channel_name: str, subscriber: AbstractSubscriber) -> Channel:
         module_id = module.get_id()
-        example_package = self.prepare_example_package(module_id, channel_name, False)
+        example_package = self.prepare_example_package(data_type_example, module_id, channel_name, False)
 
         # setdefault() method returns the value of the item with the specified key.
         # If the key does not exist, insert the key, with the specified value, see example below
@@ -62,7 +62,7 @@ class ChannelSubscriberPublisher:
     def insert_subscriber(self, channel_name: str, module_id: str, subscriber: AbstractSubscriber):
         channel_module_key = (channel_name, module_id)
 
-        if channel_module_key not in self.module_channels_subscriber_map:
+        if channel_module_key not in self.__module_channels_subscriber_map:
             self.__module_channels_subscriber_map[channel_module_key] = []
 
         self.__module_channels_subscriber_map[channel_module_key].append(subscriber)
@@ -81,7 +81,7 @@ class ChannelSubscriberPublisher:
         if receiver_module in self.__example_packages_for_each_module:
             for template_package in self.__example_packages_for_each_module[receiver_module]:
                 if template_package.channel == channel_name:
-                    return template_package.payload_oneof_case == data_package.payload_oneof_case
+                    return template_package.WhichOneof("payload_oneof") == data_package.WhichOneof("payload_oneof")
 
         return False
 
@@ -89,6 +89,6 @@ class ChannelSubscriberPublisher:
         if receiver_module in self.__example_packages_for_each_module:
             for template_package in self.__example_packages_for_each_module[receiver_module]:
                 if template_package.channel == channel_name:
-                    return template_package.WhichOneof("payload")
+                    return template_package.WhichOneof("payload_oneof")
 
         return "PAYLOAD_ONEOF_NOT_SET"
