@@ -5,10 +5,10 @@
 			"is_server": false,
 			"modules": [
 				{
-					"type": "TestClass",
-					"id": "TestClass",
+					"type": "TestModule",
+					"id": "TestModule",
 					"input_channels": [],
-					"output_channels": [],
+					"output_channels": ["TestChannel"],
 					"properties": {
 						
 					}

@@ -4,6 +4,7 @@ from module.abstract_subscriber import AbstractSubscriber
 from module.type_mapping.type_mapping import TypeMapping
 from module.type_mapping.mutator import Mutator
 from module.channel import Channel
+from module.publisher import Publisher
 
 from dispatch.proto.claidservice_pb2 import DataPackage
 
@@ -12,14 +13,13 @@ from dispatch.proto.claidservice_pb2 import *
 # Assuming you have a Python protobuf equivalent for claidservice::DataPackage
 # from your_protobuf_module import DataPackage
 
-T = TypeVar('T')
 
 
 class ChannelSubscriberPublisher:
-    def __init__(self, to_module_manager_stream):
+    def __init__(self, to_module_manager_queue):
         self.__example_packages_for_each_module: Dict[str, List[DataPackage]] = {}
         self.__module_channels_subscriber_map: Dict[tuple, List[AbstractSubscriber]] = {}
-        self.__to_module_manager_stream = to_module_manager_stream
+        self.__to_module_manager_queue = to_module_manager_queue
 
     def prepare_example_package(self, data_type_example, module_id: str, channel_name: str, is_publisher: bool) -> DataPackage:
         data_package = DataPackage()
@@ -29,6 +29,7 @@ class ChannelSubscriberPublisher:
         else:
             data_package.target_module = module_id
 
+        print(type(channel_name))
         data_package.channel = channel_name
 
         # Assuming there's a function set_package_payload to set the payload
@@ -37,14 +38,14 @@ class ChannelSubscriberPublisher:
 
         return data_package
 
-    def publish(self, module, channel_name: str) -> Channel:
+    def publish(self, data_type_example, module, channel_name: str) -> Channel:
         module_id = module.get_id()
-        example_package = self.prepare_example_package(module_id, channel_name, True)
+        example_package = self.prepare_example_package(data_type_example, module_id, channel_name, True)
 
         print(f"Inserting package for Module {module_id}")
         self.__example_packages_for_each_module.setdefault(module_id, []).append(example_package)
 
-        publisher = Publisher(module_id, channel_name, self.to_module_manager_queue)
+        publisher = Publisher(data_type_example, module_id, channel_name, self.__to_module_manager_queue)
         return Channel(module, channel_name, publisher)
 
     def subscribe(self, module, channel_name: str, subscriber: AbstractSubscriber) -> Channel:

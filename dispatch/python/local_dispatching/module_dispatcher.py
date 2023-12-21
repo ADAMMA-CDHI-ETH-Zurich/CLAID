@@ -6,7 +6,6 @@ from dispatch.proto.claidservice_pb2_grpc import ClaidServiceStub
 from logger.logger import Logger
 
 import grpc
-import asyncio
 
 from timeit import time
 
@@ -20,11 +19,17 @@ class ModuleDispatcher:
 
         self.stub = ClaidServiceStub(self.grpc_channel)
 
-        # self.to_dispatcher_queue = asyncio.Queue()
-        self.from_dispatcher_queue = ThreadSafeChannel()
+        # self.to_middleware_queue = io.Queue()
+        self.__to_middleware_queue = ThreadSafeChannel()
+        self.__from_middleware_queue = None
 
+    def get_to_dispatcher_queue(self):
+        return self.__to_middleware_queue
+    
+    def get_from_dispatcher_queue(self):
+        return self.__from_middleware_queue
 
-    async def get_module_list(self, registered_module_classes):
+    def get_module_list(self, registered_module_classes):
         request = ModuleListRequest(
             runtime=Runtime.RUNTIME_PYTHON,
             supported_module_classes=registered_module_classes
@@ -36,7 +41,7 @@ class ModuleDispatcher:
         Logger.log_info("Python Runtime: Calling getModuleList(...)")
 
         try:
-            response = await self.stub.GetModuleList(request)
+            response =  self.stub.GetModuleList(request)
 
             if response is None:
                 Logger.log_error(f"Error occurred in getModuleList() of PYTHON_RUNTIME: {response_observer.get_error_message()}")
@@ -48,7 +53,7 @@ class ModuleDispatcher:
         print(f"Response: {response}")
         return response
 
-    async def init_runtime(self, channel_example_packages):
+    def init_runtime(self, channel_example_packages):
         init_runtime_request = InitRuntimeRequest()
 
         print("example packages")
@@ -65,7 +70,7 @@ class ModuleDispatcher:
 
     
         Logger.log_info("Python Runtime: Calling initRuntime(...)")
-        response = await self.stub.InitRuntime(init_runtime_request)
+        response =  self.stub.InitRuntime(init_runtime_request)
 
 
         if response is None:
@@ -85,18 +90,18 @@ class ModuleDispatcher:
         return package
 
   
-    def read_from_modules_dispatcher_queue(self):
+    def to_middleware_queue_get(self):
 
         while True:
-            data = self.from_dispatcher_queue.get()
+            data = self.__to_middleware_queue.get()
             if not data is None:
                 yield data
 
-    async def send_receive_packages(self):
+    def send_receive_packages(self):
 
-        self.to_dispatcher_queue = self.stub.SendReceivePackages(self.read_from_modules_dispatcher_queue())
+        self.__from_middleware_queue = self.stub.SendReceivePackages(self.to_middleware_queue_get())
 
-        if self.to_dispatcher_queue is None:
+        if self.__to_middleware_queue is None:
             Logger.log_error("Failed to initialize streaming to/from middleware: stub.sendReceivePackages return value is None.")
             return False
 
@@ -104,16 +109,21 @@ class ModuleDispatcher:
         ping_req = self.make_control_runtime_ping()
 
         Logger.log_info("Putting package")
-        self.from_dispatcher_queue.put(ping_req)
+        self.__to_middleware_queue.put(ping_req)
 
-        ping_resp = await self.await_ping_package()
+        ping_resp = self.await_ping_package()
+
+        if(ping_resp.control_val.ctrl_type != CtrlType.CTRL_RUNTIME_PING):
+            logger.log_error(f"Sent ping package to middleware and expected ping package as response, but got: {ping_resp}")
+            return False
 
         return True
 
-    async def await_ping_package(self):
+    def await_ping_package(self):
         Logger.log_info("Waiting for ping package")
-      
-        return await self.to_dispatcher_queue.read()
+        for response in self.__from_middleware_queue:
+            Logger.log_info(f"Got ping package {response}")
+            return response
        
     # def on_middleware_stream_package_received(self, packet):
     #     Logger.log_info(f"Java Runtime received message from middleware: {packet}")

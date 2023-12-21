@@ -17,30 +17,29 @@ class RunnableDispatcher:
         with self.mutex:
             if not self.scheduled_runnables:
                 # Wait forever.
-                return float('inf')
+                return float(1000000)
 
-            microseconds_until_next_runnable_is_due = (
+            microseconds_until_next_runnable_is_due = int((
                 self.scheduled_runnables[0].schedule.get_execution_time() - datetime.now()
-            )
+            ).total_seconds()*1000)
 
             # Make sure we do not return a negative duration.
-            return max(0, microseconds_until_next_runnable_is_due / 1000)
+            return max(0, microseconds_until_next_runnable_is_due)
 
     def wait_until_runnable_is_due_or_reschedule_is_required(self):
-        with self.mutex:
-            # If there is no runnable added, this will be infinity.
-            # Hence, we will wait forever and wake up if a reschedule is required.
-            wait_time = self.get_wait_duration_until_next_runnable_is_due() / 1000
+        # If there is no runnable added, this will be infinity.
+        # Hence, we will wait forever and wake up if a reschedule is required.
+        wait_time_in_seconds = float(self.get_wait_duration_until_next_runnable_is_due() / 1000)
 
-            # The return value of wait_for can be used to determine whether the wait exited because time passed (False),
-            # or because the predicate (self.reschedule_required or self.stopped) evaluates to True (True).
-            # However, we are not interested in distinguishing the two cases.
-            # In any case, when we wake up, we see if we need to execute anything.
-            # wait_for will atomically release the mutex and sleep, and will atomically lock the mutex after waiting.
-            with self.condition_variable:
-                self.condition_variable.wait_for(
-                    lambda: self.reschedule_required or self.stopped, wait_time
-                )
+        # The return value of wait_for can be used to determine whether the wait exited because time passed (False),
+        # or because the predicate (self.reschedule_required or self.stopped) evaluates to True (True).
+        # However, we are not interested in distinguishing the two cases.
+        # In any case, when we wake up, we see if we need to execute anything.
+        # wait_for will atomically release the mutex and sleep, and will atomically lock the mutex after waiting.
+        with self.condition_variable:
+            self.condition_variable.wait_for(
+                lambda: self.reschedule_required or self.stopped, wait_time_in_seconds
+            )
 
     def process_runnable(self, scheduled_runnable):
         if self.stopped:
@@ -50,8 +49,7 @@ class RunnableDispatcher:
             if scheduled_runnable.runnable.catch_exceptions:
                 try:
                     Logger.log_info(
-                        "Running runnable! Remaining runnables: %d",
-                        len(self.scheduled_runnables),
+                       f"Running runnable! Remaining runnables: {len(self.scheduled_runnables)}"
                     )
                     scheduled_runnable.runnable.run()
                 except Exception as e:
@@ -72,24 +70,21 @@ class RunnableDispatcher:
                     planned_execution_time = scheduled_runnable.schedule.get_execution_time()
                     scheduled_runnable.schedule.update_execution_time()
 
-                    planned_execution_time_str = Time.strftime(
-                        "%d.%m.%y %H:%M:%S", time.localtime(planned_execution_time / 1000)
-                    )
-                    current_execution_str = Time.strftime(
-                        "%d.%m.%y %H:%M:%S", time.localtime(datetime.now() / 1000)
-                    )
+                    # planned_execution_time_str = planned_execution_time.strftime(
+                    #     "%d.%m.%y %H:%M:%S"
+                    # )
+                    # current_execution_str = datetime.now().strftime(
+                    #     "%d.%m.%y %H:%M:%S"
+                    # )
 
-                    new_execution_time = scheduled_runnable.schedule.get_execution_time()
-                    next_execution_str = Time.strftime(
-                        "%d.%m.%y %H:%M:%S", time.localtime(new_execution_time / 1000)
-                    )
+                    # new_execution_time = scheduled_runnable.schedule.get_execution_time()
+                    # next_execution_str = new_execution_time.strftime(
+                    #     "%d.%m.%y %H:%M:%S"
+                    # )
 
-                    Logger.log_info(
-                        "Runnable, scheduled for execution at %s, has been executed at %s, scheduling next execution for %s",
-                        planned_execution_time_str,
-                        current_execution_str,
-                        next_execution_str,
-                    )
+                    # Logger.log_info(
+                    #     f"Runnable, scheduled for execution at {planned_execution_time_str}, has been executed at {current_execution_str}, scheduling next execution for {next_execution_str}",
+                    # )
 
                     # Reinsert the runnable with new scheduled execution time.
                     # Note, that the runnable was removed from scheduled_runnables in the get_and_remove_due_runnables() function.
@@ -100,7 +95,6 @@ class RunnableDispatcher:
 
     def process_runnables(self, runnables):
         for idx, runnable in enumerate(runnables):
-            Logger.log_info("Processing runnable %d", idx)
             self.process_runnable(runnable)
 
     def get_and_remove_due_runnables(self):
@@ -116,17 +110,7 @@ class RunnableDispatcher:
                 else:
                     break
 
-        if runnables:
-            Logger.log_info(
-                "Found %d due runnables out of %d runnables in total: ",
-                len(runnables),
-                len(self.scheduled_runnables) + len(runnables),
-            )
-            Logger.log_info(
-                "Removed %d due runnables, number of remaining runnables is %d ",
-                len(runnables),
-                len(self.scheduled_runnables),
-            )
+       
 
         return runnables
 
@@ -147,6 +131,7 @@ class RunnableDispatcher:
         Logger.log_info("RunnableDispatcher shutdown.")
 
     def start(self):
+        Logger.log_info("Starting RunnableDispatcher")
         with self.mutex:
             if not self.stopped:
                 return False
@@ -167,14 +152,17 @@ class RunnableDispatcher:
         return True
 
     def add_runnable(self, scheduled_runnable):
+        Logger.log_info("Adding runnable 1")
         with self.mutex:
+            Logger.log_info("Adding runnable 2")
             self.scheduled_runnables.append(scheduled_runnable)
             self.scheduled_runnables.sort(
                 key=lambda x: x.schedule.get_execution_time()
             )
             Logger.log_info(
-                "Added runnable to RunnableDispatcher, total runnables now: %d",
-                len(self.scheduled_runnables),
-            )
+                f"Added runnable to RunnableDispatcher, total runnables now: {len(self.scheduled_runnables)}")
+
+            self.reschedule_required = True
+            self.condition_variable.notify()
             # This will lead to a wake up, so we can reschedule.
            

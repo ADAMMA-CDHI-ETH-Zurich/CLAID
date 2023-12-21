@@ -1,18 +1,13 @@
 from module.scheduling.schedule_description import ScheduleDescription
 
 class ScheduledRunnable:
-    def __init__(self, schedule: ScheduleDescription):
+    def __init__(self, runnable = None, schedule: ScheduleDescription = None):
+        self.runnable = runnable
         self.schedule = schedule
-        self.valid = True
 
-    def run(self):
-        pass
+    def set_runnable(self, runnable):
+        self.runnable = runnable
 
-    def get_schedule(self):
-        return self.schedule
+    def set_schedule(self, schedule: ScheduleDescription):
+        self.schedule = schedule
 
-    def is_valid(self):
-        return self.valid
-
-    def invalidate(self):
-        self.valid = False

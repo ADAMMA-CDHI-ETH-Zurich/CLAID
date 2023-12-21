@@ -1,9 +1,15 @@
 from logger.logger import Logger
 from datetime import datetime, timedelta
-from module.scheduling import *
+from module.scheduling.scheduled_runnable import ScheduledRunnable
 from module.scheduling.runnable_dispatcher import RunnableDispatcher
+from module.scheduling.function_runnable import FunctionRunnable
+from module.scheduling.schedule_repeated_intervall import ScheduleRepeatedIntervall
+from module.channel import Channel
 
 from abc import ABC, abstractmethod
+
+from datetime import datetime
+
 
 class Module(ABC):
     def __init__(self):
@@ -13,6 +19,7 @@ class Module(ABC):
         self.__is_terminating = False
         self.__subscriber_publisher = None
         self.__runnable_dispatcher = RunnableDispatcher()
+        self.__timers = dict()
 
     def module_fatal(self, error):
         errorMsg = f"Module \"{self.__id}\": {error}"
@@ -35,6 +42,7 @@ class Module(ABC):
 
         self.__subscriber_publisher = subscriber_publisher
 
+        
         if not self.__runnable_dispatcher.start():
             self.module_error("Failed to start RunnableDispatcher.")
             return False
@@ -65,49 +73,72 @@ class Module(ABC):
     def enqueue_runnable(self, runnable):
         self.__runnable_dispatcher.addRunnable(runnable)
 
-    def register_periodic_function(self, name, callback, interval):
-        self.register_periodic_function_with_start_time(name, callback, interval, Time.now() + interval)
+    def publish(self, channel_name, channel_type_example_instance):
+        if not isinstance(channel_name, str):
+            raise TypeError("Module.publish failed. Expected channel_name to be of type \"str\" (string) but got \"{}\"".format(type(channel_name)))
 
-    def register_periodic_function_with_start_time(self, name, callback, interval, start_time):
-        if interval.total_seconds() == 0:
-            self.module_error(f"Error in registerPeriodicFunction: Cannot register periodic function \"{name}\" with a period of 0 seconds.")
+        if not self.__is_initializing:
+            self.module_error(f'Cannot publish channel "{channel_name}". Publishing is only allowed during initialization (i.e., the first call of the initialize function).')
+            return Channel.new_invalid_channel(channel_name)
 
-        if name in self.timers:
+        return self.__subscriber_publisher.publish(channel_type_example_instance, self, channel_name)
+
+    def subscribe(self, channel_name, channel_type_example_instance, callback):
+        if not isinstance(channel_name, str):
+            raise TypeError("Module.subscribe failed. Expected channel_name to be of type \"str\" (string) but got \"{}\"".format(type(channel_name)))
+
+
+        if not self.__is_initializing:
+            self.module_error(f'Cannot subscribe channel "{channel_name}". Subscribing is only allowed during initialization (i.e., the first call of the initialize function).')
+            return Channel.new_invalid_channel(channel_name)
+
+        subscriber = Subscriber(callback, self.runnable_dispatcher)
+        return self.__subscriber_publisher.subscribe(self, channel_name, subscriber)
+
+
+    def register_periodic_function(self, name, callback, interval_timedelta):
+        self.register_periodic_function_with_start_time(name, callback, interval_timedelta, datetime.now() + interval_timedelta)
+
+    def register_periodic_function_with_start_time(self, name, callback, interval_timedelta, start_time):
+        if interval_timedelta.total_seconds()*1000 == 0:
+            self.module_error(f"Error in registerPeriodicFunction: Cannot register periodic function \"{name}\" with a period of 0 milliseconds.")
+
+        if name in self.__timers:
             self.module_error(f"Tried to register function with name \"{name}\", but a periodic function with the same name was already registered before.")
 
         function_runnable = FunctionRunnable(callback)
         runnable = ScheduledRunnable(
             runnable=function_runnable,
-            schedule=ScheduleRepeatedIntervall(start_time, interval))
+            schedule=ScheduleRepeatedIntervall(start_time, interval_timedelta))
 
-        self.timers[name] = runnable
-        self.__runnable_dispatcher.addRunnable(runnable)
-        Logger.printfln("Registered periodic runnable %s", name)
+        self.__timers[name] = runnable
+        self.__runnable_dispatcher.add_runnable(runnable)
+        Logger.log_info(f"Registered periodic runnable {name}")
 
     def register_scheduled_function(self, name, start_time, function):
-        if start_time < Time.now():
+        if start_time < datetime.now():
             self.module_warning(f"Failed to schedule function \"{name}\" at time {start_time.strftime('%d.%m.%y - %H:%M:%S')}. "
-                               f"The time is in the past. It is now: {Time.now().strftime('%d.%m.%y - %H:%M:%S')}")
+                               f"The time is in the past. It is now: {datetime.now().strftime('%d.%m.%y - %H:%M:%S')}")
 
         function_runnable = FunctionRunnable(function)
         runnable = ScheduledRunnable(
             runnable=function_runnable,
             schedule=ScheduleOnce(start_time))
 
-        self.timers[name] = runnable
+        self.__timers[name] = runnable
         self.__runnable_dispatcher.addRunnable(runnable)
 
     def unregister_periodic_function(self, name):
-        if name not in self.timers:
+        if name not in self.__timers:
             self.module_error(f"Error, tried to unregister periodic function \"{name}\" but function was not found in the list of registered timers. "
                              f"Was a function with this name ever registered before?")
-        self.timers[name].runnable.invalidate()
-        del self.timers[name]
+        self.__timers[name].runnable.invalidate()
+        del self.__timers[name]
 
     def unregister_all_periodic_functions(self):
-        for entry in self.timers.values():
+        for entry in self.__timers.values():
             entry.runnable.invalidate()
-        self.timers.clear()
+        self.__timers.clear()
 
     def shutdown(self):
         self.__is_terminating = True

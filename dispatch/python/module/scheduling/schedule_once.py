@@ -1,4 +1,5 @@
-from module.scheduling.schedule_once import ScheduleDescription
+
+from module.scheduling.schedule_description import ScheduleDescription
 from datetime import datetime
 
 class ScheduleOnce(ScheduleDescription):

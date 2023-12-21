@@ -13,6 +13,7 @@ from module.module_factory import ModuleFactory
 import platform
 from CLAID import CLAID
 from module.module import Module
+
 # from module.module_factory import ModuleFactory
 # from module.module import Module
 # # sys.path.append(pathlib.Path().absolute() / "external/google/protobuf/internal")
@@ -25,17 +26,25 @@ from module.module import Module
 
 # dispatcher = ModuleDispatcher("unix:///tmp/test.grpc")
 
+from datetime import datetime, timedelta
 
-class TestClass(Module):
+class TestModule(Module):
     def __init__(self):
         super().__init__()
         pass
 
     def initialize(self, properties):
+        Logger.log_info("TestModule Initialize")
+        self.output_channel = self.publish("TestChannel", int(0))
+
+        self.register_periodic_function("Test", self.periodic_function, timedelta(milliseconds=20))
         pass
 
+    def periodic_function(self):
+        Logger.log_info("PeriodicFunctio ")
+
 module_factory = ModuleFactory()
-module_factory.register_module(TestClass)
+module_factory.register_module(TestModule)
 claid = CLAID()
 claid.start("/Users/planger/Development/ModuleAPIV2/dispatch/python/test_config.json", "test_client", "user", "device", module_factory)
 # socket = "unix:///tmp/claid_socket.grpc".encode('utf-8')

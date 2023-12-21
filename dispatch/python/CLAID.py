@@ -95,4 +95,4 @@ class CLAID():
         self.__module_manager = ModuleManager(self.__module_dispatcher, module_factory)
         print("starting Pyathon runtime")
 
-        return self.__module_manager.start_test()
+        return self.__module_manager.start()

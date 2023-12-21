@@ -1,7 +1,9 @@
 from module.module_factory import ModuleFactory
 from logger.logger import Logger
 from module.channel_subscriber_publisher import ChannelSubscriberPublisher
-import asyncio
+from threading import Thread
+
+from module.thread_safe_channel import ThreadSafeChannel
 
 class ModuleManager():
 
@@ -9,11 +11,12 @@ class ModuleManager():
         self.__module_dispatcher = module_dispatcher
         self.__module_factory = module_factory
         self.__running_modules = dict()    
-        self.__channel_subscriber_publisher = None
 
-        self.__from_modules_queue = None
-        self.__to_modules_queue = None
+        # self.__from_module_dispatcher_queue = ThreadSafeChannel()
+        self.__to_module_dispatcher_queue = module_dispatcher.get_to_dispatcher_queue()
         
+        self.__channel_subscriber_publisher = ChannelSubscriberPublisher(self.__to_module_dispatcher_queue)
+
         self.__running = False
 
     def instantiate_module(self, module_id, module_class):
@@ -63,48 +66,50 @@ class ModuleManager():
     def get_template_packages_of_modules(self):
         module_channels = {}
         for module_id in self.__running_modules.keys():
-            template_packages_for_module = self.subscriber_publisher.get_channel_template_packages_for_module(module_id)
+            template_packages_for_module = self.__channel_subscriber_publisher.get_channel_template_packages_for_module(module_id)
             module_channels[module_id] = template_packages_for_module
         return module_channels
 
-    async def start(self):
+    def start(self):
         print(self.__module_factory.get_registered_module_classes())
-        module_list = await self.__module_dispatcher.get_module_list(self.__module_factory.get_registered_module_classes())
+        module_list =  self.__module_dispatcher.get_module_list(self.__module_factory.get_registered_module_classes())
         Logger.log_info(f"Received ModuleListResponse: {module_list}")
         if not self.instantiate_modules(module_list):
             Logger.log_fatal("ModuleDispatcher: Failed to instantiate Modules.")
             return False
 
-        self.subscriber_publisher = ChannelSubscriberPublisher(self.__from_modules_queue)
 
-        if not self.initialize_modules(module_list, self.subscriber_publisher):
+        if not self.initialize_modules(module_list, self.__channel_subscriber_publisher):
             Logger.log_fatal("Failed to initialize Modules.")
             return False
 
         example_packages_of_modules = self.get_template_packages_of_modules()
-        if not await self.__module_dispatcher.init_runtime(example_packages_of_modules):
+        if not  self.__module_dispatcher.init_runtime(example_packages_of_modules):
             Logger.log_fatal("Failed to initialize runtime.")
             return False
 
-        if not await self.__module_dispatcher.send_receive_packages():
+        if not  self.__module_dispatcher.send_receive_packages():
             Logger.log_fatal("Failed to set up input and output streams with middleware.")
             return False
 
+        self.__from_module_dispatcher_queue = self.__module_dispatcher.get_from_dispatcher_queue()
+
         self.running = True
-        self.read_from_modules_thread = Thread(target=self.read_from_modules)
-        self.read_from_modules_thread.start()
+        self.read_from_module_dispatcher_thread = Thread(target=self.read_from_module_dispatcher)
+        self.read_from_module_dispatcher_thread.start()
 
         return True
     
-    def start_test(self):
-        asyncio.ensure_future(self.start())
+    # def start_test(self):
+    #     self.start()
+    #     # io.ensure_future(self.start())
 
        
-        try:
-            # Run the event loop
-            asyncio.get_event_loop().run_forever()
-        except KeyboardInterrupt:
-            pass
+    #     # try:
+    #     #     # Run the event loop
+    #     #     io.get_event_loop().run_forever()
+    #     # except KeyboardInterrupt:
+    #     #     pass
 
     def split_host_module(self, addr):
         host_and_module = addr.split(":")
@@ -114,7 +119,7 @@ class ModuleManager():
 
         return host_and_module
 
-    def on_data_package_received(self, data_package):
+    def on_data_package_received_from_module_dispatcher(self, data_package):
         if data_package.HasField('control_val'):
             self.handle_package_with_control_val(data_package)
             return
@@ -124,17 +129,17 @@ class ModuleManager():
 
         Logger.log_info(f"ModuleManager received package with target for Module \"{module_id}\" on Channel \"{channel_name}\"")
 
-        if self.subscriber_publisher is None:
+        if self.__channel_subscriber_publisher is None:
             Logger.log_error("ModuleManager received DataPackage, however SubscriberPublisher is Null.")
             return
 
-        if not self.subscriber_publisher.is_data_package_compatible_with_channel(data_package):
+        if not self.__channel_subscriber_publisher.is_data_package_compatible_with_channel(data_package):
             Logger.log_info(f"ModuleManager received package with target for Module \"{module_id}\" on Channel \"{channel_name}\",\n"
                             f"however the data type of payload of the package did not match the data type of the Channel.\n"
-                            f"Expected payload type \"{self.subscriber_publisher.get_payload_case_of_channel(channel_name).name}\" but got \"{data_package.payload_oneof_case.name}")
+                            f"Expected payload type \"{self.__channel_subscriber_publisher.get_payload_case_of_channel(channel_name).name}\" but got \"{data_package.payload_oneof_case.name}")
             return
 
-        subscriber_list = self.subscriber_publisher.get_subscriber_instances_of_module(channel_name, module_id)
+        subscriber_list = self.__channel_subscriber_publisher.get_subscriber_instances_of_module(channel_name, module_id)
 
         if subscriber_list is None:
             Logger.log_info(f"ModuleManager received package with target for Module \"{module_id}\" on Channel \"{channel_name}\",\n"
@@ -152,13 +157,13 @@ class ModuleManager():
         else:
             Logger.log_warning(f"ModuleManager received package with unsupported control val {packet.control_val.ctrl_type}")
 
-    def read_from_modules(self):
+    def read_from_module_dispatcher(self):
         while self.running:
-            data_package = self.from_modules_channel.blocking_get()
-            if data_package is not None:
-                self.on_data_package_from_module(data_package)
-            else:
-                print("Read from modules null")
+            for data_package in self.__from_module_dispatcher_queue:
+                if data_package is not None:
+                    self.on_data_package_from_module(data_package)
+                else:
+                    print("Read from modules null")
 
     def on_data_package_from_module(self, data_package):
         Logger.log_info(f"ModuleManager received local package from Module \"{data_package.source_module}\".")
