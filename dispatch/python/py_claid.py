@@ -36,15 +36,24 @@ class TestModule(Module):
     def initialize(self, properties):
         Logger.log_info("TestModule Initialize")
         self.output_channel = self.publish("TestChannel", int(0))
-        self.input_channel = self.subscribe("TestChannel", int(0), self.on_data)
         self.ctr = 0
-        self.register_periodic_function("Test", self.periodic_function, timedelta(milliseconds=100))
-        pass
+        self.register_periodic_function("Test", self.periodic_function, timedelta(milliseconds=1500))
 
     def periodic_function(self):
         Logger.log_info("PeriodicFunctio ")
         self.output_channel.post(self.ctr)
         self.ctr+=1
+
+
+class TestModule2(Module):
+    def __init__(self):
+        super().__init__()
+        pass
+
+    def initialize(self, properties):
+        Logger.log_info("TestModule Initialize")
+        self.input_channel = self.subscribe("TestChannel", int(0), self.on_data)
+        self.ctr = 0
 
     def on_data(self, data):
         
@@ -52,6 +61,7 @@ class TestModule(Module):
 
 module_factory = ModuleFactory()
 module_factory.register_module(TestModule)
+module_factory.register_module(TestModule2)
 claid = CLAID()
 claid.start("/Users/planger/Development/ModuleAPIV2/dispatch/python/test_config.json", "test_client", "user", "device", module_factory)
 # socket = "unix:///tmp/claid_socket.grpc".encode('utf-8')
