@@ -68,3 +68,24 @@ message HeartRateData
 {
     repeated HeartRateSample samples = 1;
 }
+
+
+enum BatteryState 
+{
+  UNKNOWN = 0;
+  UNPLUGGED = 1;
+  FULL = 2;
+  CHARGING = 3;
+  USB_CHARGING = 4;
+  AC_CHARGING = 5;
+  WIRELESS_CHARGING = 6;
+}
+
+message BatteryData 
+{
+  // Battery level represented as a 16-bit signed integer
+  int32 level = 1;
+
+  // Battery state represented using the BatteryState enum
+  BatteryState state = 2;
+}
