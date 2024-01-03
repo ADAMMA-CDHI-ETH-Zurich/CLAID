@@ -37,7 +37,7 @@ class TestModule(Module):
         Logger.log_info("TestModule Initialize")
         self.output_channel = self.publish("TestChannel", int(0))
         self.ctr = 0
-        self.register_periodic_function("Test", self.periodic_function, timedelta(milliseconds=1500))
+        self.register_periodic_function("Test", self.periodic_function, timedelta(milliseconds=1))
 
     def periodic_function(self):
         Logger.log_info("PeriodicFunctio ")
