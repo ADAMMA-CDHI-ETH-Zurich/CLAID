@@ -49,6 +49,9 @@ public class BatteryIntentHelper
         {
             batterySample.setState(BatteryState.UNPLUGGED);
         }
+
+        batterySample.setUnixTimestampInMs(System.currentTimeMillis());
+
         return batterySample.build();
     }
 

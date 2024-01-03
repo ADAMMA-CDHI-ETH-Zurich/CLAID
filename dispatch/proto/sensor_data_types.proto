@@ -83,11 +83,13 @@ enum BatteryState
 
 message BatterySample 
 {
-  // Battery level represented as a 16-bit signed integer
-  int32 level = 1;
+    // Battery level represented as a 16-bit signed integer
+    int32 level = 1;
 
-  // Battery state represented using the BatteryState enum
-  BatteryState state = 2;
+    // Battery state represented using the BatteryState enum
+    BatteryState state = 2;
+
+    uint64 unix_timestamp_in_ms = 3;
 }
 
 message BatteryData
