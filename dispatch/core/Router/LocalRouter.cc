@@ -36,7 +36,16 @@ namespace claid {
 
     absl::Status LocalRouter::routeControlPackage(std::shared_ptr<DataPackage> package)
     {
-        this->routeToAllRuntimes(package);
+        
+        switch(package->control_val().ctrl_type())
+        {
+            case CtrlType::CTRL_CONNECTED_TO_REMOTE_SERVER:
+            case CtrlType::CTRL_DISCONNECTED_FROM_REMOTE_SERVER:
+            {
+                this->routeToAllRuntimes(package);
+                break;
+            }
+        }
         return absl::OkStatus();
     }
 

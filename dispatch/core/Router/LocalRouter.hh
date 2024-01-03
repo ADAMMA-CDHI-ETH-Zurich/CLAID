@@ -3,6 +3,9 @@
 #include "dispatch/core/Router/Router.hh"
 #include "dispatch/core/module_table.hh"
 #include "dispatch/core/Logger/Logger.hh"
+
+using claidservice::CtrlType;
+
 namespace claid
 {
     // The LocalRouter is invoked from the MasterRouter, if a package is targeted

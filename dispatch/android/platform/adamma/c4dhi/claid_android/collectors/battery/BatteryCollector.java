@@ -15,7 +15,7 @@ import adamma.c4dhi.claid.Module.Module;
 
 import adamma.c4dhi.claid_platform_impl.CLAID;
 
-
+import adamma.c4dhi.claid_sensor_data.BatterySample;
 import adamma.c4dhi.claid_sensor_data.BatteryData;
 import adamma.c4dhi.claid_sensor_data.BatteryState;
 
@@ -50,9 +50,12 @@ public class BatteryCollector extends Module
         Context context = CLAID.getContext();
         Intent batteryStatus = context.registerReceiver(null, intentFilter);
 
-        BatteryData batteryData = BatteryIntentHelper.extractBatteryDataFromIntent(batteryStatus);
+        BatteryData.Builder batteryData = BatteryData.newBuilder();
 
-        batteryDataChannel.post(batteryData);
+        BatterySample batterySample = BatteryIntentHelper.extractBatterySampleFromIntent(batteryStatus);
+        batteryData.addSamples(batterySample);
+
+        batteryDataChannel.post(batteryData.build());
     }
 
 

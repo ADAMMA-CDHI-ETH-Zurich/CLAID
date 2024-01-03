@@ -329,7 +329,7 @@ RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& s
     }
 
     Logger::printfln("Rtq ptr: %lu", rtq.get());
-    auto ret = new RuntimeDispatcher(moduleTable.fromModuleQueue, *rtq.get(), moduleTable);
+    auto ret = new RuntimeDispatcher(moduleTable.inputQueue(), *rtq.get(), moduleTable);
     activeDispatchers[runTime] = unique_ptr<RuntimeDispatcher>(ret);
     return ret;
 }

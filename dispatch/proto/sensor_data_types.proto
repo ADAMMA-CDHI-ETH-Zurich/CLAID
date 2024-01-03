@@ -81,11 +81,16 @@ enum BatteryState
   WIRELESS_CHARGING = 6;
 }
 
-message BatteryData 
+message BatterySample 
 {
   // Battery level represented as a 16-bit signed integer
   int32 level = 1;
 
   // Battery state represented using the BatteryState enum
   BatteryState state = 2;
+}
+
+message BatteryData
+{
+    repeated BatterySample samples = 1;
 }

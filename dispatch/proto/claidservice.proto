@@ -74,20 +74,30 @@ enum CtrlType {
   CTRL_ERROR            = 8;  // Error occured
   CTRL_CONNECTED_TO_REMOTE_SERVER       = 9; // If RemoteDispatcherClient connected to a Server
   CTRL_DISCONNECTED_FROM_REMOTE_SERVER  = 10;
+  CTRL_ADD_MODULE                       = 11; // Can be used to add a new Module at runtime (requires Module name, properties, channels). This package will be forwarded by the LocalRouter to the Middleware that can handle this Module.
+  CTRL_REMOVE_MODULE                    = 12; // Can be used to remove a Module at runtime.
+  CTRL_ADD_MODULE_SUCCESS               = 13; // Sent as response to CTRL_ADD_MODULE the Module was added successfully.
+  CTRL_REMOVE_MODULE_SUCCESS            = 14; // Sent as response to CTRL_REMOVE_MODULE the Module was removed successfully.
+  CTRL_ADD_MODULE_FAILURE                           = 15; // Sent as response to CTRL_ADD_MODULE the Module could not be added.
+  CTRL_REMOVE_MODULE_FAILURE                        = 16; // Sent as response to CTRL_REMOVE_MODULE the Module could not be removed.
+//  CTRL_GET_EXPECTED_MODULE_PROPERTIES_REQUEST       = 17; // 
+//  CTRL_EXPECTED_MODULEMODULE_PROPERTIES_RESPONSE    = 18; // 
+  CTRL_PAUSE_ALL_RUNTIMES                           = 19; // Can be used to pause all runtimes (the ModuleManager of each Runtme will pause the RunnableDispatcher of all its Modules).
+  CTRL_UNPAUSE_ALL_RUNTIMES                         = 20; // Can be used to unpause all runtimes (the ModuleManager of each Runtime will unpause the RunnableDispatcher of all its Modules).
 }
 
 // Note for Stephan: I removed the "optional" labels, as protoc did complain about them:
 // "Explicit 'optional' labels are disallowed in the Proto3 syntax. To define 'optional' fields in Proto3, simply remove the 'optional' label, as fields are 'optional' by default.
 
 message ControlPackage {
-    CtrlType ctrl_type                    = 1;
-   Runtime runtime              = 2; // CTRL_RUNTIME_PING
-   RemoteClientInfo remote_client_info = 3; // CTRL_REMOTE_PING
-   AccumulatedStatus status     = 4; // CTRL_STATUS: status sent towards root server
-   ErrorMsg error_msg           = 5; // CTRL_ERROR: Error report sent towards root server
-   ActionRequest action_request = 6; // CTRL_ACTION: action request sent to all children
-                                             // of the claid instance
-
+  CtrlType ctrl_type                        = 1;
+  Runtime runtime                           = 2; // CTRL_RUNTIME_PING, CTRL_ADD_MODULE, CTRL_REMOVE_MODULE, CTRL_ADD_MODULE_SUCCESS, CTRL_REMOVE_MODULE_SUCCESS
+  RemoteClientInfo remote_client_info       = 3; // CTRL_REMOTE_PING
+  AccumulatedStatus status                  = 4; // CTRL_STATUS: status sent towards root server
+  ErrorMsg error_msg                        = 5; // CTRL_ERROR: Error report sent towards root server
+  ActionRequest action_request              = 6; // CTRL_ACTION: action request sent to all children of the claid instance
+  AddModuleRequest add_module_request       = 7; // CTRL_ADD_MODULE
+  RemoveModuleRequest remove_module_request = 8; // CTRL_REMOVE_MODULE
 }
 
 message AccumulatedStatus {
@@ -186,7 +196,6 @@ message InitRuntimeRequest {
   Runtime runtime = 1;
   repeated ModuleChannels modules = 2;
 }
-
 enum Runtime {
   RUNTIME_UNSPECIFIED = 0;
   RUNTIME_CPP = 1;
@@ -200,6 +209,22 @@ message RemoteClientInfo
   string host = 1;
   string user_token = 2;
   string device_id = 3;
+}
+
+// Used by CTRL_ADD_MODULE to add a Module at Runtime.
+// Requires a full definition of the Module: Name, class, properties, channels
+message AddModuleRequest 
+{
+  string module_id = 1;
+  string module_class = 2;
+  map<string, string> properties = 3;
+  repeated DataPackage channel_packets = 4;
+}
+
+// Used by CTRL_REMOVE_MODULE to remove a Module at Runtime.
+message RemoveModuleRequest
+{
+  string module_id = 1;
 }
 
 // message AppConfig {
