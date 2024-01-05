@@ -37,6 +37,13 @@ import java.io.InputStream;
 
 import adamma.c4dhi.claid_platform_impl.CLAID;
 
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+
 public class MaximumPermissionsPerpetualService extends CLAIDService
 {
   
@@ -150,6 +157,24 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
 
     void onServiceStarted(final String socketPath, final String configFilePath, final String hostId, final String userId, final String deviceId)
     {
+        boolean append = true;
+        try (FileWriter fileWriter = new FileWriter(CLAID.getMediaDirPath(this) + "/service_restart.txt", append)) {
+            // Get the current date and time
+            Date currentDate = new Date();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+            String formattedDateTime = dateFormat.format(currentDate);
+    
+            // Write the date and time to the file
+            fileWriter.write(formattedDateTime);
+            fileWriter.write(System.lineSeparator()); // Add a newline for better readability or separation
+    
+            // Explicitly flush the data to the file
+            fileWriter.flush();
+    
+        } catch (IOException e) {
+            System.err.println("Error writing to the file: " + e.getMessage());
+        }
+
         Log.i(CLASS_TAG, "CLAID foreground service started");
 
         // Starts CLAID in the service. A registered PersistentModuleFactory will be used as ModuleFactory.
