@@ -59,7 +59,7 @@ REGISTER_MODULE_FACTORY_CUSTOM_NAME(TestReceiverModule, ReceiverModule)
 TEST(CppRuntimeTestSuite, CppRuntimeTest)  
 {
     std::cout << "T1\n";
-    const char* socket_path = "/tmp/test_grpc.sock";
+    const char* socket_path = "/tmp/cpp_runtime_test_grpc.sock";
     const char* config_file = "dispatch/test/cpp_runtime_test.json";
     const char* host_id = "alex_client";
     const char* user_id = "user42";

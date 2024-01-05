@@ -50,8 +50,11 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
     SharedQueue<claidservice::DataPackage> inQueue;
     SharedQueue<claidservice::DataPackage> outQueue;
 
+    // Not needed for this test, hence empty.
+    std::map<std::string, std::map<std::string, std::string>> expectedModuleProperties;
+    
     // Create the client.
-    DispatcherClient client(addr, inQueue, outQueue, supportedModClasses);
+    DispatcherClient client(addr, inQueue, outQueue, supportedModClasses, expectedModuleProperties);
 
     auto expResp = ModuleListResponse();
     for(auto& m : testModules) {

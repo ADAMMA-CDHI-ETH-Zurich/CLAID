@@ -3,7 +3,7 @@
 
 
 TEST(CAPITestSuite, BasicE2ETest) {
-    const char* socket_path = "/tmp/test_grpc.sock";
+    const char* socket_path = "/tmp/capi_test_grpc.sock";
     const char* config_file = "dispatch/test/test_config.json";
     const char* host_id = "alex_client";
     const char* user_id = "user42";

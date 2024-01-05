@@ -21,13 +21,50 @@
 
 #include "dispatch/core/Module/ModuleFactory/ModuleFactoryBase.hh"
 
+
+
 namespace claid
 {
+
+
+	template <typename T>
+	struct has_define_expected_properties_function {
+		template <typename U, typename = decltype(&U::defineExpectedProperties)>
+		static std::true_type test(int);
+
+		template <typename>
+		static std::false_type test(...);
+
+		static constexpr bool value = decltype(test<T>(0))::value;
+	};
+
+
+	template<typename T, class Enable = void>
+	struct __DefineExpectedPropertiesFunctionInvoker 
+	{
+		static bool call(std::map<std::string, std::string>& properties) 
+		{
+			return false;
+		}
+
+	}; 
+
+	template<class T>
+	struct __DefineExpectedPropertiesFunctionInvoker<T, typename std::enable_if<has_define_expected_properties_function<T>::value>::type> 
+	{
+		static bool call(std::map<std::string, std::string>& properties) 
+		{
+			T::defineExpectedProperties(properties);
+			return true;
+		}
+	};    
+
+
 	template<typename T>
 	class ModuleFactoryTyped : public ModuleFactoryBase
 	{
 		public:
-			Module* getInstanceUntyped()
+			Module* getInstanceUntyped() override final
 			{
 				return static_cast<Module*>(new T);
 			}
@@ -36,5 +73,12 @@ namespace claid
 			{
 				return new T;
 			}
+
+			bool getExpectedPropertiesOfModule(std::map<std::string, std::string>& expectedProperties) override final
+			{
+				expectedProperties.clear();
+				return __DefineExpectedPropertiesFunctionInvoker<T>::call(expectedProperties);
+			}
+
 	};
 }

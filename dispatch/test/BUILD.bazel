@@ -16,6 +16,17 @@ filegroup(
 )
 
 cc_test(
+  name = "get_expected_properties_test",
+  size = "small",
+  srcs = ["get_expected_properties_test.cc"],
+  deps = [
+    ":test_helpers",
+    "//dispatch/proto:claidservice_cc_proto",
+    "//dispatch/core:capi"
+  ] + FRAMEWORK_DEPS,
+)
+
+cc_test(
   name = "data_saver_json_test",
   size = "small",
   srcs = ["data_saver_json_test.cc"],

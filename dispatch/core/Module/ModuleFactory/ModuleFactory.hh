@@ -110,6 +110,18 @@ namespace claid
 
 				return output;
 			}
+
+			bool getExpectedPropertiesOfModule(const std::string& moduleName, std::map<std::string, std::string>& expectedProperties)
+			{
+				auto it = moduleFactories.find(moduleName);
+
+				if (it == moduleFactories.end())
+				{
+					return false;
+				}
+
+				return it->second->getExpectedPropertiesOfModule(expectedProperties);
+			}
 	};
 
 	template<typename T>

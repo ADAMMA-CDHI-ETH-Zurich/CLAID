@@ -398,9 +398,11 @@ void DispatcherServer::buildAndStartServer() {
 DispatcherClient::DispatcherClient(const string& socketPath,
         SharedQueue<DataPackage>& inQueue,
         SharedQueue<DataPackage>& outQueue,
-        const set<string>& supportedModClasses) :
+        const set<string>& supportedModClasses,
+        const std::map<std::string, std::map<std::string, std::string>>& moduleClassesExpectedProperties) :
         incomingQueue(inQueue), outgoingQueue(outQueue),
-        moduleClasses(supportedModClasses) {
+        moduleClasses(supportedModClasses),
+        moduleClassesExpectedProperties(moduleClassesExpectedProperties) {
 
     // Set up the gRCP channel
     grpc::ChannelArguments args;
@@ -412,6 +414,7 @@ DispatcherClient::DispatcherClient(const string& socketPath,
     stub = ClaidService::NewStub(grpcChannel);
 
 }
+
 
 void DispatcherClient::shutdown() {
     // Closing the outgoing queue will end the writer thread.
@@ -436,6 +439,23 @@ unique_ptr<ModuleListResponse> DispatcherClient::getModuleList() {
     req.set_runtime(Runtime::RUNTIME_CPP);
     for(auto it : moduleClasses) {
         req.add_supported_module_classes(it);
+
+        ModuleExpectedProperties modProps;
+
+        auto expectedPropertiesIt = this->moduleClassesExpectedProperties.find(it);
+        if(expectedPropertiesIt != this->moduleClassesExpectedProperties.end())
+        {
+            for(const auto& entry : expectedPropertiesIt->second)
+            {
+                (*modProps.mutable_properties())[entry.first] = entry.second;
+            }
+            modProps.set_has_defined_expected_properties(true);
+        }
+        else
+        {
+            modProps.set_has_defined_expected_properties(false);
+        }
+        (*req.mutable_module_expected_properties())[it] = modProps;
     }
 
     unique_ptr<ModuleListResponse> resp = make_unique<ModuleListResponse>();

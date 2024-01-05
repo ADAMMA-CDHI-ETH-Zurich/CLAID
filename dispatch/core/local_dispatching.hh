@@ -96,7 +96,11 @@ class DispatcherClient {
     DispatcherClient(const std::string& socketPath,
         SharedQueue<claidservice::DataPackage>& inQueue,
         SharedQueue<claidservice::DataPackage>& outQueue,
-        const std::set<std::string>& supportedModClasses);
+        const std::set<std::string>& supportedModClasses,
+        const std::map<std::string, std::map<std::string, std::string>>& moduleClassesExpectedProperties);
+
+  
+
     void shutdown();
     virtual ~DispatcherClient() { shutdown(); };
     std::unique_ptr<claidservice::ModuleListResponse> getModuleList();
@@ -111,6 +115,7 @@ class DispatcherClient {
     SharedQueue<claidservice::DataPackage>& incomingQueue;
     SharedQueue<claidservice::DataPackage>& outgoingQueue;
     std::set<std::string> moduleClasses;
+    std::map<std::string, std::map<std::string, std::string>> moduleClassesExpectedProperties;
     std::shared_ptr<grpc::ClientContext> streamContext;
     std::shared_ptr<grpc::ClientReaderWriter<claidservice::DataPackage, claidservice::DataPackage>> stream;
     std::unique_ptr<std::thread> readThread;

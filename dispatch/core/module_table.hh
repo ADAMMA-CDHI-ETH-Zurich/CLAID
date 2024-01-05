@@ -43,7 +43,9 @@ class ModuleTable {
     virtual ~ModuleTable() {}
     inline SharedQueue<claidservice::DataPackage>& inputQueue() {return fromModuleQueue;}
     SharedQueue<claidservice::DataPackage>* lookupOutputQueue(const std::string& moduleId);
-    std::vector<std::shared_ptr<SharedQueue<claidservice::DataPackage>>> getAllQueues();
+    std::vector<std::shared_ptr<SharedQueue<claidservice::DataPackage>>> getRuntimeQueues();
+
+    inline SharedQueue<claidservice::DataPackage>& controlPackagesQueue() {return receivedControlPackagesQueue;}
 
     void setProperties(const ModuleTableProperties& props);
 
@@ -92,6 +94,12 @@ class ModuleTable {
 
   private:
     SharedQueue<claidservice::DataPackage> fromModuleQueue;
+
+    // Queue where the LocalRouter will put received control packages.
+    // This queue then can be processed by the middleware.
+    // Without this queue, control packages would need to be handled
+    // directly in the LocalRouter.
+    SharedQueue<claidservice::DataPackage> receivedControlPackagesQueue;
 
     // Keeps track of mapping from the module instance to the name of that class that implements it.
     // map<module_id, module_class>

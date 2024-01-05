@@ -65,9 +65,20 @@ namespace claid {
         Logger::logInfo("Attach cpp runtime 2.2");
 
         const std::set<std::string> registeredModuleClasses = ModuleFactory::getInstance()->getRegisteredModuleClasses();
+        std::map<std::string, std::map<std::string, std::string>> moduleClassesExpectedProperties;
+
+        for(const std::string& registeredModuleClass : registeredModuleClasses)
+        {
+            std::map<std::string, std::string> expectedProperties;
+
+            if(ModuleFactory::getInstance()->getExpectedPropertiesOfModule(registeredModuleClass, expectedProperties))
+            {
+                moduleClassesExpectedProperties[registeredModuleClass] = expectedProperties;
+            }
+        }
         Logger::logInfo("Attach cpp runtime 3");
 
-        moduleDispatcher = make_unique<DispatcherClient>(socketPath, fromModuleDispatcherQueue, toModuleDispatcherQueue, registeredModuleClasses);
+        moduleDispatcher = make_unique<DispatcherClient>(socketPath, fromModuleDispatcherQueue, toModuleDispatcherQueue, registeredModuleClasses, moduleClassesExpectedProperties);
         moduleManager = make_unique<ModuleManager>(*moduleDispatcher, fromModuleDispatcherQueue, toModuleDispatcherQueue);
         Logger::logInfo("Attach cpp runtime 4");
 

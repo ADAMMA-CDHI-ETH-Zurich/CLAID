@@ -27,5 +27,6 @@ namespace claid
 	{
 		public:
 			virtual Module* getInstanceUntyped() = 0;
+			virtual bool getExpectedPropertiesOfModule(std::map<std::string, std::string>& expectedProperties) = 0;
 	};
 }

@@ -109,6 +109,11 @@ absl::Status MiddleWare::start() {
     Logger::printfln("Middleware started.");
 
     running = true;
+
+    this->controlPackageHandlerThread = std::make_unique<std::thread>([this]() {
+        this->readControlPackages();
+    });
+
     return absl::OkStatus();
 }
 
@@ -272,6 +277,7 @@ absl::Status MiddleWare::startRouter(const std::string& currentHost, const HostD
         return status;
     }
 
+
     return absl::OkStatus();
 }
 
@@ -316,8 +322,18 @@ absl::Status MiddleWare::shutdown()
         this->remoteDispatcherClient->shutdown();
     }
 
-    Logger::printfln("Middleware successfully shut down.");
+
+    Logger::printfln("Stopping controlPackageHandler");
     running = false;
+    if(this->controlPackageHandlerThread != nullptr)
+    {
+        this->moduleTable.controlPackagesQueue().interruptOnce();
+        this->controlPackageHandlerThread->join();
+        this->controlPackageHandlerThread = nullptr;
+    }
+
+    
+    Logger::printfln("Middleware successfully shut down.");
     return absl::OkStatus();
 }
 
@@ -362,11 +378,6 @@ absl::Status MiddleWare::populateModuleTable(
 
 const std::string& MiddleWare::getSocketPath() const
 {
-    Logger::logInfo("Attach cpp runtime 2.1.1 %c", socketPath[0]);
-
-    std::cout << " got socket path " << socketPath << "\n";
-    Logger::logInfo("Attach cpp runtime 2.1.2");
-
     return socketPath;
 }
 
@@ -381,4 +392,42 @@ absl::Status MiddleWare::getRemoteClientStatus() const
          this->remoteDispatcherClient->getLastStatus() : 
             absl::UnavailableError("Status of RemoteDispatcherClient not available, because the RemoteDispatcherClient does not exist.");
 
+}
+
+
+void MiddleWare::readControlPackages()
+{
+    while(this->running)
+    {
+        std::shared_ptr<DataPackage> controlPackage = this->moduleTable.controlPackagesQueue().interruptable_pop_front();
+
+        if(controlPackage == nullptr)
+        {
+            continue;
+        }
+
+        this->handleControlPackage(controlPackage);
+    }
+}
+
+void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackage)
+{
+    switch(controlPackage->control_val().ctrl_type())
+    {
+        case CtrlType::CTRL_CONNECTED_TO_REMOTE_SERVER:
+        case CtrlType::CTRL_DISCONNECTED_FROM_REMOTE_SERVER:
+        {
+            this->forwardControlPackageToAllRuntimes(controlPackage);
+            break;
+        }
+    }
+}
+
+void MiddleWare::forwardControlPackageToAllRuntimes(std::shared_ptr<DataPackage> package)
+{
+    auto allQueues = this->moduleTable.getRuntimeQueues();
+    for(auto queue : allQueues)
+    {
+        queue->push_back(package);
+    }
 }

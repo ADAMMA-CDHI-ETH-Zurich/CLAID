@@ -79,6 +79,8 @@ namespace claid
             std::unique_ptr<RoutingQueueMerger> routingQueueMerger;
             SharedQueue<DataPackage> masterInputQueue;
 
+            std::unique_ptr<std::thread> controlPackageHandlerThread = nullptr; 
+
             absl::Status populateModuleTable(
                 const ModuleDescriptionMap& moduleDescriptions,
                 const ChannelDescriptionMap& channelDescriptions,
@@ -91,7 +93,9 @@ namespace claid
             
             absl::Status startRouter(const std::string& currentHost, const HostDescriptionMap& hostDescriptions, const ModuleDescriptionMap& moduleDescriptions);
 
-
+            void readControlPackages();
+            void handleControlPackage(std::shared_ptr<DataPackage> controlPackage);
+            void forwardControlPackageToAllRuntimes(std::shared_ptr<DataPackage> package);
     };
 }
 

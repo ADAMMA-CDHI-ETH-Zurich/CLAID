@@ -80,10 +80,8 @@ enum CtrlType {
   CTRL_REMOVE_MODULE_SUCCESS            = 14; // Sent as response to CTRL_REMOVE_MODULE the Module was removed successfully.
   CTRL_ADD_MODULE_FAILURE                           = 15; // Sent as response to CTRL_ADD_MODULE the Module could not be added.
   CTRL_REMOVE_MODULE_FAILURE                        = 16; // Sent as response to CTRL_REMOVE_MODULE the Module could not be removed.
-//  CTRL_GET_EXPECTED_MODULE_PROPERTIES_REQUEST       = 17; // 
-//  CTRL_EXPECTED_MODULEMODULE_PROPERTIES_RESPONSE    = 18; // 
-  CTRL_PAUSE_ALL_RUNTIMES                           = 19; // Can be used to pause all runtimes (the ModuleManager of each Runtme will pause the RunnableDispatcher of all its Modules).
-  CTRL_UNPAUSE_ALL_RUNTIMES                         = 20; // Can be used to unpause all runtimes (the ModuleManager of each Runtime will unpause the RunnableDispatcher of all its Modules).
+  CTRL_PAUSE_ALL_RUNTIMES                           = 17; // Can be used to pause all runtimes (the ModuleManager of each Runtme will pause the RunnableDispatcher of all its Modules).
+  CTRL_UNPAUSE_ALL_RUNTIMES                         = 18; // Can be used to unpause all runtimes (the ModuleManager of each Runtime will unpause the RunnableDispatcher of all its Modules).
 }
 
 // Note for Stephan: I removed the "optional" labels, as protoc did complain about them:
@@ -171,6 +169,13 @@ message TracePoint {
 message ModuleListRequest {
   Runtime runtime = 1;
   repeated string supported_module_classes = 2;
+  map<string, ModuleExpectedProperties> module_expected_properties = 3;
+}
+
+message ModuleExpectedProperties
+{
+  map<string, string> properties = 1;
+  bool has_defined_expected_properties = 2;
 }
 
 // List of modules that the runtime client is expected to instantiate.

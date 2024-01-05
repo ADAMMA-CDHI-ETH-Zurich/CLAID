@@ -19,7 +19,6 @@ namespace claid
             const std::string currentHost;
 
             absl::Status routeControlPackage(std::shared_ptr<DataPackage> package);
-            void routeToAllRuntimes(std::shared_ptr<DataPackage> package);
 
         public:
         

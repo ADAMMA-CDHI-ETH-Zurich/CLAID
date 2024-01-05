@@ -56,7 +56,7 @@ REGISTER_MODULE(TestSenderModule, TestSenderModule);
 TEST(DataSaverTestSuite, DataSaverJsonTest)  
 {
 
-    const char* socket_path = "unix:///tmp/test_grpc.sock";
+    const char* socket_path = "unix:///tmp/data_saver_json_test_grpc.sock";
     const char* config_file = "dispatch/test/data_saver_json_test.json";
     const char* host_id = "alex_client";
     const char* user_id = "user42";

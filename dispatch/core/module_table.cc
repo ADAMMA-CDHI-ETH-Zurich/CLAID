@@ -43,7 +43,7 @@ SharedQueue<DataPackage>* ModuleTable::lookupOutputQueue(const string& moduleId)
     return nullptr;
 }
 
-std::vector<std::shared_ptr<SharedQueue<claidservice::DataPackage>>> ModuleTable::getAllQueues()
+std::vector<std::shared_ptr<SharedQueue<claidservice::DataPackage>>> ModuleTable::getRuntimeQueues()
 {
     std::vector<std::shared_ptr<SharedQueue<claidservice::DataPackage>>> queues;
     for(auto& entry : runtimeQueueMap)
