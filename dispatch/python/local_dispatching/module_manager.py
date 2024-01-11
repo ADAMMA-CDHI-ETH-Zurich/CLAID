@@ -72,7 +72,17 @@ class ModuleManager():
 
     def start(self):
         print(self.__module_factory.get_registered_module_classes())
-        module_list =  self.__module_dispatcher.get_module_list(self.__module_factory.get_registered_module_classes())
+
+        registered_module_classes = self.__module_factory.get_registered_module_classes()
+        expected_properties_for_each_module_class = dict()
+
+        for registered_module_class in registered_module_classes:
+            has_defined_expected_properties, expected_properties = self.__module_factory.get_expected_properties_of_module(registered_module_class)
+
+            if(has_defined_expected_properties):
+                expected_properties_for_each_module_class[registered_module_class] = expected_properties
+
+        module_list =  self.__module_dispatcher.get_module_list(registered_module_classes, expected_properties_for_each_module_class)
         Logger.log_info(f"Received ModuleListResponse: {module_list}")
         if not self.instantiate_modules(module_list):
             Logger.log_fatal("ModuleDispatcher: Failed to instantiate Modules.")

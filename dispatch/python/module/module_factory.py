@@ -28,6 +28,23 @@ class ModuleFactory:
         Logger.log_error(f"Failed to instantiate module \"{module_id}\" of class \"{class_name}\". Class was not registered.\n"
         f"Registered classes are: {self.registered_module_classes}")
         return None
+    
+    def get_expected_properties_of_module(self, class_name):
+
+        if not class_name in self.registered_module_classes:
+            # has_expected_properties, expected_properties
+            return False, None 
+        else:
+            class_type = self.registered_module_classes[class_name]
+            define_expected_properties_function = "define_expected_properties"
+            if(hasattr(class_type, define_expected_properties_function) and callable(getattr(class_type, define_expected_properties_function))):
+                
+                return True, getattr(class_type, define_expected_properties_function)()
+            else:
+                # has_expected_properties, expected_properties
+                return False, None
+
+        return False, None
 
     def is_module_class_registered(self, module_class):
         return module_class in self.registered_module_classes

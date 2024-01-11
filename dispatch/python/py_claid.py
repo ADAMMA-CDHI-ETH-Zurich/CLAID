@@ -33,11 +33,15 @@ class TestModule(Module):
         super().__init__()
         pass
 
+    @staticmethod
+    def define_expected_properties():
+        return {"test": "test"}
+
     def initialize(self, properties):
         Logger.log_info("TestModule Initialize")
         self.output_channel = self.publish("TestChannel", int(0))
         self.ctr = 0
-        self.register_periodic_function("Test", self.periodic_function, timedelta(milliseconds=1))
+        self.register_periodic_function("Test", self.periodic_function, timedelta(milliseconds=1000))
 
     def periodic_function(self):
         Logger.log_info("PeriodicFunctio ")

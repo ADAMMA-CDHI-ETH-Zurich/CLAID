@@ -29,10 +29,26 @@ class ModuleDispatcher:
     def get_from_dispatcher_queue(self):
         return self.__from_middleware_queue
 
-    def get_module_list(self, registered_module_classes):
+    def get_module_list(self, registered_module_classes, expected_properties_for_each_module_class):
+
+        full_expected_properties = dict()
+        for module_class in registered_module_classes:
+            print("Expected module {}".format(module_class))
+            mod_props = ModuleExpectedProperties(has_defined_expected_properties=False)
+
+            if module_class in expected_properties_for_each_module_class:
+                mod_props.has_defined_expected_properties = True
+                mod_props =ModuleExpectedProperties(has_defined_expected_properties=True, properties=expected_properties_for_each_module_class[module_class])
+            else:
+                mod_props =ModuleExpectedProperties(has_defined_expected_properties=False, properties={})
+
+            full_expected_properties[module_class] = mod_props
+        
+
         request = ModuleListRequest(
             runtime=Runtime.RUNTIME_PYTHON,
-            supported_module_classes=registered_module_classes
+            supported_module_classes=registered_module_classes,
+            module_expected_properties=full_expected_properties
         )
         Logger.log_info(f"Sending ModuleListRequest: {request}")
 

@@ -154,6 +154,16 @@ Status ServiceImpl::GetModuleList(ServerContext* context,
         return Status(grpc::INVALID_ARGUMENT, "Invalid runtime value provided");
     }
 
+    // {
+    //     std::string jsonOutput = "";
+    //     google::protobuf::util::JsonPrintOptions options;
+    //     options.add_whitespace = true;
+    //     options.always_print_primitive_fields = true;
+    //     options.preserve_proto_field_names = true;
+    //     absl::Status status = MessageToJsonString(*req, &jsonOutput, options);
+    //     Logger::logInfo("Received ModuleListRequest: %s\n", jsonOutput.c_str());
+    // }
+
     set<string> supportedModClasses;
     // Register the runtime
     for(auto& it : req->supported_module_classes()) {
