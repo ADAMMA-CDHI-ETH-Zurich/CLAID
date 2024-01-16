@@ -13,6 +13,8 @@
 #include "dispatch/core/shared_queue.hh"
 #include "dispatch/core/module_table.hh"
 
+using claidservice::ModuleAnnotation;
+
 namespace claid {
 
 class RuntimeDispatcher {
@@ -97,7 +99,7 @@ class DispatcherClient {
         SharedQueue<claidservice::DataPackage>& inQueue,
         SharedQueue<claidservice::DataPackage>& outQueue,
         const std::set<std::string>& supportedModClasses,
-        const std::map<std::string, std::map<std::string, std::string>>& moduleClassesExpectedProperties);
+        const std::map<std::string, ModuleAnnotation>& moduleAnnotations);
 
   
 
@@ -115,7 +117,7 @@ class DispatcherClient {
     SharedQueue<claidservice::DataPackage>& incomingQueue;
     SharedQueue<claidservice::DataPackage>& outgoingQueue;
     std::set<std::string> moduleClasses;
-    std::map<std::string, std::map<std::string, std::string>> moduleClassesExpectedProperties;
+    std::map<std::string, ModuleAnnotation> moduleAnnotations;
     std::shared_ptr<grpc::ClientContext> streamContext;
     std::shared_ptr<grpc::ClientReaderWriter<claidservice::DataPackage, claidservice::DataPackage>> stream;
     std::unique_ptr<std::thread> readThread;

@@ -169,14 +169,10 @@ message TracePoint {
 message ModuleListRequest {
   Runtime runtime = 1;
   repeated string supported_module_classes = 2;
-  map<string, ModuleExpectedProperties> module_expected_properties = 3;
+  map<string, ModuleAnnotation> module_annotations = 3;
 }
 
-message ModuleExpectedProperties
-{
-  map<string, string> properties = 1;
-  bool has_defined_expected_properties = 2;
-}
+
 
 // List of modules that the runtime client is expected to instantiate.
 message ModuleListResponse {
@@ -249,3 +245,11 @@ message RemoveModuleRequest
 //   map<string, string> properties = 5;
 // }
 
+message ModuleAnnotation
+{
+  string module_description  = 1;
+  repeated string properties = 2;
+  repeated string property_descriptions = 3;
+  repeated DataPackage channel_definition = 4;
+  repeated string channel_description = 5;
+}

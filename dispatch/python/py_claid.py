@@ -34,7 +34,10 @@ class TestModule(Module):
         pass
 
     @staticmethod
-    def define_expected_properties():
+    def annotate_module(annotator):
+        annotator.set_module_description("This Module can...")
+        annotator.describe_property("samplingRate", "Allows to")
+        annotator.describe_publish_channel("MyChannel", int(42), "")
         return {"test": "test"}
 
     def initialize(self, properties):

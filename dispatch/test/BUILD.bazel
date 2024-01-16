@@ -16,9 +16,9 @@ filegroup(
 )
 
 cc_test(
-  name = "get_expected_properties_test",
+  name = "module_annotator_test",
   size = "small",
-  srcs = ["get_expected_properties_test.cc"],
+  srcs = ["module_annotator_test.cc"],
   deps = [
     ":test_helpers",
     "//dispatch/proto:claidservice_cc_proto",

@@ -29,22 +29,19 @@ class ModuleFactory:
         f"Registered classes are: {self.registered_module_classes}")
         return None
     
-    def get_expected_properties_of_module(self, class_name):
+    def get_module_annotation(self, class_name, module_annotator):
 
         if not class_name in self.registered_module_classes:
-            # has_expected_properties, expected_properties
-            return False, None 
+            return False 
         else:
             class_type = self.registered_module_classes[class_name]
-            define_expected_properties_function = "define_expected_properties"
-            if(hasattr(class_type, define_expected_properties_function) and callable(getattr(class_type, define_expected_properties_function))):
-                
-                return True, getattr(class_type, define_expected_properties_function)()
+            annotate_module_function = "annotate_module"
+            if(hasattr(class_type, annotate_module_function) and callable(getattr(class_type, annotate_module_function))):
+                getattr(class_type, annotate_module_function)(module_annotator)
+                return True
             else:
-                # has_expected_properties, expected_properties
-                return False, None
+                return False
 
-        return False, None
 
     def is_module_class_registered(self, module_class):
         return module_class in self.registered_module_classes

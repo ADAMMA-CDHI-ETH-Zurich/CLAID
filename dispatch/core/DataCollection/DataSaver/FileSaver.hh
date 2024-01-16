@@ -39,7 +39,6 @@ namespace claid
             std::string fileNameFormat;
             std::string fileType;
 
-            bool excludeHeader;
             
             std::string tmpStoragePath;
             std::string currentFilePath;

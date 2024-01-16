@@ -28,8 +28,8 @@ namespace claid
 
 
 	template <typename T>
-	struct has_define_expected_properties_function {
-		template <typename U, typename = decltype(&U::defineExpectedProperties)>
+	struct has_annotate_module_function {
+		template <typename U, typename = decltype(&U::annotateModule)>
 		static std::true_type test(int);
 
 		template <typename>
@@ -40,9 +40,9 @@ namespace claid
 
 
 	template<typename T, class Enable = void>
-	struct __DefineExpectedPropertiesFunctionInvoker 
+	struct __AnnotateModuleFunctionInvoker 
 	{
-		static bool call(std::map<std::string, std::string>& properties) 
+		static bool call(ModuleAnnotator& annotator) 
 		{
 			return false;
 		}
@@ -50,11 +50,11 @@ namespace claid
 	}; 
 
 	template<class T>
-	struct __DefineExpectedPropertiesFunctionInvoker<T, typename std::enable_if<has_define_expected_properties_function<T>::value>::type> 
+	struct __AnnotateModuleFunctionInvoker<T, typename std::enable_if<has_annotate_module_function<T>::value>::type> 
 	{
-		static bool call(std::map<std::string, std::string>& properties) 
+		static bool call(ModuleAnnotator& annotator) 
 		{
-			T::defineExpectedProperties(properties);
+			T::annotateModule(annotator);
 			return true;
 		}
 	};    
@@ -74,10 +74,9 @@ namespace claid
 				return new T;
 			}
 
-			bool getExpectedPropertiesOfModule(std::map<std::string, std::string>& expectedProperties) override final
+			bool getModuleAnnotation(ModuleAnnotator& annotator) override final
 			{
-				expectedProperties.clear();
-				return __DefineExpectedPropertiesFunctionInvoker<T>::call(expectedProperties);
+				return __AnnotateModuleFunctionInvoker<T>::call(annotator);
 			}
 
 	};

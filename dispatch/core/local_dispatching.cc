@@ -409,10 +409,10 @@ DispatcherClient::DispatcherClient(const string& socketPath,
         SharedQueue<DataPackage>& inQueue,
         SharedQueue<DataPackage>& outQueue,
         const set<string>& supportedModClasses,
-        const std::map<std::string, std::map<std::string, std::string>>& moduleClassesExpectedProperties) :
+        const std::map<std::string, ModuleAnnotation>& moduleAnnotations) :
         incomingQueue(inQueue), outgoingQueue(outQueue),
         moduleClasses(supportedModClasses),
-        moduleClassesExpectedProperties(moduleClassesExpectedProperties) {
+        moduleAnnotations(moduleAnnotations) {
 
     // Set up the gRCP channel
     grpc::ChannelArguments args;
@@ -447,31 +447,21 @@ unique_ptr<ModuleListResponse> DispatcherClient::getModuleList() {
     ClientContext context;
     ModuleListRequest req;
     req.set_runtime(Runtime::RUNTIME_CPP);
-    for(auto it : moduleClasses) {
+    for(auto it : moduleClasses) 
+    {
         req.add_supported_module_classes(it);
 
-        ModuleExpectedProperties modProps;
-
-        auto expectedPropertiesIt = this->moduleClassesExpectedProperties.find(it);
-        if(expectedPropertiesIt != this->moduleClassesExpectedProperties.end())
+        for(auto& moduleAnnotation : this->moduleAnnotations)
         {
-            for(const auto& entry : expectedPropertiesIt->second)
-            {
-                (*modProps.mutable_properties())[entry.first] = entry.second;
-            }
-            modProps.set_has_defined_expected_properties(true);
+            (*req.mutable_module_annotations())[moduleAnnotation.first] = moduleAnnotation.second;
         }
-        else
-        {
-            modProps.set_has_defined_expected_properties(false);
-        }
-        (*req.mutable_module_expected_properties())[it] = modProps;
+        
     }
 
     unique_ptr<ModuleListResponse> resp = make_unique<ModuleListResponse>();
     Status status = stub->GetModuleList(&context, req, resp.get());
 
-    return (status.ok()) ? (move(resp)) : (unique_ptr<ModuleListResponse>(nullptr));
+    return (status.ok()) ? (std::move(resp)) : (unique_ptr<ModuleListResponse>(nullptr));
 }
 
 void makeControlRuntimePing(ControlPackage& pkt) {

@@ -111,7 +111,7 @@ namespace claid
 				return output;
 			}
 
-			bool getExpectedPropertiesOfModule(const std::string& moduleName, std::map<std::string, std::string>& expectedProperties)
+			bool getModuleAnnotation(const std::string& moduleName, ModuleAnnotator& annotator)
 			{
 				auto it = moduleFactories.find(moduleName);
 
@@ -120,7 +120,7 @@ namespace claid
 					return false;
 				}
 
-				return it->second->getExpectedPropertiesOfModule(expectedProperties);
+				return it->second->getModuleAnnotation(annotator);
 			}
 	};
 

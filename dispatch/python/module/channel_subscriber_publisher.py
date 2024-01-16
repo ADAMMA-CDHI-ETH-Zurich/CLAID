@@ -32,7 +32,6 @@ class ChannelSubscriberPublisher:
         print(type(channel_name))
         data_package.channel = channel_name
 
-        # Assuming there's a function set_package_payload to set the payload
         mutator = TypeMapping.get_mutator(example_instance=data_type_example)
         mutator.set_package_payload(data_package, data_type_example.__class__())
 

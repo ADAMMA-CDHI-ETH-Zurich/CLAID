@@ -1,6 +1,7 @@
 from module.module_factory import ModuleFactory
 from logger.logger import Logger
 from module.channel_subscriber_publisher import ChannelSubscriberPublisher
+from module.module_annotator import ModuleAnnotator
 from threading import Thread
 
 from module.thread_safe_channel import ThreadSafeChannel
@@ -74,15 +75,18 @@ class ModuleManager():
         print(self.__module_factory.get_registered_module_classes())
 
         registered_module_classes = self.__module_factory.get_registered_module_classes()
-        expected_properties_for_each_module_class = dict()
+        module_annotations = dict()
 
         for registered_module_class in registered_module_classes:
-            has_defined_expected_properties, expected_properties = self.__module_factory.get_expected_properties_of_module(registered_module_class)
 
-            if(has_defined_expected_properties):
-                expected_properties_for_each_module_class[registered_module_class] = expected_properties
+            module_annotator = ModuleAnnotator(registered_module_class)
+            has_annotate_module_function = self.__module_factory.get_module_annotation(registered_module_class, module_annotator)
+       
 
-        module_list =  self.__module_dispatcher.get_module_list(registered_module_classes, expected_properties_for_each_module_class)
+            if(has_annotate_module_function):
+                module_annotations[registered_module_class] = module_annotator.get_annotations()
+
+        module_list =  self.__module_dispatcher.get_module_list(registered_module_classes, module_annotations)
         Logger.log_info(f"Received ModuleListResponse: {module_list}")
         if not self.instantiate_modules(module_list):
             Logger.log_fatal("ModuleDispatcher: Failed to instantiate Modules.")
