@@ -6,7 +6,8 @@ import ctypes
 import pathlib
 from module.module_factory import ModuleFactory
 from logger.logger import Logger
-
+import sys,os
+sys.path.append(os.getcwd() + "/dispatch/python")
 from local_dispatching.module_dispatcher import ModuleDispatcher
 from module.module_factory import ModuleFactory
 
