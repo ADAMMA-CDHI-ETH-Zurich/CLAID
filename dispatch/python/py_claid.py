@@ -23,6 +23,9 @@ from module.module import Module
 # from module.type_mapping.mutator import Mutator
 
 
+import data_collection.load_heartrate_data
+
+exit(0)
 # value = {str:int}
 
 # dispatcher = ModuleDispatcher("unix:///tmp/test.grpc")
