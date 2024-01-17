@@ -58,15 +58,15 @@ public class claid_java_test {
 		// Normally unix domain sockets work only on Linux.
 		// Currently, however, they do not work at all. To make them work, we need to included netty_shaded instead of netty in our BUILD depndencies.
 		// However, for some reason, that currently leads cyclic dependency error. It worked before, but now it does not anymore. Have to look at this again in the future.
-		if(!CLAID.start("localhost:1337", "/home/lastchance/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory))
-		{
-			System.exit(0);
-		}
-		// If macOS or Windows:
-		// if(!CLAID.start("localhost:1337", "/Users/planger/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory))
+		// if(!CLAID.start("localhost:1337", "/home/lastchance/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory))
 		// {
 		// 	System.exit(0);
 		// }
+		// If macOS or Windows:
+		if(!CLAID.start("localhost:1337", "/Users/planger/Documents/ALEX/alex_config.json", "alex_client", "test", "test", moduleFactory))
+		{
+			System.exit(0);
+		}
 
 		System.out.println(TypeMapping.getNewInstance(Double.class).getClass().getName());
 		while(true);

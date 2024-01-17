@@ -2,11 +2,15 @@ package adamma.c4dhi.claid.LocalDispatching;
 import adamma.c4dhi.claid.Module.AbstractSubscriber;
 import adamma.c4dhi.claid.Module.ChannelSubscriberPublisher;
 import adamma.c4dhi.claid.Module.Module;
+import adamma.c4dhi.claid.Module.ModuleAnnotator;
 import adamma.c4dhi.claid.Module.ModuleFactory;
 import adamma.c4dhi.claid.Module.ThreadSafeChannel;
 import adamma.c4dhi.claid.LocalDispatching.ModuleInstanceKey;
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.Logger.SeverityLevel;
+
+import adamma.c4dhi.claid.ModuleAnnotation;
+
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -148,7 +152,21 @@ public class ModuleManager
 
     public boolean start()
     {
-        ModuleListResponse moduleList = this.dispatcher.getModuleList(this.moduleFactory.getRegisteredModuleClasses());
+        ArrayList<String> registeredModuleClasses = this.moduleFactory.getRegisteredModuleClasses();
+        Map<String, ModuleAnnotation> moduleAnnotations = new HashMap<>();
+
+        for (String registeredModuleClass : registeredModuleClasses) 
+        {
+            ModuleAnnotator moduleAnnotator = new ModuleAnnotator(registeredModuleClass);
+            boolean hasAnnotateModuleFunction = this.moduleFactory.getModuleAnnotation(registeredModuleClass, moduleAnnotator);
+
+            if (hasAnnotateModuleFunction) {
+                moduleAnnotations.put(registeredModuleClass, moduleAnnotator.getAnnotations());
+            }
+        }
+
+
+        ModuleListResponse moduleList = this.dispatcher.getModuleList(registeredModuleClasses, moduleAnnotations);
         Logger.logInfo("Received ModuleListResponse: " + moduleList);
         if(!instantiateModules(moduleList))
         {

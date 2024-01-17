@@ -18,6 +18,7 @@ import adamma.c4dhi.claid.StringArray;
 import adamma.c4dhi.claid.NumberArray;
 import adamma.c4dhi.claid.NumberMap;
 import adamma.c4dhi.claid.StringMap;
+import adamma.c4dhi.claid.Module.ModuleAnnotator;
 
 public class TestModule extends Module
 {
@@ -28,6 +29,11 @@ public class TestModule extends Module
     private Channel<String> receiveChannel2;
 
     private int ctr = 0;
+
+    public static void annotateModule(ModuleAnnotator annotator)
+    {
+        annotator.setModuleDescription("Just a simple Module for testing.");
+    }
 
     @Override
     public void initialize(Map<String, String> properties) 

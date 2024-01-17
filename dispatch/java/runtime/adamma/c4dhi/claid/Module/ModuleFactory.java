@@ -1,10 +1,16 @@
 package adamma.c4dhi.claid.Module;
 
+import adamma.c4dhi.claid.Module.ModuleAnnotator;
+import adamma.c4dhi.claid.ModuleAnnotation;
+import adamma.c4dhi.claid.Logger.Logger;
+
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 public class ModuleFactory
 {
@@ -64,4 +70,43 @@ public class ModuleFactory
     {
         return new ArrayList<String>(this.registeredModuleClasses.keySet());
     }
+
+    public boolean getModuleAnnotation(String className, ModuleAnnotator moduleAnnotator) 
+    {
+        if (!registeredModuleClasses.containsKey(className)) 
+        {
+            return false;
+        } 
+        else 
+        {
+            Class<?> classType = registeredModuleClasses.get(className);
+            String annotateModuleFunction = "annotateModule";
+
+
+            Class<?>[] parameterTypes = {ModuleAnnotator.class};
+
+            try 
+            {
+                // Attempt to get the method with the specified name and parameter types
+                Method method = classType.getDeclaredMethod(annotateModuleFunction, parameterTypes);
+
+                Object result = method.invoke(null, moduleAnnotator);
+                return true;
+            } 
+            catch (NoSuchMethodException e) 
+            {
+               // Logger.logError("Method not found: " + annotateModuleFunction);
+                return false;
+            } 
+            catch (IllegalAccessException | InvocationTargetException e) 
+            {
+              //  Logger.logError("Error invoking method: " + e.getMessage());
+                return false;
+            }
+        }
+    }
+
+
+
+    
 }

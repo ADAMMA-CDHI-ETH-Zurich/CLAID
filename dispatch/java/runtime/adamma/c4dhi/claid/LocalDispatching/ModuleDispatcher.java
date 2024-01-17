@@ -14,6 +14,7 @@ import adamma.c4dhi.claid.Runtime;
 import adamma.c4dhi.claid.ModuleListRequest;
 import adamma.c4dhi.claid.ModuleListResponse;
 import adamma.c4dhi.claid.ModuleListResponse.ModuleDescriptor;
+import adamma.c4dhi.claid.ModuleAnnotation;
 
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
@@ -93,13 +94,20 @@ public class ModuleDispatcher
     // Therefore, it relies on the Runtimes to tell the Middleware which Modules they can handle. They do so by calling the stub.GetModuleList() function,
     // which contains a ModuleListRequest, which contains a list of all Modules the Runtime can handle.
     // The Middleware then replies with a ModuleListResponse, which contains the Modules it wants to be loaded.
-    public ModuleListResponse getModuleList(ArrayList<String> registeredModuleClasses)
+    public ModuleListResponse getModuleList(ArrayList<String> registeredModuleClasses, Map<String, ModuleAnnotation> moduleAnnotations)
     {
-        ModuleListRequest request = 
-            ModuleListRequest.newBuilder()
-            .setRuntime(Runtime.RUNTIME_JAVA)
-            .addAllSupportedModuleClasses(registeredModuleClasses)
-            .build();
+        ModuleListRequest.Builder requestBuilder = 
+            ModuleListRequest.newBuilder();
+
+        requestBuilder.setRuntime(Runtime.RUNTIME_JAVA)
+                      .addAllSupportedModuleClasses(registeredModuleClasses);
+
+        for(Map.Entry<String, ModuleAnnotation> entry : moduleAnnotations.entrySet())
+        {
+            requestBuilder.putModuleAnnotations(entry.getKey(), entry.getValue());
+        }
+
+        ModuleListRequest request = requestBuilder.build();
         Logger.logInfo("Sending ModuleListRequest: " + request);
         
         // stub.getModuleList() -> calls getModuleList function of RemoteService in the MiddleWare via RPC.

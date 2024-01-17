@@ -88,6 +88,10 @@ class ModuleTable {
     // ONLY FOR TESTING REMOVE LATER
     void addModuleToRuntime(const std::string& Module, claidservice::Runtime runtime);
 
+    void setModuleAnnotations(const std::map<std::string, claidservice::ModuleAnnotation>& moduleAnnotations);
+    const std::map<std::string, claidservice::ModuleAnnotation> getModuleAnnotations() const;
+    bool getAnnotationForModule(const std::string& moduleClass, claidservice::ModuleAnnotation& annotation) const;
+
   private:
     void augmentFieldValues(claidservice::DataPackage& pkt) const;
     ChannelEntry* findChannel(const std::string& channelId);
@@ -141,6 +145,8 @@ class ModuleTable {
     //
 
     std::map<std::string, ChannelEntry> chanMap;
+
+    std::map<std::string, claidservice::ModuleAnnotation> moduleAnnotations;
 
   friend class ServiceImpl;
 };

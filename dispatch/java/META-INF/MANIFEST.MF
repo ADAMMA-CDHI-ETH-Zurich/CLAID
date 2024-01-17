@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Created-By: bazel
+Target-Label: //dispatch/proto:claidservice_proto
+Injecting-Rule-Kind: java_proto_library
+
