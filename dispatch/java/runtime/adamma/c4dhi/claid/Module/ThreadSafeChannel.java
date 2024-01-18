@@ -25,7 +25,7 @@ public class ThreadSafeChannel<T>
         } 
         catch (InterruptedException e) 
         {
-            Logger.logError("ThreadSafeChannel error: " + e.getMessage());
+            Logger.logWarning("ThreadSafeChannel interrupted exception (no error, just a warning): " + e.getMessage());
             value = null;
         }
     

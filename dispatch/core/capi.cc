@@ -76,4 +76,24 @@ void* attach_cpp_runtime(void* handle)
     return claid;
 }
 
+__attribute__((visibility("default"))) __attribute__((used))
+bool load_new_config(void* handle, const char* config_file)
+{
+    if (handle) {
+        auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
+        
+        // This is only safe as long as middleWare does not get deleted.
+        absl::Status status = middleWare->loadNewConfig(config_file);
+        if(!status.ok())
+        {
+            claid::Logger::logError("Failed to load new config: %s", status.ToString().c_str());
+            return false;
+        }
+        return true;
+    }
+    claid::Logger::printfln("Cannot get socket path from middleware, handle is null.");
+    return false;
+}
+
+
 }

@@ -156,4 +156,10 @@ public class ChannelSubscriberPublisher
         return description.getPayloadOneofCase();
     }
 
+    public void reset()
+    {
+        channelDescriptions.clear();
+        moduleChannelsSubscriberMap.clear();
+    }
+
 }

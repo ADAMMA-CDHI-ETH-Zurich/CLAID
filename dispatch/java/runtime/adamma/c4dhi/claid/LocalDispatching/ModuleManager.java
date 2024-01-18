@@ -55,6 +55,8 @@ public class ModuleManager
     // ModuleId, Module
     private Map<String, Module> runningModules = new HashMap<>();
 
+    private Thread restartThread;
+
     ChannelSubscriberPublisher subscriberPublisher;
 
     
@@ -223,15 +225,28 @@ public class ModuleManager
 
     private void shutdownModules()
     {
-        for(Module mod : this.runningModules.valueSet())
+        for(Module mod : this.runningModules.values())
         {
             mod.shutdown();
         }
+        this.runningModules.clear();
     }
 
     private void stop()
     {
+        shutdownModules();
+        this.running = false;
+        this.readFromModulesThread.interrupt();
 
+        try{
+            this.readFromModulesThread.join();
+        }
+        catch(InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+        this.readFromModulesThread = null;
+        subscriberPublisher.reset();
     }
 
     private String[] splitHostModule(String addr)
@@ -326,8 +341,8 @@ public class ModuleManager
 
             ctrlPackageBuilder.setCtrlType(CtrlType.CTRL_UNLOAD_MODULES_DONE);
             ctrlPackageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
-            responseBuilder.setSourceHost(package.getTargetHost());
-            responseBuilder.setTargetHost(package.getSourceHost());
+            responseBuilder.setSourceHost(packet.getTargetHost());
+            responseBuilder.setTargetHost(packet.getSourceHost());
 
             // Use the responseBuilder to build the final DataPackage
             DataPackage response = responseBuilder.build();
@@ -335,9 +350,31 @@ public class ModuleManager
         }
         else if(packet.getControlVal().getCtrlType() == CtrlType.CTRL_RESTART_RUNTIME)
         {
-            this.stop();
-            this.dispatcher.shutdown();
-            this.start();
+            if(this.restartThread != null)
+            {
+                try{
+                    this.restartThread.join();
+                    this.restartThread = null;
+                }
+                catch(InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            this.restartThread = new Thread(() -> restart());
+            this.restartThread.start();
+
+            DataPackage.Builder responseBuilder = DataPackage.newBuilder();
+            ControlPackage.Builder ctrlPackageBuilder = responseBuilder.getControlValBuilder();
+
+            ctrlPackageBuilder.setCtrlType(CtrlType.CTRL_RESTART_RUNTIME_DONE);
+            ctrlPackageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
+            responseBuilder.setSourceHost(packet.getTargetHost());
+            responseBuilder.setTargetHost(packet.getSourceHost());
+
+            // Use the responseBuilder to build the final DataPackage
+            DataPackage response = responseBuilder.build();
+            this.fromModulesChannel.add(response);
         }
         else
         {
@@ -368,6 +405,27 @@ public class ModuleManager
         Logger.logInfo("ModuleManager received local package from Module \"" + dataPackage.getSourceModule() + "\".");
         Logger.logInfo(dataPackage + " ");
         this.dispatcher.postPackage(dataPackage);
+    }
+
+    private void restart()
+    {
+        this.stop();
+        Logger.logInfo("Shutting down dispatcher");
+        this.dispatcher.shutdown();
+        Logger.logInfo("Dispatcher was shut down");
+
+        while(!this.dispatcher.wasInputStreamCancelled())
+        {
+            try
+            {
+                Thread.sleep(50);
+            }
+            catch(InterruptedException e)
+            {
+                Logger.logError("ModuleManager waiting for dispatcher to cancel stream, InterruptedException: " + e.getMessage());
+            }
+        }
+        this.start();
     }
   
 }

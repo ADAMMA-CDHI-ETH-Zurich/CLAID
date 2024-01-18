@@ -13,6 +13,8 @@ extern "C"
 
     void* attach_cpp_runtime(void* handle);
 
+    bool load_new_config(void* handle, const char* config_file);
+
 #ifdef __cplusplus
 }
 #endif

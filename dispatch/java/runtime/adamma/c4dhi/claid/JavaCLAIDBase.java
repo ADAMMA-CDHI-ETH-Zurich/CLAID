@@ -26,6 +26,8 @@ public abstract class JavaCLAIDBase
     private static native long attachCppRuntime(long handle);
     
     private static native String getSocketPath(long handle);
+
+    private static native boolean nativeLoadNewConfig(long handle, String config);
     
     private static ModuleDispatcher moduleDispatcher;
     private static ModuleManager moduleManager;
@@ -94,6 +96,12 @@ public abstract class JavaCLAIDBase
         String socketPath = getSocketPath(handle);
         return attachJavaRuntimeInternal(socketPath, factory);
     }
+
+    public static boolean loadNewConfig(String config)
+    {
+        return nativeLoadNewConfig(handle, config);
+    }
+
 
 
 }

@@ -234,7 +234,7 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
 
         map<string, string>::const_iterator modClassIt;
         if ((modClassIt = moduleTable.moduleToClassMap.find(moduleId))== moduleTable.moduleToClassMap.end()) {
-            return Status(grpc::INVALID_ARGUMENT, "Unknown module id given in InitRuntime called by ", Runtime_Name(rt));
+            return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Unknown module id \"", moduleId, "\" given in InitRuntime called by Runtime ", Runtime_Name(rt)));
         }
 
         auto classRt = moduleTable.moduleClassRuntimeMap[modClassIt->second];

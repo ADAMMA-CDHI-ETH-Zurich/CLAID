@@ -21,6 +21,8 @@ import io.grpc.ManagedChannel;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.stub.StreamObserver;
+import io.grpc.stub.ClientCallStreamObserver;
+
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.ManagedChannel;
@@ -53,6 +55,8 @@ public class ModuleDispatcher
 
     boolean waitingForPingResponse = false;
 
+    private boolean waitForInputStreamCancelled = false;
+    private boolean inputStreamCancelled = false;
     // Is this safe?
     private boolean isAndroid() {
         try {
@@ -209,6 +213,8 @@ public class ModuleDispatcher
             return false;
         }
      
+        this.waitForInputStreamCancelled = false;
+        this.inputStreamCancelled = false;
         this.inStream = makeInputStreamObserver(
                 dataPackage -> onMiddlewareStreamPackageReceived(dataPackage),
                 error -> onMiddlewareStreamError(error),
@@ -306,14 +312,20 @@ public class ModuleDispatcher
 
     private void onMiddlewareStreamError(Throwable throwable)
     {
-        Logger.logError("Middleware stream closed! " + throwable.getMessage());
-        this.closeOutputStream();
+        Logger.logWarning("Middleware stream closed! " + throwable.getMessage() + "\n"
+        + "This might happen when reloading a configuration and restarting the JAVA_RUNTIME.");
+        
+        if(this.waitForInputStreamCancelled)
+        {
+            this.inputStreamCancelled = true;
+        }
+       // this.closeOutputStream();
     }
 
     private void onMiddlewareStreamCompleted()
     {
         Logger.logError("Middleware stream completed!");
-        this.closeOutputStream();
+       // this.closeOutputStream();
     }
 
     public void closeOutputStream()
@@ -327,6 +339,23 @@ public class ModuleDispatcher
     {
         this.outStream.onNext(packet);
         return false;
+    }
+
+    boolean wasInputStreamCancelled()
+    {
+        return this.inputStreamCancelled;
+    }
+
+    void shutdown()
+    {
+       
+        // See: https://github.com/grpc/grpc-java/issues/3095#issuecomment-338724284
+        Logger.logInfo("Cancel 1");
+
+        this.waitForInputStreamCancelled = true;
+        this.outStream.onError(Status.CANCELLED.asException());
+       // ClientCallStreamObserver clientCallObserver = (ClientCallStreamObserver) this.inStream;
+      
     }
 
 
