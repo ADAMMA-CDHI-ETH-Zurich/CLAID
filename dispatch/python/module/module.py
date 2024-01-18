@@ -153,8 +153,8 @@ class Module(ABC):
         Logger.logInfo("Runnable dispatcher stop 3")
 
     def terminate_internal(self):
-        self.terminate()
         self.unregister_all_periodic_functions()
+        self.terminate()
         self.__is_terminating = False
 
     def terminate(self):

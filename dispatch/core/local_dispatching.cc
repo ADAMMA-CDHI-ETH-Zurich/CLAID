@@ -78,12 +78,22 @@ void RuntimeDispatcher::shutdownWriterThread() {
 void RuntimeDispatcher::processWriting(ServerReaderWriter<DataPackage, DataPackage>* stream) {
      while(this->running) {
 
+        Logger::printfln("RuntimeDispatcher waiting");
         auto pkt = outgoingQueue.interruptable_pop_front();
-
-        // If we got a null pointer we are done
-        if (!pkt && outgoingQueue.is_closed()) {
-            break;
+        Logger::logInfo("RuntimeDispatcher::processWriting got package");
+        // Might be received due to spurious wake up or queue closed
+        if (!pkt) {
+            if(outgoingQueue.is_closed())
+            {
+                break;
+            }
+            else
+            {
+                // Spurious wakeup
+                continue;
+            }
         }
+        Logger::logInfo("RuntimeDispatcher writing package");
 
         if (!stream->Write(*pkt)) {
             outgoingQueue.push_front(pkt);
@@ -110,23 +120,28 @@ Status RuntimeDispatcher::processReading(ServerReaderWriter<DataPackage, DataPac
 
 void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
     status = Status::OK;
-
+    Logger::logInfo("RunTimeDispatcher processPacket 1");
     // Enqueue the data package and we are all done.
     if (!pkt.has_control_val()) {
         // Check if the channel of the packet is valid. That means the
         // combination of channel, source, target and type has to exist in the
         // channel map.
+        Logger::logInfo("RunTimeDispatcher processPacket 2");
         ChannelInfo chanInfo;
         auto chanEntry = moduleTable.isValidChannel(pkt);
+        Logger::logInfo("RunTimeDispatcher processPacket 3");
         if (!chanEntry) {
             // TODO: Figure out how to handle errors without leaving
             // the read loop.
             Logger::printfln("Received invalid data packet:");
             Logger::println(messageToString(pkt));
             return;
-        }
+        }    
+        Logger::logInfo("RunTimeDispatcher processPacket 4");
+
 
         moduleTable.addOutputPackets(pkt, chanEntry, incomingQueue);
+        Logger::logInfo("RunTimeDispatcher processPacket 5");
 
         // Make a copy of the package and augment it with the
         // the fields not set by the client dispatcher.
@@ -135,6 +150,7 @@ void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
         // incomingQueue.push_back(cpPkt);
         return;
     }
+    Logger::logInfo("RunTimeDispatcher processPacket 6");
 
     // Simply forward control package. Will be processed by middleware.
     incomingQueue.push_back(std::make_shared<claidservice::DataPackage>(pkt));
@@ -517,11 +533,11 @@ bool DispatcherClient::startRuntime(const InitRuntimeRequest& req) {
     if (pingReq.control_val().ctrl_type() != CtrlType::CTRL_RUNTIME_PING) {
         return false;
     }
+    this->running = true;
 
     // Start the threads to service the input/output queues.
     writeThread = make_unique<thread>([this]() { processWriting(); });
     readThread = make_unique<thread>([this]() { processReading(); });
-    this->running = true;
     return true;
 }
 
@@ -539,15 +555,16 @@ void DispatcherClient::processWriting() {
         if (!pkt) {
             if(outgoingQueue.is_closed())
             {
-
                 break;
             }
         } else {
             if (!stream->Write(*pkt)) {
                 claid::Logger::printfln("Client: Error writing packet");
                 break;
-            }        }
+            }        
+        }
     }
+    Logger::printfln("DispatcherClient writes done");
     stream->WritesDone();
     auto status = stream->Finish();
     if (!status.ok()) {

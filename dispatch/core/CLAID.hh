@@ -37,6 +37,8 @@ namespace claid
 
         bool isConnectedToRemoteServer() const;
         absl::Status getRemoteClientStatus() const;
+
+        absl::Status loadNewConfig(const std::string& newConfigFilePath);
     };
 
 }

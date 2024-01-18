@@ -75,8 +75,9 @@ enum CtrlType {
   CTRL_CONNECTED_TO_REMOTE_SERVER       = 9; // If RemoteDispatcherClient connected to a Server
   CTRL_DISCONNECTED_FROM_REMOTE_SERVER  = 10;
   CTRL_UNLOAD_MODULES                   = 11;
-  CTRL_RESTART_RUNTIME                  = 12;
-  CTRL_UNLOAD_MODULES_DONE              = 13;
+  CTRL_UNLOAD_MODULES_DONE              = 12;
+  CTRL_RESTART_RUNTIME                  = 13;
+  CTRL_RESTART_RUNTIME_DONE             = 14;
   //CTRL_ADD_MODULE                       = 11; // Can be used to add a new Module at runtime (requires Module name, properties, channels). This package will be forwarded by the LocalRouter to the Middleware that can handle this Module.
   //CTRL_REMOVE_MODULE                    = 12; // Can be used to remove a Module at runtime.
   //CTRL_ADD_MODULE_SUCCESS               = 13; // Sent as response to CTRL_ADD_MODULE the Module was added successfully.

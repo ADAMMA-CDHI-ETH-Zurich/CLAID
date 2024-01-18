@@ -324,3 +324,22 @@ void ModuleTable::getRunningModules(std::vector<std::string>& moduleIDs) const
     }
 }
 
+size_t ModuleTable::getNumberOfRunningRuntimes()
+{
+    return this->runtimeQueueMap.size();
+}
+
+void ModuleTable::clearLookupTables()
+{
+    unique_lock<shared_mutex> lock(chanMapMutex);
+    moduleClassRuntimeMap.clear();
+    // Not necessary
+    // RuntimeQueueMap.clear();
+    moduleToClassMap.clear();
+    moduleProperties.clear();
+    moduleRuntimeMap.clear();
+    chanMap.clear(),
+    moduleAnnotations.clear();
+
+
+}

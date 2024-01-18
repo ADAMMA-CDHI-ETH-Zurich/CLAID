@@ -6,6 +6,8 @@ from threading import Thread
 
 from module.thread_safe_channel import ThreadSafeChannel
 
+from dispatch.proto.claidconfig_pb2 import *
+
 class ModuleManager():
 
     def __init__(self, module_dispatcher, module_factory):
@@ -168,6 +170,22 @@ class ModuleManager():
         elif packet.control_val.ctrl_type == CtrlType.CTRL_DISCONNECTED_FROM_REMOTE_SERVER:
             for module_id, module in self.__running_modules.items():
                 module.notify_disconnected_from_remote_server()
+        elif packet.control_val.ctrl_type == CtrlType.CTRL_UNLOAD_MODULES:
+            self.shutdown_modules()
+
+            response = DataPackage()
+            ctrl_package = response.control_val
+
+            ctrl_package.ctrl_type = DataPackage_pb2.CtrlType.CTRL_UNLOAD_MODULES_DONE
+            ctrl_package.runtime = DataPackage_pb2.Runtime.RUNTIME_PYTHON
+            response.source_host = package.target_host
+            response.target_host = package.source_host
+
+            self.__to_module_dispatcher_queue.put(response)
+        elif packet.control_val.ctrl_type == CtrlType.CTRL_RESTART_RUNTIME:
+            self.stop()
+            self.__module_dispatcher.shutdown()
+            self.start()
         else:
             Logger.log_warning(f"ModuleManager received package with unsupported control val {packet.control_val.ctrl_type}")
 

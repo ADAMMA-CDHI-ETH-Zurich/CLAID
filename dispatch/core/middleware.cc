@@ -58,22 +58,7 @@ absl::Status MiddleWare::start() {
 
     ChannelDescriptionMap channelDescriptions;
 
-    status = config.getHostDescriptions(hostDescriptions);
-    if (!status.ok()) {
-        return status;
-    }
-
-    status = config.getModuleDescriptions(allModuleDescriptions);
-    if (!status.ok()) {
-        return status;
-    }
-
-    status = config.extractModulesForHost(hostId, allModuleDescriptions, hostModuleDescriptions);
-    if (!status.ok()) {
-        return status;
-    }
-
-    status = config.getChannelDescriptions(channelDescriptions);
+    status = getHostModuleAndChannelDescriptions(hostId, config, hostDescriptions, allModuleDescriptions, hostModuleDescriptions, channelDescriptions);
     if (!status.ok()) {
         return status;
     }
@@ -113,6 +98,8 @@ absl::Status MiddleWare::start() {
     this->controlPackageHandlerThread = std::make_unique<std::thread>([this]() {
         this->readControlPackages();
     });
+
+    this->currentConfiguration = config;
 
     return absl::OkStatus();
 }
@@ -417,8 +404,34 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
     {
         case CtrlType::CTRL_CONNECTED_TO_REMOTE_SERVER:
         case CtrlType::CTRL_DISCONNECTED_FROM_REMOTE_SERVER:
+        case CtrlType::CTRL_UNLOAD_MODULES:
         {
             this->forwardControlPackageToAllRuntimes(controlPackage);
+            break;
+        }
+        case CtrlType::CTRL_UNLOAD_MODULES_DONE:
+        {
+            Logger::logInfo("Received CTRL_UNLOAD_MODULES_DONE from Runtime %s", Runtime_Name(controlPackage->control_val().runtime()).c_str());
+            this->numberOfRuntimesThatUnloadedModules++;
+
+            Logger::logInfo("1");
+            if(this->numberOfRuntimesThatUnloadedModules == this->moduleTable.getNumberOfRunningRuntimes())
+            {
+                Logger::logInfo("2");
+                this->waitingForAllRuntimesToUnloadModules = false;
+                Logger::logInfo("3");
+            }
+            break;
+        }
+        case CtrlType::CTRL_RESTART_RUNTIME_DONE:
+        {
+            Logger::logInfo("Received CTRL_RESTART_RUNTIME_DONE from Runtime %s", Runtime_Name(controlPackage->control_val().runtime()).c_str());
+            this->numberOfRuntimesThatRestarted++;
+
+            if(this->numberOfRuntimesThatRestarted == this->moduleTable.getNumberOfRunningRuntimes())
+            {
+                this->waitingForAllRuntimesToRestart = false;
+            }  
             break;
         }
     }
@@ -426,9 +439,240 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
 
 void MiddleWare::forwardControlPackageToAllRuntimes(std::shared_ptr<DataPackage> package)
 {
+    Logger::logInfo("Get runtime queues");
     auto allQueues = this->moduleTable.getRuntimeQueues();
     for(auto queue : allQueues)
     {
+        Logger::logInfo("enqueueing");
         queue->push_back(package);
     }
+}
+
+
+absl::Status MiddleWare::unloadAllModulesInAllLocalRuntimes()
+{
+    if(this->waitingForAllRuntimesToUnloadModules)
+    {
+        return absl::UnavailableError("Cannot load a new config. We are currently waiting for all local Runtimes "
+        "to unload their Modules (i.e., loadNewConfig() was called before but has not finished yet).");
+    }
+
+    this->waitingForAllRuntimesToUnloadModules = true;
+    this->numberOfRuntimesThatUnloadedModules = 0;
+    this->modulesUnloaded = false;
+
+
+    std::shared_ptr<DataPackage> package = std::make_shared<DataPackage>();
+    ControlPackage& ctrlPackage = *package->mutable_control_val();
+    
+    ctrlPackage.set_ctrl_type(CtrlType::CTRL_UNLOAD_MODULES);
+    package->set_source_host(this->hostId);
+    package->set_target_host(this->hostId);
+    Logger::logInfo("Forwarding CTRL_UNLOAD_MODULES package to all local runtimes");
+    this->forwardControlPackageToAllRuntimes(package);
+            Logger::logInfo("4");
+
+    while(this->waitingForAllRuntimesToUnloadModules)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+            Logger::logInfo("5");
+
+    this->modulesUnloaded = true;
+            Logger::logInfo("6");
+    return absl::OkStatus();
+}
+
+absl::Status MiddleWare::getHostModuleAndChannelDescriptions(const std::string& hostId, Configuration& config,
+        HostDescriptionMap& hostDescriptions, ModuleDescriptionMap& allModuleDescriptions,
+        ModuleDescriptionMap& hostModuleDescriptions, ChannelDescriptionMap& channelDescriptions)
+{
+    absl::Status status;
+    status = config.getHostDescriptions(hostDescriptions);
+    if (!status.ok()) {
+        return status;
+    }
+
+    status = config.getModuleDescriptions(allModuleDescriptions);
+    if (!status.ok()) {
+        return status;
+    }
+
+    status = config.extractModulesForHost(hostId, allModuleDescriptions, hostModuleDescriptions);
+    if (!status.ok()) {
+        return status;
+    }
+
+    status = config.getChannelDescriptions(channelDescriptions);
+    if (!status.ok()) {
+        return status;
+    }
+
+    return absl::OkStatus();
+}
+    
+
+absl::Status MiddleWare::loadNewConfigIntoModuleTable(Configuration& config)
+{
+    // This is ONLY safe to do, if all Modules in all Runtimes have been unloaded!!
+    if(!this->modulesUnloaded)
+    {
+        return absl::UnavailableError("Cannot restart runtimes, have to unload Modules first!");
+    }
+
+
+    HostDescriptionMap hostDescriptions;
+
+    // All Modules specified in the configuration file.
+    // Needed by the Router.
+    ModuleDescriptionMap allModuleDescriptions;
+
+    // Subset of allModuleDescriptions. Contains only the Modules running on the current host.
+    // Needed to populate the ModuleTable.
+    ModuleDescriptionMap hostModuleDescriptions;
+
+    ChannelDescriptionMap channelDescriptions;
+
+    absl::Status status; 
+    status = getHostModuleAndChannelDescriptions(hostId, config, hostDescriptions, allModuleDescriptions, hostModuleDescriptions, channelDescriptions);
+    if (!status.ok()) {
+        return status;
+    }
+   
+
+    HostDescriptionMap oldHostDescriptions;
+    status = this->currentConfiguration.getHostDescriptions(oldHostDescriptions);
+    if(!status.ok())
+    {
+        return status;
+    }
+
+    
+    if(hostDescriptions.size() != oldHostDescriptions.size())
+    {
+        return absl::Status(absl::InvalidArgumentError(absl::StrCat(
+            "Unable to load new configuration into ModuleTable.\n",
+            "The number of hosts has changed. Previously we had ", oldHostDescriptions.size(), " host,\n",
+            "but now we have ", hostDescriptions.size()
+        )));
+    }
+
+    for(const auto& entry : hostDescriptions)
+    {
+        const std::string& hostName = entry.first;
+        auto it = oldHostDescriptions.find(hostName);
+        if(it == oldHostDescriptions.end())
+        {
+            return absl::Status(absl::InvalidArgumentError(absl::StrCat(
+                "Unable to load new configuration into ModuleTable.\n",
+                "A new host with name \"", hostName, "\" was found, which is not available in the old host configuration.\n",
+                "Adding new hosts while reloading configs is not supported. You can only change the Modules per host."
+            )));
+        }
+
+        if(entry.second.connectTo != it->second.connectTo)
+        {
+            return absl::Status(absl::InvalidArgumentError(absl::StrCat(
+                "Unable to load a new configuration into ModuleTable.\n",
+                "The new config has made changes to the internal configuration for host \"", entry.first, "\".\n",
+                "Previously, the property \"connectTo\" was set to \"", it->second.connectTo, " and now is \"", entry.second.connectTo, "\".\n",
+                "Changing the internal configuration of hosts when reloading configs is not supported. You can only change the Modules per host.")));
+        }
+
+        if(entry.second.isServer != it->second.isServer)
+        {
+            return absl::Status(absl::InvalidArgumentError(absl::StrCat(
+                "Unable to load a new configuration into ModuleTable.\n",
+                "The new config has made changes to the internal configuration for host \"", entry.first, "\".\n",
+                "Previously, the property \"isServer\" was set to \"", it->second.isServer, " and now is \"", entry.second.isServer, "\".\n",
+                "Changing the internal configuration of hosts when reloading configs is not supported. You can only change the Modules per host.")));
+        }
+
+        if(entry.second.connectTo != it->second.connectTo)
+        {
+            return absl::Status(absl::InvalidArgumentError(absl::StrCat(
+                "Unable to load a new configuration into ModuleTable.\n",
+                "The new config has made changes to the internal configuration for host \"", entry.first, "\".\n",
+                "Previously, the property \"hostServerAddress\" was set to \"", it->second.hostServerAddress, " and now is \"", entry.second.hostServerAddress, "\".\n",
+                "Changing the internal configuration of hosts when reloading configs is not supported. You can only change the Modules per host.")));
+        }
+    }
+        
+    this->currentConfiguration = config;
+    
+    this->moduleTable.clearLookupTables();
+    status = populateModuleTable(hostModuleDescriptions, channelDescriptions, moduleTable);
+    if (!status.ok()) {
+        return status;
+    }
+    return absl::OkStatus();
+}
+
+
+absl::Status MiddleWare::restartRuntimesWithNewConfig()
+{
+    this->waitingForAllRuntimesToRestart = true;
+    this->numberOfRuntimesThatRestarted = 0;
+
+    std::shared_ptr<DataPackage> package = std::make_shared<DataPackage>();
+    ControlPackage& ctrlPackage = *package->mutable_control_val();
+    
+    ctrlPackage.set_ctrl_type(CtrlType::CTRL_RESTART_RUNTIME);
+    package->set_source_host(this->hostId);
+    package->set_target_host(this->hostId);
+    this->forwardControlPackageToAllRuntimes(package);
+    Logger::logInfo("Forwarding CTRL_RESTART_RUNTIME package to all local runtimes");
+
+    while(this->waitingForAllRuntimesToUnloadModules)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+    Logger::logInfo("Restarting runtimes done");
+
+    return absl::OkStatus();
+}
+
+absl::Status MiddleWare::loadNewConfig(const std::string& configurationPath)
+{
+    Configuration config;
+    Logger::printfln("Parsing %s\n", configurationPath.c_str());
+    auto status = config.parseFromJSONFile(configurationPath);
+    if (!status.ok()) {
+        Logger::printfln("Unable to parse config file: %s", string(status.message()).c_str());
+        return status;
+    }
+
+    Logger::logInfo("Unloading all Modules in all local runtimes.");
+
+    // Loading a new config works as follows:
+    // 1. All Runtimes stop and delete all Modules (= unloading them), and acknowledge it.
+    // 2. Once all Runtimes have acknowledged that the Modules have been unloaded, we can clear
+    // the lookup tables inside the ModuleTable and populate it again from the new config.
+    // 3. Afterward, all Runtimes will restart and automatically receive the new configuration from the Middleware.
+    // Loading a new config means all Modules will be stopped and deleted! It is not possible for information to persist 
+    // between two configs (i.e., if there are two Modules with the same id before and after, they will still be completely restarted).
+    status = this->unloadAllModulesInAllLocalRuntimes();
+    if(!status.ok())
+    {
+        return status;
+    }
+
+    Logger::logInfo("Done unloading all Modules in all local runtimes.");
+
+    status = this->loadNewConfigIntoModuleTable(config);
+    if(!status.ok())
+    {
+        return status;
+    }
+    this->configurationPath = configurationPath;
+
+    status = this->restartRuntimesWithNewConfig();
+    if(!status.ok())
+    {
+        return status;
+    }
+
+    
+
+    return absl::OkStatus();
 }

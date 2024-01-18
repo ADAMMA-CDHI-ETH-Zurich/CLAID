@@ -57,8 +57,7 @@ public class ModuleManager
 
     ChannelSubscriberPublisher subscriberPublisher;
 
-    StreamObserver<DataPackage> inStream;
-    StreamObserver<DataPackage> outStream;
+    
 
     ThreadSafeChannel<DataPackage> fromModulesChannel = new ThreadSafeChannel<>();
     Thread readFromModulesThread;
@@ -222,6 +221,19 @@ public class ModuleManager
         return true;
     }
 
+    private void shutdownModules()
+    {
+        for(Module mod : this.runningModules.valueSet())
+        {
+            mod.shutdown();
+        }
+    }
+
+    private void stop()
+    {
+
+    }
+
     private String[] splitHostModule(String addr)
     {
         String[] hostAndModule = addr.split(":");
@@ -304,6 +316,28 @@ public class ModuleManager
             {
                 modulesEntry.getValue().notifyDisconnectedFromRemoteServer();
             }
+        }
+        else if(packet.getControlVal().getCtrlType() == CtrlType.CTRL_UNLOAD_MODULES)
+        {
+            this.shutdownModules();
+
+            DataPackage.Builder responseBuilder = DataPackage.newBuilder();
+            ControlPackage.Builder ctrlPackageBuilder = responseBuilder.getControlValBuilder();
+
+            ctrlPackageBuilder.setCtrlType(CtrlType.CTRL_UNLOAD_MODULES_DONE);
+            ctrlPackageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
+            responseBuilder.setSourceHost(package.getTargetHost());
+            responseBuilder.setTargetHost(package.getSourceHost());
+
+            // Use the responseBuilder to build the final DataPackage
+            DataPackage response = responseBuilder.build();
+            this.fromModulesChannel.add(response);
+        }
+        else if(packet.getControlVal().getCtrlType() == CtrlType.CTRL_RESTART_RUNTIME)
+        {
+            this.stop();
+            this.dispatcher.shutdown();
+            this.start();
         }
         else
         {

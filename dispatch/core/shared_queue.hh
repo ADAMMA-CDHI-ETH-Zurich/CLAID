@@ -8,6 +8,8 @@
 #include <mutex>
 #include <iostream>
 
+#include "dispatch/core/Logger/Logger.hh"
+
 namespace claid {
 
 template<class T>
@@ -60,9 +62,12 @@ class SharedQueue
 			if (closed)
 				throw std::logic_error("put to closed channel");
 
+			Logger::logInfo("Pushing back %lu", this);
 			queue.push_back(val);
+			Logger::logInfo("Pushed back");
 
 			cv.notify_one();
+			Logger::logInfo("Notified %lu", this);
         }
         
         std::shared_ptr<T> pop_front()  // returns null_ptr if empty 
@@ -83,14 +88,18 @@ class SharedQueue
 
 		std::shared_ptr<T> interruptable_pop_front()  // returns null_ptr if empty 
         {
+			bool empty = queue.empty();
             std::unique_lock<std::mutex> lock(m);
 			
             // Have to account for spurious wakeups?
+			Logger::printfln("Queue lock %lu", this);
 
-			if(queue.empty())
+			if(empty)
 			{
+				Logger::printfln("Queue locked %lu", this);
 				cv.wait(lock);
 			}
+			Logger::printfln("Shared queue wakup %lu", this);
 			if (queue.empty() || closed)
 				return nullptr;
 
@@ -102,6 +111,7 @@ class SharedQueue
 
 		void interruptOnce()
 		{
+			Logger::logInfo("Queue wakeup %lu", this);
 			cv.notify_one();
 		}
 

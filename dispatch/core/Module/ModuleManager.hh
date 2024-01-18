@@ -35,6 +35,8 @@ namespace claid {
             bool running = false;
 
             std::thread fromModuleDispatcherReaderThread;
+
+            std::unique_ptr<std::thread> restartThread;
             
             absl::Status instantiateModule(const std::string& moduleId, const std::string& moduleClass);
             absl::Status instantiateModules(const ModuleListResponse& moduleList);
@@ -53,10 +55,14 @@ namespace claid {
 
             void shutdownModules();
 
+            void restart();
+
         public:
             ModuleManager(DispatcherClient& dispatcher,
                 SharedQueue<DataPackage>& fromModuleDispatcherQueue,
                 SharedQueue<DataPackage>& toModuleDispatcherQueue);
+
+            ~ModuleManager();
             
 
             absl::Status start();

@@ -13,6 +13,15 @@ ModuleManager::ModuleManager(DispatcherClient& dispatcher,
 
 }
 
+ModuleManager::~ModuleManager()
+{
+    if(this->restartThread)
+    {
+        this->restartThread->join();
+        this->restartThread = nullptr;
+    }
+}
+
 absl::Status ModuleManager::instantiateModule(const std::string& moduleId, const std::string& moduleClass)
 {
     ModuleFactory& moduleFactory = *ModuleFactory::getInstance();
@@ -306,21 +315,31 @@ void ModuleManager::handlePackageWithControlVal(std::shared_ptr<DataPackage> pac
         }
         case CtrlType::CTRL_UNLOAD_MODULES:
         {   
+            Logger::logInfo("ModuleManager received ControlPackage with code CTRL_UNLOAD_MODULES");
+            Logger::logInfo("Unloading modules!");
             this->shutdownModules();
-            DataPackage response;
-            ControlPackage& ctrlPackage = *response.mutable_control_val();
+            std::shared_ptr<DataPackage> response = std::make_shared<DataPackage>();
+            ControlPackage& ctrlPackage = *response->mutable_control_val();
             
             ctrlPackage.set_ctrl_type(CtrlType::CTRL_UNLOAD_MODULES_DONE);
             ctrlPackage.set_runtime(Runtime::RUNTIME_CPP);
-            response.set_source_host(package->target_host());
-            response.set_target_host(package->source_host());
+            response->set_source_host(package->target_host());
+            response->set_target_host(package->source_host());
+            toModuleDispatcherQueue.push_back(response);
+            Logger::logInfo("Unloading modules done and acknowledgement will be sent out");
             break;
         }
         case CtrlType::CTRL_RESTART_RUNTIME:
         {   
-            this->stop();
-            this->dispatcher.shutdown();
-            this->start();
+            // Need to switch to separate thread, because stop would call fromModuleDispatcherReaderThread,
+            // which is the same thread as the one we are currently in.
+            if(this->restartThread)
+            {
+                this->restartThread->join();
+            }
+            this->restartThread = std::make_unique<std::thread>(&ModuleManager::restart, this);
+            
+            
             break;
         }
         default:
@@ -331,5 +350,16 @@ void ModuleManager::handlePackageWithControlVal(std::shared_ptr<DataPackage> pac
     }
 }
 
+void ModuleManager::restart()
+{
+    Logger::logInfo("ModuleManager received ControlPackage with code CTRL_RESTART_RUNTIME");
+    Logger::logInfo("ModuleManager stopping");
+    this->stop();
+    Logger::logInfo("ModuleManager stopping dispatcher");
+    this->dispatcher.shutdown();
+    Logger::logInfo("ModuleManager restarting");
+    this->start();
+    Logger::logInfo("...aaaaaandddd done!");
+}
 
 }

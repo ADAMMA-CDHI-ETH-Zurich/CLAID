@@ -94,6 +94,10 @@ class ModuleTable {
 
     void getRunningModules(std::vector<std::string>& moduleIDs) const;
 
+    size_t getNumberOfRunningRuntimes();
+
+    void clearLookupTables();
+
   private:
     void augmentFieldValues(claidservice::DataPackage& pkt) const;
     ChannelEntry* findChannel(const std::string& channelId);

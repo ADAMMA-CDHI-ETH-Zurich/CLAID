@@ -12,7 +12,23 @@ filegroup(
         "cpp_runtime_test.json",
         "remote_dispatching_test.json",
         "data_saver_json_test.json",
+        "config_reload_test_1.json",
+        "config_reload_test_2.json"
     ],
+)
+
+cc_test(
+  name = "config_reload_test",
+  size = "small",
+  srcs = ["config_reload_test.cc"],
+  deps = [
+    ":test_helpers",
+    "//dispatch/proto:claidservice_cc_proto",
+    "//dispatch/core:capi"
+  ] + FRAMEWORK_DEPS,
+  data = [
+    ":test_configs",
+  ]
 )
 
 cc_test(

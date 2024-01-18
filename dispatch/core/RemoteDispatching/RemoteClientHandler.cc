@@ -61,12 +61,19 @@ namespace claid
         {
             auto pkt = this->outgoingQueue.interruptable_pop_front();
 
-            // If we got a null pointer we are done
-            if (!pkt && outgoingQueue.is_closed()) 
-            {
-                Logger::logWarning("RemoteClientHandler::processWriting received null package");
-                break;
+
+            if (!pkt) {
+                if(outgoingQueue.is_closed())
+                {
+                    break;
+                }
+                else
+                {
+                    // Spurious wakeup
+                    continue;
+                }
             }
+            
 
             std::unique_lock<std::mutex>(this->pingMutex);
             if (!stream->Write(*pkt)) 

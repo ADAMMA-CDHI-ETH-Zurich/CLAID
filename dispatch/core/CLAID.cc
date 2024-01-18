@@ -92,7 +92,7 @@ namespace claid {
             Logger::logFatal("%s", ss.str().c_str());
             return false;
         }
-                Logger::logInfo("Attach cpp runtime 5");
+        Logger::logInfo("Attach cpp runtime 5");
 
         started = true;
         return true;
@@ -138,5 +138,16 @@ namespace claid {
 
         claid::MiddleWare* middleware = static_cast<claid::MiddleWare*>(handle);
         return middleware->getRemoteClientStatus();
+    }
+
+    absl::Status CLAID::loadNewConfig(const std::string& newConfigFilePath)
+    {
+        if(handle == nullptr)
+        {
+            return absl::UnavailableError("Cannot determine status of the RemoteDispatcherClient, because middleware is not running");
+        }   
+
+        claid::MiddleWare* middleware = static_cast<claid::MiddleWare*>(handle);
+        return middleware->loadNewConfig(newConfigFilePath);
     }
 }

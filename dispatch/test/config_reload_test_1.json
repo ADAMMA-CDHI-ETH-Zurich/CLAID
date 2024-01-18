@@ -1,0 +1,28 @@
+{
+	"hosts": [{
+			"hostname": "test_client",
+			"type": "linux",
+			"is_server": false,
+			"connect_to": "",
+			"modules": [{
+					"type": "TestModule1",
+					"id": "TestModule1",
+					"input_channels": [],
+					"output_channels": [],
+					"properties": {
+						"TestModule1Data" : "42"
+					}
+				},
+				{
+					"type": "TestModule2",
+					"id": "TestModule2",
+					"input_channels": [],
+					"output_channels": [],
+					"properties": {
+						"TestModule2Data" : "1337"
+					}
+				}
+			]
+		}
+	]
+}

@@ -43,10 +43,22 @@ namespace claid
             bool isConnectedToRemoteServer() const;
             absl::Status getRemoteClientStatus() const;
 
+            absl::Status loadNewConfig(const std::string& configPath);
+
             virtual ~MiddleWare();
+
+
         private:
 
             bool running = false;
+
+            bool waitingForAllRuntimesToUnloadModules = false;
+            int numberOfRuntimesThatUnloadedModules = 0;
+            bool modulesUnloaded = false;
+
+            bool waitingForAllRuntimesToRestart = false;
+            int numberOfRuntimesThatRestarted = 0;
+
 
             // TODO: Incorporate all variables into the code if necessary.
             std::string socketPath;
@@ -54,6 +66,8 @@ namespace claid
             std::string hostId;
             std::string userId;
             std::string deviceId;
+
+            Configuration currentConfiguration;
 
             ModuleTable moduleTable;
             HostUserTable hostUserTable;
@@ -81,6 +95,10 @@ namespace claid
 
             std::unique_ptr<std::thread> controlPackageHandlerThread = nullptr; 
 
+            absl::Status getHostModuleAndChannelDescriptions(const std::string& hostId, Configuration& config,
+                HostDescriptionMap& hostDescriptions, ModuleDescriptionMap& allModuleDescriptions,
+                ModuleDescriptionMap& hostModuleDescriptions, ChannelDescriptionMap& channelDescriptions);
+
             absl::Status populateModuleTable(
                 const ModuleDescriptionMap& moduleDescriptions,
                 const ChannelDescriptionMap& channelDescriptions,
@@ -93,9 +111,16 @@ namespace claid
             
             absl::Status startRouter(const std::string& currentHost, const HostDescriptionMap& hostDescriptions, const ModuleDescriptionMap& moduleDescriptions);
 
+
+            absl::Status unloadAllModulesInAllLocalRuntimes();
+            absl::Status loadNewConfigIntoModuleTable(Configuration& config);
+            absl::Status restartRuntimesWithNewConfig();
+
             void readControlPackages();
             void handleControlPackage(std::shared_ptr<DataPackage> controlPackage);
             void forwardControlPackageToAllRuntimes(std::shared_ptr<DataPackage> package);
+
+
     };
 }
 

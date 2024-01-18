@@ -225,8 +225,8 @@ namespace claid
 
     void Module::terminateInternal()
     {
-        this->terminate();
         this->unregisterAllPeriodicFunctions();
+        this->terminate();
         this->isTerminating = false;
 
     }

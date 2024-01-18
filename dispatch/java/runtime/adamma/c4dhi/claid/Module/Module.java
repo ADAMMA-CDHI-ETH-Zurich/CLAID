@@ -149,8 +149,8 @@ public abstract class Module
 
     private void terminateInternal()
     {
-        this.terminate();
         this.unregisterAllPeriodicFunctions();
+        this.terminate();
         this.isTerminating = false;
     }
 
