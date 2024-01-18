@@ -181,13 +181,8 @@ absl::Status ModuleManager::start()
     return absl::OkStatus();
 }
 
-void ModuleManager::stop()
+void ModuleManager::shutdownModules()
 {
-    if(!this->running)
-    {
-        return;
-    }
-
     Logger::logInfo("ModuleManager shutting down Modules.");
 
     for(const auto& entry : this->runningModules)
@@ -197,13 +192,27 @@ void ModuleManager::stop()
         Logger::logInfo("ModuleManager shutting down Module \"%s\".", moduleName.c_str());
         module.shutdown();
     }
+    this->runningModules.clear();
+}
+
+void ModuleManager::stop()
+{
+    if(!this->running)
+    {
+        return;
+    }
 
     Logger::logInfo("ModuleManager waiting for reader thread to stop.");
 
+    this->shutdownModules();
+    Logger::logInfo("All Modules shutdown in C++ runtime.");
+
     this->running = false;
-    this->fromModuleDispatcherQueue.close();
+    this->fromModuleDispatcherQueue.interruptOnce();
     this->fromModuleDispatcherReaderThread.join();
     Logger::logInfo("ModuleManager has stopped.");
+    // Reset the subscriber publisher
+    this->subscriberPublisher.reset();
 }
 
 
@@ -211,7 +220,7 @@ void ModuleManager::readFromModulesDispatcher()
 {
     while(this->running)
     {
-        std::shared_ptr<DataPackage> pkt = fromModuleDispatcherQueue.pop_front();
+        std::shared_ptr<DataPackage> pkt = fromModuleDispatcherQueue.interruptable_pop_front();
 
         if (!pkt) 
         {
@@ -293,6 +302,25 @@ void ModuleManager::handlePackageWithControlVal(std::shared_ptr<DataPackage> pac
             {
                 modulesEntry.second->notifyDisconnectedFromRemoteServer();
             }
+            break;
+        }
+        case CtrlType::CTRL_UNLOAD_MODULES:
+        {   
+            this->shutdownModules();
+            DataPackage response;
+            ControlPackage& ctrlPackage = *response.mutable_control_val();
+            
+            ctrlPackage.set_ctrl_type(CtrlType::CTRL_UNLOAD_MODULES_DONE);
+            ctrlPackage.set_runtime(Runtime::RUNTIME_CPP);
+            response.set_source_host(package->target_host());
+            response.set_target_host(package->source_host());
+            break;
+        }
+        case CtrlType::CTRL_RESTART_RUNTIME:
+        {   
+            this->stop();
+            this->dispatcher.shutdown();
+            this->start();
             break;
         }
         default:

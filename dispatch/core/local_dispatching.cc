@@ -46,6 +46,7 @@ bool RuntimeDispatcher::alreadyRunning() {
 Status RuntimeDispatcher::startWriterThread(ServerReaderWriter<DataPackage, DataPackage>* stream) {
     Logger::printfln("Start writer thread 1");
     Logger::printfln("Start writer thread 2");
+    this->running = true;
     if (writeThread) {
         return Status(grpc::INVALID_ARGUMENT, "Thread already running.");
     }
@@ -65,9 +66,9 @@ void RuntimeDispatcher::shutdownWriterThread() {
             return;
         }
     }
-
+    this->running = false;
     // Cause the writer thread to terminate and wait for it.
-    outgoingQueue.push_front(nullptr);
+    outgoingQueue.interruptOnce();
     Logger::printfln("Waiting for writer thread to be done.");
     writeThread->join();
     writeThread = nullptr;
@@ -75,12 +76,12 @@ void RuntimeDispatcher::shutdownWriterThread() {
 }
 
 void RuntimeDispatcher::processWriting(ServerReaderWriter<DataPackage, DataPackage>* stream) {
-     while(true) {
+     while(this->running) {
 
-        auto pkt = outgoingQueue.pop_front();
+        auto pkt = outgoingQueue.interruptable_pop_front();
 
         // If we got a null pointer we are done
-        if (!pkt) {
+        if (!pkt && outgoingQueue.is_closed()) {
             break;
         }
 
@@ -135,14 +136,17 @@ void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
         return;
     }
 
-    // Process the control values
-    auto ctrlType = pkt.control_val().ctrl_type();
-    switch(ctrlType) {
-        default: {
-            status = Status(grpc::INVALID_ARGUMENT, "Invalid ctrl type");
-            break;
-        }
-    }
+    // Simply forward control package. Will be processed by middleware.
+    incomingQueue.push_back(std::make_shared<claidservice::DataPackage>(pkt));
+
+    // // Process the control values
+    // auto ctrlType = pkt.control_val().ctrl_type();
+    // switch(ctrlType) {
+    //     default: {
+    //         status = Status(grpc::INVALID_ARGUMENT, "Invalid ctrl type");
+    //         break;
+    //     }
+    // }
 }
 
 ServiceImpl::ServiceImpl(ModuleTable& modTable)
@@ -429,9 +433,14 @@ DispatcherClient::DispatcherClient(const string& socketPath,
 
 
 void DispatcherClient::shutdown() {
+    if(!this->running)
+    {
+        return;
+    }
     // Closing the outgoing queue will end the writer thread.
     Logger::logInfo("Dispatcher client shutdown 1");
-    outgoingQueue.close();
+    this->running = false;
+    outgoingQueue.interruptOnce();
     if (writeThread) {
         writeThread->join();
         writeThread = nullptr;
@@ -512,6 +521,7 @@ bool DispatcherClient::startRuntime(const InitRuntimeRequest& req) {
     // Start the threads to service the input/output queues.
     writeThread = make_unique<thread>([this]() { processWriting(); });
     readThread = make_unique<thread>([this]() { processReading(); });
+    this->running = true;
     return true;
 }
 
@@ -523,18 +533,20 @@ void DispatcherClient::processReading() {
 }
 
 void DispatcherClient::processWriting() {
-    while(true) {
-        auto pkt = outgoingQueue.pop_front();
+    while(this->running) {
+
+        auto pkt = outgoingQueue.interruptable_pop_front();
         if (!pkt) {
-            if (outgoingQueue.is_closed()) {
+            if(outgoingQueue.is_closed())
+            {
+
                 break;
             }
         } else {
             if (!stream->Write(*pkt)) {
                 claid::Logger::printfln("Client: Error writing packet");
                 break;
-            }
-        }
+            }        }
     }
     stream->WritesDone();
     auto status = stream->Finish();

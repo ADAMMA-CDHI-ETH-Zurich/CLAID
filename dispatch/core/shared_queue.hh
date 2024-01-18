@@ -87,13 +87,15 @@ class SharedQueue
 			
             // Have to account for spurious wakeups?
 
-			cv.wait(lock);
-			std::cout << "shared queue wakeup\n";
+			if(queue.empty())
+			{
+				cv.wait(lock);
+			}
 			if (queue.empty() || closed)
 				return nullptr;
 
 			std::shared_ptr<T> out = queue.front();
-			queue.pop_front();
+			this->queue.pop_front();
 
             return out;
         }

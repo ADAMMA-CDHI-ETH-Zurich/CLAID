@@ -113,11 +113,13 @@ TEST(RemoteDispatcherTestSuite, ServerTest)
     std::this_thread::sleep_for(std::chrono::milliseconds(4100));
     ASSERT_TRUE(clientMiddleware.isConnectedToRemoteServer()) << clientMiddleware.getRemoteClientStatus();
 
+    Logger::logInfo("===== STOPPING SERVER MIDDLEWARE ====");
 
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     serverMiddleware.shutdown();
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
+    Logger::logInfo("===== STOPPING CLIENT MIDDLEWARE ====");
 
     clientMiddleware.shutdown();
 

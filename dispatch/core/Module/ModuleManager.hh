@@ -8,6 +8,7 @@
 #include "dispatch/core/proto_util.hh"
 
 using claidservice::DataPackage;
+using claidservice::ControlPackage;
 using claidservice::CtrlType;
 using claidservice::ModuleListResponse;
 using claidservice::ModuleListResponse_ModuleDescriptor;
@@ -49,6 +50,8 @@ namespace claid {
             void readFromModulesDispatcher();
             void onPackageReceivedFromModulesDispatcher(std::shared_ptr<DataPackage> dataPackage);
             void handlePackageWithControlVal(std::shared_ptr<DataPackage> package);
+
+            void shutdownModules();
 
         public:
             ModuleManager(DispatcherClient& dispatcher,

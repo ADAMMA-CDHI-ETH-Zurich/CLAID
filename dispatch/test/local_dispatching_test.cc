@@ -36,8 +36,15 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
 
     auto routerThread = make_unique<thread>([&modTable]() {
         while(true) {
+            Logger::logInfo("Routing 1");
             auto pkt = modTable.inputQueue().pop_front();
+            Logger::logInfo("Routing 2 %d", modTable.inputQueue().size());
+            if(!pkt)
+            {
+                Logger::logInfo("pkt is nullptr");
+            }
             if (!pkt || modTable.inputQueue().is_closed()) {
+                Logger::logInfo("discarding package");
                 return;
             }
             auto outQ = modTable.lookupOutputQueue(pkt->target_module());
@@ -74,6 +81,7 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
     //       *self->message, *reinterpret_cast<CMessage*>(other)->message)) {
     // https://github.com/search?q=repo%3Aprotocolbuffers%2Fprotobuf%20MessageDifferencer%3A%3AEqual&type=code
 
+    Logger::logInfo("local_dispatching_test 1");
     InitRuntimeRequest initReq;
     initReq.set_runtime(Runtime::RUNTIME_CPP);
     auto modulesRef = initReq.mutable_modules();
@@ -96,6 +104,7 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
             }
         }
     }
+    Logger::logInfo("local_dispatching_test 2");
 
     Logger::printfln("%s", messageToString(initReq).c_str());
 
@@ -123,21 +132,28 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
     outQueue.push_back(makeChanPacket(chan12To45, mod2, receivePkts, testChannels, [](auto& p) { p.set_number_val(1002); }));
     outQueue.push_back(makeChanPacket(chan12To45, mod1, receivePkts, testChannels, [](auto& p) { p.set_number_val(1003); }));
     outQueue.push_back(makeChanPacket(chan12To45, mod2, receivePkts, testChannels, [](auto& p) { p.set_number_val(1004); }));
+    Logger::logInfo("local_dispatching_test 3");
 
     std::this_thread::sleep_for(1000ms);
+    Logger::logInfo("local_dispatching_test 4 %d", inQueue.size());
 
     // Expect those packages from the input queue.
     auto gotPkt12 = inQueue.pop_front();
+    Logger::logInfo("local_dispatching_test 5");
     ASSERT_EQ(gotPkt12->source_module(), mod1);
     ASSERT_EQ(gotPkt12->target_module(), mod2);
     diff = cmpMsg(*pkt12, *gotPkt12);
+    Logger::logInfo("local_dispatching_test 6");
     ASSERT_TRUE(diff == "") << diff;
 
+    Logger::logInfo("local_dispatching_test 7");
     auto gotPkt13 = inQueue.pop_front();
+    Logger::logInfo("local_dispatching_test 8");
     ASSERT_EQ(gotPkt13->source_module(), mod1);
     ASSERT_EQ(gotPkt13->target_module(), mod3);
     diff = cmpMsg(*pkt13, *gotPkt13);
     ASSERT_TRUE(diff == "") << diff;
+    Logger::logInfo("local_dispatching_test 9");
 
     auto gotPkt23 = inQueue.pop_front();
     ASSERT_EQ(gotPkt23->source_module(), mod2);
@@ -150,8 +166,10 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
 
     diff = cmpMsg(*examplePayload, gotExPayload);
     ASSERT_TRUE(diff == "") << diff;
+    Logger::logInfo("local_dispatching_test 5");
 
     while(inQueue.size() > 0) {
+        Logger::logInfo("Queue");
         auto gotPkt = inQueue.pop_front();
         auto key = make_tuple(gotPkt->channel(), gotPkt->source_module(), gotPkt->target_module());
         auto pl = receivePkts.find(key);
@@ -185,6 +203,7 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
     Logger::printfln("| Test passed - trying shutdown which will fail currently !       |");
     Logger::printfln(" -----------------------------------------------------------------");
 
+    Logger::logInfo("Shutdown");
     // ASSERT_EQ(pkt3, outQueue.pop_front());
     client.shutdown();
 

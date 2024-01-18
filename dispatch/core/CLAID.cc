@@ -104,7 +104,9 @@ namespace claid {
         {
             return false;
         }   
+        Logger::logInfo("Stopping ModuleManager.");
         moduleManager->stop();
+        Logger::logInfo("Stopping ModuleDispatcher.");
         moduleDispatcher->shutdown();
 
         shutdown_core(handle);

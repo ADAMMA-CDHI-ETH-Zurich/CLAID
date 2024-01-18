@@ -313,3 +313,14 @@ bool ModuleTable::getAnnotationForModule(const std::string& moduleClass, claidse
     annotation = it->second;
     return true;
 }
+
+void ModuleTable::getRunningModules(std::vector<std::string>& moduleIDs) const
+{
+    moduleIDs.clear();
+
+    for(const auto& entry : this->moduleClassRuntimeMap)
+    {
+        moduleIDs.push_back(entry.first);
+    }
+}
+

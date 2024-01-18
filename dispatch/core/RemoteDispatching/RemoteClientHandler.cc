@@ -59,10 +59,10 @@ namespace claid
         this->writeStream = stream;
         while(this->active) 
         {
-            auto pkt = this->outgoingQueue.pop_front();
+            auto pkt = this->outgoingQueue.interruptable_pop_front();
 
             // If we got a null pointer we are done
-            if (!pkt) 
+            if (!pkt && outgoingQueue.is_closed()) 
             {
                 Logger::logWarning("RemoteClientHandler::processWriting received null package");
                 break;

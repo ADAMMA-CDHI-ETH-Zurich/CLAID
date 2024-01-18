@@ -174,6 +174,12 @@ public:
         }
         return DataPackage::PayloadOneofCase::PAYLOAD_ONEOF_NOT_SET;
     }
+
+    void reset()
+    {
+        examplePackagesForEachModule.clear();
+        moduleChannelsSubscriberMap.clear();
+    }
 };
 
 

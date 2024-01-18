@@ -299,9 +299,9 @@ absl::Status MiddleWare::shutdown()
         return status;
     }
 
-    moduleTable.inputQueue().close();
-    this->hostUserTable.inputQueue()->close();
-    this->clientTable.getFromRemoteClientQueue().close();
+    moduleTable.inputQueue().interruptOnce();
+    this->hostUserTable.inputQueue()->interruptOnce();
+    this->clientTable.getFromRemoteClientQueue().interruptOnce();
 
     Logger::printfln("Stopping RoutingQueueMerger");
     status = this->routingQueueMerger->stop();
@@ -309,6 +309,7 @@ absl::Status MiddleWare::shutdown()
     {
         return status;
     }
+    Logger::printfln("RoutingQueueMerger stopped");
 
 
 

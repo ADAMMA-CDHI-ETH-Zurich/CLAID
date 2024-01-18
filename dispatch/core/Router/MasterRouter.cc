@@ -78,7 +78,7 @@ namespace claid
         {
             std::shared_ptr<DataPackage> package;
 
-            package = this->incomingQueue.pop_front();
+            package = this->incomingQueue.interruptable_pop_front();
 
             if(package == nullptr)
             {
@@ -161,14 +161,14 @@ namespace claid
 
     absl::Status MasterRouter::stop()
     {
-        Logger::logInfo("MasterRouter:: stop called");
+        Logger::logInfo("MasterRouter::stop called");
         if(!this->active)
         {
             return absl::InvalidArgumentError("Failed to stop MasterRouter. Router is not running.");
         }
 
         this->active = false;
-        this->incomingQueue.close();
+        this->incomingQueue.interruptOnce();
         this->processingThread->join();
         return absl::OkStatus();
     }   

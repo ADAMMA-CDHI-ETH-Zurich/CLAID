@@ -29,8 +29,14 @@ namespace claid {
             return absl::InvalidArgumentError(absl::StrCat("LocalRouter: Failed to route package to local Module \"", targetModule,"\".\n"
             "Unable to get input queue of the Runtime the Module is running in. Possibly, the Runtime was not registered."));
         }
-
-        inputQueueForRuntime->push_back(dataPackage);
+        if(!inputQueueForRuntime->is_closed())
+        {
+            inputQueueForRuntime->push_back(dataPackage);
+        }
+        else
+        {
+            Logger::logWarning("LocalRouter inputQueueForRuntime is null, cannot route package. Are we shutting down?");
+        }
         return absl::OkStatus();
     }
 

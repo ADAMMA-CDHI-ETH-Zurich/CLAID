@@ -36,6 +36,8 @@ class RuntimeDispatcher {
     std::mutex wtMutex; // protects the write thread
     std::unique_ptr<std::thread> writeThread;
 
+    bool running;
+
     friend class ServiceImpl;
 }; // class RuntimeDispatcher
 
@@ -122,6 +124,8 @@ class DispatcherClient {
     std::shared_ptr<grpc::ClientReaderWriter<claidservice::DataPackage, claidservice::DataPackage>> stream;
     std::unique_ptr<std::thread> readThread;
     std::unique_ptr<std::thread> writeThread;
+
+    bool running = false;
 };
 
 }  // namespace claid

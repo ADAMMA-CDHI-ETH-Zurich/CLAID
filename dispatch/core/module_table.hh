@@ -92,6 +92,8 @@ class ModuleTable {
     const std::map<std::string, claidservice::ModuleAnnotation> getModuleAnnotations() const;
     bool getAnnotationForModule(const std::string& moduleClass, claidservice::ModuleAnnotation& annotation) const;
 
+    void getRunningModules(std::vector<std::string>& moduleIDs) const;
+
   private:
     void augmentFieldValues(claidservice::DataPackage& pkt) const;
     ChannelEntry* findChannel(const std::string& channelId);
