@@ -120,6 +120,7 @@ namespace claid
             void readControlPackages();
             void handleControlPackage(std::shared_ptr<DataPackage> controlPackage);
             void forwardControlPackageToAllRuntimes(std::shared_ptr<DataPackage> package);
+            void forwardControlPackageToTargetRuntime(std::shared_ptr<DataPackage> package);
     };
 }
 

@@ -292,9 +292,9 @@ bool ChannelEntry::addSet(const string& key, bool isSrc) {
 }
 
 
-void ModuleTable::setModuleAnnotations(const std::map<std::string, claidservice::ModuleAnnotation>& moduleAnnotations)
+void ModuleTable::appendModuleAnnotations(const std::map<std::string, claidservice::ModuleAnnotation>& moduleAnnotations)
 {
-    this->moduleAnnotations = moduleAnnotations;
+    this->moduleAnnotations.insert(moduleAnnotations.begin(), moduleAnnotations.end());
 }
 
 const std::map<std::string, claidservice::ModuleAnnotation> ModuleTable::getModuleAnnotations() const

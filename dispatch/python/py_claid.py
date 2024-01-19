@@ -69,10 +69,16 @@ class TestModule2(Module):
         print("Data", data.get_data())
 
 module_factory = ModuleFactory()
-module_factory.register_module(TestModule)
-module_factory.register_module(TestModule2)
+# module_factory.register_module(TestModule)
+# module_factory.register_module(TestModule2)
 claid = CLAID()
 claid.start("/Users/planger/Development/ModuleAPIV2/dispatch/python/test_config.json", "test_client", "user", "device", module_factory)
+
+claid.update_module_annotations()
+while(not claid.are_module_annotations_updated()):
+    pass
+
+print(claid.get_module_annotations())
 while(True):
     pass
 # socket = "unix:///tmp/claid_socket.grpc".encode('utf-8')

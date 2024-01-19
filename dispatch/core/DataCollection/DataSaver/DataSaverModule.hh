@@ -30,7 +30,8 @@ namespace claid
 {
     class DataSaverModule : public claid::Module
     {
-
+        public:
+            static void annotateModule(ModuleAnnotator& annotator);
         private:
             FileSaver fileSaver;
             Channel<AnyProtoType> dataChannel;

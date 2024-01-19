@@ -203,7 +203,7 @@ Status ServiceImpl::GetModuleList(ServerContext* context,
         supportedModClasses.insert(it);
     }
     std::map<std::string, claidservice::ModuleAnnotation> moduleAnnotations(req->module_annotations().begin(), req->module_annotations().end());
-    moduleTable.setModuleAnnotations(moduleAnnotations);
+    moduleTable.appendModuleAnnotations(moduleAnnotations);
 
     // Iterate over the needed modules and only include the module classes
     // that are supported by the caller.

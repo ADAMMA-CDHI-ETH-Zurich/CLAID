@@ -106,3 +106,13 @@ class CLAID():
         res = CLAID.claid_c_lib.load_new_config(self.__handle, config_path_c)
         print("Load new config 4")
         return True
+    
+
+    def update_module_annotations(self):
+        self.__module_manager.update_module_annotations()
+
+    def are_module_annotations_updated(self):
+        return self.__module_manager.are_module_annotations_updated()
+    
+    def get_module_annotations(self):
+        return self.__module_manager.get_module_annotations()

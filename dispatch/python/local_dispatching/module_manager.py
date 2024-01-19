@@ -25,6 +25,9 @@ class ModuleManager():
         self.__running = False
         self.__from_module_dispatcher_queue_closed = False
 
+        self.__module__anotations_updated = False
+
+
     def instantiate_module(self, module_id, module_class):
 
         if not self.__module_factory.is_module_class_registered(module_class):
@@ -214,8 +217,10 @@ class ModuleManager():
             self.restart_thread.start()
 
             self.__restart_control_package = packet
+        elif packet.control_val.ctrl_type == CtrlType.CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE:
+            self.__module_annotations = packet.control_val.module_annotations
+            self.__module__anotations_updated = True
 
-            
         else:
             Logger.log_warning(f"ModuleManager received package with unsupported control val {packet.control_val.ctrl_type}")
 
@@ -258,3 +263,21 @@ class ModuleManager():
         response.target_host = self.__restart_control_package.source_host
 
         self.__to_module_dispatcher_queue.put(response)
+
+    def update_module_annotations(self):
+        self.__module__anotations_updated = False
+        
+        package = DataPackage()
+        ctrl_package = package.control_val
+
+        ctrl_package.ctrl_type = CtrlType.CTRL_REQUEST_MODULE_ANNOTATIONS
+        ctrl_package.runtime = Runtime.RUNTIME_PYTHON
+   
+
+        self.__to_module_dispatcher_queue.put(package)
+
+    def are_module_annotations_updated(self):
+        return self.__module__anotations_updated
+    
+    def get_module_annotations(self):
+        return self.__module_annotations

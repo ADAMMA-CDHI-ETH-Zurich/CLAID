@@ -78,10 +78,12 @@ enum CtrlType {
   CTRL_UNLOAD_MODULES_DONE              = 12;
   CTRL_RESTART_RUNTIME                  = 13;
   CTRL_RESTART_RUNTIME_DONE             = 14;
-  //CTRL_ADD_MODULE                       = 11; // Can be used to add a new Module at runtime (requires Module name, properties, channels). This package will be forwarded by the LocalRouter to the Middleware that can handle this Module.
-  //CTRL_REMOVE_MODULE                    = 12; // Can be used to remove a Module at runtime.
-  //CTRL_ADD_MODULE_SUCCESS               = 13; // Sent as response to CTRL_ADD_MODULE the Module was added successfully.
-  //CTRL_REMOVE_MODULE_SUCCESS            = 14; // Sent as response to CTRL_REMOVE_MODULE the Module was removed successfully.
+  CTRL_REQUEST_MODULE_ANNOTATIONS       = 15;
+  CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE  = 16;
+  //CTRL_ADD_MODULE                         = 11; // Can be used to add a new Module at runtime (requires Module name, properties, channels). This package will be forwarded by the LocalRouter to the Middleware that can handle this Module.
+  //CTRL_REMOVE_MODULE                      = 12; // Can be used to remove a Module at runtime.
+  //CTRL_ADD_MODULE_SUCCESS                 = 13; // Sent as response to CTRL_ADD_MODULE the Module was added successfully.
+  //CTRL_REMOVE_MODULE_SUCCESS              = 14; // Sent as response to CTRL_REMOVE_MODULE the Module was removed successfully.
   //CTRL_ADD_MODULE_FAILURE                           = 15; // Sent as response to CTRL_ADD_MODULE the Module could not be added.
   //CTRL_REMOVE_MODULE_FAILURE                        = 16; // Sent as response to CTRL_REMOVE_MODULE the Module could not be removed.
   //CTRL_PAUSE_ALL_RUNTIMES                           = 17; // Can be used to pause all runtimes (the ModuleManager of each Runtme will pause the RunnableDispatcher of all its Modules).
@@ -101,6 +103,7 @@ message ControlPackage {
   ActionRequest action_request              = 6; // CTRL_ACTION: action request sent to all children of the claid instance
   AddModuleRequest add_module_request       = 7; // CTRL_ADD_MODULE
   RemoveModuleRequest remove_module_request = 8; // CTRL_REMOVE_MODULE
+  map<string, ModuleAnnotation> module_annotations = 9; // CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE
 }
 
 message AccumulatedStatus {

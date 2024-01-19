@@ -88,7 +88,7 @@ class ModuleTable {
     // ONLY FOR TESTING REMOVE LATER
     void addModuleToRuntime(const std::string& Module, claidservice::Runtime runtime);
 
-    void setModuleAnnotations(const std::map<std::string, claidservice::ModuleAnnotation>& moduleAnnotations);
+    void appendModuleAnnotations(const std::map<std::string, claidservice::ModuleAnnotation>& moduleAnnotations);
     const std::map<std::string, claidservice::ModuleAnnotation> getModuleAnnotations() const;
     bool getAnnotationForModule(const std::string& moduleClass, claidservice::ModuleAnnotation& annotation) const;
 

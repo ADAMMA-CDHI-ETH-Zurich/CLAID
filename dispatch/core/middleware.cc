@@ -434,6 +434,38 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
             }  
             break;
         }
+        case CtrlType::CTRL_REQUEST_MODULE_ANNOTATIONS:
+        {
+            Logger::logInfo("Received CTRL_REQUEST_MODULE_ANNOTATIONS from Runtime %s", Runtime_Name(controlPackage->control_val().runtime()).c_str());
+
+            const std::map<std::string, ModuleAnnotation>& moduleAnnotations = this->moduleTable.getModuleAnnotations();
+           
+
+            std::shared_ptr<DataPackage> response = std::make_shared<DataPackage>();
+            ControlPackage& ctrlPackage = *response->mutable_control_val();
+
+            ctrlPackage.set_ctrl_type(CtrlType::CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE);
+            ctrlPackage.set_runtime(controlPackage->control_val().runtime());
+            response->set_source_host(controlPackage->target_host());
+            response->set_target_host(controlPackage->source_host());
+
+            Logger::printfln("Getting module annotations");
+            for(auto& moduleAnnotation : moduleAnnotations)
+            {
+                Logger::printfln("Getting module annotations for %s %d", moduleAnnotation.first.c_str(), 0);
+                (*ctrlPackage.mutable_module_annotations())[moduleAnnotation.first] = moduleAnnotation.second;
+            }
+
+            this->masterInputQueue.push_back(response);
+
+            break;
+        }
+        case CtrlType::CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE:
+        {
+            this->forwardControlPackageToTargetRuntime(controlPackage);
+            break;
+        }
+
     }
 }
 
@@ -446,6 +478,12 @@ void MiddleWare::forwardControlPackageToAllRuntimes(std::shared_ptr<DataPackage>
         Logger::logInfo("enqueueing");
         queue->push_back(package);
     }
+}
+
+void MiddleWare::forwardControlPackageToTargetRuntime(std::shared_ptr<DataPackage> package)
+{
+    std::shared_ptr<SharedQueue<DataPackage>> queue = this->moduleTable.getOutputQueueOfRuntime(package->control_val().runtime());
+    queue->push_back(package);
 }
 
 

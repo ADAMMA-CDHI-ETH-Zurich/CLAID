@@ -72,7 +72,8 @@ namespace claid {
         {
             ModuleAnnotator moduleAnnotator(registeredModuleClass);
 
-            if(ModuleFactory::getInstance()->getModuleAnnotation(registeredModuleClass, moduleAnnotator))
+            bool res = ModuleFactory::getInstance()->getModuleAnnotation(registeredModuleClass, moduleAnnotator);
+            if(res)
             {
                 moduleAnnotations[registeredModuleClass] = moduleAnnotator.getAnnotation();
             }

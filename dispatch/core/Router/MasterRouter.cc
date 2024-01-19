@@ -213,6 +213,16 @@ namespace claid
         {
             return absl::OkStatus();
         }
+        
+        Logger::logInfo("Aadd destination has control val %d", package->has_control_val());
+        if(package->has_control_val())
+        {
+            if(package->target_host() == "")
+            {
+                package->set_target_host(this->currentHost);
+            }
+            return absl::OkStatus();
+        }
 
         // If neither target_host nor target_module are set, there is nothing we can do.
         if(package->target_module() == "")
@@ -244,6 +254,15 @@ namespace claid
         // If the source_host is already set, we are done here.
         if(package->source_host() != "")
         {
+            return absl::OkStatus();
+        }
+
+        if(package->has_control_val())
+        {
+            if(package->source_host() == "")
+            {
+                package->set_source_host(this->currentHost);
+            }
             return absl::OkStatus();
         }
 
