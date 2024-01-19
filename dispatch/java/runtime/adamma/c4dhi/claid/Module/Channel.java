@@ -68,6 +68,20 @@ public class Channel<T>
             parent.moduleError(msg);
             return;
         }
-        this.publisher.post(data);
+        this.publisher.post(data, System.currentTimeMillis());
     }
+
+    public void post(T data, long timestamp)
+    {
+        if(!canWrite())
+        {
+            String msg = " tried to post data to channel \"" + this.channelId + "\", however\n" +    
+                        "it did not publish this channel before.";
+            parent.moduleError(msg);
+            return;
+        }
+        this.publisher.post(data, timestamp);
+    }
+
+
 }

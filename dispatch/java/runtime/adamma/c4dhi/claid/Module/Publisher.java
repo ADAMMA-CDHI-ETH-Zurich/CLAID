@@ -25,12 +25,12 @@ public class Publisher<T>
         this.mutator = TypeMapping.getMutator(dataType);
     }
 
-    public void post(T data)
+    public void post(T data, long timestamp)
     {
         DataPackage.Builder builder = DataPackage.newBuilder();
         builder.setSourceModule(this.moduleId);
         builder.setChannel(this.channelName);
-        builder.setUnixTimestampMs(System.currentTimeMillis());
+        builder.setUnixTimestampMs(timestamp);
         DataPackage dataPackage = builder.build();
 
         dataPackage = this.mutator.setPackagePayload(dataPackage, data);
