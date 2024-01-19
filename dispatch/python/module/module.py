@@ -146,11 +146,11 @@ class Module(ABC):
 
         self.terminate_internal()
 
-        Logger.logInfo("Runnable dispatcher stop 1")
+        Logger.log_info("Runnable dispatcher stop 1")
         self.__runnable_dispatcher.stop()
-        Logger.logInfo("Runnable dispatcher stop 2")
+        Logger.log_info("Runnable dispatcher stop 2")
         self.__is_initialized = False
-        Logger.logInfo("Runnable dispatcher stop 3")
+        Logger.log_info("Runnable dispatcher stop 3")
 
     def terminate_internal(self):
         self.unregister_all_periodic_functions()

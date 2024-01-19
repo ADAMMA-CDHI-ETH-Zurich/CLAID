@@ -3,8 +3,10 @@ from logger.logger import Logger
 from module.channel_subscriber_publisher import ChannelSubscriberPublisher
 from module.module_annotator import ModuleAnnotator
 from threading import Thread
+import time
 
 from module.thread_safe_channel import ThreadSafeChannel
+from dispatch.proto.claidservice_pb2 import * 
 
 from dispatch.proto.claidconfig_pb2 import *
 
@@ -21,6 +23,7 @@ class ModuleManager():
         self.__channel_subscriber_publisher = ChannelSubscriberPublisher(self.__to_module_dispatcher_queue)
 
         self.__running = False
+        self.__from_module_dispatcher_queue_closed = False
 
     def instantiate_module(self, module_id, module_class):
 
@@ -104,7 +107,8 @@ class ModuleManager():
             Logger.log_fatal("Failed to initialize runtime.")
             return False
 
-        if not  self.__module_dispatcher.send_receive_packages():
+        self.__from_module_dispatcher_queue_closed = False
+        if not self.__module_dispatcher.send_receive_packages():
             Logger.log_fatal("Failed to set up input and output streams with middleware.")
             return False
 
@@ -115,6 +119,22 @@ class ModuleManager():
         self.read_from_module_dispatcher_thread.start()
 
         return True
+    
+    def shutdown_modules(self):
+        for module_name, module in self.__running_modules.items():
+            print("Shutting down ", module_name)
+            module.shutdown()
+            print("Module has shutdown")
+        
+        self.__running_modules.clear()
+
+    def stop(self):
+         
+        self.running = False
+        self.__from_module_dispatcher_queue.cancel()
+        self.read_from_module_dispatcher_thread.join()
+        
+        self.__channel_subscriber_publisher.reset()
     
     # def start_test(self):
     #     self.start()
@@ -164,6 +184,7 @@ class ModuleManager():
             subscriber.on_new_data(data_package)
 
     def handle_package_with_control_val(self, packet):
+        Logger.log_info("PYTHON HANDLE PACKAGE")
         if packet.control_val.ctrl_type == CtrlType.CTRL_CONNECTED_TO_REMOTE_SERVER:
             for module_id, module in self.__running_modules.items():
                 module.notify_connected_to_remote_server()
@@ -173,27 +194,67 @@ class ModuleManager():
         elif packet.control_val.ctrl_type == CtrlType.CTRL_UNLOAD_MODULES:
             self.shutdown_modules()
 
+            Logger.log_info("Python ModuleManager received CTRL_UNLOAD_MODULES")
+
             response = DataPackage()
             ctrl_package = response.control_val
 
-            ctrl_package.ctrl_type = DataPackage_pb2.CtrlType.CTRL_UNLOAD_MODULES_DONE
-            ctrl_package.runtime = DataPackage_pb2.Runtime.RUNTIME_PYTHON
-            response.source_host = package.target_host
-            response.target_host = package.source_host
+            ctrl_package.ctrl_type = CtrlType.CTRL_UNLOAD_MODULES_DONE
+            ctrl_package.runtime = Runtime.RUNTIME_PYTHON
+            response.source_host = packet.target_host
+            response.target_host = packet.source_host
 
             self.__to_module_dispatcher_queue.put(response)
+
+            Logger.log_info("Unloading Modules done")
         elif packet.control_val.ctrl_type == CtrlType.CTRL_RESTART_RUNTIME:
-            self.stop()
-            self.__module_dispatcher.shutdown()
-            self.start()
+            
+            Logger.log_info("Python ModuleManager received CTRL_RESTART_RUNTIME")
+            self.restart_thread = Thread(target=self.restart)
+            self.restart_thread.start()
+
+            self.__restart_control_package = packet
+
+            
         else:
             Logger.log_warning(f"ModuleManager received package with unsupported control val {packet.control_val.ctrl_type}")
 
     def read_from_module_dispatcher(self):
         while self.running:
-            for data_package in self.__from_module_dispatcher_queue:
-                if data_package is not None:
-                    self.on_data_package_received_from_module_dispatcher(data_package)
-                else:
-                    print("Read from modules null")
+            print("on read from module dispatcher")
+            try:
+                for data_package in self.__from_module_dispatcher_queue:
+                    if data_package is not None:
+                        self.on_data_package_received_from_module_dispatcher(data_package)
+                    else:
+                        print("Read from modules null")
+            except Exception as e:
+                print(e)
+        
+        self.__from_module_dispatcher_queue_closed = True
 
+
+    
+
+    def restart(self):
+        Logger.log_info("Stopping ModuleManager")
+        self.stop()
+        Logger.log_info("Stopping ModuleDispatcher")
+        self.__module_dispatcher.shutdown()
+
+        print("Waiting42")
+        while not self.__from_module_dispatcher_queue_closed:
+            print("Waiting")
+        time.sleep(2)
+        Logger.log_info("Restarting ModuleManager and ModuleDispatcher")
+        self.start()
+
+        response = DataPackage()
+        ctrl_package = response.control_val
+
+        ctrl_package.ctrl_type = CtrlType.CTRL_RESTART_RUNTIME_DONE
+        ctrl_package.runtime = Runtime.RUNTIME_PYTHON
+        response.source_host = self.__restart_control_package.target_host
+        response.target_host = self.__restart_control_package.source_host
+
+        self.__to_module_dispatcher_queue.put(response)

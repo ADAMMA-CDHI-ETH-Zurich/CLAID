@@ -44,6 +44,7 @@ namespace claid
             absl::Status getRemoteClientStatus() const;
 
             absl::Status loadNewConfig(const std::string& configPath);
+            absl::Status loadNewConfig(const Configuration& configuration);
 
             virtual ~MiddleWare();
 
@@ -95,7 +96,7 @@ namespace claid
 
             std::unique_ptr<std::thread> controlPackageHandlerThread = nullptr; 
 
-            absl::Status getHostModuleAndChannelDescriptions(const std::string& hostId, Configuration& config,
+            absl::Status getHostModuleAndChannelDescriptions(const std::string& hostId, const Configuration& config,
                 HostDescriptionMap& hostDescriptions, ModuleDescriptionMap& allModuleDescriptions,
                 ModuleDescriptionMap& hostModuleDescriptions, ChannelDescriptionMap& channelDescriptions);
 
@@ -113,14 +114,12 @@ namespace claid
 
 
             absl::Status unloadAllModulesInAllLocalRuntimes();
-            absl::Status loadNewConfigIntoModuleTable(Configuration& config);
+            absl::Status loadNewConfigIntoModuleTable(const Configuration& config);
             absl::Status restartRuntimesWithNewConfig();
 
             void readControlPackages();
             void handleControlPackage(std::shared_ptr<DataPackage> controlPackage);
             void forwardControlPackageToAllRuntimes(std::shared_ptr<DataPackage> package);
-
-
     };
 }
 

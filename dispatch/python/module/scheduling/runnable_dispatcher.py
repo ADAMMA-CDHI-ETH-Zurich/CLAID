@@ -148,6 +148,7 @@ class RunnableDispatcher:
 
             self.stopped = True
 
+            self.condition_variable.notify()
         self.thread.join()
         return True
 

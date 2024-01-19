@@ -111,7 +111,6 @@ TEST(ConfigReloadTestTestSuite, ConfigReloadTest)
     const char* user_id = "user42";
     const char* device_id = "something_else";
 
-    system("rm /tmp/config_reload_test.sock");
 
     CLAID claid;
     bool result = claid.start(socket_path, config_file, host_id, user_id, device_id);

@@ -22,6 +22,8 @@ class ModuleDispatcher:
         # self.to_middleware_queue = io.Queue()
         self.__to_middleware_queue = ThreadSafeChannel()
         self.__from_middleware_queue = None
+        self.__running = False
+
 
     def get_to_dispatcher_queue(self):
         return self.__to_middleware_queue
@@ -96,15 +98,21 @@ class ModuleDispatcher:
   
     def to_middleware_queue_get(self):
 
-        while True:
+        while self.__running:
             data = self.__to_middleware_queue.get()
             if not data is None:
                 yield data
+            elif not self.__running:
+                return
+
 
     def send_receive_packages(self):
 
+        self.__running = True
+        print("Send receive packages")
         self.__from_middleware_queue = self.stub.SendReceivePackages(self.to_middleware_queue_get())
 
+        print("")
         if self.__to_middleware_queue is None:
             Logger.log_error("Failed to initialize streaming to/from middleware: stub.sendReceivePackages return value is None.")
             return False
@@ -128,6 +136,10 @@ class ModuleDispatcher:
         for response in self.__from_middleware_queue:
             Logger.log_info(f"Got ping package {response}")
             return response
+        
+    def shutdown(self):
+        self.__running = False
+        self.__to_middleware_queue.put(None)
        
     # def on_middleware_stream_package_received(self, packet):
     #     Logger.log_info(f"Java Runtime received message from middleware: {packet}")

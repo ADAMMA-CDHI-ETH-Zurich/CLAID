@@ -1,6 +1,6 @@
 import dispatch.proto.claidconfig_pb2
 import dispatch.proto.sensor_data_types_pb2
-from helpers.c_binding_helpers import strings_to_c_strings
+from helpers.c_binding_helpers import strings_to_c_strings, string_to_c_string
 import ctypes
 import pathlib
 from module.module_factory import ModuleFactory
@@ -53,6 +53,9 @@ class CLAID():
             CLAID.claid_c_lib.get_socket_path.argtypes = [ctypes.c_void_p]
             CLAID.claid_c_lib.get_socket_path.restype = ctypes.c_char_p
 
+            CLAID.claid_c_lib.load_new_config.restype = ctypes.c_bool
+            CLAID.claid_c_lib.load_new_config.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+
 
     def startCustomSocket(self, socket_path, config_file_path, host_id, user_id, device_id, module_factory):
         
@@ -82,17 +85,24 @@ class CLAID():
 
         Logger.log_info("Successfully started CLAID")
 
-        while(True):
-            pass
+        return True
 
     def start(self, config_file_path, host_id, user_id, device_id, module_factory):
-        self.startCustomSocket("unix:///tmp/claid_socket.grpc", config_file_path, host_id, user_id, device_id, module_factory)
+        return self.startCustomSocket("unix:///tmp/claid_socket.grpc", config_file_path, host_id, user_id, device_id, module_factory)
 
     def attach_python_runtime(self, socket_path, module_factory):
 
         self.__module_dispatcher = ModuleDispatcher(socket_path)
 
         self.__module_manager = ModuleManager(self.__module_dispatcher, module_factory)
-        print("starting Pyathon runtime")
+        print("starting Python runtime")
 
         return self.__module_manager.start()
+    
+    def load_new_config_test(self, config_path):
+        print("Load new config 1 ", config_path)
+        config_path_c = string_to_c_string(config_path)
+        print("Load new config 3", self.__handle, config_path)
+        res = CLAID.claid_c_lib.load_new_config(self.__handle, config_path_c)
+        print("Load new config 4")
+        return True

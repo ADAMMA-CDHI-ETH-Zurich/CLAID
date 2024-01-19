@@ -37,6 +37,7 @@ namespace claid {
             std::thread fromModuleDispatcherReaderThread;
 
             std::unique_ptr<std::thread> restartThread;
+            DataPackage restartControlPackage;
             
             absl::Status instantiateModule(const std::string& moduleId, const std::string& moduleClass);
             absl::Status instantiateModules(const ModuleListResponse& moduleList);

@@ -21,3 +21,18 @@ py_binary(
 )
 
 
+py_binary(
+    name = "config_reload_test",
+    srcs = glob(["data_collection/**/*.py", "helpers/**/*.py", 
+            "local_dispatching/**/*.py", "logger/**/*.py", "module/**/*.py", "CLAID.py",
+            "config_reload_test.py"]),
+    deps = [
+
+    ],
+    data = [
+        "//dispatch/core:claid_capi",
+        ":test_configs",
+        "//dispatch/proto:claidservice_py_proto",
+        "//dispatch/proto:claidservice_py_grpc"
+    ],
+)

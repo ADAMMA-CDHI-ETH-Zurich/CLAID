@@ -483,7 +483,7 @@ absl::Status MiddleWare::unloadAllModulesInAllLocalRuntimes()
     return absl::OkStatus();
 }
 
-absl::Status MiddleWare::getHostModuleAndChannelDescriptions(const std::string& hostId, Configuration& config,
+absl::Status MiddleWare::getHostModuleAndChannelDescriptions(const std::string& hostId, const Configuration& config,
         HostDescriptionMap& hostDescriptions, ModuleDescriptionMap& allModuleDescriptions,
         ModuleDescriptionMap& hostModuleDescriptions, ChannelDescriptionMap& channelDescriptions)
 {
@@ -512,7 +512,7 @@ absl::Status MiddleWare::getHostModuleAndChannelDescriptions(const std::string& 
 }
     
 
-absl::Status MiddleWare::loadNewConfigIntoModuleTable(Configuration& config)
+absl::Status MiddleWare::loadNewConfigIntoModuleTable(const Configuration& config)
 {
     // This is ONLY safe to do, if all Modules in all Runtimes have been unloaded!!
     if(!this->modulesUnloaded)
@@ -642,6 +642,13 @@ absl::Status MiddleWare::loadNewConfig(const std::string& configurationPath)
         return status;
     }
 
+    this->configurationPath = configurationPath;
+
+    return loadNewConfig(config);
+}
+
+absl::Status MiddleWare::loadNewConfig(const Configuration& config)
+{
     Logger::logInfo("Unloading all Modules in all local runtimes.");
 
     // Loading a new config works as follows:
@@ -651,6 +658,7 @@ absl::Status MiddleWare::loadNewConfig(const std::string& configurationPath)
     // 3. Afterward, all Runtimes will restart and automatically receive the new configuration from the Middleware.
     // Loading a new config means all Modules will be stopped and deleted! It is not possible for information to persist 
     // between two configs (i.e., if there are two Modules with the same id before and after, they will still be completely restarted).
+    absl::Status status;
     status = this->unloadAllModulesInAllLocalRuntimes();
     if(!status.ok())
     {
@@ -664,7 +672,6 @@ absl::Status MiddleWare::loadNewConfig(const std::string& configurationPath)
     {
         return status;
     }
-    this->configurationPath = configurationPath;
 
     status = this->restartRuntimesWithNewConfig();
     if(!status.ok())
@@ -672,7 +679,6 @@ absl::Status MiddleWare::loadNewConfig(const std::string& configurationPath)
         return status;
     }
 
-    
 
     return absl::OkStatus();
 }

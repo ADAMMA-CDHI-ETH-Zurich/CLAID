@@ -91,3 +91,8 @@ class ChannelSubscriberPublisher:
                     return template_package.WhichOneof("payload_oneof")
 
         return "PAYLOAD_ONEOF_NOT_SET"
+    
+    def reset(self):
+        self.__example_packages_for_each_module = {}
+        self.__module_channels_subscriber_map = {}
+

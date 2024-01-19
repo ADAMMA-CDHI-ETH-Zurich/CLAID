@@ -339,14 +339,8 @@ void ModuleManager::handlePackageWithControlVal(std::shared_ptr<DataPackage> pac
             }
             this->restartThread = std::make_unique<std::thread>(&ModuleManager::restart, this);
 
-            std::shared_ptr<DataPackage> response = std::make_shared<DataPackage>();
-            ControlPackage& ctrlPackage = *response->mutable_control_val();
-
-            ctrlPackage.set_ctrl_type(CtrlType::CTRL_UNLOAD_MODULES_DONE);
-            ctrlPackage.set_runtime(Runtime::RUNTIME_CPP);
-            response->set_source_host(package->target_host());
-            response->set_target_host(package->source_host());
-            toModuleDispatcherQueue.push_back(response);
+            restartControlPackage = *package.get();
+            
             
             break;
         }
@@ -369,7 +363,14 @@ void ModuleManager::restart()
     this->start();
     Logger::logInfo("...aaaaaandddd done!");
 
-    
+    std::shared_ptr<DataPackage> response = std::make_shared<DataPackage>();
+    ControlPackage& ctrlPackage = *response->mutable_control_val();
+
+    ctrlPackage.set_ctrl_type(CtrlType::CTRL_RESTART_RUNTIME_DONE);
+    ctrlPackage.set_runtime(Runtime::RUNTIME_CPP);
+    response->set_source_host(restartControlPackage.target_host());
+    response->set_target_host(restartControlPackage.source_host());
+    toModuleDispatcherQueue.push_back(response);
     
 }
 

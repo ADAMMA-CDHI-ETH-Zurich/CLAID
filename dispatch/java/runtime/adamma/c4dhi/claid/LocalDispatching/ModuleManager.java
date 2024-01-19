@@ -56,6 +56,7 @@ public class ModuleManager
     private Map<String, Module> runningModules = new HashMap<>();
 
     private Thread restartThread;
+    private DataPackage restartControlPackage;
 
     ChannelSubscriberPublisher subscriberPublisher;
 
@@ -364,17 +365,7 @@ public class ModuleManager
             this.restartThread = new Thread(() -> restart());
             this.restartThread.start();
 
-            DataPackage.Builder responseBuilder = DataPackage.newBuilder();
-            ControlPackage.Builder ctrlPackageBuilder = responseBuilder.getControlValBuilder();
-
-            ctrlPackageBuilder.setCtrlType(CtrlType.CTRL_RESTART_RUNTIME_DONE);
-            ctrlPackageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
-            responseBuilder.setSourceHost(packet.getTargetHost());
-            responseBuilder.setTargetHost(packet.getSourceHost());
-
-            // Use the responseBuilder to build the final DataPackage
-            DataPackage response = responseBuilder.build();
-            this.fromModulesChannel.add(response);
+            this.restartControlPackage = packet;
         }
         else
         {
@@ -426,6 +417,18 @@ public class ModuleManager
             }
         }
         this.start();
+
+        DataPackage.Builder responseBuilder = DataPackage.newBuilder();
+        ControlPackage.Builder ctrlPackageBuilder = responseBuilder.getControlValBuilder();
+
+        ctrlPackageBuilder.setCtrlType(CtrlType.CTRL_RESTART_RUNTIME_DONE);
+        ctrlPackageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
+        responseBuilder.setSourceHost(this.restartControlPackage.getTargetHost());
+        responseBuilder.setTargetHost(this.restartControlPackage.getSourceHost());
+
+        // Use the responseBuilder to build the final DataPackage
+        DataPackage response = responseBuilder.build();
+        this.fromModulesChannel.add(response);
     }
   
 }

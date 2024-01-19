@@ -79,6 +79,7 @@ void* attach_cpp_runtime(void* handle)
 __attribute__((visibility("default"))) __attribute__((used))
 bool load_new_config(void* handle, const char* config_file)
 {
+    claid::Logger::logInfo("capi load_new_config called");
     if (handle) {
         auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
         

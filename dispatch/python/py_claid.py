@@ -23,9 +23,7 @@ from module.module import Module
 # from module.type_mapping.mutator import Mutator
 
 
-import data_collection.load_heartrate_data
 
-exit(0)
 # value = {str:int}
 
 # dispatcher = ModuleDispatcher("unix:///tmp/test.grpc")
@@ -75,6 +73,8 @@ module_factory.register_module(TestModule)
 module_factory.register_module(TestModule2)
 claid = CLAID()
 claid.start("/Users/planger/Development/ModuleAPIV2/dispatch/python/test_config.json", "test_client", "user", "device", module_factory)
+while(True):
+    pass
 # socket = "unix:///tmp/claid_socket.grpc".encode('utf-8')
 # config = "/Users/planger/Development/ModuleAPIV2/dispatch/test/remote_dispatching_test.json".encode('utf-8')
 # client = "test_client".encode('utf-8')
