@@ -63,7 +63,7 @@ namespace claid
 
             void initializeInternal()
             {
-                //Logger::printfln("Starting module %s", this->getModuleName().c_str());
+                //Logger::logInfo("Starting module %s", this->getModuleName().c_str());
                 this->baseModuleInitialized = true;
                 this->terminated = false;
                 this->initialize();
@@ -328,7 +328,7 @@ namespace claid
 
             virtual ~BaseModule()
             {
-                Logger::printfln("Module %s destructor", this->getModuleName().c_str());
+                Logger::logInfo("Module %s destructor", this->getModuleName().c_str());
             }
         
             template<typename T>
@@ -371,7 +371,7 @@ namespace claid
             
             void waitForInitialization()
             {
-                Logger::printfln("WaitForInitialization called %d", this->initialized);
+                Logger::logInfo("WaitForInitialization called %d", this->initialized);
                 // If this thread is runnable dispatcher thread, waiting would result in a deadlock.
                 if(std::this_thread::get_id() == this->runnableDispatcherThread->getThreadID())
                 {
@@ -384,7 +384,7 @@ namespace claid
 
                 while(!this->initialized)
                 {
-                    Logger::printfln("WaitForIniti %s", this->getModuleName().c_str());
+                    Logger::logInfo("WaitForIniti %s", this->getModuleName().c_str());
                     std::this_thread::sleep_for(std::chrono::milliseconds(20));
                 }
             }
@@ -423,7 +423,7 @@ namespace claid
 
             void stopModule(bool isForkedSubModule = false)
             {
-                Logger::printfln("Module %s termination requested.", this->getModuleName().c_str());
+                Logger::logInfo("Module %s termination requested.", this->getModuleName().c_str());
 
                 if(!this->isRunning || this->terminated)
                 {
@@ -470,7 +470,7 @@ namespace claid
                 
 
                 this->isRunning = false;
-                Logger::printfln("Module %s %u has been terminated.", this->getModuleName().c_str(), this);
+                Logger::logInfo("Module %s %u has been terminated.", this->getModuleName().c_str(), this);
             }
 
             // UNIQUE IN THE CURRENT RUNTIME!

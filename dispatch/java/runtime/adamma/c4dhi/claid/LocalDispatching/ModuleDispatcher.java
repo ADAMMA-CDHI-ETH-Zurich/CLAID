@@ -236,14 +236,14 @@ public class ModuleDispatcher
         return true;
 
         // if (!stream->Write(pingReq)) {
-        //     claid::Logger::printfln("Failed sending ping package to server.");
+        //     claid::Logger::logInfo("Failed sending ping package to server.");
         //     return false;
         // }
 
         // // Wait for the valid response ping
         // DataPackage pingResp;
         // if (!stream->Read(&pingResp)) {
-        //     claid::Logger::printfln("Did not receive a ping package from server !");
+        //     claid::Logger::logInfo("Did not receive a ping package from server !");
         //     return false;
         // }
 

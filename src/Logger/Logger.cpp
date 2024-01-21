@@ -34,7 +34,7 @@ std::mutex fileAccessMutex;
  * @param ... variable of amount of parameters used to format the
  * conversion specifiers.
  */
-void claid::Logger::printfln(const char *format, ...)
+void claid::Logger::logInfo(const char *format, ...)
 {
 	va_list args, args_copy ;
     va_start( args, format ) ;

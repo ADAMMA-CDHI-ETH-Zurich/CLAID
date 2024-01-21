@@ -48,7 +48,7 @@ namespace Network
                 this->active = false;
                 break;
             }
-            Logger::printfln("read %d bytes", binaryData.getNumBytes());
+            Logger::logInfo("read %d bytes", binaryData.getNumBytes());
             // BinaryData is a message -> deserialize to message?
             BinaryDeserializer deserializer;
             RemoteConnection::Message message;
@@ -65,7 +65,7 @@ namespace Network
                 break;
             }
         }
-        Logger::printfln("Reader loop exited");
+        Logger::logInfo("Reader loop exited");
         this->stopped = true;
     }
               
@@ -82,13 +82,13 @@ namespace Network
 
     void SocketReaderModule::stop()
     {
-        Logger::printfln("ReaderModule::stop %d %d", this->stopped, this->active);
+        Logger::logInfo("ReaderModule::stop %d %d", this->stopped, this->active);
         if(!this->stopped)
         {
             this->stopped = true;
             this->active = false;
         }
-        Logger::printfln("ReaderModule::end stop %d %d", this->stopped, this->active);
+        Logger::logInfo("ReaderModule::end stop %d %d", this->stopped, this->active);
     }
 
     bool SocketReaderModule::isStopped()
@@ -98,7 +98,7 @@ namespace Network
 
     void SocketReaderModule::terminate()
     {
-        Logger::printfln("SocketReaderModule has terminated");
+        Logger::logInfo("SocketReaderModule has terminated");
         this->messageReceivedChannel.unpublish();
         this->errorChannel.unpublish();
     }

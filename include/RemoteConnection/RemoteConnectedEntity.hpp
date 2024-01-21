@@ -38,7 +38,7 @@ namespace claid
                 template<typename ConnectionModuleType, typename... arguments>
                 static RemoteConnectedEntity* Create(arguments... args)
                 {
-                    Logger::printfln("Factory");
+                    Logger::logInfo("Factory");
        
                
                     return new RemoteConnectedEntity(new ConnectionModuleType(args...));

@@ -9,12 +9,12 @@ namespace Network
 
     SocketConnectionModule::SocketConnectionModule(SocketClient socketClient) : socketClient(socketClient), readerModule(&this->socketClient)
     {
-        Logger::printfln("Socket client fd %d", socketClient.sock);
+        Logger::logInfo("Socket client fd %d", socketClient.sock);
     }
 
     void SocketConnectionModule::setup()
     {
-        Logger::printfln("SocketConnectionModule setup");
+        Logger::logInfo("SocketConnectionModule setup");
         if(this->started)
         {
             CLAID_THROW(Exception, "Error! Start was called twice on SocketConnectionModule.");
@@ -43,16 +43,16 @@ namespace Network
 
     void SocketConnectionModule::stop()
     {
-        Logger::printfln("SocketConnectionModule::Closing socket");
+        Logger::logInfo("SocketConnectionModule::Closing socket");
         this->socketClient.close();
 
-        Logger::printfln("SocketConnectionModule::Stopping reader module");
+        Logger::logInfo("SocketConnectionModule::Stopping reader module");
         this->readerModule.stop();
 
         while(!this->readerModule.isStopped())
         {
             // Waiting
-            Logger::printfln("waiting for stopping reader module");
+            Logger::logInfo("waiting for stopping reader module");
         }
 
         
@@ -65,11 +65,11 @@ namespace Network
 
     void SocketConnectionModule::sendMessage(RemoteConnection::Message message)
     {
-        Logger::printfln("SocketConnectionModule::sendMessage");
+        Logger::logInfo("SocketConnectionModule::sendMessage");
       
         // if(message.header->is<RemoteConnection::MessageHeaderChannelData>())
         // {
-        //     Logger::printfln("Skipping message");
+        //     Logger::logInfo("Skipping message");
         //     return;
         // }
         BinaryData binaryData;

@@ -38,7 +38,7 @@ namespace claid
                 dataPackage.set_channel(channelName);
 
                 Mutator<T> mutator = TypeMapping::getMutator<T>();
-                T exampleInstance;
+                T exampleInstance = T();
                 mutator.setPackagePayload(dataPackage, exampleInstance);
 
                 return dataPackage;   

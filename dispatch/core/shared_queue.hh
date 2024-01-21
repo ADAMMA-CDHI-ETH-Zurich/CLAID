@@ -92,14 +92,14 @@ class SharedQueue
             std::unique_lock<std::mutex> lock(m);
 			
             // Have to account for spurious wakeups?
-			Logger::printfln("Queue lock %lu", this);
+			Logger::logInfo("Queue lock %lu", this);
 
 			if(empty)
 			{
-				Logger::printfln("Queue locked %lu", this);
+				Logger::logInfo("Queue locked %lu", this);
 				cv.wait(lock);
 			}
-			Logger::printfln("Shared queue wakup %lu", this);
+			Logger::logInfo("Shared queue wakup %lu", this);
 			if (queue.empty() || closed)
 				return nullptr;
 

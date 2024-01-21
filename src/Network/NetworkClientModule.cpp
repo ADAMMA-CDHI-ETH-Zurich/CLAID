@@ -46,10 +46,10 @@ namespace claid
             int port;
 
             SocketClient socketClient;
-            Logger::printfln("Trying to connect");
+            Logger::logInfo("Trying to connect");
 
             getIPAndPortFromAddress(address, ip, port);
-            Logger::printfln("Trying to connect to %s:%d", ip.c_str(), port);
+            Logger::logInfo("Trying to connect to %s:%d", ip.c_str(), port);
 
             if(socketClient.connectTo(ip, port, this->timeoutInMs))
             {
@@ -58,7 +58,7 @@ namespace claid
             }
             
             // Failed to connect, close socket.
-            Logger::printfln("Closing socket");
+            Logger::logInfo("Closing socket");
             socketClient.close();
             
             return false;
@@ -66,12 +66,12 @@ namespace claid
 
         void NetworkClientModule::onConnectedSuccessfully(SocketClient socketClient)
         {
-            Logger::printfln("Connected successfully");
+            Logger::logInfo("Connected successfully");
 
-            Logger::printfln("Creating RemoteConnected Entity.");
+            Logger::logInfo("Creating RemoteConnected Entity.");
 
             this->remoteConnectedEntity = RemoteConnection::RemoteConnectedEntity::Create<SocketConnectionModule>(socketClient);
-            Logger::printfln("RemoteConnectedEntity calling setup.");
+            Logger::logInfo("RemoteConnectedEntity calling setup.");
 
             // First setup, then subscribe to errroChannel. Subscribing/publishing is only allowed during or after initialization
             // of the corresponding module.
@@ -100,7 +100,7 @@ namespace claid
         {
             if(error.is<ErrorConnectToAdressFailed>())
             {
-                Logger::printfln("Error connecting to adress failed.");
+                Logger::logInfo("Error connecting to adress failed.");
 
                 if(this->tryToReconnectAfterMs > 0 && !this->disabled)
                 {
@@ -109,19 +109,19 @@ namespace claid
             }
             else if(error.is<ErrorReadFromSocketFailed>())
             {
-                Logger::printfln("Error read from socket failed.");
+                Logger::logInfo("Error read from socket failed.");
                 // Read from socket failed. Connection lost.
                 this->onConnectionLost(remoteConnectedEntity);
             }
             else if(error.is<RemoteConnection::ErrorRemoteRuntimeOutOfSync>())
             {
-                Logger::printfln("NetworkClient: Error remote runtime out of sync.");
+                Logger::logInfo("NetworkClient: Error remote runtime out of sync.");
                 this->onConnectionLost(remoteConnectedEntity);
             
             }
             else if(error.is<RemoteConnection::ErrorConnectionTimeout>())
             {
-                Logger::printfln("NetworkClient: Error connection timeout.");
+                Logger::logInfo("NetworkClient: Error connection timeout.");
                 this->onConnectionLost(remoteConnectedEntity);
             }
         }
@@ -146,11 +146,11 @@ namespace claid
                 return;
             }
 
-            Logger::printfln("NetworkClient: Client has lost connection. Shutting down.");
+            Logger::logInfo("NetworkClient: Client has lost connection. Shutting down.");
             this->remoteConnectedEntity->stop();
             this->remoteConnectedEntity->disintegrate();
 
-            Logger::printfln("NetworkClient: deleting entity %u", this->remoteConnectedEntity);
+            Logger::logInfo("NetworkClient: deleting entity %u", this->remoteConnectedEntity);
             delete this->remoteConnectedEntity;
             this->remoteConnectedEntity = nullptr;
 
@@ -192,7 +192,7 @@ namespace claid
                 // in a prior call of this function.
                 return;
             }
-            Logger::printfln("Trying to reconnect");
+            Logger::logInfo("Trying to reconnect");
             if(!connectToServer())
             {
                 // Function will be called again after certain period (as it was registered as periodic function).
@@ -227,18 +227,18 @@ namespace claid
 
         void NetworkClientModule::enableNetworkConnection()
         {
-            Logger::printfln("NetworkClientModule: Got request to enable network.");
+            Logger::logInfo("NetworkClientModule: Got request to enable network.");
             this->disabled = false;
             if(this->tryToReconnectAfterMs > 0)
             {
-                Logger::printfln("Network enabled");
+                Logger::logInfo("Network enabled");
                 this->registerFunctionToPeriodicallyTryToReconnect();
             }
         }
 
         void NetworkClientModule::disableNetworkConnection()
         {
-            Logger::printfln("NetworkClientModule: Got request to disable network.");
+            Logger::logInfo("NetworkClientModule: Got request to disable network.");
             this->disabled = true;
 
             if(this->remoteConnectedEntity != nullptr)
@@ -250,7 +250,7 @@ namespace claid
 
             this->unregisterFunctionToPeriodicallyTryToReconnect();
 
-            Logger::printfln("Network disabled");   
+            Logger::logInfo("Network disabled");   
         }
     }
 }

@@ -34,7 +34,7 @@ namespace claid
 
         void ClientAcceptModule::run()
         {
-            Logger::printfln("ClientAcceptModule::run");
+            Logger::logInfo("ClientAcceptModule::run");
             while(this->active)
             {
                 SocketClient client;
@@ -44,7 +44,7 @@ namespace claid
                     // TODO: POST ERROR ACCEPT FAILED
                     CLAID_THROW(Exception, "Failed to accept client");
                 }
-                Logger::printfln("Post");
+                Logger::logInfo("Post");
                 this->clientAcceptChannel.post(client);
             }
         }

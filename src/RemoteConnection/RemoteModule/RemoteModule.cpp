@@ -23,7 +23,7 @@ namespace RemoteConnection
             CLAID_THROW(Exception, "Error! RemoteModule tried to send a message, however a channel to send messages was never set."
             "Please make sure to call setSendMessageChannel of RemoteModule " << __FILE__ << " " << __LINE__);
         }
-        Logger::printfln("SendMessageChannel post");
+        Logger::logInfo("SendMessageChannel post");
         this->sendMessageChannel.post(message);
     }
 
@@ -72,11 +72,11 @@ namespace RemoteConnection
 
     void RemoteModule::initialize()
     {
-        Logger::printfln("RemoteModule::initialize()");
+        Logger::logInfo("RemoteModule::initialize()");
         // By using forkSubModuleInThread, the LocalObserver will run on the same thread as the RemoteModule (no extra overhead).
         this->localObserver = this->forkSubModuleInThread<LocalObserver>();
         this->remoteObserver = this->forkSubModuleInThread<RemoteObserver>(&CLAID_RUNTIME->channelManager);
-        Logger::printfln("RemoteModule::initialize() end");
+        Logger::logInfo("RemoteModule::initialize() end");
     }
 
 
@@ -96,7 +96,7 @@ namespace RemoteConnection
         
 
 
-        // Logger::printfln("Initialize");
+        // Logger::logInfo("Initialize");
         // size_t numChannels = CLAID_RUNTIME->getNumChannels();
         // std::vector<std::string> channelNames = {"IntChannel", "CoughChannel", "TestChannel"};
         // Message message = Message::CreateMessage<MessageHeaderChannelUpdate, MessageDataBinary>();
@@ -108,7 +108,7 @@ namespace RemoteConnection
         //     channelNames.push_back(CLAID_RUNTIME->getChannelNameByIndex(i));
         // }
 
-        // Logger::printfln("RemoteModule cal sending.");
+        // Logger::logInfo("RemoteModule cal sending.");
 
         this->localObserver->observe(&CLAID_RUNTIME->channelManager);
    //     this->registerPeriodicFunction("PeriodicTest", &RemoteModule::periodicTest, this, 1000);
@@ -126,7 +126,7 @@ namespace RemoteConnection
         // the remote or local observer will be called, since the thread is stopped.
         // In other words: Thread is stopped, even if there is data in a channel that remote or
         // local observer have subscribed to, the associated callback will never be called.
-        Logger::printfln("RemoteModule terminating");
+        Logger::logInfo("RemoteModule terminating");
        
 
         this->removeSubModule(this->localObserver);
@@ -145,9 +145,9 @@ namespace RemoteConnection
             // And because the submodules share the same thread with the RemoteModule, the dispatcher thread
             // is not stopped just yet. Therefore, even if the modules have been stopped now,
             // it could still happen that there are some unprocessed runnables in the queue that still might get executed.
-            Logger::printfln("Joining and removing local observer");
+            Logger::logInfo("Joining and removing local observer");
             this->stopSubModule(this->localObserver);
-            Logger::printfln("Joining and removing remote observer");
+            Logger::logInfo("Joining and removing remote observer");
             this->stopSubModule(this->remoteObserver);
         }
     }
@@ -155,7 +155,7 @@ namespace RemoteConnection
     
     void RemoteModule::periodicTest()
     {
-        Logger::printfln("Sending test message");
+        Logger::logInfo("Sending test message");
         Message message = Message::CreateMessage<TestMessage, MessageDataString>();
         this->sendMessage(message);
     }

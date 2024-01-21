@@ -73,7 +73,7 @@ namespace claid
                     
 
                     py::buffer_info pyBufferInfo = info.getPyBufferInfo(reinterpret_cast<void*>(m.getData()));
-                    Logger::printfln("Getting buffer %s", pyBufferInfo.format.c_str());
+                    Logger::logInfo("Getting buffer %s", pyBufferInfo.format.c_str());
                     return pyBufferInfo;
                 });
 

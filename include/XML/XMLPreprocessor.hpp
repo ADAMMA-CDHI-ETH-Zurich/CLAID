@@ -158,7 +158,7 @@ namespace claid
                 printf("Loading file %s\n", filePath.c_str());
                 if (!file.is_open())
                 {
-                    Logger::printfln("Error! Could not open file \"%s\".", filePath.c_str());
+                    Logger::logInfo("Error! Could not open file \"%s\".", filePath.c_str());
                     return false;
                 }
 

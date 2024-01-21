@@ -7,7 +7,7 @@ namespace RemoteConnection
     // This is a private constructor!
     RemoteConnectedEntity::RemoteConnectedEntity(ConnectionModule* connectionModule) : connectionModule(connectionModule)
     {
-        Logger::printfln("RemoteConnectedEntity constructor");
+        Logger::logInfo("RemoteConnectedEntity constructor");
     }
 
     RemoteConnectedEntity::~RemoteConnectedEntity()
@@ -68,7 +68,7 @@ namespace RemoteConnection
         {
             CLAID_THROW(Exception, "Error, RemoteConnectedEntity::stop() has been called while it is not running. Was start() called before?");
         }
-        Logger::printfln("Stopping remote module and connection module");
+        Logger::logInfo("Stopping remote module and connection module");
         this->remoteModule.stop();
         this->connectionModule->stop();
     }

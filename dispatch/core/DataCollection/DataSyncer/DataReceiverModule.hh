@@ -151,11 +151,11 @@ namespace claid
             void onCompleteFileListReceived(ChannelData<std::vector<std::string>> data)
             {
                 const std::vector<std::string>& completeList = data.getData();
-                Logger::printfln("Received complete file list");
+                Logger::logInfo("Received complete file list");
 
                 for(const std::string& value : completeList)
                 {
-                    Logger::printfln("Complete file %s", value.c_str());
+                    Logger::logInfo("Complete file %s", value.c_str());
                 }                
  
                 std::vector<std::string> missingFiles;
@@ -166,7 +166,7 @@ namespace claid
                 for(const std::string& value : missingFiles)
                 {
                     this->missingFilesQueue.push(value);
-                    Logger::printfln("Missing %s", value.c_str());
+                    Logger::logInfo("Missing %s", value.c_str());
                 }
                 
                 this->requestNextFile();

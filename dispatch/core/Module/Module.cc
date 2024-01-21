@@ -34,20 +34,32 @@ namespace claid
     void Module::moduleFatal(const std::string& error) const
     {
         std::string errorMsg = "Module \"" + id + "\": " + error;
-        Logger::log(SeverityLevel::FATAL, errorMsg);
+        Logger::log(LogMessageSeverityLevel::FATAL, errorMsg, LogMessageEntityType::MODULE, this->id);
         CLAID_THROW(claid::Exception, errorMsg);
     }
 
     void Module::moduleError(const std::string& error) const
     {
         std::string errorMsg = "Module \"" + id + "\": " + error;
-        Logger::log(SeverityLevel::ERROR, errorMsg);
+        Logger::log(LogMessageSeverityLevel::ERROR, errorMsg, LogMessageEntityType::MODULE, this->id);
     }
 
     void Module::moduleWarning(const std::string& warning) const
     {
         std::string warningMsg = "Module \"" + id + "\": " + warning;
-        Logger::log(SeverityLevel::WARNING, warningMsg);
+        Logger::log(LogMessageSeverityLevel::WARNING, warningMsg, LogMessageEntityType::MODULE, this->id);
+    }
+
+    void Module::moduleInfo(const std::string& warning) const
+    {
+        std::string warningMsg = "Module \"" + id + "\": " + warning;
+        Logger::log(LogMessageSeverityLevel::INFO, warningMsg, LogMessageEntityType::MODULE, this->id);
+    }
+
+    void Module::moduleDebug(const std::string& warning) const
+    {
+        std::string warningMsg = "Module \"" + id + "\": " + warning;
+        Logger::log(LogMessageSeverityLevel::DEBUG_LOG, warningMsg, LogMessageEntityType::MODULE, this->id);
     }
 
     void Module::moduleFatal(absl::Status error) const
@@ -157,7 +169,7 @@ namespace claid
 
         this->timers.insert(std::make_pair(name, scheduledRunnable));
         this->runnableDispatcher.addRunnable(scheduledRunnable);
-        Logger::printfln("Registered periodic runnable %s", name.c_str());
+        Logger::logInfo("Registered periodic runnable %s", name.c_str());
     }
 
     void Module::registerScheduledFunction(const std::string& name, const Time& startTime, std::function<void()> function) 

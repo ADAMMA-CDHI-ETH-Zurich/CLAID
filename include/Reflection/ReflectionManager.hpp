@@ -26,7 +26,7 @@ namespace claid
 				Reflector r;
 				std::string reflectorName = r.getReflectorName();
 
-				Logger::printfln("Registering reflector %s for class %s", reflectorName.c_str(), className.c_str());
+				Logger::logInfo("Registering reflector %s for class %s", reflectorName.c_str(), className.c_str());
 
 
 				UntypedReflector* untypedReflector = static_cast<UntypedReflector*>(reflector);

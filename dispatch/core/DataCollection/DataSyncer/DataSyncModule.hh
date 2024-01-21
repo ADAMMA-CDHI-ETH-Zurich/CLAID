@@ -111,7 +111,7 @@ namespace claid
                 std::vector<std::string> fileList;
                 this->buildFileList(fileList);
                 this->completeFileListChannel.post(fileList);
-                Logger::printfln("Sending file list");
+                Logger::logInfo("Sending file list");
             }
 
             void sendRequestedFile(const std::string& relativeFilePath)
@@ -145,9 +145,9 @@ namespace claid
                 this->lastMessageFromFileReceiver = Time::now();
                 if(this->deleteFileAfterSync)
                 {
-                    Logger::printfln("Received acknowledgement of file received %s, deleting it.", receivedFile.getData().c_str());
+                    Logger::logInfo("Received acknowledgement of file received %s, deleting it.", receivedFile.getData().c_str());
                     std::string path = this->filePath + std::string("/") + receivedFile.getData();
-                    Logger::printfln("Deleting %s", path.c_str());
+                    Logger::logInfo("Deleting %s", path.c_str());
                     FileUtils::removeFileIfExists(path);
                 }
             }
@@ -166,7 +166,7 @@ namespace claid
                 // do not start a new syncing process just yet.
                 if(millisecondsSinceLastMessageFromFileReceiver() >= size_t(this->syncingPeriodInMs / 2))
                 {
-                    Logger::printfln("!!!PERIODIC SYNC!!!");
+                    Logger::logInfo("!!!PERIODIC SYNC!!!");
                     sendFileList();
                 }
             }

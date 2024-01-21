@@ -193,8 +193,12 @@ cc_library(
 
 cc_library(
     name = "logger",
-    srcs = glob(["Logger/*.cc"]),
-    hdrs = glob(["Logger/*.hh"]),
+    srcs = glob(["Logger/*.cc", "Utilities/*.cc", "shared_queue.hh"]),
+    hdrs = glob(["Logger/*.hh", "Utilities/*.hh", "shared_queue.cc"]),
+    deps = [
+        "//dispatch/proto:claidservice_cc_proto",
+        "//dispatch/proto:claidservice_cc_grpc"
+    ]
 )
 
 cc_library(

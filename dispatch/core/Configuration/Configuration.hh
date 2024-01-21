@@ -16,6 +16,7 @@
 
 using namespace std;
 
+using claidservice::LogMessageSeverityLevel;
 
 namespace claid
 {
@@ -39,6 +40,8 @@ namespace claid
             absl::Status extractModulesForHost(const string& hostId, const ModuleDescriptionMap& allModuleDescriptions, ModuleDescriptionMap& modulesForHost) const;
 
             bool hostExistsInConfiguration(const std::string& hostname) const;
+
+            LogMessageSeverityLevel getMinLogSeverityLevelToPrint(const std::string& hostName) const;
     };
 
 

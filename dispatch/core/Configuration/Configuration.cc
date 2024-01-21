@@ -11,7 +11,6 @@ using claidservice::ModuleConfig;
 
 namespace claid
 {
-
     absl::Status Configuration::fromJSONString(const std::string& json)
     {
         google::protobuf::util::JsonParseOptions options2;
@@ -94,11 +93,11 @@ namespace claid
     absl::Status Configuration::getModuleDescriptions(ModuleDescriptionMap& moduleDescriptions) const
     {
         moduleDescriptions.clear();
-        Logger::printfln("Hosts size %d \n", config.hosts_size());
+        Logger::logInfo("Hosts size %d \n", config.hosts_size());
         for(int i = 0; i < config.hosts_size(); i++)
         {
             const HostConfig& host = config.hosts(i);
-            Logger::printfln("Module size %d\n", host.modules_size());
+            Logger::logInfo("Module size %d\n", host.modules_size());
 
             for(int j = 0; j < host.modules_size(); j++)
             {
@@ -128,7 +127,7 @@ namespace claid
                 }
 
                 absl::Status status = moduleDescriptions.insert(make_pair(moduleDescription.id, moduleDescription));
-                Logger::printfln("Inserting module %s %s", moduleDescription.moduleClass .c_str(), moduleDescription.host.c_str());
+                Logger::logInfo("Inserting module %s %s", moduleDescription.moduleClass .c_str(), moduleDescription.host.c_str());
                 if(!status.ok())
                 {
                     return status;
@@ -215,4 +214,19 @@ namespace claid
         }
         return false;
     }
+
+    LogMessageSeverityLevel Configuration::getMinLogSeverityLevelToPrint(const std::string& hostName) const
+    {
+        for(int i = 0; i < config.hosts_size(); i++)
+        {
+            const HostConfig& host = config.hosts(i);
+
+            if(host.hostname() == hostName)
+            {
+                return host.min_log_severity_level();
+            }
+        }
+        return LogMessageSeverityLevel::INFO;
+    }
+    
 }

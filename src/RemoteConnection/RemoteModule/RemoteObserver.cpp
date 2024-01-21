@@ -26,17 +26,17 @@ namespace claid
             // Get a copy of the message (data and header of message are shared_ptr,
             // so no overhead), because message->value() is const.
       //      Message copy = message->value();
-            Logger::printfln("OnMessageReceived");
+            Logger::logInfo("OnMessageReceived");
             
             const Message& messageRef = message->value();
             if(messageRef.header->is<MessageHeaderChannelUpdate>())
             {
-                Logger::printfln("Header is MessageHeaderChannelUpdate");
+                Logger::logInfo("Header is MessageHeaderChannelUpdate");
 
             }
             else if(messageRef.header->is<MessageHeaderChannelData>())
             {
-                Logger::printfln("Header is MessageHeaderChannelData");
+                Logger::logInfo("Header is MessageHeaderChannelData");
             }
 
             // Calls onChannelUpdate if message.header is MessageHeaderChannelUpdate and message.data is MessageDataString.
@@ -113,7 +113,7 @@ namespace claid
 
 
             TaggedData<BinaryData> taggedBinaryData(binaryData, header.header.timestamp, header.header.sequenceID);
-            Logger::printfln("Received timestamp %d", header.header.timestamp.toUnixTimestamp());
+            Logger::logInfo("Received timestamp %d", header.header.timestamp.toUnixTimestamp());
             this->onChannelDataReceivedFromRemoteRunTime(header.targetChannel, taggedBinaryData);
         }
 
@@ -123,13 +123,13 @@ namespace claid
         // to send the data to the remote RunTime.
         void RemoteObserver::onChannelSubscribed(const std::string& channelID)
         {
-            Logger::printfln("RemoteModule:: onChannelSubscribed %s", channelID.c_str());
+            Logger::logInfo("RemoteModule:: onChannelSubscribed %s", channelID.c_str());
             // See comments in header on subscribedChannelsWithCallback
             auto it = this->subscribedChannelsWithCallback.find(channelID);
 
             if(it == this->subscribedChannelsWithCallback.end())
             {
-                Logger::printfln("Subscribing with callback");
+                Logger::logInfo("Subscribing with callback");
                 // Cannot pass reference to bind.
                 std::string channelIDCopy = channelID;
                 std::function<void (ChannelData<Untyped>)> function = std::bind(&RemoteObserver::onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo, this, channelIDCopy, std::placeholders::_1);
@@ -138,7 +138,7 @@ namespace claid
             }
             else
             {
-                Logger::printfln("Subscribing without callback");
+                Logger::logInfo("Subscribing without callback");
                 Channel<Untyped> channel = this->subscribe<Untyped>(channelID);
                 this->subscribedChannels.insert(std::make_pair(channelID, channel));
             }
@@ -147,14 +147,14 @@ namespace claid
 
         void RemoteObserver::onChannelPublished(const std::string& channelID)
         {
-            Logger::printfln("RemoteObserver: onChannelPublished %s", channelID.c_str());
+            Logger::logInfo("RemoteObserver: onChannelPublished %s", channelID.c_str());
             Channel<Untyped> channel = this->publish<Untyped>(channelID);
             this->publishedChannels.insert(std::make_pair(channelID, channel));
         }
 
         void RemoteObserver::onChannelUnsubscribed(const std::string& channelID)
         {
-            Logger::printfln("RemoteObserver: onChannelUnsubscribed %s", channelID.c_str());
+            Logger::logInfo("RemoteObserver: onChannelUnsubscribed %s", channelID.c_str());
             // First, check if we have subscribed to that channel without callback.
             auto it = this->subscribedChannels.find(channelID);
 
@@ -191,7 +191,7 @@ namespace claid
 
         void RemoteObserver::onChannelUnpublished(const std::string& channelID)
         {
-            Logger::printfln("RemoteObserver: onChannelUnpublished %s", channelID.c_str());
+            Logger::logInfo("RemoteObserver: onChannelUnpublished %s", channelID.c_str());
             // Check if we have published that channel.
             auto it = this->publishedChannels.find(channelID);
 
@@ -221,7 +221,7 @@ namespace claid
 
         void RemoteObserver::onChannelDataReceivedFromRemoteRunTime(const std::string& targetChannel, TaggedData<BinaryData>& data)
         {
-            Logger::printfln("RemoteObserver: onChannelDataReceivedFromRemoteRunTime %s", targetChannel.c_str());
+            Logger::logInfo("RemoteObserver: onChannelDataReceivedFromRemoteRunTime %s", targetChannel.c_str());
             // Check if we have publisher for channel (we SHOULD! otherwise RunTimes out of sync,
             // because how could the remote RunTime have posted that data we just received in the first place?).
             
@@ -244,7 +244,7 @@ namespace claid
         // Called, if a local Module (of this process) posted data to a channel, that has a subscriber in a remote run time.
         void RemoteObserver::onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo(std::string channelID, ChannelData<Untyped> data)
         {
-            Logger::printfln("RemoteObserver %u: onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo %s %d", this, channelID.c_str(), this->getUniqueIdentifier());
+            Logger::logInfo("RemoteObserver %u: onNewLocalDataInChannelThatRemoteRunTimeHasSubscribedTo %s %d", this, channelID.c_str(), this->getUniqueIdentifier());
             // When there is a channel, that was subscribed to in the local RunTime AND the remote RunTime,
             // then it can happen that data get's send back and forth and a loop happens.
             // E.g.: 
@@ -260,7 +260,7 @@ namespace claid
           
             if(this->isDataReceivedFromRemoteRunTime(taggedData))
             {
-                Logger::printfln("Is data we received from remote run time, hence skipping");
+                Logger::logInfo("Is data we received from remote run time, hence skipping");
                 // TODO: HOW CAN I FIX THIS
                 return;
             }
@@ -274,7 +274,7 @@ namespace claid
              
             message.header->as<MessageHeaderChannelData>()->targetChannel = channelID;
             message.header->as<MessageHeaderChannelData>()->header = data.getHeader();
-            Logger::printfln("Setting header timestamp %s %d", channelID.c_str(), data.getHeader().timestamp.toUnixTimestamp());
+            Logger::logInfo("Setting header timestamp %s %d", channelID.c_str(), data.getHeader().timestamp.toUnixTimestamp());
             // Set will serialize TaggedData<BinaryData>.
             // TaggedData holds the header (timestamp, sequenceID) and the binary data.
             // Thus, timestamp and sequenceID will be serialized, the binary data will be copied into a bigger
@@ -314,13 +314,13 @@ namespace claid
 
         void RemoteObserver::initialize()
         {
-            Logger::printfln("RemoteObserver initialize, keepalive intervall is: %lu", KEEP_ALIVE_INTERVAL_MILLISECONDS);
+            Logger::logInfo("RemoteObserver initialize, keepalive intervall is: %lu", KEEP_ALIVE_INTERVAL_MILLISECONDS);
             this->registerPeriodicFunction("KeepAliveTimer", &RemoteObserver::sendPeriodicKeepAliveMessage, this, KEEP_ALIVE_INTERVAL_MILLISECONDS);
         }
 
         void RemoteObserver::terminate()
         {
-            Logger::printfln("RemoteObserver %u terminate", this);
+            Logger::logInfo("RemoteObserver %u terminate", this);
             for(auto it : this->subscribedChannelsWithCallback)
             {
                 it.second.unsubscribe();
@@ -369,7 +369,7 @@ namespace claid
                 }
             }
 
-            Logger::printfln("RemoteObserver: Sending keep alive message");
+            Logger::logInfo("RemoteObserver: Sending keep alive message");
             Message message = Message::CreateMessage<MessageHeaderKeepAlive, MessageDataEmpty>();
             this->sendMessage(message);
             this->keepAliveResponseReceived = false;
@@ -378,14 +378,14 @@ namespace claid
 
         void RemoteObserver::onKeepAliveMessage(const MessageHeaderKeepAlive& header, const MessageDataEmpty& data)
         {
-            Logger::printfln("Received keep alive message. Sending response.");
+            Logger::logInfo("Received keep alive message. Sending response.");
             Message message = Message::CreateMessage<MessageHeaderKeepAliveResponse, MessageDataEmpty>();
             this->sendMessage(message);
         }
 
         void RemoteObserver::onKeepAliveResponse(const MessageHeaderKeepAliveResponse& header, const MessageDataEmpty& data)
         {
-            Logger::printfln("RemoteObserver: Received keep alive message response. Connection is alive.");
+            Logger::logInfo("RemoteObserver: Received keep alive message response. Connection is alive.");
             this->keepAliveResponseReceived = true;
         }
     }

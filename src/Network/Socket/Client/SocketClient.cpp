@@ -18,11 +18,11 @@ namespace claid
 
         *reinterpret_cast<int32_t*>(tmp.data()) = size;
 
-        Logger::printfln("Writing header %u", size);
+        Logger::logInfo("Writing header %u", size);
         if (!writeBytes(tmp))
             return false;
 
-        Logger::printfln("Writing data %u", size);
+        Logger::logInfo("Writing data %u", size);
         // Now write the data itself.
         if (!writeBytes(data.getData()))
             return false;
@@ -43,7 +43,7 @@ namespace claid
         }
 
         dataNumBytes = reinterpret_cast<int32_t*>(byteBuffer.data());
-        Logger::printfln("Read header, continuing to read %d bytes", *dataNumBytes);
+        Logger::logInfo("Read header, continuing to read %d bytes", *dataNumBytes);
 
         // Now read the data
         data.resize(*dataNumBytes);

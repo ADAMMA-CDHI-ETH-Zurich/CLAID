@@ -2,10 +2,15 @@ syntax = "proto3";
 
 package claidservice;
 
+import "dispatch/proto/log_message.proto";
+
 // Container for the central CLAID config file. 
 // TODO (patrick): change as you see fit, this just a starting point. 
 message CLAIDConfig {
   repeated HostConfig hosts = 1; 
+  string log_sink_host = 2; // If specified, all CLAID instances will forward their log messages to this host. 
+  LogMessageSeverityLevel log_sink_severity_level = 3;  // If log_sink_host is specified, this flag indicates 
+                                                        // what category of log messages will be sent to the log sink (only messages with severity level >= this flag will be sent).
 }
 
 message HostConfig {
@@ -16,6 +21,10 @@ message HostConfig {
   string connect_to = 5; // If specified, the host will connect to this address. 
                                   // The host can either be a Client connection to a Server, or a Server connecting to another Server.
   repeated ModuleConfig modules = 6;
+  string log_folder = 7;  // Path to folder where to store log message to. All log messages with a severity level >= min_log_severity_level will be store dhere.
+                          // Additionally, all log messages with a severity level >= log_sink_severity_level will be stored separately and synced with the log sink host.
+                          // The separately stored messages for the log_sink_host will be deleted upon successfull synchronization;
+  LogMessageSeverityLevel min_log_severity_level = 8; // Specifies what log messages are stored in a local log file. 
 }
 
 message ModuleConfig

@@ -18,7 +18,7 @@ namespace claid
             // is set to the unique identifier of the module that subscribed or published 
             // a channel.
             size_t moduleIdentifier = channelID->sequenceID;
-            Logger::printfln("Module has subscribed %u subscribed %u %d", moduleIdentifier, this->getUniqueIdentifier(), moduleIdentifier == this->getUniqueIdentifier());
+            Logger::logInfo("Module has subscribed %u subscribed %u %d", moduleIdentifier, this->getUniqueIdentifier(), moduleIdentifier == this->getUniqueIdentifier());
             // We do not want to get notified about subcribing or publishing that we did ourselves.
             if(moduleIdentifier == this->getUniqueIdentifier())
                 return;
@@ -67,7 +67,7 @@ namespace claid
 
         void LocalObserver::onChannelSubscribed(const std::string& channelID)
         {
-            Logger::printfln("LocalObserver %ld:OnChannelSubscribed %s %ld", this->getUniqueIdentifier(), channelID.c_str());
+            Logger::logInfo("LocalObserver %ld:OnChannelSubscribed %s %ld", this->getUniqueIdentifier(), channelID.c_str());
 
             // Send message to remotely connected RunTime that we have a local subscriber for that channel.
             // Therefore, a corresponding RemoteModule running in the other framework can subscribe to that channel.
@@ -79,21 +79,21 @@ namespace claid
 
         void LocalObserver::onChannelPublished(const std::string& channelID)
         {
-            Logger::printfln("LocalObserver %ld: onChannelPublished %s %ld", this->getUniqueIdentifier(), channelID.c_str());
+            Logger::logInfo("LocalObserver %ld: onChannelPublished %s %ld", this->getUniqueIdentifier(), channelID.c_str());
             Message message = createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType::CHANNEL_PUBLISHED, channelID);
             this->sendMessage(message);
         }
 
         void LocalObserver::onChannelUnsubscribed(const std::string& channelID)
         {
-            Logger::printfln("LocalObserver %ld: onChannelUnsubscribed %s %ld", this->getUniqueIdentifier(), channelID.c_str());
+            Logger::logInfo("LocalObserver %ld: onChannelUnsubscribed %s %ld", this->getUniqueIdentifier(), channelID.c_str());
             Message message = createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType::CHANNEL_UNSUBSCRIBED, channelID);
             this->sendMessage(message);
         }
 
         void LocalObserver::onChannelUnpublished(const std::string& channelID)
         {
-            Logger::printfln("LocalObserver %ld: onChannelUnpublished %s", this->getUniqueIdentifier(), channelID.c_str());
+            Logger::logInfo("LocalObserver %ld: onChannelUnpublished %s", this->getUniqueIdentifier(), channelID.c_str());
             Message message = createChannelUpdateMessage(MessageHeaderChannelUpdate::UpdateType::CHANNEL_UNPUBLISHED, channelID);
             this->sendMessage(message);
         }
@@ -137,12 +137,12 @@ namespace claid
             std::vector<std::string> channelIDs;
             manager->getChannelIDs(channelIDs);
 
-            Logger::printfln("Getting list of channels %d", channelIDs.size());
+            Logger::logInfo("Getting list of channels %d", channelIDs.size());
 
 
             for(const std::string& channelID : channelIDs)
             {
-                Logger::printfln("Channel %s", channelID.c_str());
+                Logger::logInfo("Channel %s", channelID.c_str());
 
                 if(CLAID_RUNTIME->isInHiddenNamespace(channelID))
                 {
@@ -162,7 +162,7 @@ namespace claid
 
         void LocalObserver::terminate()
         {
-            Logger::printfln("LocalObserver terminate");
+            Logger::logInfo("LocalObserver terminate");
             this->subscribedChannel.unsubscribe();
             this->publishedChannel.unsubscribe();
             this->unsubscribedChannel.unsubscribe();

@@ -42,7 +42,7 @@ void shutdown_core(void* handle) {
         if (!status.ok()) 
         {
             // TODO: replace with proper logging.
-            claid::Logger::printfln("Error shuting down middleware: %s", std::string(status.message()).c_str());
+            claid::Logger::logInfo("Error shuting down middleware: %s", std::string(status.message()).c_str());
         }
         delete middleWare;
     }
@@ -56,7 +56,7 @@ const char* get_socket_path(void* handle) {
         // This is only safe as long as middleWare does not get deleted.
         return middleWare->getSocketPath().c_str();
     }
-    claid::Logger::printfln("Cannot get socket path from middleware, handle is null.");
+    claid::Logger::logInfo("Cannot get socket path from middleware, handle is null.");
     return "";
 }
 
@@ -92,7 +92,7 @@ bool load_new_config(void* handle, const char* config_file)
         }
         return true;
     }
-    claid::Logger::printfln("Cannot get socket path from middleware, handle is null.");
+    claid::Logger::logInfo("Cannot get socket path from middleware, handle is null.");
     return false;
 }
 

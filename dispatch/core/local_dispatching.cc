@@ -33,8 +33,8 @@ RuntimeDispatcher::RuntimeDispatcher(SharedQueue<DataPackage>& inQueue,
                                      const ModuleTable& modTable) :
         incomingQueue(inQueue), outgoingQueue(outQueue), moduleTable(modTable)
 {
-    Logger::printfln("constr incoming queue ptr: %lu", &incomingQueue);
-    Logger::printfln("const outgoing queue ptr: %lu", &outgoingQueue);
+    Logger::logInfo("constr incoming queue ptr: %lu", &incomingQueue);
+    Logger::logInfo("const outgoing queue ptr: %lu", &outgoingQueue);
 
 }
 
@@ -44,17 +44,17 @@ bool RuntimeDispatcher::alreadyRunning() {
 }
 
 Status RuntimeDispatcher::startWriterThread(ServerReaderWriter<DataPackage, DataPackage>* stream) {
-    Logger::printfln("Start writer thread 1");
-    Logger::printfln("Start writer thread 2");
+    Logger::logInfo("Start writer thread 1");
+    Logger::logInfo("Start writer thread 2");
     this->running = true;
     if (writeThread) {
         return Status(grpc::INVALID_ARGUMENT, "Thread already running.");
     }
-    Logger::printfln("Start writer thread 3");
+    Logger::logInfo("Start writer thread 3");
     writeThread = make_unique<thread>([this, stream]() {
         processWriting(stream);
     });
-    Logger::printfln("Start writer thread 4");
+    Logger::logInfo("Start writer thread 4");
 
     return Status::OK;
 }
@@ -69,16 +69,16 @@ void RuntimeDispatcher::shutdownWriterThread() {
     this->running = false;
     // Cause the writer thread to terminate and wait for it.
     outgoingQueue.interruptOnce();
-    Logger::printfln("Waiting for writer thread to be done.");
+    Logger::logInfo("Waiting for writer thread to be done.");
     writeThread->join();
     writeThread = nullptr;
-    Logger::printfln("Writer thread is finished.");
+    Logger::logInfo("Writer thread is finished.");
 }
 
 void RuntimeDispatcher::processWriting(ServerReaderWriter<DataPackage, DataPackage>* stream) {
      while(this->running) {
 
-        Logger::printfln("RuntimeDispatcher waiting");
+        Logger::logInfo("RuntimeDispatcher waiting");
         auto pkt = outgoingQueue.interruptable_pop_front();
         Logger::logInfo("RuntimeDispatcher::processWriting got package");
         // Might be received due to spurious wake up or queue closed
@@ -133,7 +133,7 @@ void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
         if (!chanEntry) {
             // TODO: Figure out how to handle errors without leaving
             // the read loop.
-            Logger::printfln("Received invalid data packet:");
+            Logger::logInfo("Received invalid data packet:");
             Logger::println(messageToString(pkt));
             return;
         }    
@@ -281,33 +281,33 @@ Status ServiceImpl::SendReceivePackages(ServerContext* context,
     // Add the runtime implemenation to the internal list of runtime dispatcher.
     RuntimeDispatcher* rtDispatcher = addRuntimeDispatcher(inPkt, status);
     if (!status.ok()) {
-        claid::Logger::printfln("Returning with error %s \n", status.error_message().c_str());
+        claid::Logger::logInfo("Returning with error %s \n", status.error_message().c_str());
         stream->Write(*makeErrorPkt(status.error_message(), true));
         return status;
     }
 
-    claid::Logger::printfln("Runtime dispatcher created");
+    claid::Logger::logInfo("Runtime dispatcher created");
 
     // TODO: Add cleanup function to clean up when we leave the scope.
     if (rtDispatcher->alreadyRunning()) {
-        claid::Logger::printfln("Runtime dispatcher already running");
+        claid::Logger::logInfo("Runtime dispatcher already running");
         return Status(grpc::ALREADY_EXISTS, "Runtime dispatcher already exists");
     }
     dumpActiveDispatchers();
-    claid::Logger::printfln("Sending registration package");
+    claid::Logger::logInfo("Sending registration package");
 
     // Confirm that we are getting ready to write.
     DataPackage outPkt(inPkt);
-    claid::Logger::printfln("Sent registration package");
+    claid::Logger::logInfo("Sent registration package");
     stream->Write(outPkt);
 
 
-    claid::Logger::printfln("Start writer thread");
+    claid::Logger::logInfo("Start writer thread");
     rtDispatcher->startWriterThread(stream);
 
-    claid::Logger::printfln("Start reading");
+    claid::Logger::logInfo("Start reading");
     status = rtDispatcher->processReading(stream);
-    claid::Logger::printfln("Reading is done, shutting down writer thread.");
+    claid::Logger::logInfo("Reading is done, shutting down writer thread.");
     rtDispatcher->shutdownWriterThread();
 
     removeRuntimeDispatcher(inPkt.control_val().runtime());
@@ -360,25 +360,25 @@ RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& s
         return nullptr;
     }
 
-    Logger::printfln("Rtq ptr: %lu", rtq.get());
+    Logger::logInfo("Rtq ptr: %lu", rtq.get());
     auto ret = new RuntimeDispatcher(moduleTable.inputQueue(), *rtq.get(), moduleTable);
     activeDispatchers[runTime] = unique_ptr<RuntimeDispatcher>(ret);
     return ret;
 }
 
 void ServiceImpl::removeRuntimeDispatcher(Runtime rt) {
-    Logger::printfln("Removing runtime dispatcher");
+    Logger::logInfo("Removing runtime dispatcher");
     lock_guard<mutex> lock(adMutex);
     activeDispatchers.erase(rt);
-    Logger::printfln("Removed runtime dispatcher");
+    Logger::logInfo("Removed runtime dispatcher");
 
 }
 
 void ServiceImpl::dumpActiveDispatchers() {
     lock_guard<mutex> lock(adMutex);
-    claid::Logger::printfln("Dispatchers: ");
+    claid::Logger::logInfo("Dispatchers: ");
     for(auto& it : activeDispatchers) {
-        claid::Logger::printfln("     %s", Runtime_Name(it.first).c_str());
+        claid::Logger::logInfo("     %s", Runtime_Name(it.first).c_str());
     }
 }
 
@@ -392,7 +392,7 @@ DispatcherServer::~DispatcherServer() {
 bool DispatcherServer::start() {
     buildAndStartServer();
     if (server) {
-        claid::Logger::printfln("Server listening on %s", addr.c_str());
+        claid::Logger::logInfo("Server listening on %s", addr.c_str());
     }
     return bool(server);
 }
@@ -503,7 +503,7 @@ bool DispatcherClient::startRuntime(const InitRuntimeRequest& req) {
         Empty empty;
         Status status = stub->InitRuntime(&context,req, &empty);
         if (!status.ok()) {
-            claid::Logger::printfln("Could not init request: %s", status.error_message().c_str());
+            claid::Logger::logInfo("Could not init request: %s", status.error_message().c_str());
             return false;
         }
     }
@@ -516,14 +516,14 @@ bool DispatcherClient::startRuntime(const InitRuntimeRequest& req) {
     claidservice::DataPackage pingReq;
     makeControlRuntimePing(*pingReq.mutable_control_val());
     if (!stream->Write(pingReq)) {
-        claid::Logger::printfln("Failed sending ping package to server.");
+        claid::Logger::logInfo("Failed sending ping package to server.");
         return false;
     }
 
     // Wait for the valid response ping
     DataPackage pingResp;
     if (!stream->Read(&pingResp)) {
-        claid::Logger::printfln("Did not receive a ping package from server !");
+        claid::Logger::logInfo("Did not receive a ping package from server !");
         return false;
     }
 
@@ -559,15 +559,15 @@ void DispatcherClient::processWriting() {
             }
         } else {
             if (!stream->Write(*pkt)) {
-                claid::Logger::printfln("Client: Error writing packet");
+                claid::Logger::logInfo("Client: Error writing packet");
                 break;
             }        
         }
     }
-    Logger::printfln("DispatcherClient writes done");
+    Logger::logInfo("DispatcherClient writes done");
     stream->WritesDone();
     auto status = stream->Finish();
     if (!status.ok()) {
-        claid::Logger::printfln("Got error finishing the writing: %s", status.error_message().c_str());
+        claid::Logger::logInfo("Got error finishing the writing: %s", status.error_message().c_str());
     }
 }

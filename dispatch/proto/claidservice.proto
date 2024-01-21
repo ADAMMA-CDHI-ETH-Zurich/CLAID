@@ -11,6 +11,8 @@ option java_multiple_files = true;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
+import "dispatch/proto/runtime.proto";
+import "dispatch/proto/log_message.proto";
 
 // Service for modules to talk to the CLAID middleware.
 service ClaidService {
@@ -204,13 +206,6 @@ message InitRuntimeRequest {
 
   Runtime runtime = 1;
   repeated ModuleChannels modules = 2;
-}
-enum Runtime {
-  RUNTIME_UNSPECIFIED = 0;
-  RUNTIME_CPP = 1;
-  RUNTIME_DART = 2;
-  RUNTIME_JAVA = 3;
-  RUNTIME_PYTHON = 4;
 }
 
 message RemoteClientInfo

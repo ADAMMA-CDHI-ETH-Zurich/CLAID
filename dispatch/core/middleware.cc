@@ -13,6 +13,7 @@ MiddleWare::MiddleWare(const string& socketPath, const string& configurationPath
           hostId(hostId), userId(userId), deviceId(deviceId) 
     {
         moduleTable.setProperties(ModuleTableProperties{userId, deviceId});
+        this->logMessagesQueue = std::make_shared<SharedQueue<LogMessage>>();
     }
 
 MiddleWare::~MiddleWare() {
@@ -26,7 +27,7 @@ MiddleWare::~MiddleWare() {
     auto status = shutdown();
     if (!status.ok()) {
         // TODO: replace with proper logging
-        Logger::printfln("Error running shutdown in MiddleWare destructor: %s", string(status.message()).c_str());
+        Logger::logInfo("Error running shutdown in MiddleWare destructor: %s", string(status.message()).c_str());
     }
 }
 
@@ -39,12 +40,13 @@ absl::Status MiddleWare::start() {
 
     // Fill the module table fromt he config file
     Configuration config;
-    Logger::printfln("Parsing %s\n", configurationPath.c_str());
+    Logger::logInfo("Parsing %s\n", configurationPath.c_str());
     auto status = config.parseFromJSONFile(configurationPath);
     if (!status.ok()) {
-        Logger::printfln("Unable to parse config file: %s", string(status.message()).c_str());
+        Logger::logInfo("Unable to parse config file: %s", string(status.message()).c_str());
         return status;
     }
+    Logger::setMinimimSeverityLevelToPrint(config.getMinLogSeverityLevelToPrint(this->hostId));
 
     HostDescriptionMap hostDescriptions;
 
@@ -67,8 +69,8 @@ absl::Status MiddleWare::start() {
     if (!status.ok()) {
         return status;
     }
-    Logger::printfln("Module Table:");
-    Logger::printfln("%s", moduleTable.toString().c_str());
+    Logger::logInfo("Module Table:");
+    Logger::logInfo("%s", moduleTable.toString().c_str());
 
     localDispatcher = make_unique<DispatcherServer>(socketPath, moduleTable);
     if (!localDispatcher->start()) {
@@ -91,7 +93,7 @@ absl::Status MiddleWare::start() {
         return status;
     }
 
-    Logger::printfln("Middleware started.");
+    Logger::logInfo("Middleware started.");
 
     running = true;
 
@@ -100,6 +102,7 @@ absl::Status MiddleWare::start() {
     });
 
     this->currentConfiguration = config;
+
 
     return absl::OkStatus();
 }
@@ -275,10 +278,10 @@ absl::Status MiddleWare::shutdown()
         return absl::InvalidArgumentError("MiddleWare::shutdown called although middleware was not running.");
     }
     // TODO: remove once the router is added.
-    Logger::printfln("Middleware shutdown called.");
+    Logger::logInfo("Middleware shutdown called.");
 
     absl::Status status;
-    Logger::printfln("Stopping MasterRouter");
+    Logger::logInfo("Stopping MasterRouter");
     
     status = this->masterRouter->stop();
     if(!status.ok())
@@ -290,13 +293,13 @@ absl::Status MiddleWare::shutdown()
     this->hostUserTable.inputQueue()->interruptOnce();
     this->clientTable.getFromRemoteClientQueue().interruptOnce();
 
-    Logger::printfln("Stopping RoutingQueueMerger");
+    Logger::logInfo("Stopping RoutingQueueMerger");
     status = this->routingQueueMerger->stop();
     if(!status.ok())
     {
         return status;
     }
-    Logger::printfln("RoutingQueueMerger stopped");
+    Logger::logInfo("RoutingQueueMerger stopped");
 
 
 
@@ -311,7 +314,7 @@ absl::Status MiddleWare::shutdown()
     }
 
 
-    Logger::printfln("Stopping controlPackageHandler");
+    Logger::logInfo("Stopping controlPackageHandler");
     running = false;
     if(this->controlPackageHandlerThread != nullptr)
     {
@@ -321,7 +324,7 @@ absl::Status MiddleWare::shutdown()
     }
 
     
-    Logger::printfln("Middleware successfully shut down.");
+    Logger::logInfo("Middleware successfully shut down.");
     return absl::OkStatus();
 }
 
@@ -330,7 +333,7 @@ absl::Status MiddleWare::populateModuleTable(
     const ChannelDescriptionMap& channelDescriptions,
     ModuleTable& moduleTable)
 {
-    Logger::printfln("Module size: %d", moduleDescriptions.size());
+    Logger::logInfo("Module size: %d", moduleDescriptions.size());
     for(const auto& entry : moduleDescriptions)
     {
         const ModuleDescription& moduleDescription = entry.second;
@@ -449,10 +452,10 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
             response->set_source_host(controlPackage->target_host());
             response->set_target_host(controlPackage->source_host());
 
-            Logger::printfln("Getting module annotations");
+            Logger::logInfo("Getting module annotations");
             for(auto& moduleAnnotation : moduleAnnotations)
             {
-                Logger::printfln("Getting module annotations for %s %d", moduleAnnotation.first.c_str(), 0);
+                Logger::logInfo("Getting module annotations for %s %d", moduleAnnotation.first.c_str(), 0);
                 (*ctrlPackage.mutable_module_annotations())[moduleAnnotation.first] = moduleAnnotation.second;
             }
 
@@ -673,10 +676,10 @@ absl::Status MiddleWare::restartRuntimesWithNewConfig()
 absl::Status MiddleWare::loadNewConfig(const std::string& configurationPath)
 {
     Configuration config;
-    Logger::printfln("Parsing %s\n", configurationPath.c_str());
+    Logger::logInfo("Parsing %s\n", configurationPath.c_str());
     auto status = config.parseFromJSONFile(configurationPath);
     if (!status.ok()) {
-        Logger::printfln("Unable to parse config file: %s", string(status.message()).c_str());
+        Logger::logInfo("Unable to parse config file: %s", string(status.message()).c_str());
         return status;
     }
 
@@ -716,7 +719,17 @@ absl::Status MiddleWare::loadNewConfig(const Configuration& config)
     {
         return status;
     }
-
+    Logger::setMinimimSeverityLevelToPrint(config.getMinLogSeverityLevelToPrint(this->hostId));
 
     return absl::OkStatus();
+}
+
+
+void MiddleWare::readLogMessages()
+{
+    
+}
+std::shared_ptr<SharedQueue<LogMessage>> MiddleWare::getLogMessagesQueue()
+{
+    return nullptr;
 }

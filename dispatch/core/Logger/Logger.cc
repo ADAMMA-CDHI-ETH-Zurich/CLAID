@@ -1,4 +1,5 @@
 #include "dispatch/core/Logger/Logger.hh"
+#include "dispatch/core/shared_queue.hh"
 
 #include <sstream>
 #include <stdarg.h>
@@ -9,11 +10,20 @@
 #include <string>
 #include <stdexcept>
 #include <mutex>
-std::string claid::Logger::logTag = "CLAID";
+std::string claid::Logger::logTag = "CLAID C++";
 std::string claid::Logger::lastLogMessage = "";
 bool claid::Logger::loggingToFileEnabled = false;
-std::ofstream* claid::Logger::file = nullptr;
-std::mutex fileAccessMutex;
+std::string claid::Logger::logStoragePath;
+
+// Severity level determing what log messages are print to the console
+// and stored to the log file.
+LogMessageSeverityLevel claid::Logger::minSeverityLevelToPrintAndStore = LogMessageSeverityLevel::INFO;
+// Severity level determining what log messages are forward to the log sink host.
+LogMessageSeverityLevel claid::Logger::minSeverityLevelToForwardToLogSinkHost = LogMessageSeverityLevel::WARNING;
+std::unique_ptr<std::ofstream> claid::Logger::logFile = nullptr;
+std::shared_ptr<claid::SharedQueue<LogMessage>> claid::Logger::logMessageQueue = nullptr;
+
+std::mutex claid::Logger::loggerMutex;
 
 #ifdef __ANDROID__
 	#include <android/log.h>
@@ -34,7 +44,7 @@ std::mutex fileAccessMutex;
  * @param ... variable of amount of parameters used to format the
  * conversion specifiers.
  */
-void claid::Logger::printfln(const char *format, ...)
+void claid::Logger::logInfo(const char *format, ...)
 {
 	va_list args, args_copy ;
     va_start( args, format ) ;
@@ -51,7 +61,7 @@ void claid::Logger::printfln(const char *format, ...)
         va_end(args) ;
 
 		
-		claid::Logger::log(SeverityLevel::INFO, result);
+		claid::Logger::log(LogMessageSeverityLevel::INFO, result, LogMessageEntityType::MIDDLEWARE, "");
     }
 
     catch( const std::bad_alloc& )
@@ -62,23 +72,58 @@ void claid::Logger::printfln(const char *format, ...)
     }
 }
 
-void claid::Logger::log(const claid::SeverityLevel severityLevel, const std::string& message)
+void claid::Logger::log(const LogMessageSeverityLevel severityLevel, 
+    const std::string& message, const LogMessageEntityType entityType, 
+    const std::string entityName)
 {
 
 	std::stringstream ss;
 	std::string timeString = claid::Logger::getTimeString();
 
-	ss << "[" << timeString << " | " << logTag << " " << severityLevelToString(severityLevel)
-	<< "] " << message;
+	ss << "[" << timeString << " | " << logTag << " " << LogMessageSeverityLevel_Name(severityLevel) << " | " << LogMessageEntityType_Name(entityType);
 
-	#ifdef __ANDROID__
-		LOGCAT(ss.str().c_str(), __LINE__);
-	#else
-		std::cout << ss.str().c_str() << "\n" << std::flush;
-	#endif
+    if(entityName != "")
+    {
+        ss << " (" << entityName << ")";
+    }
+
+	ss << "] " << message;
+
+    {
+        std::unique_lock<std::mutex> lock(loggerMutex);
+        if(severityLevel >= Logger::minSeverityLevelToPrintAndStore)
+        {
+            #ifdef __ANDROID__
+                LOGCAT(ss.str().c_str(), __LINE__);
+            #else
+                std::cout << ss.str().c_str() << "\n" << std::flush;
+            #endif
+        }
+    }
+
+    
+	
+
+    std::shared_ptr<LogMessage> logMessage = std::make_shared<LogMessage>();
+    logMessage->set_log_message(message);
+    logMessage->set_severity_level(severityLevel);
+    logMessage->set_unix_timestamp_in_ms(Time::now().toUnixTimestampMilliseconds());
+    logMessage->set_entity_type(entityType);
+    logMessage->set_entity_name(entityName);
+    logMessage->set_runtime(Runtime::RUNTIME_CPP);
+
+    if(severityLevel >= Logger::minSeverityLevelToForwardToLogSinkHost)
+    {
+        if(Logger::logMessageQueue != nullptr)
+        {
+            std::unique_lock<std::mutex> lock(claid::Logger::loggerMutex);
+
+            Logger::logMessageQueue->push_back(logMessage);
+        }
+    }
 }
 
-void claid::Logger::log(const claid::SeverityLevel severityLevel, const char* format, ...)
+void claid::Logger::log(const LogMessageSeverityLevel severityLevel, const char* format, ...)
 {
 	va_list args, args_copy ;
     va_start( args, format ) ;
@@ -91,7 +136,7 @@ void claid::Logger::log(const claid::SeverityLevel severityLevel, const char* fo
         std::string result( sz, ' ' ) ;
         std::vsnprintf( &result.front(), sz, format, args_copy ) ;
 
-		claid::Logger::log(severityLevel, result);
+		claid::Logger::log(severityLevel, result, LogMessageEntityType::MIDDLEWARE, "");
 
 		// This is not thread safe....
 		// Leads to segfault if multiple threads access it at the same time.
@@ -99,33 +144,6 @@ void claid::Logger::log(const claid::SeverityLevel severityLevel, const char* fo
 
         va_end(args_copy) ;
         va_end(args) ;		
-    }
-
-    catch( const std::bad_alloc& )
-    {
-        va_end(args_copy) ;
-        va_end(args) ;
-        throw ;
-    }
-}
-
-void claid::Logger::logInfo(const char* format, ...)
-{
-	va_list args, args_copy ;
-    va_start( args, format ) ;
-    va_copy( args_copy, args ) ;
-	
-    const auto sz = std::vsnprintf( nullptr, 0, format, args ) + 1 ;
-
-    try
-    {
-        std::string result( sz, ' ' ) ;
-        std::vsnprintf( &result.front(), sz, format, args_copy ) ;
-
-		claid::Logger::log(SeverityLevel::INFO, result);
-
-        va_end(args_copy) ;
-        va_end(args) ;
     }
 
     catch( const std::bad_alloc& )
@@ -149,7 +167,7 @@ void claid::Logger::logWarning(const char* format, ...)
         std::string result( sz, ' ' ) ;
         std::vsnprintf( &result.front(), sz, format, args_copy ) ;
 
-		claid::Logger::log(SeverityLevel::WARNING, result);
+		claid::Logger::log(LogMessageSeverityLevel::WARNING, result, LogMessageEntityType::MIDDLEWARE, "");
 
         va_end(args_copy) ;
         va_end(args) ;
@@ -176,7 +194,7 @@ void claid::Logger::logError(const char* format, ...)
         std::string result( sz, ' ' ) ;
         std::vsnprintf( &result.front(), sz, format, args_copy ) ;
 
-		claid::Logger::log(SeverityLevel::ERROR, result);
+		claid::Logger::log(LogMessageSeverityLevel::ERROR, result, LogMessageEntityType::MIDDLEWARE, "");
 
         va_end(args_copy) ;
         va_end(args) ;
@@ -203,7 +221,7 @@ void claid::Logger::logFatal(const char* format, ...)
         std::string result( sz, ' ' ) ;
         std::vsnprintf( &result.front(), sz, format, args_copy ) ;
 
-		claid::Logger::log(SeverityLevel::FATAL, result);
+		claid::Logger::log(LogMessageSeverityLevel::FATAL, result, LogMessageEntityType::MIDDLEWARE, "");
 
         va_end(args_copy) ;
         va_end(args) ;
@@ -219,40 +237,7 @@ void claid::Logger::logFatal(const char* format, ...)
 
 
 void claid::Logger::println(const std::string& msg) {
-	claid::Logger::printfln("%s", msg.c_str());
-}
-
-std::string claid::Logger::severityLevelToString(const claid::SeverityLevel level)
-{
-	switch(level)
-	{
-		case(SeverityLevel::INFO):
-		{
-			return "INFO";
-			break;
-		}
-		case(SeverityLevel::WARNING):
-		{
-			return "WARNING";
-			break;
-		}
-		case(SeverityLevel::ERROR):
-		{
-			return "ERROR";
-			break;
-		}
-		case(SeverityLevel::FATAL):
-		{
-			return "FATAL";
-			break;
-		}
-        default:
-        {
-            return "UNKNOWN";
-            break;
-        }
-		
-	}
+	claid::Logger::logInfo("%s", msg.c_str());
 }
 
 /**
@@ -296,20 +281,20 @@ std::string claid::Logger::getTimeString()
 	return ss.str();
 }
 
-/**
- * @brief sets the logTag of the logger
- *
- * The logTag is a prefix which will be printed when using printfln
- * after the time string.
- *
- * @param std::string logTag string containing the logTag
- *
- * @return void
- */
-void claid::Logger::setLogTag(std::string logTag)
-{
-	claid::Logger::logTag = logTag;
-}
+// /**
+//  * @brief sets the logTag of the logger
+//  *
+//  * The logTag is a prefix which will be printed when using printfln
+//  * after the time string.
+//  *
+//  * @param std::string logTag string containing the logTag
+//  *
+//  * @return void
+//  */
+// void claid::Logger::setLogTag(std::string logTag)
+// {
+// 	claid::Logger::logTag = logTag;
+// }
 
 /**
  * @brief Returns last log mesage.
@@ -321,6 +306,17 @@ void claid::Logger::setLogTag(std::string logTag)
 std::string claid::Logger::getLastLogMessage()
 {
 	return claid::Logger::lastLogMessage;
+}
+
+void claid::Logger::attachToMiddleware(std::shared_ptr<SharedQueue<LogMessage>> logMessageQueue)
+{
+    std::unique_lock<std::mutex> lock(loggerMutex);
+    claid::Logger::logMessageQueue = logMessageQueue;
+}
+void claid::Logger::setMinimimSeverityLevelToPrint(const LogMessageSeverityLevel minSeverityLevel)
+{
+    std::unique_lock<std::mutex> lock(loggerMutex);
+    claid::Logger::minSeverityLevelToPrintAndStore = minSeverityLevel;
 }
 
 

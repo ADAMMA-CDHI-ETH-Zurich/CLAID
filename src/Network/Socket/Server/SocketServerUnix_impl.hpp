@@ -70,8 +70,8 @@ namespace Network
         clientSocket = ::accept(this->serverSocket, (struct sockaddr *)&clientAddress, &clientAddressLength);
         if (clientSocket < 0) 
         { 
-            Logger::printfln("SocketServer:ClientHandler failed to accept client. Is Server down??\n");
-            Logger::printfln("recv: %s (%d)\n", strerror(errno), errno);
+            Logger::logInfo("SocketServer:ClientHandler failed to accept client. Is Server down??\n");
+            Logger::logInfo("recv: %s (%d)\n", strerror(errno), errno);
             this->lastError.errorString = SocketServerErrorType::ACCEPT_FAILED;
             return false;
         } 
@@ -81,7 +81,7 @@ namespace Network
             struct in_addr ipAddr = pV4Addr->sin_addr;
             char str[INET_ADDRSTRLEN];
             ::inet_ntop( AF_INET, &ipAddr, str, INET_ADDRSTRLEN );
-            Logger::printfln("SocketServer:ClientHandler successfully accepted client with address %s %d\n", str, clientSocket);
+            Logger::logInfo("SocketServer:ClientHandler successfully accepted client with address %s %d\n", str, clientSocket);
             
             client = SocketClient(clientSocket);
             return true;

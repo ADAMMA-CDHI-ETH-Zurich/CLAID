@@ -38,12 +38,12 @@ namespace claid
 
 		// Set non-blocking 
 		if( (arg = fcntl(sock, F_GETFL, NULL)) < 0) { 
-			Logger::printfln("Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
+			Logger::logInfo("Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
 			return -1;
 		} 
 		arg |= O_NONBLOCK; 
 		if( fcntl(sock, F_SETFL, arg) < 0) { 
-			Logger::printfln("Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
+			Logger::logInfo("Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
 			return -1;
 		} 
 		// Trying to connect with timeout 
@@ -58,42 +58,42 @@ namespace claid
 				FD_SET(sock, &myset); 
 				res = select(sock+1, NULL, &myset, NULL, &tv); 
 				if (res < 0 && errno != EINTR) { 
-					Logger::printfln("Error connecting %d - %s\n", errno, strerror(errno)); 
+					Logger::logInfo("Error connecting %d - %s\n", errno, strerror(errno)); 
 					return -1;
 				} 
 				else if (res > 0) { 
 					// Socket selected for write 
 					lon = sizeof(int); 
 					if (getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
-						Logger::printfln("Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
+						Logger::logInfo("Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
 						return -1;
 					} 
 					// Check the value returned... 
 					if (valopt) { 
-						Logger::printfln("Error in delayed connection() %d - %s\n", valopt, strerror(valopt)); 
+						Logger::logInfo("Error in delayed connection() %d - %s\n", valopt, strerror(valopt)); 
 						return -1;
 					} 
 					break; 
 				} 
 				else { 
-					Logger::printfln("Timeout in select() - Cancelling!\n"); 
+					Logger::logInfo("Timeout in select() - Cancelling!\n"); 
 					return -1;
 				} 
 				} while (1); 
 			} 
 			else { 
-				Logger::printfln("Error connecting %d - %s\n", errno, strerror(errno)); 
+				Logger::logInfo("Error connecting %d - %s\n", errno, strerror(errno)); 
 				return -1;
 			} 
 		} 
 		// Set to blocking mode again... 
 		if( (arg = fcntl(sock, F_GETFL, NULL)) < 0) { 
-			Logger::printfln("Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
+			Logger::logInfo("Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
 			return -1;
 		} 
 		arg &= (~O_NONBLOCK); 
 		if( fcntl(sock, F_SETFL, arg) < 0) { 
-			Logger::printfln("Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
+			Logger::logInfo("Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
 			return -1;
 		} 
 		return res;
@@ -107,38 +107,38 @@ namespace claid
 		bzero(&serv_addr, sizeof(serv_addr));
 
 		char buffer[256];
-		Logger::printfln("Connect to 1");
+		Logger::logInfo("Connect to 1");
 		
 		this->sock = socket(AF_INET, SOCK_STREAM, 0);
-		Logger::printfln("Opened Socket %d", this->sock);
+		Logger::logInfo("Opened Socket %d", this->sock);
 		if (this->sock < 0) 
 		{
-			Logger::printfln("Failed to open socket.\n");
+			Logger::logInfo("Failed to open socket.\n");
 			return false;
 		}
 		// int status = fcntl(sock, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK);
 
 		// 	if (status == -1){
-		// 	Logger::printfln("error calling fcntl");
+		// 	Logger::logInfo("error calling fcntl");
 		// 	// handle the error.  By the way, I've never seen fcntl fail in this way
 		// 	}
-				Logger::printfln("Connect to 2");
+				Logger::logInfo("Connect to 2");
 
 		
 
-		// 		Logger::printfln("Connect to 3");
+		// 		Logger::logInfo("Connect to 3");
 
 		// if (server == NULL) 
 		// {
-		// 			Logger::printfln("Connect to 4");
+		// 			Logger::logInfo("Connect to 4");
 
-		// 	Logger::printfln("Error invalid IP address.\n");
+		// 	Logger::logInfo("Error invalid IP address.\n");
 		// 	return false;
 		// }
-		// 		Logger::printfln("Connect to 5");
+		// 		Logger::logInfo("Connect to 5");
 
 		//bzero((char *) &serv_addr, sizeof(serv_addr));
-		Logger::printfln("Connect to 6");
+		Logger::logInfo("Connect to 6");
 
 		serv_addr.sin_addr.s_addr = inet_addr(address.c_str()); // sets IP of server
 		serv_addr.sin_family = AF_INET; // uses internet address domain
@@ -148,10 +148,10 @@ namespace claid
 		// 	(char *)&serv_addr.sin_addr.s_addr,
 		// 	server->h_length);
 
-		Logger::printfln("Connect to 7");
+		Logger::logInfo("Connect to 7");
 
 		
-				Logger::printfln("Connect to 8");
+				Logger::logInfo("Connect to 8");
 
 		// Usually, when we try to connect to a server and the port is not opened,
 		// connect fails immediately. However, if the port is opened but connection with server application
@@ -163,13 +163,13 @@ namespace claid
 		int res = connectWithTimeout(this->sock, serv_addr, timeoutInMs);//connect(this->sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
 		if (res < 0) 
 		{
-			Logger::printfln("Could not connect to %s:%d %d %s %d", address.c_str(), port, res, strerror(errno), errno);
+			Logger::logInfo("Could not connect to %s:%d %d %s %d", address.c_str(), port, res, strerror(errno), errno);
 			::close(this->sock);
 			return false;
 		}
-		Logger::printfln("connected %d %s %d",  res, strerror(errno), errno);
+		Logger::logInfo("connected %d %s %d",  res, strerror(errno), errno);
 
-				Logger::printfln("Connect to 9");
+				Logger::logInfo("Connect to 9");
 
 		this->connected = true;
 		return true;
@@ -177,7 +177,7 @@ namespace claid
 
 	bool Network::SocketClient::writeBytes(std::vector<char>& byteBuffer)
 	{
-		Logger::printfln("Low level socketclient %d: writing  %ul bytes", this->sock, byteBuffer.size());
+		Logger::logInfo("Low level socketclient %d: writing  %ul bytes", this->sock, byteBuffer.size());
 		int result = send(this->sock, byteBuffer.data(), byteBuffer.size(), MSG_NOSIGNAL);
 		if (result < 0)
 		{
@@ -188,7 +188,7 @@ namespace claid
 			this->close();
 			return false;
 		}
-		Logger::printfln("low level socketclient %d: writing result %d", this->sock, result);
+		Logger::logInfo("low level socketclient %d: writing result %d", this->sock, result);
 		return true;
 	}
 
@@ -198,10 +198,10 @@ namespace claid
 		int bytesReceived = 0;
 
 		bytesReceived = recv(this->sock, byteBuffer.data(), numBytes, MSG_WAITALL);
-		Logger::printfln("Bytes received %d %d", bytesReceived, numBytes);
+		Logger::logInfo("Bytes received %d %d", bytesReceived, numBytes);
 		if (bytesReceived < 1)
 		{
-			Logger::printfln("SocketClient: read failed on socket %d: %s (%d)\n", this->sock, strerror(errno), errno);
+			Logger::logInfo("SocketClient: read failed on socket %d: %s (%d)\n", this->sock, strerror(errno), errno);
 			SocketClientError error;
 			error.errorType = SocketClientErrorType::ERROR_READ_FAILED;
 				
@@ -223,7 +223,7 @@ namespace claid
 
 	void Network::SocketClient::close()
 	{
-		Logger::printfln("SocketClient::close %d", this->connected);
+		Logger::logInfo("SocketClient::close %d", this->connected);
 		// Don't call close when socket was closed already or is not connected.
 		// This will lead a funny "fdsan: attempted to close file descriptor 89, expected to be unowned, actually owned by ..."
 		if(!this->connected)
@@ -238,16 +238,16 @@ namespace claid
 
 		// Set non-blocking 
 		if( (arg = fcntl(sock, F_GETFL, NULL)) < 0) { 
-			Logger::printfln("Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
+			Logger::logInfo("Error fcntl(..., F_GETFL) (%s)\n", strerror(errno)); 
 		} 
 		arg |= O_NONBLOCK; 
 		if( fcntl(sock, F_SETFL, arg) < 0) { 
-			Logger::printfln("Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
+			Logger::logInfo("Error fcntl(..., F_SETFL) (%s)\n", strerror(errno)); 
 	
 		} 
 		shutdown(sock, SHUT_RDWR);
 		::close(this->sock);
-		Logger::printfln("SocketClient::close done");
+		Logger::logInfo("SocketClient::close done");
 
 	}
 

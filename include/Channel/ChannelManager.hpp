@@ -102,7 +102,7 @@ namespace claid
             template<typename T, typename ChannelType>
             typename std::enable_if<std::is_same<T, std::string>::value>::type stopObservingHelper(Channel<T>& channel, std::shared_ptr<TypedChannel<ChannelType>>& t)
             {
-                Logger::printfln("Unsubscribing observer %s", channel.getChannelID().c_str());
+                Logger::logInfo("Unsubscribing observer %s", channel.getChannelID().c_str());
 
                 t->unsubscribe(channel);
             }
@@ -229,7 +229,7 @@ namespace claid
             template<typename T>
             Channel<T> subscribe(const std::string& channelID, ChannelSubscriber<T> channelSubscriber, uint64_t uniqueModuleID)
             {
-                Logger::printfln("Subscribing %s", channelID.c_str());
+                Logger::logInfo("Subscribing %s", channelID.c_str());
 
                 std::unique_lock<std::mutex> lock(this->channelMutex);
 
@@ -249,7 +249,7 @@ namespace claid
             template<typename T>
             Channel<T> publish(const std::string& channelID, uint64_t uniqueModuleID)
             {
-                Logger::printfln("Publishing %s", channelID.c_str());
+                Logger::logInfo("Publishing %s", channelID.c_str());
                 std::unique_lock<std::mutex> lock(this->channelMutex);
 
                 Channel<T> returnChannel;
@@ -273,7 +273,7 @@ namespace claid
                 // Here we dont use getMakeTypedChannel because we use the already created Channel<T> object to unsubscribe.
 
                 const std::string channelID = channelObject.getChannelID();
-                Logger::printfln("Unsubscribing %s", channelID.c_str());
+                Logger::logInfo("Unsubscribing %s", channelID.c_str());
 
                 auto it = typedChannels.find(channelID);
 

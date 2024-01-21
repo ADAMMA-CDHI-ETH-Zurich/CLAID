@@ -8,7 +8,7 @@ namespace claid {
 
 absl::Status BinarySerializer::beginNewFile(const std::string& filePath) 
 {
-    Logger::printfln("BinarySerializer beginning file %s", filePath.c_str());
+    Logger::logInfo("BinarySerializer beginning file %s", filePath.c_str());
     this->currentFilePath = filePath;
     this->data = nullptr;
     return absl::OkStatus();

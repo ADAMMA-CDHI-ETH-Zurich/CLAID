@@ -51,7 +51,7 @@ namespace claid
                         CLAID_THROW(Exception, "Error! Observer tried to send a message, however a channel to send messages was never set."
                         "Please make sure to call setSendMessageChannel of RemoteModule " << __FILE__ << " " << __LINE__);
                     }
-                    Logger::printfln("SendMessageChannel post");
+                    Logger::logInfo("SendMessageChannel post");
                     this->sendMessageChannel.post(message);
                 }
 

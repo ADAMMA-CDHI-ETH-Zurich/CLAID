@@ -54,7 +54,7 @@ namespace claid
             {
                 for(int i = 0; i < NumQueues; i++)
                 {
-                    Logger::printfln("Stopping RoutingQueueForwarder %d", i);
+                    Logger::logInfo("Stopping RoutingQueueForwarder %d", i);
                     absl::Status status = this->forwarders[i].stop();
                     if(!status.ok())
                     {

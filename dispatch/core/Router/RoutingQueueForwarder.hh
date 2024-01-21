@@ -28,7 +28,7 @@ namespace claid
                 while(this->active)
                 {
                     std::shared_ptr<DataPackage> package;
-                        Logger::printfln("RoutingQueueForwarder interruptable pop front %lu %lu", this, &inputQueue);
+                        Logger::logInfo("RoutingQueueForwarder interruptable pop front %lu %lu", this, &inputQueue);
                     package = this->inputQueue.interruptable_pop_front();
 
                     if(!this->outputQueue.is_closed() && package != nullptr)
@@ -66,7 +66,7 @@ namespace claid
                 {
                     return absl::InvalidArgumentError("RoutingQueueForwarder: Stop failed, forwarder was not started before.");
                 }
-                Logger::printfln("Stopping RoutingQueueForwarder %lu %lu", this, &inputQueue);
+                Logger::logInfo("Stopping RoutingQueueForwarder %lu %lu", this, &inputQueue);
                 this->active = false;
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
                 this->inputQueue.interruptOnce();

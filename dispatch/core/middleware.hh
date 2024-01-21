@@ -94,6 +94,8 @@ namespace claid
             std::unique_ptr<RoutingQueueMerger> routingQueueMerger;
             SharedQueue<DataPackage> masterInputQueue;
 
+            std::shared_ptr<SharedQueue<LogMessage>> logMessagesQueue;
+
             std::unique_ptr<std::thread> controlPackageHandlerThread = nullptr; 
 
             absl::Status getHostModuleAndChannelDescriptions(const std::string& hostId, const Configuration& config,
@@ -121,6 +123,9 @@ namespace claid
             void handleControlPackage(std::shared_ptr<DataPackage> controlPackage);
             void forwardControlPackageToAllRuntimes(std::shared_ptr<DataPackage> package);
             void forwardControlPackageToTargetRuntime(std::shared_ptr<DataPackage> package);
+
+            void readLogMessages();
+            std::shared_ptr<SharedQueue<LogMessage>> getLogMessagesQueue();
     };
 }
 

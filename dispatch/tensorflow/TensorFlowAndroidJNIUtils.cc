@@ -23,24 +23,24 @@ static const char* const ASSET_PREFIX = "file:///android_asset/";
 bool claid::TensorflowAndroidJNIUtils::LoadModelFileFromAsset(AAssetManager* const asset_manager,
 					std::string filename, tflite::FlatBufferModel* model)
 {
-    claid::Logger::printfln("Using asset manager to load model file.");
+    claid::Logger::logInfo("Using asset manager to load model file.");
    if(asset_manager == NULL)
    {
-       claid::Logger::printfln("Reference to AssetManager is invalid (NULL).");
+       claid::Logger::logInfo("Reference to AssetManager is invalid (NULL).");
        return false;
    }
 
   std::string asset_filename = ASSET_PREFIX;
    asset_filename.append(filename);
 
-   claid::Logger::printfln("Filename %s %s", filename.c_str(), asset_filename.c_str());
+   claid::Logger::logInfo("Filename %s %s", filename.c_str(), asset_filename.c_str());
 
   AAsset* asset =
       AAssetManager_open(asset_manager, filename.c_str(), AASSET_MODE_STREAMING);
 
   if(asset == NULL)
   {
-    claid::Logger::printfln("Asset is NULL, probably the asset file that shall"
+    claid::Logger::logInfo("Asset is NULL, probably the asset file that shall"
                                                       "be loaded was not packed into the apk.");
     return false;
   }
@@ -51,14 +51,14 @@ bool claid::TensorflowAndroidJNIUtils::LoadModelFileFromAsset(AAssetManager* con
 
     // It may be compressed, in which case we have to uncompress
     // it to memory first.
-    claid::Logger::printfln("Opening asset %s rom disk with copy.",
+    claid::Logger::logInfo("Opening asset %s rom disk with copy.",
                                               asset_filename.c_str());
     off_t  dataSize = AAsset_getLength(asset);
     const void* const memory = AAsset_getBuffer(asset);
 
-    claid::Logger::printfln("Building 1");
+    claid::Logger::logInfo("Building 1");
     model->BuildFromBuffer((const char*) memory, dataSize);
-    claid::Logger::printfln("Building 2");
+    claid::Logger::logInfo("Building 2");
     AAsset_close(asset);
     return true;
 }

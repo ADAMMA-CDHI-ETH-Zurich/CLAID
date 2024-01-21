@@ -19,7 +19,7 @@ namespace claid
             static Message CreateMessage()
             {
                 Message message;
-                // Logger::printfln("Creating namess %s with data %s", 
+                // Logger::logInfo("Creating namess %s with data %s", 
                 // TypeChecking::getCompilerSpecificCompileTypeNameOfClass<HeaderType>().c_str(),
                 // TypeChecking::getCompilerSpecificCompileTypeNameOfClass<DataType>().c_str());
 

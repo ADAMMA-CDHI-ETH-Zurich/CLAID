@@ -8,7 +8,7 @@ namespace claid {
 
 absl::Status JSONSerializer::beginNewFile(const std::string& filePath) 
 {
-    Logger::printfln("JSONSerializer beginning file %s", filePath.c_str());
+    Logger::logInfo("JSONSerializer beginning file %s", filePath.c_str());
     this->currentFilePath = filePath;
     this->data = nullptr;
     return absl::OkStatus();

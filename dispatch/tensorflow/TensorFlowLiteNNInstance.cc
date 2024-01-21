@@ -51,17 +51,17 @@ claid::TensorFlowLiteNNInstance::
 bool claid::TensorFlowLiteNNInstance::setupModelFromFile(const std::string& modelFile, LayerDataOrder networkLayerDataOrder, const int numThreads)
 {
 	this->networkLayerDataOrder = networkLayerDataOrder;
-    claid::Logger::printfln("Checking if file exists");
+    claid::Logger::logInfo("Checking if file exists");
 	if(fileExists(modelFile))
 	{
-        claid::Logger::printfln("Building model");
+        claid::Logger::logInfo("Building model");
 		this->model =
 				tflite::FlatBufferModel::BuildFromFile(modelFile.c_str(),
 						NULL);
 
 		if (this->model)
 		{
-            claid::Logger::printfln("Building interpreter");
+            claid::Logger::logInfo("Building interpreter");
 			this->model->error_reporter();
 
 			tflite::InterpreterBuilder(*model, this->resolver)(&this->tfLiteInterpreter);
@@ -72,37 +72,37 @@ bool claid::TensorFlowLiteNNInstance::setupModelFromFile(const std::string& mode
 				//this->tfLiteInterpreter->UseNNAPI(this->instanceSettings.useNNAPI);
 
 				#if __TFNN_USE_GPU == 1
-				    claid::Logger::printfln("GPU support is available %s", this->modelFile.c_str());
+				    claid::Logger::logInfo("GPU support is available %s", this->modelFile.c_str());
 
 					if(this->instanceSettings.useGPU)
 					{
 						this->gpuDelegate = TfLiteGpuDelegateCreate(nullptr);  // default config
 											
-						claid::Logger::printfln("Modifiying Graph to enable GPU support.");
+						claid::Logger::logInfo("Modifiying Graph to enable GPU support.");
 
                				if (this->tfLiteInterpreter->ModifyGraphWithDelegate(this->gpuDelegate) != kTfLiteOk)
 						{
-							claid::Logger::printfln("Failed to ModifyGraphWithDelegate, cannot use GPU.");
+							claid::Logger::logInfo("Failed to ModifyGraphWithDelegate, cannot use GPU.");
 							this->lastError = TensorFlowLiteNNInstance::ErrorType::
 									ERROR_MODIFY_GRAPH_WITH_DELEGATE_GPU;
 							return false;
 						}
-						claid::Logger::printfln("GPU support enabled.");
+						claid::Logger::logInfo("GPU support enabled.");
 					}
 				#endif
 				if (this->tfLiteInterpreter->AllocateTensors() == kTfLiteOk)
 				{
-                    claid::Logger::printfln("tensors size: %d", this->tfLiteInterpreter->tensors_size());
-                    claid::Logger::printfln("nodes size: %d", this->tfLiteInterpreter->nodes_size());
-                    claid::Logger::printfln("inputs: %d", this->tfLiteInterpreter->inputs().size());
-                    claid::Logger::printfln("input(0) name: %s", this->tfLiteInterpreter->GetInputName(0));
+                    claid::Logger::logInfo("tensors size: %d", this->tfLiteInterpreter->tensors_size());
+                    claid::Logger::logInfo("nodes size: %d", this->tfLiteInterpreter->nodes_size());
+                    claid::Logger::logInfo("inputs: %d", this->tfLiteInterpreter->inputs().size());
+                    claid::Logger::logInfo("input(0) name: %s", this->tfLiteInterpreter->GetInputName(0));
 
 
 					return true;
 				}
 				else
 				{
-                    claid::Logger::printfln("Failed to allocate tensors");
+                    claid::Logger::logInfo("Failed to allocate tensors");
 					this->lastError = TensorFlowLiteNNInstance::ErrorType::
 							ERROR_NN_FAILED_TO_ALLOCATE_TENSORS;
 					return false;
@@ -111,7 +111,7 @@ bool claid::TensorFlowLiteNNInstance::setupModelFromFile(const std::string& mode
 			}
 			else
 			{
-                claid::Logger::printfln("Interpreter fail");
+                claid::Logger::logInfo("Interpreter fail");
 				this->lastError = TensorFlowLiteNNInstance::ErrorType::
 						ERROR_FAILED_TO_CONSTRUCT_INTERPRETER;
 				return false;
@@ -154,23 +154,23 @@ bool claid::
 
     // Workaround for testing.
     //return this->setupModelFromFile();
-    claid::Logger::printfln("Using asset manager to load model file.");
+    claid::Logger::logInfo("Using asset manager to load model file.");
     if(assetManager == NULL)
     {
-        claid::Logger::printfln("Reference to AssetManager is invalid (NULL).");
+        claid::Logger::logInfo("Reference to AssetManager is invalid (NULL).");
         return false;
     }
 
 
 
-    claid::Logger::printfln("Filename %s", modelFile.c_str());
+    claid::Logger::logInfo("Filename %s", modelFile.c_str());
 
     AAsset* asset =
             AAssetManager_open(assetManager, modelFile.c_str(), AASSET_MODE_BUFFER);
 
     if(asset == NULL)
     {
-        claid::Logger::printfln("Asset is NULL, probably the asset file that shall"
+        claid::Logger::logInfo("Asset is NULL, probably the asset file that shall"
                                                   "be loaded was not packed into the apk.");
         return false;
     }
@@ -181,13 +181,13 @@ bool claid::
 
     // It may be compressed, in which case we have to uncompress
     // it to memory first.
-    claid::Logger::printfln("Opening asset %s rom disk with copy.",
+    claid::Logger::logInfo("Opening asset %s rom disk with copy.",
                                               modelFile.c_str());
     off_t  dataSize = AAsset_getLength(asset);
     const void* const memory = AAsset_getBuffer(asset);
     const char* const memChar = (const char*) memory;
     this->flatBuffersBuffer = new char[dataSize];
-    claid::Logger::printfln("Copying assets buffer to flatbuffers buffer, size: %d", dataSize);
+    claid::Logger::logInfo("Copying assets buffer to flatbuffers buffer, size: %d", dataSize);
     for(int i = 0; i < dataSize; i++)
     {
         this->flatBuffersBuffer[i] = memChar[i];
@@ -195,11 +195,11 @@ bool claid::
 
 
     this->model = tflite::FlatBufferModel::BuildFromBuffer(this->flatBuffersBuffer, dataSize);
-    claid::Logger::printfln("Loaded");
+    claid::Logger::logInfo("Loaded");
     AAsset_close(asset);
 	if (this->model)
 	{
-		claid::Logger::printfln("Setting up interpreter");
+		claid::Logger::logInfo("Setting up interpreter");
 		this->model->error_reporter();
 
 		tflite::InterpreterBuilder(*model, this->resolver)
@@ -207,25 +207,25 @@ bool claid::
 
 		if (this->tfLiteInterpreter)
 		{
-			claid::Logger::printfln("Interpreter setup");
+			claid::Logger::logInfo("Interpreter setup");
 			this->tfLiteInterpreter->SetNumThreads(numThreads);
 		//	this->tfLiteInterpreter->UseNNAPI(this->instanceSettings.useNNAPI);
 
 			#if __TFNN_USE_GPU == 1
 			if(this->instanceSettings.useGPU)
 			{
-				claid::Logger::printfln("Trying to ModifyGraphWithDelegate.");
+				claid::Logger::logInfo("Trying to ModifyGraphWithDelegate.");
 				this->gpuDelegate = TfLiteGpuDelegateCreate(nullptr);  // default config
 				if (this->tfLiteInterpreter->ModifyGraphWithDelegate(this->gpuDelegate) != kTfLiteOk)
 				{
-					claid::Logger::printfln("Failed to ModifyGraphWithDelegate, cannot use GPU.");
+					claid::Logger::logInfo("Failed to ModifyGraphWithDelegate, cannot use GPU.");
 					this->lastError = TensorFlowLiteNNInstance::ErrorType::
 							ERROR_MODIFY_GRAPH_WITH_DELEGATE_GPU;
 					return false;
 				}
 				else
 				{
-					claid::Logger::printfln("GPU support enabled!");
+					claid::Logger::logInfo("GPU support enabled!");
 				}
 				
 			}
@@ -233,16 +233,16 @@ bool claid::
 
 			if (this->tfLiteInterpreter->AllocateTensors() == kTfLiteOk)
 			{
-				claid::Logger::printfln("Tensors allocated.");
-				claid::Logger::printfln("tensors size: %d", this->tfLiteInterpreter->tensors_size());
-				claid::Logger::printfln("nodes size: %d", this->tfLiteInterpreter->nodes_size());
-				claid::Logger::printfln("inputs: %d", this->tfLiteInterpreter->inputs().size());
-				claid::Logger::printfln("input(0) name: %s", this->tfLiteInterpreter->GetInputName(0));
+				claid::Logger::logInfo("Tensors allocated.");
+				claid::Logger::logInfo("tensors size: %d", this->tfLiteInterpreter->tensors_size());
+				claid::Logger::logInfo("nodes size: %d", this->tfLiteInterpreter->nodes_size());
+				claid::Logger::logInfo("inputs: %d", this->tfLiteInterpreter->inputs().size());
+				claid::Logger::logInfo("input(0) name: %s", this->tfLiteInterpreter->GetInputName(0));
 				return true;
 			}
 			else
 			{
-				claid::Logger::printfln("failed to allocate tensors");
+				claid::Logger::logInfo("failed to allocate tensors");
 				this->lastError = TensorFlowLiteNNInstance::ErrorType::
 						ERROR_NN_FAILED_TO_ALLOCATE_TENSORS;
 				return false;
@@ -251,7 +251,7 @@ bool claid::
 		}
 		else
 		{
-			claid::Logger::printfln("Set up interpreter failed");
+			claid::Logger::logInfo("Set up interpreter failed");
 			this->lastError = TensorFlowLiteNNInstance::ErrorType::
 					ERROR_FAILED_TO_CONSTRUCT_INTERPRETER;
 			return false;

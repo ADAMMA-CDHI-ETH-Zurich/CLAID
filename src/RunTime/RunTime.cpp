@@ -61,7 +61,7 @@ namespace claid
 
     void RunTime::loadAndStart()
     {
-        Logger::printfln("load and start");
+        Logger::logInfo("load and start");
 
         // First, we parse all configs that already have been added.
         // These are configs that were registered before CLAID->start(); was called
@@ -72,7 +72,7 @@ namespace claid
         // Returns false when no more data on the channel.
         while(loadedXMLConfigsChannel.get(xmlNode, false))
         {
-            Logger::printfln("loading XML");
+            Logger::logInfo("loading XML");
 
             std::vector<Module*> loadedModules = this->instantiateModulesFromXMLNode(xmlNode);
 
@@ -114,7 +114,7 @@ namespace claid
         {
             CLAID_THROW(Exception, "Error in RunTime::start(), start was called twice !");
         }
-        Logger::printfln("Starting loading thread\n");
+        Logger::logInfo("Starting loading thread\n");
         // Some Modules, such as PythonModules, need to execute functions on the main thread of the RunTime during loading and initialization.
         // To do so, they insert Runnables to the runnablesChannel of the RunTime, which is processed below (see while loop).
         // Therefore, a deadlock would occur, if we call startModules from this thread, and the Modules would need to call functions
@@ -180,7 +180,7 @@ namespace claid
     {
         if(runnable->isValid())
         {
-            Logger::printfln("Exceuting runnable in RunTimeThread %d", runnable->catchExceptions);
+            Logger::logInfo("Exceuting runnable in RunTimeThread %d", runnable->catchExceptions);
             if(runnable->catchExceptions)
             {
                 try
@@ -189,7 +189,7 @@ namespace claid
                 }
                 catch(std::exception& e)
                 {
-                    					Logger::printfln("runnable cought\n");
+                    					Logger::logInfo("runnable cought\n");
 
                     runnable->setException(e.what());
                 }
@@ -310,7 +310,7 @@ namespace claid
         std::vector<Module*> modules;
         for(Module* module : this->modules)
         {
-            Logger::printfln("MODULE NAME %s\n", module->getModuleName().c_str());
+            Logger::logInfo("MODULE NAME %s\n", module->getModuleName().c_str());
             if(module->getModuleName() == moduleIdentifier)
             {
                 modules.push_back(module);

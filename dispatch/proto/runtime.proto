@@ -1,0 +1,10 @@
+syntax = "proto3";
+package claidservice;
+
+enum Runtime {
+  RUNTIME_UNSPECIFIED = 0;
+  RUNTIME_CPP = 1;
+  RUNTIME_DART = 2;
+  RUNTIME_JAVA = 3;
+  RUNTIME_PYTHON = 4;
+}

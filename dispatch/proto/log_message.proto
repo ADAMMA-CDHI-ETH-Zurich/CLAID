@@ -1,0 +1,30 @@
+syntax = "proto3";
+package claidservice;
+
+import "dispatch/proto/runtime.proto";
+
+enum LogMessageSeverityLevel
+{
+  DEBUG_LOG = 0;
+  INFO = 1;
+  WARNING = 2;
+  ERROR = 3;
+  FATAL = 4;
+}
+
+enum LogMessageEntityType
+{
+  MIDDLEWARE = 0; // For general messages, i.e., sent from low level middleware functions
+  MIDDLEWARE_COMPONENT = 1; // For messages from certain well-defined components within the middleware, e.g., the Router oder RemoteDispatcher
+  MODULE = 2; // For log messages directly sent from a certain Module
+}
+
+message LogMessage
+{
+  string log_message = 1;
+  LogMessageSeverityLevel severity_level = 2;
+  uint64 unix_timestamp_in_ms = 3;
+  LogMessageEntityType entity_type = 4;
+  string entity_name = 5;
+  Runtime runtime = 6; // Runtime from which the message was sent
+}

@@ -27,7 +27,7 @@ namespace claid
 
 		if (!file.is_open())
 		{
-			Logger::printfln("Error! Could not open file \"%s\".", filePath.c_str());
+			Logger::logInfo("Error! Could not open file \"%s\".", filePath.c_str());
 			return false;
 		}
 
@@ -58,7 +58,7 @@ namespace claid
 
 		if (!file.is_open())
 		{
-			Logger::printfln("Error! Could not open file \"%s\".", filePath.c_str());
+			Logger::logInfo("Error! Could not open file \"%s\".", filePath.c_str());
 			return false;
 		}
 

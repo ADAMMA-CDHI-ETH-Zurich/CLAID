@@ -65,6 +65,9 @@ namespace claid
         void moduleError(const std::string& error) const;
         void moduleWarning(const std::string& warning) const;
 
+        void moduleInfo(const std::string& info) const;
+        void moduleDebug(const std::string& debug) const;
+
         void moduleFatal(absl::Status error) const;
         void moduleError(absl::Status error) const;
         void moduleWarning(absl::Status warning) const;

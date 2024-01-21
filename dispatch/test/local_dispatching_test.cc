@@ -106,7 +106,7 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
     }
     Logger::logInfo("local_dispatching_test 2");
 
-    Logger::printfln("%s", messageToString(initReq).c_str());
+    Logger::logInfo("%s", messageToString(initReq).c_str());
 
     auto clientStarted = client.startRuntime(initReq);
     ASSERT_TRUE(clientStarted) << "Unable to start client !";
@@ -199,9 +199,9 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
     // Make sure to run the test with something like:
     // CC=clang bazel test --test_output=all --test_timeout=10  :local_dispatching_test
     //
-    Logger::printfln(" -----------------------------------------------------------------");
-    Logger::printfln("| Test passed - trying shutdown which will fail currently !       |");
-    Logger::printfln(" -----------------------------------------------------------------");
+    Logger::logInfo(" -----------------------------------------------------------------");
+    Logger::logInfo("| Test passed - trying shutdown which will fail currently !       |");
+    Logger::logInfo(" -----------------------------------------------------------------");
 
     Logger::logInfo("Shutdown");
     // ASSERT_EQ(pkt3, outQueue.pop_front());

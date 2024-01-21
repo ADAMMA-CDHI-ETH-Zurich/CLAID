@@ -29,7 +29,7 @@ namespace claid
             }
             else
             {
-                Logger::printfln("Warning in XMLReceiverModule: Failed to load XML from string, data seems to be invalid:\n%s", data->value().c_str());
+                Logger::logInfo("Warning in XMLReceiverModule: Failed to load XML from string, data seems to be invalid:\n%s", data->value().c_str());
             }
         }
     }

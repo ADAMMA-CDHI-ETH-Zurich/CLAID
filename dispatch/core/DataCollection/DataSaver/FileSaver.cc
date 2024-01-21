@@ -99,7 +99,7 @@ namespace claid
         if(path != this->currentPath)
         {
             this->currentPath = path;
-            Logger::printfln("FileSaver::storeData changing file Timestamp %s %s %s %s", std::to_string(timestampMs).c_str(), pathStr.c_str(), currentPath.toString().c_str(), this->what.c_str());
+            Logger::logInfo("FileSaver::storeData changing file Timestamp %s %s %s %s", std::to_string(timestampMs).c_str(), pathStr.c_str(), currentPath.toString().c_str(), this->what.c_str());
             status = beginNewFile(this->currentPath);
             if(!status.ok())
             {
@@ -216,7 +216,7 @@ namespace claid
         std::vector<std::string> files;
         FileUtils::getAllFilesInDirectoryRecursively(this->tmpStoragePath, files);
 
-        Logger::printfln("querying tmp folder %s\n", tmpStoragePath.c_str());
+        Logger::logInfo("querying tmp folder %s\n", tmpStoragePath.c_str());
         for(const std::string& filePath : files)
         {
             Path path(filePath);
@@ -224,16 +224,16 @@ namespace claid
             std::string relativePath = path.getPathRelativeTo(this->tmpStoragePath);
 
             // Don't move the currently active file.
-            Logger::printfln("Current path : %s Relative path: %s", currentPath.toString().c_str(), relativePath.c_str());
+            Logger::logInfo("Current path : %s Relative path: %s", currentPath.toString().c_str(), relativePath.c_str());
             if(relativePath == this->currentPath.toString())
             {
-                Logger::printfln("Current path is relative path, not moving.");
+                Logger::logInfo("Current path is relative path, not moving.");
                 continue;
             }
             // If a file already exists at storage path (which it shoudln't!), then it will not be overriden but appended.
             if(!FileUtils::moveFileTo(Path::join(this->tmpStoragePath, relativePath), Path::join(this->storagePath, relativePath), true))
             {
-                Logger::printfln("Moving file %s to %s failed.", Path::join(this->tmpStoragePath, relativePath).toString().c_str(), Path::join(this->storagePath, relativePath).toString().c_str());
+                Logger::logInfo("Moving file %s to %s failed.", Path::join(this->tmpStoragePath, relativePath).toString().c_str(), Path::join(this->storagePath, relativePath).toString().c_str());
             }
         }
     }

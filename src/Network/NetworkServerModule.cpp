@@ -8,7 +8,7 @@ namespace claid
     {
         void NetworkServerModule::onClientAccepted(ChannelData<SocketClient> socketClient)
         {   
-            Logger::printfln("onClientAccepted");
+            Logger::logInfo("onClientAccepted");
             RemoteConnection::RemoteConnectedEntity* remoteConnectedEntity = 
                 RemoteConnection::RemoteConnectedEntity::Create<SocketConnectionModule>(socketClient->value());
             
@@ -37,22 +37,22 @@ namespace claid
 
         void NetworkServerModule::onError(RemoteConnection::RemoteConnectedEntity* entity, RemoteConnection::Error error)
         {
-            Logger::printfln("NetworkServer moduel received error!!");
+            Logger::logInfo("NetworkServer moduel received error!!");
 
             if(error.is<ErrorReadFromSocketFailed>())
             {
-                Logger::printfln("Error read from socket failed.");
+                Logger::logInfo("Error read from socket failed.");
                 // Read from socket failed. Connection lost.
                 this->onClientLostConnection(entity);
             }
             else if(error.is<claid::RemoteConnection::ErrorRemoteRuntimeOutOfSync>())
             {
-                Logger::printfln("NetworkServer: Error remote runtime out of sync.");
+                Logger::logInfo("NetworkServer: Error remote runtime out of sync.");
                 this->onClientLostConnection(entity);
             }
             else if(error.is<claid::RemoteConnection::ErrorConnectionTimeout>())
             {
-                Logger::printfln("NetworkServer: Error connection timeout.");
+                Logger::logInfo("NetworkServer: Error connection timeout.");
                 this->onClientLostConnection(entity);
             }
             
@@ -68,7 +68,7 @@ namespace claid
             NetworkModule::initialize();
             if(!server.bindTo(port))
             {
-                Logger::printfln("SocketServer error: %s (%s)", this->server.getLastError().errorTypeAsString().c_str(), this->server.getLastError().errorString.c_str());
+                Logger::logInfo("SocketServer error: %s (%s)", this->server.getLastError().errorTypeAsString().c_str(), this->server.getLastError().errorString.c_str());
                 CLAID_THROW(Exception, "Failed to start server on port " << this->port);
             }
 
@@ -89,7 +89,7 @@ namespace claid
         void NetworkServerModule::onClientLostConnection(RemoteConnection::RemoteConnectedEntity* entity)
         {
            
-            Logger::printfln("Client %ul lost connection, shutting it down now.", entity);
+            Logger::logInfo("Client %ul lost connection, shutting it down now.", entity);
             
         
       
@@ -99,7 +99,7 @@ namespace claid
 
             if(it == this->remoteConnectedEntities.end())
             {
-                Logger::printfln("Client not found anymore, must have lost connection before already.");
+                Logger::logInfo("Client not found anymore, must have lost connection before already.");
                 // It can happen that this get's called two times per entity.
                 // Connection is considered to be lost, if read or write fail.
                 // Of course, that can also happen concurrently and at the same time.
@@ -124,11 +124,11 @@ namespace claid
 
             this->errorChannels.erase(it2);
 
-            Logger::printfln("Stopping entity %u", entity);
+            Logger::logInfo("Stopping entity %u", entity);
             entity->stop();
             entity->disintegrate();
             delete entity;
-            Logger::printfln("Entity deleted %d", entity);
+            Logger::logInfo("Entity deleted %d", entity);
 
             
         }
