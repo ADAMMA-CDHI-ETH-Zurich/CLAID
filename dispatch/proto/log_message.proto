@@ -28,3 +28,15 @@ message LogMessage
   string entity_name = 5;
   Runtime runtime = 6; // Runtime from which the message was sent
 }
+
+
+// Determines how log messages shall be transfered to the log sink host
+// STORE_AND_UPLOAD is the default option. Log messages will be written to files (one file per hour),
+// which will be synchronized with the log sync host once it is available.
+// STREAM is an option that can be used if hosts shall livestream their log messages to the log sink host.
+// This allows to stream the logs in realtime to the log sink host, however log messages will get lost if there currently is no connection to the log sink host
+enum LogSinkTransferMode
+{
+  STORE_AND_UPLOAD = 0;
+  STREAM = 1;
+}

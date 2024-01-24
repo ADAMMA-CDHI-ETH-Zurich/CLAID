@@ -34,32 +34,32 @@ namespace claid
     void Module::moduleFatal(const std::string& error) const
     {
         std::string errorMsg = "Module \"" + id + "\": " + error;
-        Logger::log(LogMessageSeverityLevel::FATAL, errorMsg, LogMessageEntityType::MODULE, this->id);
+        Logger::log(LogMessageSeverityLevel::FATAL, errorMsg, LogMessageEntityType::MODULE, this->id, Runtime::RUNTIME_CPP);
         CLAID_THROW(claid::Exception, errorMsg);
     }
 
     void Module::moduleError(const std::string& error) const
     {
         std::string errorMsg = "Module \"" + id + "\": " + error;
-        Logger::log(LogMessageSeverityLevel::ERROR, errorMsg, LogMessageEntityType::MODULE, this->id);
+        Logger::log(LogMessageSeverityLevel::ERROR, errorMsg, LogMessageEntityType::MODULE, this->id, Runtime::RUNTIME_CPP);
     }
 
     void Module::moduleWarning(const std::string& warning) const
     {
         std::string warningMsg = "Module \"" + id + "\": " + warning;
-        Logger::log(LogMessageSeverityLevel::WARNING, warningMsg, LogMessageEntityType::MODULE, this->id);
+        Logger::log(LogMessageSeverityLevel::WARNING, warningMsg, LogMessageEntityType::MODULE, this->id, Runtime::RUNTIME_CPP);
     }
 
     void Module::moduleInfo(const std::string& warning) const
     {
         std::string warningMsg = "Module \"" + id + "\": " + warning;
-        Logger::log(LogMessageSeverityLevel::INFO, warningMsg, LogMessageEntityType::MODULE, this->id);
+        Logger::log(LogMessageSeverityLevel::INFO, warningMsg, LogMessageEntityType::MODULE, this->id, Runtime::RUNTIME_CPP);
     }
 
     void Module::moduleDebug(const std::string& warning) const
     {
         std::string warningMsg = "Module \"" + id + "\": " + warning;
-        Logger::log(LogMessageSeverityLevel::DEBUG_LOG, warningMsg, LogMessageEntityType::MODULE, this->id);
+        Logger::log(LogMessageSeverityLevel::DEBUG_LOG, warningMsg, LogMessageEntityType::MODULE, this->id, Runtime::RUNTIME_CPP);
     }
 
     void Module::moduleFatal(absl::Status error) const

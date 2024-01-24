@@ -50,7 +50,7 @@ class TestModule(Module):
         self.register_periodic_function("Test", self.periodic_function, timedelta(milliseconds=1000))
 
     def periodic_function(self):
-        Logger.log_info("PeriodicFunctio ")
+        Logger.log_info("PeriodicFunction")
         self.output_channel.post(self.ctr)
         self.ctr+=1
 

@@ -35,7 +35,8 @@ namespace claid {
         }
         else
         {
-            Logger::logWarning("LocalRouter inputQueueForRuntime is null, cannot route package. Are we shutting down?");
+            // Might happen when shutting down or a Runtime has not yet been loaded.
+            // Logger::logWarning("LocalRouter inputQueueForRuntime is null, cannot route package. Are we shutting down?");
         }
         return absl::OkStatus();
     }
