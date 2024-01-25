@@ -13,7 +13,7 @@
 package adamma.c4dhi.claid_android.CLAIDServices;
 
 import adamma.c4dhi.claid_android.CLAIDServices.ServiceRestartDescription;
-
+import adamma.c4dhi.claid_android.Configuration.CLAIDPersistanceConfig;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -227,7 +227,7 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
         return builder.build();
     }
 
-    public static boolean requestRequiredPermissions(Context context)
+    public static boolean requestRequiredPermissions(Context context, CLAIDPersistanceConfig persistanceConfig)
     {
         // Required for our Service to show an ongoing notification.
         // This notification is required to prevent that our process
@@ -254,18 +254,13 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
             }
         }
         Logger.logInfo("Checking battery optimization ");
-        if(!CLAID.isBatteryOptimizationDisabled(context))
+        if((persistanceConfig.DISABLE_BATTERY_OPTIMIZATIONS || persistanceConfig.MONITOR_TRY_RESTART_IF_CRASHED_OR_EXITED) 
+            && !CLAID.isBatteryOptimizationDisabled(context))
         {
             Logger.logInfo("Requesting exemption from battery optimization");
             CLAID.requestBatteryOptimizationExemption(context); 
         }
-        if(!CLAID.hasStoragePermission())
-        {
-            if(!CLAID.requestStoragePermission())
-            {
-                return false;
-            }
-        }
+
         
         return true;
     }

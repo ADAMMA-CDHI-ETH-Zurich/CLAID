@@ -24,9 +24,11 @@ import adamma.c4dhi.claid.JavaCLAIDBase;
 import adamma.c4dhi.claid.Module.ModuleFactory;
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid_android.CLAIDServices.ServiceManager;
+import adamma.c4dhi.claid_android.Configuration.CLAIDPersistanceConfig;
+import adamma.c4dhi.claid_android.Configuration.CLAIDMightinessConfig;
 import adamma.c4dhi.claid_android.CLAIDServices.CLAIDService;
 import adamma.c4dhi.claid_android.Permissions.*;
-
+import adamma.c4dhi.claid_android.Receivers.DeviceOwnerReceiver;
 import android.content.Context;
 import android.app.Application;
 
@@ -53,6 +55,21 @@ import android.content.pm.PackageManager;
 
 import static android.content.Context.POWER_SERVICE;
 
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.os.Build;
+import android.os.PersistableBundle;
+import android.os.UserManager;
+
+
+import android.bluetooth.BluetoothAdapter;
+import android.net.wifi.WifiManager;
+
+import android.Manifest;
+import androidx.core.app.ActivityCompat;
+
+
 public class CLAID extends JavaCLAIDBase
 {
     static
@@ -74,15 +91,26 @@ public class CLAID extends JavaCLAIDBase
     private static PowerManager.WakeLock claidWakeLock;
 
     // Starts the middleware and attaches to it.
-    public static boolean start(Context context, final String socketPath, final String configFilePath, final String hostId, final String userId, final String deviceId, ModuleFactory moduleFactory)
+    // Volatile, as CLAID might only run as long as the App is in the foreground.
+    public static boolean start(Context context, final String socketPath, 
+        final String configFilePath, final String hostId, final String userId, 
+        final String deviceId, ModuleFactory moduleFactory, CLAIDMightinessConfig mightinessConfig)
     {
         CLAID.context = context;
     
         String adjustedConfigPath = configFilePath;
 
+        if(mightinessConfig != null)
+        {
+            if(!CLAID.grantMightiness(context, mightinessConfig))
+            {
+                Logger.logWarning("CLAID.start() failed: CLAID.grantMightiness() not successfull.");
+                return false;
+            }
+        }
+
         if(configFilePath.startsWith("assets://"))
         {
-          
             String appDataDirPath = getAppDataDirectory(context);
 
             String tmpConfigPath = appDataDirPath + "/claid_config.json";
@@ -100,7 +128,21 @@ public class CLAID extends JavaCLAIDBase
     }
 
     // Starts the middleware and attaches to it.
-    public static boolean start(Context context, final String configFilePath, final String hostId, final String userId, final String deviceId, ModuleFactory moduleFactory)
+    // Volatile, as CLAID might only run as long as the App is in the foreground.
+    public static boolean start(Context context, final String socketPath, 
+        final String configFilePath, final String hostId, final String userId, 
+        final String deviceId, ModuleFactory moduleFactory)
+    {
+        return start(context, socketPath, configFilePath, hostId, userId, deviceId, moduleFactory, null);
+    }
+
+
+
+    // Starts the middleware and attaches to it.
+    // Volatile, as CLAID might only run as long as the App is in the foreground.
+    public static boolean start(Context context, final String configFilePath, 
+        final String hostId, final String userId, final String deviceId, 
+        ModuleFactory moduleFactory, CLAIDMightinessConfig mightinessConfig)
     {
         CLAID.context = context;
 
@@ -110,19 +152,23 @@ public class CLAID extends JavaCLAIDBase
 
         String socketPath = "unix://" + appDataDirPath + "/claid_local.grpc";
 
-        return start(context, socketPath, configFilePath, hostId, userId, deviceId, moduleFactory);
+        return start(context, socketPath, configFilePath, hostId, userId, deviceId, moduleFactory, mightinessConfig);
     }
 
-    public static boolean startInPersistentService(Context context, final String configFilePath, final String hostId, final String userId, final String deviceId, PersistentModuleFactory moduleFactory)
+    public static boolean startInPersistentService(Context context, final String configFilePath, 
+        final String hostId, final String userId, final String deviceId, 
+        PersistentModuleFactory moduleFactory, CLAIDMightinessConfig mightinessConfig, CLAIDPersistanceConfig persistanceConfig)
     {
         String appDataDirPath = getAppDataDirectory(context);
 
         String socketPath = "unix://" + appDataDirPath + "/claid_local.grpc";
 
-        return startInPersistentService(context, socketPath, configFilePath, hostId, userId, deviceId, moduleFactory);
+        return startInPersistentService(context, socketPath, configFilePath, hostId, userId, deviceId, moduleFactory, mightinessConfig, persistanceConfig);
     }
 
-    public static boolean startInPersistentService(Context context, final String socketPath, final String configFilePath, final String hostId, final String userId, final String deviceId, PersistentModuleFactory moduleFactory)
+    public static boolean startInPersistentService(Context context, final String socketPath, 
+        final String configFilePath, final String hostId, final String userId, 
+        final String deviceId, PersistentModuleFactory moduleFactory, CLAIDMightinessConfig mightinessConfig, CLAIDPersistanceConfig enduranceConfig)
     {
         if(moduleFactory != CLAID.persistentModuleFactory)
         {
@@ -132,7 +178,11 @@ public class CLAID extends JavaCLAIDBase
       
         CLAID.context = context;
 
-        
+        if(!CLAID.grantMightiness(context, mightinessConfig))
+        {
+            Logger.logWarning("CLAID.startInPersistentService() failed: CLAID.grantMightiness() not successfull.");
+            return false;
+        }
 
         // Start service from a separate thread.
         // The ServiceManager might need to request permissions, which has to be done in a separate thread when using CLAID's Permission classes.
@@ -150,7 +200,7 @@ public class CLAID extends JavaCLAIDBase
         }
 
         asyncRunnablesHelperThread.insertRunnable(() ->
-            ServiceManager.startMaximumPermissionsPerpetualService(context, socketPath, configFilePath, hostId, userId, deviceId));
+            ServiceManager.startMaximumPermissionsPerpetualService(context, socketPath, configFilePath, hostId, userId, deviceId, enduranceConfig));
         
         return true;
     }
@@ -240,7 +290,8 @@ public class CLAID extends JavaCLAIDBase
         }
     }
 
-    public static void onServiceStarted(CLAIDService service, final String socketPath, final String configFilePath, final String hostId, final String userId, final String deviceId)
+    public static void onServiceStarted(CLAIDService service, final String socketPath, 
+        final String configFilePath, final String hostId, final String userId, final String deviceId)
     {
         if(CLAID.persistentModuleFactory == null)
         {
@@ -255,6 +306,36 @@ public class CLAID extends JavaCLAIDBase
             Logger.logError("Failed to start CLAID in CLAIDService. CLAID.start failed. Previous logs should indicate the reason.");
             System.exit(0);
         }
+    }
+
+    private static boolean grantMightiness(Context context, CLAIDMightinessConfig mightinessConfig)
+    {
+        Thread thread = new Thread(() -> {
+            if(mightinessConfig.MANAGE_ALL_STORAGE && !CLAID.hasStoragePermission())
+            {
+                if(!CLAID.requestStoragePermission())
+                {
+                    Logger.logError("CLAID grantMightiness failed. Could not get full storage permissions");
+                    System.exit(0);
+                }
+            }
+
+            if(mightinessConfig.DISABLE_BATTERY_OPTIMIZATIONS && !CLAID.isBatteryOptimizationDisabled(context))
+            {
+                CLAID.requestBatteryOptimizationExemption(context); 
+            }
+            Logger.logInfo("Mightiness config: " + mightinessConfig.BE_DEVICE_OWNER);
+
+            if(mightinessConfig.BE_DEVICE_OWNER && !CLAID.DeviceOwnerFeatures.isDeviceOwner(context))
+            {
+                Logger.logInfo("Requesting device ownership");
+                CLAID.DeviceOwnerFeatures.requestDeviceOwnership(context);
+            }
+        });
+
+        thread.start();
+        
+        return true;
     }
 
     private static Thread permissionHelperThread;
@@ -400,7 +481,7 @@ public class CLAID extends JavaCLAIDBase
                 }
                 else
                 {
-                    Logger.logError(batteryOptmizationMessage);
+                    Logger.logError("Failed to show message with instructions on how to remove battery optimizations on WearOS to the user. The context is not an Activity.");
                 }
             }
         }
@@ -519,5 +600,145 @@ public class CLAID extends JavaCLAIDBase
 
 
 
-    // Implement functions for context management etc.
+    public static class DeviceOwnerFeatures
+    {
+        
+        public static boolean isDeviceOwner(Context context)
+        {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                DevicePolicyManager dpm = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+                ComponentName adminComponent = new ComponentName(context, DeviceOwnerReceiver.class);
+                
+                // Check if the app is a device owner
+                return dpm.isDeviceOwnerApp(context.getPackageName());
+                
+                // Alternatively, you can check if the component is an active admin
+                // return dpm.isAdminActive(adminComponent);
+            } else {
+                // For versions below M, the concept of device owner doesn't exist.
+                return false;
+            }
+        }
+
+        public static boolean enableBluetooth(Context context)
+        {
+            if(!DeviceOwnerFeatures.isDeviceOwner(context))
+            {
+                Logger.logWarning("CLAID cannot enable bluetooth. We are not a DeviceManager");
+                return false;
+            }
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+            if (bluetoothAdapter.isEnabled()) 
+            {
+                // Already enabled, return true.
+                return true;
+            }
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) 
+            {                        
+                Logger.logWarning("CLAID cannot enable bluetooth. We do no thave BLUETOOTH_CONNECT permission.");
+                return false;
+            }
+            return bluetoothAdapter.enable();
+        }
+
+        public static boolean disableBluetooth(Context context)
+        {
+            if(!DeviceOwnerFeatures.isDeviceOwner(context))
+            {
+                Logger.logWarning("CLAID cannot disable bluetooth. We are not a DeviceManager");
+                return false;
+            }
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+            if (!bluetoothAdapter.isEnabled()) 
+            {
+                // Already disabled, return true.
+                return true;
+            }
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) 
+            {                        
+                Logger.logWarning("CLAID cannot disable bluetooth. We do no thave BLUETOOTH_CONNECT permission.");
+                return false;
+            }
+            return bluetoothAdapter.disable();
+        }
+
+        public static boolean enableWifi(Context context)
+        {
+            Logger.logInfo("CLAID enable wifi called");
+            if(!DeviceOwnerFeatures.isDeviceOwner(context))
+            {
+                Logger.logWarning("CLAID cannot enable bluetooth. We are not a DeviceManager");
+                return false;
+            }
+            
+            WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        
+            if(wifi.isWifiEnabled())
+            {
+                return true;
+            }
+
+            return wifi.setWifiEnabled(true);
+        }
+
+        public static boolean disableWifi(Context context)
+        {
+            Logger.logInfo("CLAID disable wifi called");
+            if(!DeviceOwnerFeatures.isDeviceOwner(context))
+            {
+                Logger.logWarning("CLAID cannot disable wifi. We are not a DeviceManager");
+                return false;
+            }
+            
+            WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        
+            if(!wifi.isWifiEnabled())
+            {
+                return true;
+            }
+
+            return wifi.setWifiEnabled(false);
+        }
+
+        public static void requestDeviceOwnership(Context context)
+        {
+            String batteryOptmizationMessage = 
+                "CLAID was started with option BE_DEVICE_OWNER in the MIGHTINESS configuration.\n" +
+                "In order to continue, the application needs to be registered as device owner, which allows it to have more control\n" +
+                "over the operating system and to have additional permissions (e.g., to disable or enable wifi from the background)\n." +
+                "You can find the instructions on how to register this application as device owner below.\n" +
+                "Before you proceed: Please note that device owner Apps can NOT be stopped and NOT be uninstalled.\n" +
+                "If you want to stop or uninstall the application, you have to remove the device ownership first (see below).\n\n"+
+                "To register this application as device owner, you have to do the following:\n" + 
+                "1st: Remove all existing google accounts from this device (check \"accounts\" page in the settings)." + 
+                "2nd: Connect ADB (Android Debug Bridge) to your device and execute the following command: \"adb shell dpm set-device-owner " + context.getPackageName() + "/adamma.c4dhi.claid_android.Receivers.DeviceOwnerReceiver\n" +
+                "\n\n\nTo remove device ownership at a later point, execute the following command: \"adb remove-active-admin " + context.getPackageName() + "/adamma.c4dhi.claid_android.Receivers.DeviceOwnerReceiver\n";
+
+                
+
+                if(context instanceof android.app.Activity)
+                {
+                    android.app.Activity activity = (android.app.Activity) context;
+                    
+                    activity.runOnUiThread(() ->
+                        new AlertDialog.Builder(context)
+                        .setMessage(batteryOptmizationMessage)
+                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                System.exit(0);
+                            }
+                        })
+                        .show());
+                }
+                else
+                {
+                    Logger.logError("Failed to show message with instructions on how to enable device ownership to the user. The context is not an Activity.");
+                }
+        }
+    }
+
+
 }

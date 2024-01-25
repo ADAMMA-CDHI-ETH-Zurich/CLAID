@@ -6,7 +6,7 @@ import android.content.Intent;
 import adamma.c4dhi.claid_android.CLAIDServices.MaximumPermissionsPerpetualService;
 import adamma.c4dhi.claid_android.CLAIDServices.ServiceRestartDescription;
 import adamma.c4dhi.claid_android.CLAIDServices.ServiceRestarterWorker;
-
+import adamma.c4dhi.claid_android.Configuration.CLAIDPersistanceConfig;
 import adamma.c4dhi.claid_android.Permissions.Permission;
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid_platform_impl.CLAID;
@@ -20,11 +20,12 @@ import java.util.concurrent.TimeUnit;
 public class ServiceManager
 {
     public static void startMaximumPermissionsPerpetualService(Context context, 
-        final String socketPath, final String configFilePath, final String hostId, final String userId, final String deviceId)
+        final String socketPath, final String configFilePath, final String hostId, 
+        final String userId, final String deviceId, CLAIDPersistanceConfig persistanceConfig)
     {   
         Permission.setContext(context);
         // Request all permissions.
-        if(!MaximumPermissionsPerpetualService.requestRequiredPermissions(context))
+        if(!MaximumPermissionsPerpetualService.requestRequiredPermissions(context, persistanceConfig))
         {
             Logger.logError("Failed to start CLAIDServices.MaximumPermissionsPerpetualService.\n" + 
                             "Required permissions were not granted.");
@@ -39,8 +40,8 @@ public class ServiceManager
         description.put("hostId", hostId);
         description.put("userId", userId);
         description.put("deviceId", deviceId);
-        description.put("startOnBoot", "true");
-        description.put("restartOnCrashOrTermination", "true");
+        description.put("startOnBoot", persistanceConfig.RESTART_ON_BOOT ? "true" : "false");
+        description.put("restartOnCrashOrTermination", persistanceConfig.MONITOR_TRY_RESTART_IF_CRASHED_OR_EXITED ? "true" : "false");
 
         if(!description.serializeToFile(restartDescriptionPath))
         {

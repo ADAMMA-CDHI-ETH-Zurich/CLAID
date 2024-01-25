@@ -44,10 +44,12 @@ android_binary(
     name = "claid_capi_android",
     deps = [":android_claid_cc"],
     manifest = "aar/claid/app/src/main/AndroidManifest.xml",
+    resource_files = glob(["aar/claid/app/src/main/res/**/*.xml"])
 )
 
 android_binary(
     name = "claid_capi_android_tflite",
     deps = [":android_claid_cc_tflite"],
     manifest = "aar/claid/app/src/main/AndroidManifest.xml",
+    resource_files = glob(["aar/claid/app/src/main/res/*.xml"])
 )

@@ -1,4 +1,4 @@
-package adamma.c4dhi.claid_android.CLAIDServices;
+package adamma.c4dhi.claid_android.Receivers;
 import adamma.c4dhi.claid_android.CLAIDServices.ServiceManager;
 
 import android.content.BroadcastReceiver;

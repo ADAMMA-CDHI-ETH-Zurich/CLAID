@@ -51,6 +51,8 @@ android {
         main.java.srcDirs += ["../../../../java/runtime"]
         main.proto.srcDirs += "../../../../proto"
         main.jniLibs.srcDirs = ['../blobs/']
+        main.resources.srcDirs += ['src/main/xml']
+
     }
 
     compileOptions {

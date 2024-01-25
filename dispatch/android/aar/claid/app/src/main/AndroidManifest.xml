@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="adamma.c4dhi.claid">
+    package="adamma.c4dhi.claid_android">
 
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -15,8 +15,12 @@
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.settings.MANAGE_ALL_FILES_ACCESS_PERMISSION" />
 
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
-
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    
     <!-- Required permission for accessing coarse location -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
@@ -34,7 +38,7 @@
 
     <application>
          <receiver
-            android:name="adamma.c4dhi.claid_android.CLAIDServices.OnBootReceiver"
+            android:name="adamma.c4dhi.claid_android.Receivers.OnBootReceiver"
             android:enabled="true"
             android:exported="true">
 
@@ -44,6 +48,20 @@
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
 
             </intent-filter>    
+        </receiver>
+
+        <receiver
+            android:name="adamma.c4dhi.claid_android.Receivers.DeviceOwnerReceiver"
+            android:description="@string/claid_device_owner_name"
+            android:label="@string/claid_device_owner_name"
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_owner_receiver"/>
+            <intent-filter>
+                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE"/>
+            </intent-filter>
         </receiver>
 
         <activity

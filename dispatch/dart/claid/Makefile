@@ -21,6 +21,9 @@ TARGET_LIBS_ANDROID = dispatch/dart/claid/blobs/android
 
 OUTPUT_ANDROID_TFLITE_LIB = claid_capi_android_tflite
 
+PROTO_DIR = ../../../dispatch/proto
+PROTO_FILES = $(shell find $(PROTO_DIR) -type f -name "*.proto")
+
 .PHONY: all
 all: build
 
@@ -116,7 +119,7 @@ generate_dart:
 	mkdir -p lib/generated \
 	cd ../../../  &&\
 	protoc -I../../../ --dart_out=grpc:lib/generated \
-		dispatch/proto/*.proto \
+		$(PROTO_FILES)\
 		google/protobuf/timestamp.proto \
 		google/protobuf/empty.proto
 
