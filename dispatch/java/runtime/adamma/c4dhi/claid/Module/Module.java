@@ -62,6 +62,18 @@ public abstract class Module
         Logger.log(SeverityLevel.WARNING, warningMsg);
     }
 
+    protected void moduleInfo(final String info)
+    {
+        String infoMsg = "Module \"" + this.id + "\": " + info;
+        Logger.log(SeverityLevel.INFO, infoMsg);
+    }
+
+    protected void moduleDebug(final String debug)
+    {
+        String debugMsg = "Module \"" + this.id + "\": " + debug;
+        Logger.log(SeverityLevel.WARNING, debugMsg);
+    }
+
     public boolean start(ChannelSubscriberPublisher subscriberPublisher, Map<String, String> properties)
     {
         if(this.isInitialized)

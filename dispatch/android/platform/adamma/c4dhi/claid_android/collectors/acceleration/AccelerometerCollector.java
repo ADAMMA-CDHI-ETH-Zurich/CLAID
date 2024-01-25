@@ -6,9 +6,11 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.Map;
 
 import adamma.c4dhi.claid.Module.Channel;
 import adamma.c4dhi.claid.Module.ChannelData;
@@ -17,20 +19,21 @@ import adamma.c4dhi.claid.Module.Module;
 import adamma.c4dhi.claid_sensor_data.AccelerationSample;
 import adamma.c4dhi.claid_sensor_data.AccelerationData;
 
+import adamma.c4dhi.claid_platform_impl.CLAID;
 
 public class AccelerometerCollector extends Module implements SensorEventListener 
 {
-    private Channel<AccelerationData> accelerometerDataChannel;
+    private Channel<AccelerationData> accelerationDataChannel;
 
 
     private ReentrantLock mutex = new ReentrantLock();
    
    
     // Volatile to be thread safe.
-    private volatile AtomicReference<AccelerometerSample> latestSample = new AtomicReference<>();
-    private ArrayList<AccelerometerSample> collectedAccelerometerSamples = new ArrayList<AccelerometerSample>();
+    private volatile AtomicReference<AccelerationSample> latestSample = new AtomicReference<>();
+    private ArrayList<AccelerationSample> collectedAccelerationSamples = new ArrayList<AccelerationSample>();
 
-    AccelerometerData oldAccelerometerData = null;
+    AccelerationData oldAccelerationData = null;
 
     SensorManager sensorManager;
     Sensor sensor;
@@ -47,9 +50,9 @@ public class AccelerometerCollector extends Module implements SensorEventListene
             return;
         }
 
-        this.samplingFrequency = Double.parseDouble(properties.get("samplingFrequency"));
+        this.samplingFrequency = Integer.parseInt(properties.get("samplingFrequency"));
 
-        this.accelerometerDataChannel = this.publish("AccelerometerData", AccelerometerData.class);
+        this.accelerationDataChannel = this.publish("AccelerationData", AccelerationData.class);
 
         sensorManager = (SensorManager) CLAID.getContext().getSystemService(Context.SENSOR_SERVICE); 
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER); 
@@ -57,26 +60,28 @@ public class AccelerometerCollector extends Module implements SensorEventListene
 
         int samplingPerioid = 1000/samplingFrequency;
 
-        registerPeriodicFunction("AccelerometerSampling", () -> sampleAccelerometerData(), samplingPerioid)
+        registerPeriodicFunction("AccelerometerSampling", () -> sampleAccelerationData(), Duration.ofMillis(samplingPerioid));
     }
 
 
-    public synchronized void sampleAccelerometerData()
+    public synchronized void sampleAccelerationData()
     {
         AccelerationSample sample = latestSample.get();
-        collectedAccelerometerSamples.add(sample);
+        collectedAccelerationSamples.add(sample);
 
-        if(collectedAccelerometerSamples.length() == samplingFrequency)
+        if(collectedAccelerationSamples.size() == samplingFrequency)
         {
             AccelerationData.Builder data = AccelerationData.newBuilder();
-            data.addSamples(collectedAccelerometerSamples);
 
-            this.accelerometerDataChannel.post(data.build());
+            for(AccelerationSample collectedSample : collectedAccelerationSamples)
+            {   
+                data.addSamples(collectedSample);
+            }
 
-            collectedAccelerometerSamples.clear();
+            this.accelerationDataChannel.post(data.build());
+
+            collectedAccelerationSamples.clear();
         }
-        
-        
     }
 
 
@@ -90,7 +95,7 @@ public class AccelerometerCollector extends Module implements SensorEventListene
             double y = sensorEvent.values[1] / SensorManager.GRAVITY_EARTH;
             double z = sensorEvent.values[2] / SensorManager.GRAVITY_EARTH;
 
-            AccelerometerSample.Builder sample = AccelerationSample.newBuilder();
+            AccelerationSample.Builder sample = AccelerationSample.newBuilder();
             sample.setAccelerationX((double) x);
             sample.setAccelerationY((double) y);
             sample.setAccelerationZ((double) z);

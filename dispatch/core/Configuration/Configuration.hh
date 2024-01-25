@@ -9,7 +9,7 @@
 #include <string>
 #include "absl/status/status.h"
 
-#include "dispatch/proto/claidconfig.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/Configuration/HostDescription.hh"
 #include "dispatch/core/Configuration/ModuleDescription.hh"
 #include "dispatch/core/Configuration/ChannelDescription.hh"

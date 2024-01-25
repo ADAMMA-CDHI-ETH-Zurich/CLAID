@@ -11,8 +11,7 @@ option java_multiple_files = true;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
-import "dispatch/proto/runtime.proto";
-import "dispatch/proto/log_message.proto";
+
 
 // Service for modules to talk to the CLAID middleware.
 service ClaidService {
@@ -255,4 +254,88 @@ message ModuleAnnotation
   repeated string property_descriptions = 3;
   repeated DataPackage channel_definition = 4;
   repeated string channel_description = 5;
+}
+
+
+enum Runtime {
+  RUNTIME_UNSPECIFIED = 0;
+  RUNTIME_CPP = 1;
+  RUNTIME_DART = 2;
+  RUNTIME_JAVA = 3;
+  RUNTIME_PYTHON = 4;
+}
+
+enum LogMessageSeverityLevel
+{
+  DEBUG_LOG = 0;
+  INFO = 1;
+  WARNING = 2;
+  ERROR = 3;
+  FATAL = 4;
+}
+
+enum LogMessageEntityType
+{
+  MIDDLEWARE = 0; // For general messages, i.e., sent from low level middleware functions
+  MIDDLEWARE_COMPONENT = 1; // For messages from certain well-defined components within the middleware, e.g., the Router oder RemoteDispatcher
+  MODULE = 2; // For log messages directly sent from a certain Module
+}
+
+message LogMessage
+{
+  string log_message = 1;
+  LogMessageSeverityLevel severity_level = 2;
+  uint64 unix_timestamp_in_ms = 3;
+  LogMessageEntityType entity_type = 4;
+  string entity_name = 5;
+  Runtime runtime = 6; // Runtime from which the message was sent
+}
+
+
+// Determines how log messages shall be transfered to the log sink host
+// STORE_AND_UPLOAD is the default option. Log messages will be written to files (one file per hour),
+// which will be synchronized with the log sync host once it is available.
+// STREAM is an option that can be used if hosts shall livestream their log messages to the log sink host.
+// This allows to stream the logs in realtime to the log sink host, however log messages will get lost if there currently is no connection to the log sink host
+enum LogSinkTransferMode
+{
+  STORE_AND_UPLOAD = 0;
+  STREAM = 1;
+}
+
+
+// ======= CONFIG =======
+
+
+// Container for the central CLAID config file. 
+// TODO (patrick): change as you see fit, this just a starting point. 
+message CLAIDConfig {
+  repeated HostConfig hosts = 1; 
+  string log_sink_host = 2; // If specified, all CLAID instances will forward their log messages to this host. 
+  LogMessageSeverityLevel log_sink_severity_level = 3;  // If log_sink_host is specified, this flag indicates 
+                                                        // what category of log messages will be sent to the log sink (only messages with severity level >= this flag will be sent).
+  LogSinkTransferMode log_sink_transfer_mode = 4; // Method of transfering log messages to the log_sink_host. Check LogSingTransferMode definition for mor edetails.
+}
+
+message HostConfig {
+  string hostname = 1; 
+  string type = 2;
+  bool is_server = 3;
+  string host_server_address = 4; // If is_server, then this identifies the address of the server. Must be fully specified.
+  string connect_to = 5; // If specified, the host will connect to this address. 
+                                  // The host can either be a Client connection to a Server, or a Server connecting to another Server.
+  repeated ModuleConfig modules = 6;
+  string log_folder = 7;  // Path to folder where to store log message to. All log messages with a severity level >= min_log_severity_level will be store there.
+                          // Additionally, all log messages with a severity level >= log_sink_severity_level will be stored separately and synced with the log sink host.
+                          // The separately stored messages for the log_sink_host will be deleted upon successfull synchronization;
+  LogMessageSeverityLevel min_log_severity_level = 8; // Specifies the minimum severity level a log message needs to have in order to be printed and stored to log files.
+}
+
+message ModuleConfig
+{
+  string id = 1; 
+  string type = 2;
+  repeated string input_channels = 3;
+  repeated string output_channels = 4;
+  map<string, string> properties = 5;
 }

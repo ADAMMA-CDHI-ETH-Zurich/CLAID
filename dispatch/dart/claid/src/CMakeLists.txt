@@ -10,10 +10,10 @@ add_library(claid_core
 
 if(ANDROID)
 
-add_library(libandroid_claid SHARED IMPORTED)
-set_target_properties(libandroid_claid PROPERTIES IMPORTED_LOCATION
-        ${CMAKE_CURRENT_LIST_DIR}/../blobs/android/${ANDROID_ABI}/libclaid_capi_android.so
-        )
+# add_library(libandroid_claid SHARED IMPORTED)
+# set_target_properties(libandroid_claid PROPERTIES IMPORTED_LOCATION
+#         ${CMAKE_CURRENT_LIST_DIR}/../blobs/android/${ANDROID_ABI}/libclaid_capi_android.so
+#         )
 
 find_library( # Sets the name of the path variable.
         log-lib
@@ -30,8 +30,8 @@ find_library( # Sets the name of the path variable.
         android )
 
 
-        target_link_libraries(claid_core libandroid_claid ${log-lib}
-        ${android-lib})
+        # target_link_libraries(claid_core libandroid_claid ${log-lib}
+        # ${android-lib})
 
 elseif(UNIX)
         target_link_libraries(claid_core ${CMAKE_CURRENT_LIST_DIR}/../blobs/libclaid_capi_linux.so)

@@ -13,9 +13,9 @@ class CLAID
   static MiddleWareBindings? _middleWare;
   static impl.ModuleManager? _moduleManager;
 
-  static Future<void> start(final String socketPath, 
+  static void start(final String socketPath, 
     final String configFilePath, final String hostId, 
-    final String userId, final String deviceId, final ModuleFactory moduleFactory) async
+    final String userId, final String deviceId, final ModuleFactory moduleFactory)
   {
     // Creating the ModuleDispatcher loads the Middleware and starts the Claid core, as of now.
 
@@ -25,7 +25,7 @@ class CLAID
     attachDartRuntime(socketPath, moduleFactory);
   }
 
-  static Future<void> attachDartRuntime(final String socketPath, final ModuleFactory moduleFactory) async
+  static void attachDartRuntime(final String socketPath, final ModuleFactory moduleFactory)
   {
     _dispatcher = ModuleDispatcher(socketPath);
 
@@ -33,7 +33,7 @@ class CLAID
     final factories = moduleFactory.getFactories();
 
     _moduleManager = impl.ModuleManager(_dispatcher!, factories);
-    await _moduleManager!.start();
+    _moduleManager!.start();
   }
 
   static T? getModule<T extends Module>(final String moduleId)
