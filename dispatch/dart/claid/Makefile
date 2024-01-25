@@ -107,10 +107,12 @@ generate: generate_dart generate_test_dart generate_ffi
 
 .PHONY: generate_dart
 generate_dart:
-	mkdir -p lib/generated
-	protoc -I../../proto/ --dart_out=grpc:lib/generated \
-		../../proto/claidservice.proto \
-		../../proto/*.proto\
+	mkdir -p lib/generated \
+	cd ../../../ && echo "$(PWD)" &&\
+	protoc -I../../../ --dart_out=grpc:lib/generated \
+		dispatch/proto/claidconfig.proto\
+		dispatch/proto/claidservice.proto\
+		dispatch/proto/log_message.proto\
 		google/protobuf/timestamp.proto \
 		google/protobuf/empty.proto
 

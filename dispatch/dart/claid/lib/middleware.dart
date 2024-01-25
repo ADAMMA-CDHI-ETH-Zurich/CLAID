@@ -29,10 +29,19 @@ final String _platform = Platform.isAndroid ? 'android' : 'linux';
 
 class MiddleWareBindings {
   var _coreHandle = ffi.Pointer<ffi.Void>.fromAddress(0);
-  var _ready = false;
+  bool _ready = false;
+  bool _wasMiddlewareStartedFromDart = false;
 
-  MiddleWareBindings(String socketPath, String configFile, String hostId,
-      String userId, String deviceId) {
+  
+  MiddleWareBindings()
+  {
+
+  }
+
+  // Starts the CLAID middleware.
+  bool start(String socketPath, String configFile, String hostId,
+      String userId, String deviceId) 
+  {
     _coreHandle = _bindings.start_core(
         toCharPointer(socketPath),
         toCharPointer(configFile),
@@ -40,12 +49,20 @@ class MiddleWareBindings {
         toCharPointer(userId),
         toCharPointer(deviceId));
     _ready = _coreHandle.address != 0;
+
+    if(_ready)
+    {
+      _wasMiddlewareStartedFromDart = true;
+    }
+
+    return _ready;
   }
 
   void shutdown() {
-    if (_ready) {
+    if (_ready && _wasMiddlewareStartedFromDart) {
       _bindings.shutdown_core(_coreHandle);
       _ready = false;
+      _wasMiddlewareStartedFromDart = false;
     }
   }
 

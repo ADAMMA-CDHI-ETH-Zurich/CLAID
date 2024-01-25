@@ -27,6 +27,8 @@ import 'package:path/path.dart';
 
 import 'package:test/test.dart';
 
+import 'package:claid/middleware.dart';
+
 // const String socketPath = '/tmp/testsock_dart.grpc';
 const String configFile = './test/testdata/middleware_test_config.json';
 const String hostId = 'alex_client';
@@ -50,9 +52,14 @@ void main() {
 
   test('test client dispatcher', () async {
     final socketPath = getSocketPath(tempDir);
+    
+    final MiddleWareBindings middleware = MiddleWareBindings();
+    
+    expect(middleware.start(socketPath, configFile, hostId, userId, deviceId), true);
     final disp =
-        ModuleDispatcher(socketPath, configFile, hostId, userId, deviceId);
-    expect(disp.start(), true);
+        ModuleDispatcher(socketPath);
+
+
     const channelID = 'RawNumber';
 
     final moduleClasses = <String>[

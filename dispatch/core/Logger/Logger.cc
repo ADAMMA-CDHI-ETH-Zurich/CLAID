@@ -26,7 +26,7 @@ std::unique_ptr<std::ofstream> claid::Logger::logFile = nullptr;
 
 
 bool claid::Logger::loggingToLogSinkEnabled = false;
-LogMessageSeverityLevel minSeverityLevelToForwardToLogSinkHost = LogMessageSeverityLevel::WARNING;
+LogMessageSeverityLevel claid::Logger::minSeverityLevelToForwardToLogSinkHost = LogMessageSeverityLevel::WARNING;
 claid::LogSinkConfiguration claid::Logger::logSinkConfiguration;
 
 #ifdef __ANDROID__

@@ -10,25 +10,39 @@ import './src/module_impl.dart' as impl;
 class CLAID
 {
   static ModuleDispatcher? _dispatcher;
-  
+  static MiddleWareBindings? _middleWare;
+  static impl.ModuleManager? _moduleManager;
+
   static Future<void> start(final String socketPath, 
     final String configFilePath, final String hostId, 
     final String userId, final String deviceId, final ModuleFactory moduleFactory) async
   {
     // Creating the ModuleDispatcher loads the Middleware and starts the Claid core, as of now.
-    _dispatcher = ModuleDispatcher(socketPath, configFilePath, hostId, userId, deviceId);
+
+    _middleWare = _middleWare ?? MiddleWareBindings();
+    _middleWare?.start(socketPath, configFilePath, hostId, userId, deviceId);
+
+    attachDartRuntime(socketPath, moduleFactory);
+  }
+
+  static Future<void> attachDartRuntime(final String socketPath, final ModuleFactory moduleFactory) async
+  {
+    _dispatcher = ModuleDispatcher(socketPath);
 
 
     final factories = moduleFactory.getFactories();
 
-    await initModules(
-        dispatcher: _dispatcher!,
-        moduleFactories: factories);
+    _moduleManager = impl.ModuleManager(_dispatcher!, factories);
+    await _moduleManager!.start();
   }
 
   static T? getModule<T extends Module>(final String moduleId)
   {
-    Module? module = impl.ModuleManager.instance.getModule(moduleId);
+    if(_moduleManager == null)
+    {
+      return null;
+    }
+    Module? module = _moduleManager!.getModule(moduleId);
 
     if(module == null)
     {

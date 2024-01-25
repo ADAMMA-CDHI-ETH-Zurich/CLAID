@@ -77,9 +77,9 @@ class ModuleManager {
       _moduleMap[moduleId]?.lifecycle ?? Lifecycle.unknown;
 
   Future<void> start() async {
-    if (!_dispatcher.start()) {
-      throw AssertionError('ModuleDispatcher is not ready');
-    }
+    // if (!_dispatcher.start()) {
+    //   throw AssertionError('ModuleDispatcher is not ready');
+    // }
 
     // Get the list of modules and instantiate + initialize them.
     final modDesc = await _dispatcher.getModuleList(_factories.keys.toList());

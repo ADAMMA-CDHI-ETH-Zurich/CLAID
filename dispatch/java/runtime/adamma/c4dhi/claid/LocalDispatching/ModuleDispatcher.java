@@ -79,7 +79,7 @@ public class ModuleDispatcher
             this.grpcChannel = Grpc.newChannelBuilder(socketPath, InsecureChannelCredentials.create()).build();
         }
 
-        //this.grpcChannel = ManagedChannelBuilder.forTarget(socketPath).usePlaintext().build();
+        // this.grpcChannel = ManagedChannelBuilder.forTarget(socketPath).usePlaintext().build();
         // see https://github.com/Hellblazer/GrpcDomainSocketTest/blob/main/src/test/java/domain/DomainSocketReproTest.java
         // this.grpcChannel = NettyChannelBuilder.forAddress(new DomainSocketAddress(socketPath))
         //                                             .eventLoopGroup(new KQueueEventLoopGroup())

@@ -50,30 +50,23 @@ class ModDescriptor {
 // }
 
 class ModuleDispatcher {
-  final MiddleWareBindings _middleWare;
   final String _socketPath;
   late ClaidServiceClient _stub;
   late ClientChannel _channel;
   ResponseStream<DataPackage>? _responseStream;
   StreamController<DataPackage>? _outputController;
 
-  ModuleDispatcher(this._socketPath, String configFile, String hostId,
-      String userId, String deviceId)
-      : _middleWare = MiddleWareBindings(
-            _socketPath, configFile, hostId, userId, deviceId) {
-    _channel = ClientChannel(
-        InternetAddress(_socketPath, type: InternetAddressType.unix),
-        options:
-            const ChannelOptions(credentials: ChannelCredentials.insecure()));
-    _stub = ClaidServiceClient(_channel);
-    // options: CallOptions(timeout: const Duration(seconds: 30)));
+  ModuleDispatcher(this._socketPath)
+  {
+      _channel = ClientChannel(
+          InternetAddress(_socketPath, type: InternetAddressType.unix),
+          options:
+              const ChannelOptions(credentials: ChannelCredentials.insecure()));
+      _stub = ClaidServiceClient(_channel);
+      // options: CallOptions(timeout: const Duration(seconds: 30)));
   }
 
-  bool start() => _middleWare.ready;
-
-  void shutdown() {
-    _middleWare.shutdown();
-  }
+  
 
   Future<List<ModDescriptor>> getModuleList(List<String> moduleClasses) async {
     final req = ModuleListRequest(

@@ -101,4 +101,21 @@ class ClaidCoreBindings {
               ffi.Pointer<ffi.Void>)>>('attach_cpp_runtime');
   late final _attach_cpp_runtime = _attach_cpp_runtimePtr
       .asFunction<ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Void>)>();
+
+  int load_new_config(
+    ffi.Pointer<ffi.Void> handle,
+    ffi.Pointer<ffi.Char> config_file,
+  ) {
+    return _load_new_config(
+      handle,
+      config_file,
+    );
+  }
+
+  late final _load_new_configPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int Function(ffi.Pointer<ffi.Void>,
+              ffi.Pointer<ffi.Char>)>>('load_new_config');
+  late final _load_new_config = _load_new_configPtr
+      .asFunction<int Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Char>)>();
 }
