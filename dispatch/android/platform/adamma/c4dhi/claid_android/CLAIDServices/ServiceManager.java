@@ -156,5 +156,10 @@ public class ServiceManager
 
         return restartDescription.get("restartOnCrashOrTermination").equals("true");
     }
+    
+    public static boolean isServiceRunning()
+    {
+        return MaximumPermissionsPerpetualService.isRunning;
+    }
 }
 

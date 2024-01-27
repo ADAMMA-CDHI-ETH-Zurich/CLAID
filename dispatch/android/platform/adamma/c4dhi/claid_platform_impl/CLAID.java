@@ -175,6 +175,11 @@ public class CLAID extends JavaCLAIDBase
             Logger.logError("Failed to start CLAID in persistent service. The provided PersistentModuleFactory has not been created with CLAID.getPersistentModuleFactory()." +
             "Use CLAID.getPersistentModuleFactory() to retrieve a PersistentModuleFactory, and then pass ist to CLAID.startInPersistentService(...), after you have registered your Module classes.");
         }
+
+        if(ServiceManager.isServiceRunning())
+        {
+            return true;
+        }
       
         CLAID.context = context;
 
@@ -540,7 +545,7 @@ public class CLAID extends JavaCLAIDBase
     // This is mainly relevant for WearOS applications,
     // which go into doze very quickly/aggressively, even if a Service is running.
     // On regular Smartphones, this is mostly not necessary if a Service is used.
-    public static boolean enableKeepAppAwake()
+    public static boolean enableKeepAppAwake(Context context)
     {  
         if(claidWakeLock == null)
         {
@@ -562,7 +567,7 @@ public class CLAID extends JavaCLAIDBase
         return true;
     }
 
-    public static boolean disableKeepAppAwake()
+    public static boolean disableKeepAppAwake(Context context)
     {
         if(claidWakeLock == null)
         {
@@ -578,7 +583,7 @@ public class CLAID extends JavaCLAIDBase
         return true;
     }
 
-    public static boolean disableKeepAppAwake(Integer waitTimeMs)
+    public static boolean disableKeepAppAwake(Context context, Integer waitTimeMs)
     {
         try
         {
@@ -589,7 +594,7 @@ public class CLAID extends JavaCLAIDBase
             e.printStackTrace();
         }
 
-        return disableKeepAppAwake();
+        return disableKeepAppAwake(context);
     }
 
     public static boolean isWearOS(Context context) {
