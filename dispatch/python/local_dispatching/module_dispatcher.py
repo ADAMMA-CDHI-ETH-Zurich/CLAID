@@ -1,4 +1,3 @@
-from dispatch.proto.claidconfig_pb2 import *
 from dispatch.proto.sensor_data_types_pb2 import *
 from dispatch.proto.claidservice_pb2 import * 
 from dispatch.proto.claidservice_pb2_grpc import ClaidServiceStub

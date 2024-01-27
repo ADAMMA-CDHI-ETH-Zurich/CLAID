@@ -35,7 +35,7 @@ public class ModuleAnnotator {
         this.annotation = this.annotation.addProperties(propertyName).addPropertyDescriptions(propertyDescription);
     }
 
-    public void describePublishChannel(String channelName, DataType dataType, String channelDescription) 
+    private void describePublishChannelDataType(String channelName, DataType dataType, String channelDescription) 
     {
         DataPackage examplePackage = prepareExamplePackage(dataType, moduleType, channelName, true);
         this.annotation.addChannelDefinition(examplePackage);
@@ -51,75 +51,75 @@ public class ModuleAnnotator {
 
     public<T> void describePublishChannel(final String channelName, Class<T> dataType, final String channelDescription)
     {
-        describePublishChannel(channelName, new DataType(dataType), channelDescription);
+        describePublishChannelDataType(channelName, new DataType(dataType), channelDescription);
     }
 
-    protected void describePublishChannel(final String channelName, ArrayList<Short> shorts, final String channelDescription, ShortType... ignore) 
+    public void describePublishChannel(final String channelName, ArrayList<Short> shorts, final String channelDescription, ShortType... ignore) 
     {
-        describePublishChannel(channelName, new DataType(ArrayList.class, "ArrayList<Short>"), channelDescription);
+        describePublishChannelDataType(channelName, new DataType(ArrayList.class, "ArrayList<Short>"), channelDescription);
     }
 
-    protected void describePublishChannel(final String channelName, ArrayList<Integer> ints, final String channelDescription, IntegerType... ignore) 
+    public void describePublishChannel(final String channelName, ArrayList<Integer> ints, final String channelDescription, IntegerType... ignore) 
     {
-        describePublishChannel(channelName, new DataType(ArrayList.class, "ArrayList<Integer>"), channelDescription);
+        describePublishChannelDataType(channelName, new DataType(ArrayList.class, "ArrayList<Integer>"), channelDescription);
     }
 
-    protected void describePublishChannel(final String channelName, ArrayList<Long> longs, final String channelDescription, LongType... ignore) 
+    public void describePublishChannel(final String channelName, ArrayList<Long> longs, final String channelDescription, LongType... ignore) 
     {
-        describePublishChannel(channelName, new DataType(ArrayList.class, "ArrayList<Long>"), channelDescription);
+        describePublishChannelDataType(channelName, new DataType(ArrayList.class, "ArrayList<Long>"), channelDescription);
     }
 
-    protected void describePublishChannel(final String channelName, ArrayList<Float> floats, final String channelDescription, FloatType... ignore) 
+    public void describePublishChannel(final String channelName, ArrayList<Float> floats, final String channelDescription, FloatType... ignore) 
     {
-        describePublishChannel(channelName, new DataType(ArrayList.class, "ArrayList<Float>"), channelDescription);
+        describePublishChannelDataType(channelName, new DataType(ArrayList.class, "ArrayList<Float>"), channelDescription);
     }
 
-    protected void describePublishChannel(final String channelName, ArrayList<Double> dbs, final String channelDescription, DoubleType... ignore) 
+    public void describePublishChannel(final String channelName, ArrayList<Double> dbs, final String channelDescription, DoubleType... ignore) 
     {
-        describePublishChannel(channelName, new DataType(ArrayList.class, "ArrayList<Double>"), channelDescription);
+        describePublishChannelDataType(channelName, new DataType(ArrayList.class, "ArrayList<Double>"), channelDescription);
     }
 
-    protected void describePublishChannel(final String channelName, ArrayList<String> strings, final String channelDescription, StringType... ignore) 
+    public void describePublishChannel(final String channelName, ArrayList<String> strings, final String channelDescription, StringType... ignore) 
     {
-        describePublishChannel(channelName, new DataType(ArrayList.class, "ArrayList<String>"), channelDescription);
+        describePublishChannelDataType(channelName, new DataType(ArrayList.class, "ArrayList<String>"), channelDescription);
     }
 
     
     // MAP
-    protected void describePublishChannel(final String channelName, Map<String, Short> shorts, final String channelDescription, ShortType... ignore) 
+    public void describePublishChannel(final String channelName, Map<String, Short> shorts, final String channelDescription, ShortType... ignore) 
     {
-        describePublishChannel(channelName, new DataType(Map.class, "Map<String, Short>"), channelDescription);
+        describePublishChannelDataType(channelName, new DataType(Map.class, "Map<String, Short>"), channelDescription);
     }
 
-    protected void describePublishChannel(final String channelName, Map<String, Integer> ints, final String channelDescription, IntegerType... ignore) 
+    public void describePublishChannel(final String channelName, Map<String, Integer> ints, final String channelDescription, IntegerType... ignore) 
     {
-        describePublishChannel(channelName, new DataType(Map.class, "Map<String, Integer>"), channelDescription);
+        describePublishChannelDataType(channelName, new DataType(Map.class, "Map<String, Integer>"), channelDescription);
     }
 
-    protected void describePublishChannel(final String channelName, Map<String, Long> longs, final String channelDescription, LongType... ignore) 
+    public void describePublishChannel(final String channelName, Map<String, Long> longs, final String channelDescription, LongType... ignore) 
     {
-        describePublishChannel(channelName, new DataType(Map.class, "Map<String, Long>"), channelDescription);
+        describePublishChannelDataType(channelName, new DataType(Map.class, "Map<String, Long>"), channelDescription);
     }
 
-    protected void describePublishChannel(final String channelName, Map<String, Float> floats, final String channelDescription, FloatType... ignore) 
+    public void describePublishChannel(final String channelName, Map<String, Float> floats, final String channelDescription, FloatType... ignore) 
     {
-        describePublishChannel(channelName, new DataType(Map.class, "Map<String, Float>"), channelDescription);
+        describePublishChannelDataType(channelName, new DataType(Map.class, "Map<String, Float>"), channelDescription);
     }
 
-    protected void describePublishChannel(final String channelName, Map<String, Double> dbs, final String channelDescription, DoubleType... ignore) 
+    public void describePublishChannel(final String channelName, Map<String, Double> dbs, final String channelDescription, DoubleType... ignore) 
     {
-        describePublishChannel(channelName, new DataType(Map.class, "Map<String, Double>"), channelDescription);
+        describePublishChannelDataType(channelName, new DataType(Map.class, "Map<String, Double>"), channelDescription);
     }
 
-    protected void describePublishChannel(final String channelName, Map<String, String> strings, final String channelDescription, StringType... ignore) 
+    public void describePublishChannel(final String channelName, Map<String, String> strings, final String channelDescription, StringType... ignore) 
     {
-        describePublishChannel(channelName, new DataType(Map.class, "Map<String, String>"), channelDescription);
+        describePublishChannelDataType(channelName, new DataType(Map.class, "Map<String, String>"), channelDescription);
     }
 
 
     // =================== Subscribe ===================
 
-    public void describeSubscribeChannel(String channelName, DataType dataType, String channelDescription) 
+    public void describeSubscribeChannelDataType(String channelName, DataType dataType, String channelDescription) 
     {
         DataPackage examplePackage = prepareExamplePackage(dataType, moduleType, channelName, false);
         this.annotation.addChannelDefinition(examplePackage);
@@ -128,70 +128,70 @@ public class ModuleAnnotator {
 
     public<T> T describeSubscribeChannel(final String channelName, Class<T> dataType, final String channelDescription)
     {
-        describeSubscribeChannel(channelName, new DataType(dataType), channelDescription);
+        describeSubscribeChannelDataType(channelName, new DataType(dataType), channelDescription);
         return null;
     }
 
-    protected void describeSubscribeChannel(final String channelName, ArrayList<Short> shorts, final String channelDescription, ShortType... ignore) 
+    public void describeSubscribeChannel(final String channelName, ArrayList<Short> shorts, final String channelDescription, ShortType... ignore) 
     {
-        describeSubscribeChannel(channelName, new DataType(ArrayList.class, "ArrayList<Short>"), channelDescription);
+        describeSubscribeChannelDataType(channelName, new DataType(ArrayList.class, "ArrayList<Short>"), channelDescription);
     }
 
-    protected void describeSubscribeChannel(final String channelName, ArrayList<Integer> ints, final String channelDescription, IntegerType... ignore) 
+    public void describeSubscribeChannel(final String channelName, ArrayList<Integer> ints, final String channelDescription, IntegerType... ignore) 
     {
-        describeSubscribeChannel(channelName, new DataType(ArrayList.class, "ArrayList<Integer>"), channelDescription);
+        describeSubscribeChannelDataType(channelName, new DataType(ArrayList.class, "ArrayList<Integer>"), channelDescription);
     }
 
-    protected void describeSubscribeChannel(final String channelName, ArrayList<Long> longs, final String channelDescription, LongType... ignore) 
+    public void describeSubscribeChannel(final String channelName, ArrayList<Long> longs, final String channelDescription, LongType... ignore) 
     {
-        describeSubscribeChannel(channelName, new DataType(ArrayList.class, "ArrayList<Long>"), channelDescription);
+        describeSubscribeChannelDataType(channelName, new DataType(ArrayList.class, "ArrayList<Long>"), channelDescription);
     }
 
-    protected void describeSubscribeChannel(final String channelName, ArrayList<Float> floats, final String channelDescription, FloatType... ignore) 
+    public void describeSubscribeChannel(final String channelName, ArrayList<Float> floats, final String channelDescription, FloatType... ignore) 
     {
-        describeSubscribeChannel(channelName, new DataType(ArrayList.class, "ArrayList<Float>"), channelDescription);
+        describeSubscribeChannelDataType(channelName, new DataType(ArrayList.class, "ArrayList<Float>"), channelDescription);
     }
 
-    protected void describeSubscribeChannel(final String channelName, ArrayList<Double> dbs, final String channelDescription, DoubleType... ignore) 
+    public void describeSubscribeChannel(final String channelName, ArrayList<Double> dbs, final String channelDescription, DoubleType... ignore) 
     {
-        describeSubscribeChannel(channelName, new DataType(ArrayList.class, "ArrayList<Double>"), channelDescription);
+        describeSubscribeChannelDataType(channelName, new DataType(ArrayList.class, "ArrayList<Double>"), channelDescription);
     }
 
-    protected void describeSubscribeChannel(final String channelName, ArrayList<String> strings, final String channelDescription, StringType... ignore) 
+    public void describeSubscribeChannel(final String channelName, ArrayList<String> strings, final String channelDescription, StringType... ignore) 
     {
-        describeSubscribeChannel(channelName, new DataType(ArrayList.class, "ArrayList<String>"), channelDescription);
+        describeSubscribeChannelDataType(channelName, new DataType(ArrayList.class, "ArrayList<String>"), channelDescription);
     }
 
     
     // MAP
-    protected void describeSubscribeChannel(final String channelName, Map<String, Short> shorts, final String channelDescription, ShortType... ignore) 
+    public void describeSubscribeChannel(final String channelName, Map<String, Short> shorts, final String channelDescription, ShortType... ignore) 
     {
-        describeSubscribeChannel(channelName, new DataType(Map.class, "Map<String, Short>"), channelDescription);
+        describeSubscribeChannelDataType(channelName, new DataType(Map.class, "Map<String, Short>"), channelDescription);
     }
 
-    protected void describeSubscribeChannel(final String channelName, Map<String, Integer> ints, final String channelDescription, IntegerType... ignore) 
+    public void describeSubscribeChannel(final String channelName, Map<String, Integer> ints, final String channelDescription, IntegerType... ignore) 
     {
-        describeSubscribeChannel(channelName, new DataType(Map.class, "Map<String, Integer>"), channelDescription);
+        describeSubscribeChannelDataType(channelName, new DataType(Map.class, "Map<String, Integer>"), channelDescription);
     }
 
-    protected void describeSubscribeChannel(final String channelName, Map<String, Long> longs, final String channelDescription, LongType... ignore) 
+    public void describeSubscribeChannel(final String channelName, Map<String, Long> longs, final String channelDescription, LongType... ignore) 
     {
-        describeSubscribeChannel(channelName, new DataType(Map.class, "Map<String, Long>"), channelDescription);
+        describeSubscribeChannelDataType(channelName, new DataType(Map.class, "Map<String, Long>"), channelDescription);
     }
 
-    protected void describeSubscribeChannel(final String channelName, Map<String, Float> floats, final String channelDescription, FloatType... ignore) 
+    public void describeSubscribeChannel(final String channelName, Map<String, Float> floats, final String channelDescription, FloatType... ignore) 
     {
-        describeSubscribeChannel(channelName, new DataType(Map.class, "Map<String, Float>"), channelDescription);
+        describeSubscribeChannelDataType(channelName, new DataType(Map.class, "Map<String, Float>"), channelDescription);
     }
 
-    protected void describeSubscribeChannel(final String channelName, Map<String, Double> dbs, final String channelDescription, DoubleType... ignore) 
+    public void describeSubscribeChannel(final String channelName, Map<String, Double> dbs, final String channelDescription, DoubleType... ignore) 
     {
-        describeSubscribeChannel(channelName, new DataType(Map.class, "Map<String, Double>"), channelDescription);
+        describeSubscribeChannelDataType(channelName, new DataType(Map.class, "Map<String, Double>"), channelDescription);
     }
 
-    protected void describeSubscribeChannel(final String channelName, Map<String, String> strings, final String channelDescription, StringType... ignore) 
+    public void describeSubscribeChannel(final String channelName, Map<String, String> strings, final String channelDescription, StringType... ignore) 
     {
-        describeSubscribeChannel(channelName, new DataType(Map.class, "Map<String, String>"), channelDescription);
+        describeSubscribeChannelDataType(channelName, new DataType(Map.class, "Map<String, String>"), channelDescription);
     }
 
     public ModuleAnnotation getAnnotations() 

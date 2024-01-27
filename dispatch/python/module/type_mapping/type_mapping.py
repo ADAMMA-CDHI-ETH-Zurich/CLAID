@@ -94,9 +94,11 @@ class TypeMapping:
 
  
         elif issubclass(cls, Message):
+            instance = cls()
             return Mutator(
-                lambda packet, value: TypeMapping.get_proto_codec(value).encode(value, packet.blob_val()),
-                lambda packet, return_value: TypeMapping.get_proto_codec(return_value).decode(packet.blob_val())
+
+                lambda packet, value: packet.blob_val.CopyFrom(TypeMapping.get_proto_codec(value).encode(value)),
+                lambda packet: TypeMapping.get_proto_codec(instance).decode(packet.blob_val)
             )
         else:
             raise Exception("Unsupported type in TypeMapping. Cannot use type \"{}\" to set or get payload of DataPackage.".format(str(cls)))

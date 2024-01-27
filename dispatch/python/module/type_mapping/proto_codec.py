@@ -9,14 +9,14 @@ from logger.logger import Logger
 
 class ProtoCodec:
     def __init__(self, message):
-        self.full_name = message.GetDescriptor().full_name() 
+        self.full_name = message.DESCRIPTOR.full_name 
         self.msg = message
 
     def encode(self, proto_message: Message) -> Blob:
 
         return_blob = Blob()
 
-        name = proto_message.GetDescriptor().full_name()
+        name = proto_message.DESCRIPTOR.full_name
         if name != self.full_name:
             return None
 

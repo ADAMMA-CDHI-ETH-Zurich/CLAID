@@ -9,11 +9,11 @@ import java.io.ObjectOutputStream;
 // CLAID has to perform "above standard" functions (i.e., 
 // functions that are typically not available for regular Android apps, such as disabling or enabling Wifi from the background without user intervention).
 
-// In most cases, CLAIDMightinessConfig.regularConfig() is sufficient and the CLAID App will have as much power as any regular Android app.
+// In most cases, CLAIDSpecialPermissionsConfig.regularConfig() is sufficient and the CLAID App will have as much power as any regular Android app.
 // For some cases, you might require more Power, e.g., to manage the external storage, start activities from the background, disable or enable wifi without user intervention.
 
 
-public class CLAIDMightinessConfig 
+public class CLAIDSpecialPermissionsConfig 
 {
     // Allows the CLAID app to manage all files on the internal storage or external sd card.
     public boolean MANAGE_ALL_STORAGE = false;
@@ -26,9 +26,9 @@ public class CLAIDMightinessConfig
     // are available for device owner apps. Device owner Apps can take major control over the OS.
     public boolean BE_DEVICE_OWNER = false;
 
-    public static CLAIDMightinessConfig almightyCLAID()
+    public static CLAIDSpecialPermissionsConfig almightyCLAID()
     {
-        CLAIDMightinessConfig config = new CLAIDMightinessConfig();
+        CLAIDSpecialPermissionsConfig config = new CLAIDSpecialPermissionsConfig();
         config.MANAGE_ALL_STORAGE = true;
         config.DISABLE_BATTERY_OPTIMIZATIONS = true;
         config.BE_DEVICE_OWNER = true;
@@ -36,9 +36,9 @@ public class CLAIDMightinessConfig
         return config;
     }
     
-    public static CLAIDMightinessConfig regularConfig()
+    public static CLAIDSpecialPermissionsConfig regularConfig()
     {
-        CLAIDMightinessConfig config = new CLAIDMightinessConfig();
+        CLAIDSpecialPermissionsConfig config = new CLAIDSpecialPermissionsConfig();
         config.MANAGE_ALL_STORAGE = false;
         config.DISABLE_BATTERY_OPTIMIZATIONS = false;
         config.BE_DEVICE_OWNER = false;
@@ -46,9 +46,9 @@ public class CLAIDMightinessConfig
         return config;
     }
 
-    public static CLAIDMightinessConfig allStorageAccessConfig()
+    public static CLAIDSpecialPermissionsConfig allStorageAccessConfig()
     {
-        CLAIDMightinessConfig config = new CLAIDMightinessConfig();
+        CLAIDSpecialPermissionsConfig config = new CLAIDSpecialPermissionsConfig();
 
         config.MANAGE_ALL_STORAGE = true;
         config.DISABLE_BATTERY_OPTIMIZATIONS = false;
@@ -57,7 +57,7 @@ public class CLAIDMightinessConfig
         return config;
     }
 
-    public static boolean writeToFile(final String path, CLAIDMightinessConfig config)
+    public static boolean writeToFile(final String path, CLAIDSpecialPermissionsConfig config)
     {
         try {
             FileOutputStream fileOut = new FileOutputStream(path);
@@ -72,13 +72,13 @@ public class CLAIDMightinessConfig
         return true;
     }
 
-    public CLAIDMightinessConfig readFromFile(final String path)
+    public CLAIDSpecialPermissionsConfig readFromFile(final String path)
     {
-        CLAIDMightinessConfig deserialized;
+        CLAIDSpecialPermissionsConfig deserialized;
         try {
             FileInputStream fileIn = new FileInputStream(path);
             ObjectInputStream in = new ObjectInputStream(fileIn);
-            deserialized = (CLAIDMightinessConfig) in.readObject();
+            deserialized = (CLAIDSpecialPermissionsConfig) in.readObject();
             in.close();
             fileIn.close();
             return deserialized;

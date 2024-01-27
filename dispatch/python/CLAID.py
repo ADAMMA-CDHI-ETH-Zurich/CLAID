@@ -1,4 +1,3 @@
-import dispatch.proto.claidconfig_pb2
 import dispatch.proto.sensor_data_types_pb2
 from helpers.c_binding_helpers import strings_to_c_strings, string_to_c_string
 import ctypes
@@ -16,11 +15,12 @@ class CLAID():
 
     
     claid_c_lib = int(0)
-    
-    def __init__(self):
-        self.__handle = 0
-        self.__cpp_runtime_handle = 0
-        self.__started = False
+    claid_c_lib_loaded = False
+
+    @classmethod
+    def __load_claid_library(clz):
+        if CLAID.claid_c_lib_loaded:
+            return
 
         print("Loading CLAID lib")
         print(type(CLAID.claid_c_lib))
@@ -36,8 +36,8 @@ class CLAID():
                 platform_library_extension = ".dylib"
             elif current_os == "Windows":
                 platform_library_extension = ".dll"
-     
-            
+
+
             if platform_library_extension == "":
                 raise Exception("Failed to load CLAID library into Python. Unsupported OS \"{}\". Supported are only Linux, Darwin (macOS) and Windows").format(current_os)
 
@@ -55,10 +55,19 @@ class CLAID():
 
             CLAID.claid_c_lib.load_new_config.restype = ctypes.c_bool
             CLAID.claid_c_lib.load_new_config.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+        CLAID.claid_c_lib_loaded = True
+    
+    def __init__(self):
+        self.__handle = 0
+        self.__cpp_runtime_handle = 0
+        self.__started = False
+
+
 
 
     def startCustomSocket(self, socket_path, config_file_path, host_id, user_id, device_id, module_factory):
-        
+        CLAID.__load_claid_library()
+
         if(self.__started):
             raise Exception("Failed to start CLAID, start was called twice")
 

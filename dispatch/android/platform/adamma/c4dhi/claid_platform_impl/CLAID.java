@@ -25,7 +25,7 @@ import adamma.c4dhi.claid.Module.ModuleFactory;
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid_android.CLAIDServices.ServiceManager;
 import adamma.c4dhi.claid_android.Configuration.CLAIDPersistanceConfig;
-import adamma.c4dhi.claid_android.Configuration.CLAIDMightinessConfig;
+import adamma.c4dhi.claid_android.Configuration.CLAIDSpecialPermissionsConfig;
 import adamma.c4dhi.claid_android.CLAIDServices.CLAIDService;
 import adamma.c4dhi.claid_android.Permissions.*;
 import adamma.c4dhi.claid_android.Receivers.DeviceOwnerReceiver;
@@ -94,17 +94,17 @@ public class CLAID extends JavaCLAIDBase
     // Volatile, as CLAID might only run as long as the App is in the foreground.
     public static boolean start(Context context, final String socketPath, 
         final String configFilePath, final String hostId, final String userId, 
-        final String deviceId, ModuleFactory moduleFactory, CLAIDMightinessConfig mightinessConfig)
+        final String deviceId, ModuleFactory moduleFactory, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
     {
         CLAID.context = context;
     
         String adjustedConfigPath = configFilePath;
 
-        if(mightinessConfig != null)
+        if(specialPermissionsConfig != null)
         {
-            if(!CLAID.grantMightiness(context, mightinessConfig))
+            if(!CLAID.grantSpecialPermissions(context, specialPermissionsConfig))
             {
-                Logger.logWarning("CLAID.start() failed: CLAID.grantMightiness() not successfull.");
+                Logger.logWarning("CLAID.start() failed: CLAID.grantSpecialPermissions() not successfull.");
                 return false;
             }
         }
@@ -142,7 +142,7 @@ public class CLAID extends JavaCLAIDBase
     // Volatile, as CLAID might only run as long as the App is in the foreground.
     public static boolean start(Context context, final String configFilePath, 
         final String hostId, final String userId, final String deviceId, 
-        ModuleFactory moduleFactory, CLAIDMightinessConfig mightinessConfig)
+        ModuleFactory moduleFactory, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
     {
         CLAID.context = context;
 
@@ -152,23 +152,23 @@ public class CLAID extends JavaCLAIDBase
 
         String socketPath = "unix://" + appDataDirPath + "/claid_local.grpc";
 
-        return start(context, socketPath, configFilePath, hostId, userId, deviceId, moduleFactory, mightinessConfig);
+        return start(context, socketPath, configFilePath, hostId, userId, deviceId, moduleFactory, specialPermissionsConfig);
     }
 
     public static boolean startInPersistentService(Context context, final String configFilePath, 
         final String hostId, final String userId, final String deviceId, 
-        PersistentModuleFactory moduleFactory, CLAIDMightinessConfig mightinessConfig, CLAIDPersistanceConfig persistanceConfig)
+        PersistentModuleFactory moduleFactory, CLAIDSpecialPermissionsConfig specialPermissionsConfig, CLAIDPersistanceConfig persistanceConfig)
     {
         String appDataDirPath = getAppDataDirectory(context);
 
         String socketPath = "unix://" + appDataDirPath + "/claid_local.grpc";
 
-        return startInPersistentService(context, socketPath, configFilePath, hostId, userId, deviceId, moduleFactory, mightinessConfig, persistanceConfig);
+        return startInPersistentService(context, socketPath, configFilePath, hostId, userId, deviceId, moduleFactory, specialPermissionsConfig, persistanceConfig);
     }
 
     public static boolean startInPersistentService(Context context, final String socketPath, 
         final String configFilePath, final String hostId, final String userId, 
-        final String deviceId, PersistentModuleFactory moduleFactory, CLAIDMightinessConfig mightinessConfig, CLAIDPersistanceConfig enduranceConfig)
+        final String deviceId, PersistentModuleFactory moduleFactory, CLAIDSpecialPermissionsConfig specialPermissionsConfig, CLAIDPersistanceConfig enduranceConfig)
     {
         if(moduleFactory != CLAID.persistentModuleFactory)
         {
@@ -178,9 +178,9 @@ public class CLAID extends JavaCLAIDBase
       
         CLAID.context = context;
 
-        if(!CLAID.grantMightiness(context, mightinessConfig))
+        if(!CLAID.grantSpecialPermissions(context, specialPermissionsConfig))
         {
-            Logger.logWarning("CLAID.startInPersistentService() failed: CLAID.grantMightiness() not successfull.");
+            Logger.logWarning("CLAID.startInPersistentService() failed: CLAID.grantSpecialPermissions() not successfull.");
             return false;
         }
 
@@ -308,25 +308,25 @@ public class CLAID extends JavaCLAIDBase
         }
     }
 
-    private static boolean grantMightiness(Context context, CLAIDMightinessConfig mightinessConfig)
+    private static boolean grantSpecialPermissions(Context context, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
     {
         Thread thread = new Thread(() -> {
-            if(mightinessConfig.MANAGE_ALL_STORAGE && !CLAID.hasStoragePermission())
+            if(specialPermissionsConfig.MANAGE_ALL_STORAGE && !CLAID.hasStoragePermission())
             {
                 if(!CLAID.requestStoragePermission())
                 {
-                    Logger.logError("CLAID grantMightiness failed. Could not get full storage permissions");
+                    Logger.logError("CLAID grantSpecialPermissions failed. Could not get full storage permissions");
                     System.exit(0);
                 }
             }
 
-            if(mightinessConfig.DISABLE_BATTERY_OPTIMIZATIONS && !CLAID.isBatteryOptimizationDisabled(context))
+            if(specialPermissionsConfig.DISABLE_BATTERY_OPTIMIZATIONS && !CLAID.isBatteryOptimizationDisabled(context))
             {
                 CLAID.requestBatteryOptimizationExemption(context); 
             }
-            Logger.logInfo("Mightiness config: " + mightinessConfig.BE_DEVICE_OWNER);
+            Logger.logInfo("Mightiness config: " + specialPermissionsConfig.BE_DEVICE_OWNER);
 
-            if(mightinessConfig.BE_DEVICE_OWNER && !CLAID.DeviceOwnerFeatures.isDeviceOwner(context))
+            if(specialPermissionsConfig.BE_DEVICE_OWNER && !CLAID.DeviceOwnerFeatures.isDeviceOwner(context))
             {
                 Logger.logInfo("Requesting device ownership");
                 CLAID.DeviceOwnerFeatures.requestDeviceOwnership(context);

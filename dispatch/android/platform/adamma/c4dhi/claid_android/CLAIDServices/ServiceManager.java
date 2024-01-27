@@ -31,7 +31,7 @@ public class ServiceManager
                             "Required permissions were not granted.");
         }
 
-        final String restartDescriptionPath = CLAID.getAppDataDirectory(context) + "/" + "claid_service_restart_description.dat";
+        final String restartDescriptionPath = CLAID.getMediaDirPath(context) + "/" + "claid_service_restart_description.dat";
         ServiceRestartDescription description = new ServiceRestartDescription();
 
         description.put("serviceType", MaximumPermissionsPerpetualService.class.getName());

@@ -83,5 +83,9 @@ public class Channel<T>
         this.publisher.post(data, timestamp);
     }
 
+    public String getChannelId() {
+        return this.channelId;
+    }
+
 
 }

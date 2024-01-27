@@ -1,6 +1,5 @@
 import ctypes
 import sys
-import dispatch.proto.claidconfig_pb2
 import dispatch.proto.sensor_data_types_pb2
 import ctypes
 import pathlib
@@ -29,7 +28,10 @@ from module.module import Module
 
 # dispatcher = ModuleDispatcher("unix:///tmp/test.grpc")
 
+import google.protobuf as protobuf
 from datetime import datetime, timedelta
+
+from dispatch.proto.claidservice_pb2 import RemoteClientInfo
 
 class TestModule(Module):
     def __init__(self):
@@ -45,13 +47,15 @@ class TestModule(Module):
 
     def initialize(self, properties):
         Logger.log_info("TestModule Initialize")
-        self.output_channel = self.publish("TestChannel", int(0))
+        self.output_channel = self.publish("TestChannel", RemoteClientInfo())
         self.ctr = 0
         self.register_periodic_function("Test", self.periodic_function, timedelta(milliseconds=1000))
 
     def periodic_function(self):
         Logger.log_info("PeriodicFunction")
-        self.output_channel.post(self.ctr)
+        remote_client_info = RemoteClientInfo()
+        remote_client_info.host = "42 " + str(self.ctr)
+        self.output_channel.post(remote_client_info)
         self.ctr+=1
 
 
@@ -62,7 +66,7 @@ class TestModule2(Module):
 
     def initialize(self, properties):
         Logger.log_info("TestModule Initialize")
-        self.input_channel = self.subscribe("TestChannel", int(0), self.on_data)
+        self.input_channel = self.subscribe("TestChannel", RemoteClientInfo(), self.on_data)
         self.ctr = 0
 
     def on_data(self, data):
@@ -70,18 +74,17 @@ class TestModule2(Module):
         print("Data", data.get_data())
 
 module_factory = ModuleFactory()
-# module_factory.register_module(TestModule)
-# module_factory.register_module(TestModule2)
+module_factory.register_module(TestModule)
+module_factory.register_module(TestModule2)
 claid = CLAID()
-claid.start("/Users/planger/Development/ModuleAPIV2/dispatch/python/test_config.json", "test_client", "user", "device", module_factory)
+claid.start("/home/lastchance/Desktop/ModuleAPIV2/dispatch/python/test_config.json", "test_client", "user", "device", module_factory)
 
 claid.update_module_annotations()
 while(not claid.are_module_annotations_updated()):
     pass
 
 print(claid.get_module_annotations())
-while(True):
-    pass
+
 # socket = "unix:///tmp/claid_socket.grpc".encode('utf-8')
 # config = "/Users/planger/Development/ModuleAPIV2/dispatch/test/remote_dispatching_test.json".encode('utf-8')
 # client = "test_client".encode('utf-8')

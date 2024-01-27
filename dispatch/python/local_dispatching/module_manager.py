@@ -8,7 +8,6 @@ import time
 from module.thread_safe_channel import ThreadSafeChannel
 from dispatch.proto.claidservice_pb2 import * 
 
-from dispatch.proto.claidconfig_pb2 import *
 
 class ModuleManager():
 
@@ -80,10 +79,13 @@ class ModuleManager():
         return module_channels
 
     def start(self):
+        print("ModuleManager1")
         print(self.__module_factory.get_registered_module_classes())
+        print("ModuleManager2")
 
         registered_module_classes = self.__module_factory.get_registered_module_classes()
         module_annotations = dict()
+        print("ModuleManager3")
 
         for registered_module_class in registered_module_classes:
 
@@ -93,6 +95,7 @@ class ModuleManager():
 
             if(has_annotate_module_function):
                 module_annotations[registered_module_class] = module_annotator.get_annotations()
+        print("ModuleManager4")
 
         module_list =  self.__module_dispatcher.get_module_list(registered_module_classes, module_annotations)
         Logger.log_info(f"Received ModuleListResponse: {module_list}")
@@ -100,10 +103,12 @@ class ModuleManager():
             Logger.log_fatal("ModuleDispatcher: Failed to instantiate Modules.")
             return False
 
+        print("ModuleManager5")
 
         if not self.initialize_modules(module_list, self.__channel_subscriber_publisher):
             Logger.log_fatal("Failed to initialize Modules.")
             return False
+        print("ModuleManager6")
 
         example_packages_of_modules = self.get_template_packages_of_modules()
         if not  self.__module_dispatcher.init_runtime(example_packages_of_modules):
