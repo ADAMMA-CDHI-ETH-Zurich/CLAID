@@ -71,4 +71,14 @@ extern "C"
         return stdStringToJString(env, socketPath);
     }
 
+
+    JNIEXPORT jboolean JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeLoadNewConfig
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle, jstring configPath) {
+
+        void* nativeHandle = reinterpret_cast<void*>(handle);
+
+        std::string stdConfigPath = jniStringToStdString(env, configPath);
+        return load_new_config(nativeHandle, stdConfigPath.c_str());
+    }
+
 }

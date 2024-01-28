@@ -1,0 +1,20 @@
+{
+	"hosts": [{
+			"hostname": "test_client",
+			"type": "android",
+			"is_server": false,
+			"modules": [
+				{
+					"type": "MyInjectedModule",
+					"id": "MyInjectedModule",
+					"input_channels": [],
+					"output_channels": ["TestChannel"],
+					"properties": {
+						
+					}
+				}
+				
+            ]
+		}
+	]
+}
