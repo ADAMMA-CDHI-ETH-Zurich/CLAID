@@ -48,3 +48,8 @@ class ModuleFactory:
 
     def get_registered_module_classes(self):
         return list(self.registered_module_classes.keys())
+    
+    def print_registered_modules(self):
+        Logger.log_info("Registered Module classes: ")
+        for key in self.registered_module_classes:
+            Logger.log_info(key)

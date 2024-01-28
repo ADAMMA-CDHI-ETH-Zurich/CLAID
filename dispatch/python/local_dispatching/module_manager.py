@@ -2,18 +2,22 @@ from module.module_factory import ModuleFactory
 from logger.logger import Logger
 from module.channel_subscriber_publisher import ChannelSubscriberPublisher
 from module.module_annotator import ModuleAnnotator
+from module.thread_safe_channel import ThreadSafeChannel
+from local_dispatching.module_injector import ModuleInjector
+from dispatch.proto.claidservice_pb2 import * 
+
 from threading import Thread
 import time
 
-from module.thread_safe_channel import ThreadSafeChannel
-from dispatch.proto.claidservice_pb2 import * 
-
-
 class ModuleManager():
 
-    def __init__(self, module_dispatcher, module_factory):
+    def __init__(self, module_dispatcher, module_factory, modules_injection_storage_path = None):
         self.__module_dispatcher = module_dispatcher
         self.__module_factory = module_factory
+        # In Python, it is possible to add Modules at runtime.
+
+        if modules_injection_storage_path is not None:
+            self.__module_injector = ModuleInjector(modules_injection_storage_path, self.__module_factory)
         self.__running_modules = dict()    
 
         # self.__from_module_dispatcher_queue = ThreadSafeChannel()
@@ -237,7 +241,7 @@ class ModuleManager():
                     if data_package is not None:
                         self.on_data_package_received_from_module_dispatcher(data_package)
                     else:
-                        print("Read from modules null")
+                        pass
             except Exception as e:
                 print(e)
         
@@ -286,3 +290,23 @@ class ModuleManager():
     
     def get_module_annotations(self):
         return self.__module_annotations
+    
+    # dict[str, List]
+    # dict(code, module_names)
+    def inject_new_modules(self, module_descrption: dict):
+
+        if self.__module_injector is None:
+            return False
+
+        for code_name in module_descrption:
+            code, module_names = module_descrption[code_name]
+            if not self.__module_injector.inject_claid_modules_from_python_file(code_name, code, module_names):
+                return False
+            
+        
+        self.__module_factory = self.__module_injector.rebuild_get_module_factory()
+        self.__module_factory.print_registered_modules()
+
+        return True
+
+

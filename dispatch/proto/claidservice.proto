@@ -267,7 +267,7 @@ enum Runtime {
 
 enum LogMessageSeverityLevel
 {
-  DEBUG_LOG = 0;
+  DEBUG = 0;
   INFO = 1;
   WARNING = 2;
   ERROR = 3;

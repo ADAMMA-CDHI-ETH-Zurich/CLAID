@@ -57,11 +57,11 @@ class CLAID():
             CLAID.claid_c_lib.load_new_config.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
         CLAID.claid_c_lib_loaded = True
     
-    def __init__(self):
+    def __init__(self, module_injection_storage_path = None):
         self.__handle = 0
         self.__cpp_runtime_handle = 0
         self.__started = False
-
+        self.module_injection_storage_path = module_injection_storage_path
 
 
 
@@ -103,7 +103,7 @@ class CLAID():
 
         self.__module_dispatcher = ModuleDispatcher(socket_path)
 
-        self.__module_manager = ModuleManager(self.__module_dispatcher, module_factory)
+        self.__module_manager = ModuleManager(self.__module_dispatcher, module_factory, self.module_injection_storage_path)
         print("starting Python runtime")
 
         return self.__module_manager.start()
@@ -125,3 +125,6 @@ class CLAID():
     
     def get_module_annotations(self):
         return self.__module_manager.get_module_annotations()
+    
+    def inject_new_modules(self, module_descriptions: dict):
+        return self.__module_manager.inject_new_modules(module_descriptions)

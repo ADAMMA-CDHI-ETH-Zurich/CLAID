@@ -1,4 +1,4 @@
-from logger.severity_level import SeverityLevel
+from dispatch.proto.claidservice_pb2 import LogMessageSeverityLevel
 
 from datetime import datetime
 import sys
@@ -7,28 +7,32 @@ import sys
 class Logger:
     @staticmethod
     def log(level, message):
-        output = f"[{Logger.get_time_string()} | CLAID - {level.value}] {message}\n"
+        output = f"[{Logger.get_time_string()} | CLAID - {LogMessageSeverityLevel.Name(level)}] {message}\n"
 
-        if level in {SeverityLevel.ERROR, SeverityLevel.FATAL}:
+        if level in {LogMessageSeverityLevel.ERROR, LogMessageSeverityLevel.FATAL}:
             print(output, file=sys.stderr)
         else:
             print(output)
 
     @staticmethod
+    def log_debug(message):
+        Logger.log(LogMessageSeverityLevel.DEBUG, message)
+
+    @staticmethod
     def log_info(message):
-        Logger.log(SeverityLevel.INFO, message)
+        Logger.log(LogMessageSeverityLevel.INFO, message)
 
     @staticmethod
     def log_warning(message):
-        Logger.log(SeverityLevel.WARNING, message)
+        Logger.log(LogMessageSeverityLevel.WARNING, message)
 
     @staticmethod
     def log_error(message):
-        Logger.log(SeverityLevel.ERROR, message)
+        Logger.log(LogMessageSeverityLevel.ERROR, message)
 
     @staticmethod
     def log_fatal(message):
-        Logger.log(SeverityLevel.FATAL, message)
+        Logger.log(LogMessageSeverityLevel.FATAL, message)
 
     @staticmethod
     def get_time_string():

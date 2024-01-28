@@ -150,6 +150,34 @@ void claid::Logger::log(const LogMessageSeverityLevel severityLevel, const char*
     }
 }
 
+
+void claid::Logger::logDebug(const char* format, ...)
+{
+	va_list args, args_copy ;
+    va_start( args, format ) ;
+    va_copy( args_copy, args ) ;
+	
+    const auto sz = std::vsnprintf( nullptr, 0, format, args ) + 1 ;
+
+    try
+    {
+        std::string result( sz, ' ' ) ;
+        std::vsnprintf( &result.front(), sz, format, args_copy ) ;
+
+		claid::Logger::log(LogMessageSeverityLevel::DEBUG, result, LogMessageEntityType::MIDDLEWARE, "", Runtime::RUNTIME_CPP);
+
+        va_end(args_copy) ;
+        va_end(args) ;
+    }
+
+    catch( const std::bad_alloc& )
+    {
+        va_end(args_copy) ;
+        va_end(args) ;
+        throw ;
+    }
+}
+
 void claid::Logger::logWarning(const char* format, ...)
 {
 	va_list args, args_copy ;

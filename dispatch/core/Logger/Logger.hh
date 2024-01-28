@@ -70,6 +70,7 @@ namespace claid
 
 			static void log(const LogMessageSeverityLevel severityLevel, const std::string& message, const LogMessageEntityType entityType, const std::string entityName, Runtime runtime);
 			static void log(const LogMessageSeverityLevel severityLevel, const char* format, ...);
+			static void logDebug(const char* format, ...);
 			static void logInfo(const char* format, ...);
 			static void logWarning(const char* format, ...);
 			static void logError(const char* format, ...);
