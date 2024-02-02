@@ -113,8 +113,8 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
 
         // If the type was already set and the type doesn't match we return an error.
         if ((entry->payloadType != DataPackage::PAYLOAD_ONEOF_NOT_SET) && (entry->payloadType != chanPkt.payload_oneof_case())) {
-            return Status(grpc::INVALID_ARGUMENT, "Invalid packet type for channel '" +
-                                                    chanPkt.channel() + "' : " + messageToString(chanPkt));
+            return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid packet type for channel '",chanPkt.channel(), "' : ",
+              messageToString(chanPkt), "Payload type is ", entry->payloadType, " but expected ", chanPkt.payload_oneof_case()));
         }
 
         // Mark the source / target as matched by this module.
