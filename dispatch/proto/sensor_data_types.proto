@@ -96,3 +96,4 @@ message BatteryData
 {
     repeated BatterySample samples = 1;
 }
+

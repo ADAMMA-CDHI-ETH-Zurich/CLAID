@@ -16,7 +16,6 @@ using claidservice::NumberMap;
 using claidservice::StringMap;
 using claidservice::NumberArray;
 using claidservice::StringArray;
-using claidservice::ControlPackage;
 
 namespace claid {
 
@@ -225,12 +224,6 @@ namespace claid {
             );
         }
 
-        template <typename T>
-        static std::shared_ptr<google::protobuf::Message> convertToMessage(const T& payload) 
-        {
-            std::shared_ptr<google::protobuf::Message> msg = std::make_shared<T>(payload);
-            return msg;
-        }
 
         template<typename T>
         typename std::enable_if<std::is_same<T, AnyProtoType>::value, Mutator<T>>::type
@@ -247,53 +240,14 @@ namespace claid {
                         throw std::invalid_argument("Failed to get data of type AnyProtoMessage from DataPacakge. Value of AnyProtoMessage is nullptr");
                     }
 
-                    if (auto controlVal = std::dynamic_pointer_cast<const claidservice::ControlPackage>(message)) 
+                    ProtoCodec& protoCodec = getProtoCodec(message.get());
+
+                    Blob& blob = *packet.mutable_blob_val();
+
+                    if(!protoCodec.encode(value.getMessage().get(), blob))
                     {
-                    // Handle ControlVal case
-                    packet.set_allocated_control_val(new ControlPackage(*controlVal));
-                    std::cout << "Handling ControlVal case" << std::endl;
-                    } 
-                    // else if (auto numberVal = std::dynamic_pointer_cast<claidservice::NumberVal>(value)) 
-                    // {
-                    //     packet.set_allocated_number_val(new NumberVal(*numberVal));
-                    // } 
-                    // else if (auto stringVal = std::dynamic_pointer_cast<claidservice::StringVal>(value)) 
-                    // {
-                    //     packet.set_allocated_string_val(new StringVal(*stringVal));
-                    // } 
-                    // else if (auto boolVal = std::dynamic_pointer_cast<claidservice::BoolVal>(value))
-                    // {
-                    //     packet.set_allocated_bool_val(new BoolVal(*boolVal));
-                    // } 
-                    else if (auto numberArrayVal = std::dynamic_pointer_cast<const NumberArray>(message)) 
-                    {
-                        packet.set_allocated_number_array_val(new NumberArray(*numberArrayVal));
-                    } 
-                    else if (auto stringArrayVal = std::dynamic_pointer_cast<const StringArray>(message)) 
-                    {
-                        packet.set_allocated_string_array_val(new StringArray(*stringArrayVal));
-                    } 
-                    else if (auto numberMapVal = std::dynamic_pointer_cast<const NumberMap>(message)) 
-                    {
-                        packet.set_allocated_number_map(new NumberMap(*numberMapVal));
-                    } 
-                    else if (auto stringMapVal = std::dynamic_pointer_cast<const StringMap>(message)) 
-                    {
-                        packet.set_allocated_string_map(new StringMap(*stringMapVal));
+                        throw std::invalid_argument("ProtoCodec.encode failed for AnyProtoType");
                     }
-                    else
-                    {
-                        ProtoCodec& protoCodec = getProtoCodec(message.get());
-
-                        Blob& blob = *packet.mutable_blob_val();
-
-                        if(!protoCodec.encode(value.getMessage().get(), blob))
-                        {
-                            throw std::invalid_argument("ProtoCodec.encode failed for AnyProtoType");
-                        }
-                    }
-
-                    
 
                 },
                 [](const DataPackage& packet, T& returnValue) 
@@ -303,54 +257,8 @@ namespace claid {
 
                     if(packet.payload_oneof_case() != DataPackage::PayloadOneofCase::kBlobVal)
                     {
-                        std::shared_ptr<google::protobuf::Message> message;
-                         switch (packet.payload_oneof_case()) 
-                         {
-                            case DataPackage::kControlVal: {
-                                message = convertToMessage(packet.control_val());
-                                break;
-                            }
-                            case DataPackage::kNumberVal: {
-                                Logger::logError("Error, number val currently not supported by AnyProtoType.");
-                                throw std::invalid_argument("ProtoCodec.decode failed for AnyProtoType, number val currently not supported");
-                                //message = convertToMessage(packet.number_val());
-                                break;
-                            }
-                            case DataPackage::kStringVal: {
-                                Logger::logError("Error, string val currently not supported by AnyProtoType.");
-                                throw std::invalid_argument("ProtoCodec.decode failed for AnyProtoType, string val currently not supported");
-                                //message = convertToMessage(packet.string_val());
-                                break;
-                            }
-                            case DataPackage::kBoolVal: {
-                                Logger::logError("Error, bool val currently not supported by AnyProtoType.");
-                                throw std::invalid_argument("ProtoCodec.decode failed for AnyProtoType, bool val currently not supported");
-                                //message = convertToMessage(packet.bool_val());
-                                break;
-                            }
-                            case DataPackage::kNumberArrayVal: {
-                                message = convertToMessage(packet.number_array_val());
-                                break;
-                            }
-                            case DataPackage::kStringArrayVal: {
-                                message = convertToMessage(packet.string_array_val());
-                                break;
-                            }
-                            case DataPackage::kNumberMap: {
-                                message = convertToMessage(packet.number_map());
-                                break;
-                            }
-                            case DataPackage::kStringMap: {
-                                message = convertToMessage(packet.string_map());
-                                break;
-                            }
-                            default: {
-                                // Handle unknown type or add appropriate error handling
-                                break;
-                            }
-                        }
-                        returnValue.setMessage(message);
-                        return;
+                        Logger::logError("Invalid package, payload type mismatch! Expected \"%d\" but got \"%d\"", DataPackage::PayloadOneofCase::kBlobVal, packet.payload_oneof_case());
+                        throw std::invalid_argument("ProtoCodec.decode failed. Wrong payload type.");
                     }
 
                     const Blob& blob = packet.blob_val();
