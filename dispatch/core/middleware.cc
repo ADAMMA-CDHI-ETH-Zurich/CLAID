@@ -468,6 +468,11 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
             this->forwardControlPackageToTargetRuntime(controlPackage);
             break;
         }
+        default:
+        {
+            Logger::logWarning("Middleware received unsupported control package %s", CtrlType_Name(controlPackage->control_val().ctrl_type()));
+        }
+        break;
 
     }
 }

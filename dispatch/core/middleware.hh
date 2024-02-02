@@ -54,11 +54,11 @@ namespace claid
             bool running = false;
 
             bool waitingForAllRuntimesToUnloadModules = false;
-            int numberOfRuntimesThatUnloadedModules = 0;
+            size_t numberOfRuntimesThatUnloadedModules = 0;
             bool modulesUnloaded = false;
 
             bool waitingForAllRuntimesToRestart = false;
-            int numberOfRuntimesThatRestarted = 0;
+            size_t numberOfRuntimesThatRestarted = 0;
 
 
             // TODO: Incorporate all variables into the code if necessary.
