@@ -31,7 +31,7 @@ public class ServiceManager
                             "Required permissions were not granted.");
         }
 
-        final String restartDescriptionPath = CLAID.getMediaDirPath(context) + "/" + "claid_service_restart_description.dat";
+        final String restartDescriptionPath = CLAID.getAppDataDirectory(context) + "/" + "claid_service_restart_description.dat";
         ServiceRestartDescription description = new ServiceRestartDescription();
 
         description.put("serviceType", MaximumPermissionsPerpetualService.class.getName());
@@ -115,7 +115,7 @@ public class ServiceManager
 
         if(description == null)
         {
-            CLAID.onUnrecoverableException("Failed restart MaximumPermissionsPerpetualService. Failed not load restart description.");
+            CLAID.onUnrecoverableException("Failed restart MaximumPermissionsPerpetualService. Failed to load restart description.");
         }
 
         Intent serviceIntent = new Intent(context, MaximumPermissionsPerpetualService.class);

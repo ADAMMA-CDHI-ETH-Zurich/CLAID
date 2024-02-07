@@ -97,7 +97,7 @@ namespace claid
                 std::stringstream ss;
                 ss << status;
                 this->lastError = status;
-                Logger::logError("MasterRouter: Failed to route package, got error: %s", ss.str().c_str());
+                Logger::logError("MasterRouter: Failed to route package on channel \"%s\", got error: %s", package->channel().c_str(), ss.str().c_str());
                 continue;
             }
 
@@ -107,13 +107,13 @@ namespace claid
                 std::stringstream ss;
                 ss << status;
                 this->lastError = status;
-                Logger::logError("MasterRouter: Failed to route package, got error: %s", ss.str().c_str());
+                Logger::logError("MasterRouter: Failed to route package on channel \"%s\", got error: %s", package->channel().c_str(), ss.str().c_str());
                 continue;
             }
 
             if(!package)
             {
-                Logger::logError("MasterRouter: Failed to route package, package is null.");
+                Logger::logError("MasterRouter: Failed to route package on channel \"%s\", package is null.", package->channel().c_str());
                 continue;
             }
 
@@ -123,7 +123,7 @@ namespace claid
                 std::stringstream ss;
                 ss << status;
                 this->lastError = status;
-                Logger::logError("MasterRouter: Failed to route package, got error: %s", ss.str().c_str());
+                Logger::logError("MasterRouter: Failed to route on channel \"%s\" package, got error: %s", package->channel().c_str(), ss.str().c_str());
                 continue;
             }
         }
