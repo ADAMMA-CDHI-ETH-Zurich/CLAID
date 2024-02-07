@@ -164,7 +164,7 @@ void claid::Logger::logDebug(const char* format, ...)
         std::string result( sz, ' ' ) ;
         std::vsnprintf( &result.front(), sz, format, args_copy ) ;
 
-		claid::Logger::log(LogMessageSeverityLevel::DEBUG, result, LogMessageEntityType::MIDDLEWARE, "", Runtime::RUNTIME_CPP);
+		claid::Logger::log(LogMessageSeverityLevel::DEBUG_VERBOSE, result, LogMessageEntityType::MIDDLEWARE, "", Runtime::RUNTIME_CPP);
 
         va_end(args_copy) ;
         va_end(args) ;

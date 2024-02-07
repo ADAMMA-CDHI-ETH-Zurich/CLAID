@@ -59,7 +59,7 @@ namespace claid
     void Module::moduleDebug(const std::string& warning) const
     {
         std::string warningMsg = "Module \"" + id + "\": " + warning;
-        Logger::log(LogMessageSeverityLevel::DEBUG, warningMsg, LogMessageEntityType::MODULE, this->id, Runtime::RUNTIME_CPP);
+        Logger::log(LogMessageSeverityLevel::DEBUG_VERBOSE, warningMsg, LogMessageEntityType::MODULE, this->id, Runtime::RUNTIME_CPP);
     }
 
     void Module::moduleFatal(absl::Status error) const

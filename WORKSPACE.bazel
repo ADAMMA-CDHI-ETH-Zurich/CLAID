@@ -27,14 +27,6 @@ http_archive(
 )
 
 
-android_sdk_repository(
-    name = "androidsdk", # Required. Name *must* be "androidsdk".
-)
-
-android_ndk_repository(
-    name = "androidndk", # Required. Name *must* be "androidndk".
-)
-
 
 
 
@@ -112,3 +104,10 @@ local_repository(
     path = "../claid_external/tensorflow",
 )
 
+android_sdk_repository(
+        name = "androidsdk", # Required. Name *must* be "androidsdk".
+    )
+
+android_ndk_repository(
+        name = "androidndk", # Required. Name *must* be "androidndk".
+    )

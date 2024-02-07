@@ -1,9 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
 
-
-
-
 cc_library(
     name = "android_claid_cc",
     srcs = ["java_capi.cpp"],
