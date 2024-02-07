@@ -15,7 +15,8 @@ class BinarySerializer : public DataSerializer
 
     private:    
         std::string currentFilePath;
-        std::shared_ptr<google::protobuf::Message> data;
+        std::ofstream outputFile;
+        //std::shared_ptr<google::protobuf::Message> data;
 
 };
 

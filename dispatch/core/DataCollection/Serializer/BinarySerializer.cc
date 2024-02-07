@@ -10,50 +10,53 @@ absl::Status BinarySerializer::beginNewFile(const std::string& filePath)
 {
     Logger::logInfo("BinarySerializer beginning file %s", filePath.c_str());
     this->currentFilePath = filePath;
-    this->data = nullptr;
-    return absl::OkStatus();
-};
-
-absl::Status BinarySerializer::finishFile()
-{
-    if(this->data == nullptr)
-    {
-        return absl::InvalidArgumentError("BinarySerializer failed to finish file. Current data is null.");
-    }
-
-    std::ofstream outputFile(this->currentFilePath, std::ios::app);
+    this->outputFile = std::ofstream(this->currentFilePath, std::ios::app | std::ios::binary);
 
     if(!outputFile.is_open())
     {
         return absl::UnavailableError(absl::StrCat("BinarySerializer failed to open file \"", this->currentFilePath, "\" for writing"));
     }
+    // this->data = nullptr;
 
-    std::string serializedData = this->data->SerializeAsString();
+    return absl::OkStatus();
+};
 
-    outputFile.write(serializedData.c_str(), serializedData.size());
+absl::Status BinarySerializer::finishFile()
+{
+    // if(this->data == nullptr)
+    // {
+    //     return absl::InvalidArgumentError("BinarySerializer failed to finish file. Current data is null.");
+    // }
+
+    this->outputFile.close();
+
     return absl::OkStatus();
 }
 
 absl::Status BinarySerializer::onNewData(std::shared_ptr<const google::protobuf::Message> newData)
 {
-    if(this->data == nullptr)
-    {
-        google::protobuf::Message* msg = newData->New();
-        this->data = std::shared_ptr<google::protobuf::Message>(msg);
+    // if(this->data == nullptr)
+    // {
+    //     google::protobuf::Message* msg = newData->New();
+    //     this->data = std::shared_ptr<google::protobuf::Message>(msg);
     
-        // Merge the fields from the original message into the new message
-        this->data->MergeFrom(*newData);
-    }
-    else
-    {
-        absl::Status status = this->mergeMessages(*this->data, *newData);
+    //     // Merge the fields from the original message into the new message
+    //     this->data->MergeFrom(*newData);
+    // }
+    // else
+    // {
+    //     absl::Status status = this->mergeMessages(*this->data, *newData);
 
-        if(!status.ok())
-        {
-            return status;
-        }
-    }
+    //     if(!status.ok())
+    //     {
+    //         return status;
+    //     }
+    // }
 
+
+    std::string serializedData = newData->SerializeAsString();
+    this->outputFile.write(serializedData.c_str(), serializedData.size());
+    this->outputFile.flush();
     return absl::OkStatus();
 }
 
