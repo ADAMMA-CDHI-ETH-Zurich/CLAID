@@ -82,7 +82,10 @@ class ModuleManager {
     // }
 
     // Get the list of modules and instantiate + initialize them.
+    print("Dart ModuleManager getting module list ${_factories.keys.toList()}");
     final modDesc = await _dispatcher.getModuleList(_factories.keys.toList());
+    print("Dart ModuleManager got module list ${modDesc}");
+
     _instantiateModules(modDesc);
     _initializeModules();
     _outputCtrl = StreamController<DataPackage>(
@@ -124,6 +127,7 @@ class ModuleManager {
 
   void _instantiateModules(List<ModDescriptor> modDesc) {
     for (var mod in modDesc) {
+      print("Dart ModuleManager instantiating Module ${mod}");
       final fn = _factories[mod.moduleClass];
       if (fn == null) {
         
@@ -135,14 +139,19 @@ class ModuleManager {
       _moduleMap[mod.moduleId] =
           ModuleState(instance, mod.properties, Lifecycle.created);
       instance.moduleId = mod.moduleId;
+      print("Dart ModuleManager instantiated Module ${mod}");
+
     }
   }
 
   void _initializeModules() {
     // If the dispatcher is mocked
+      print("Dart ModuleManager initializing modules ");
+
     var moduleOrder = _dispatcher.getModuleOrder(_moduleMap.keys.toList());
     for (var key in moduleOrder) {
       final modState = _moduleMap[key]!;
+      print("Dart ModuleManager initializing module ${modState} ");
       modState.lifecycle = Lifecycle.initializing;
       modState.instance.initialize(modState.props);
       modState.lifecycle = Lifecycle.initialized;
