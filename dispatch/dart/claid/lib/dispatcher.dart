@@ -141,7 +141,7 @@ class ModuleDispatcher {
           throw StreamingError(err.message, err.cancel);
         }
         // TODO: convert to log message
-        print('Got error: ${err.message}. Continuing.');
+        print('Dart ModuleDispatcher Got error: ${err.message}. Continuing.');
         continue;
       }
 
