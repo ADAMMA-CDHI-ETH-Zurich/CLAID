@@ -185,21 +185,19 @@ Status ServiceImpl::GetModuleList(ServerContext* context,
     // }
 
     set<string> supportedModClasses;
+    std::cout << "CLAID LOCAL DISPATCHER 1" << std::endl << std::flush;
+    Logger::logInfo("CLAID local dispatcher get module list 1"); 
+
     // Register the runtime
     for(auto& it : req->supported_module_classes()) {
         // Look up the module class
         auto rt = moduleTable.moduleClassRuntimeMap[it];
+        Logger::logInfo("CLAID local dispatcher get module list %s", it.c_str());
 
         // The module class was already registered for this runtime
         // This is a no-op.
         if (rt != Runtime::RUNTIME_UNSPECIFIED && rt != req->runtime()) {
             return Status(grpc::INVALID_ARGUMENT, "Attempted redefiniton of the runtime for a module class");
-        }
-
-
-        if (rt == req->runtime()) {
-            supportedModClasses.insert(it);
-            continue;
         }
 
         
@@ -212,6 +210,7 @@ Status ServiceImpl::GetModuleList(ServerContext* context,
     // Iterate over the needed modules and only include the module classes
     // that are supported by the caller.
     for(auto it : moduleTable.moduleToClassMap) {
+        Logger::logInfo("CLAID local dispatcher get module list %s %s", it.first.c_str(), it.second.c_str());
         if (supportedModClasses.find(it.second) != supportedModClasses.end()) {
             auto desc = resp->add_descriptors();
             desc->set_module_id(it.first);

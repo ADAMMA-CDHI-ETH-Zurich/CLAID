@@ -15,8 +15,7 @@ absl::Status JSONSerializer::beginNewFile(const std::string& filePath)
     {
         return absl::UnavailableError(absl::StrCat("JSONSerializer failed to open file \"", this->currentFilePath, "\" for writing"));
     }
-    // Begin object array
-    this->outputFile << "[\n";
+
     // this->data = nullptr;
     return absl::OkStatus();
 };
@@ -28,10 +27,6 @@ absl::Status JSONSerializer::finishFile()
     //     return absl::InvalidArgumentError("JSONSerializer failed to finish file. Current data is null.");
     // }
 
-
-    
-    // end object array
-    this->outputFile << "]";
 
     this->outputFile.close();
     return absl::OkStatus();
@@ -64,7 +59,7 @@ absl::Status JSONSerializer::onNewData(std::shared_ptr<const google::protobuf::M
     options.preserve_proto_field_names = true;
     absl::Status status = MessageToJsonString(*newData, &jsonOutput, options);
 
-    jsonOutput += ",\n";
+    jsonOutput += "\n";
     outputFile << jsonOutput;
     this->outputFile.flush();
 
