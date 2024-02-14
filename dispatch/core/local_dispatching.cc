@@ -199,10 +199,6 @@ Status ServiceImpl::GetModuleList(ServerContext* context,
         if (rt != Runtime::RUNTIME_UNSPECIFIED && rt != req->runtime()) {
             return Status(grpc::INVALID_ARGUMENT, "Attempted redefiniton of the runtime for a module class");
         }
-<<<<<<< HEAD
-
-=======
->>>>>>> c4396e0eb5f4f90afb852ecfd3a8ed5d18a05085
         
         moduleTable.moduleClassRuntimeMap[it] = req->runtime();
         supportedModClasses.insert(it);
