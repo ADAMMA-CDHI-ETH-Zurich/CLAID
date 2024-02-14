@@ -195,13 +195,6 @@ Status ServiceImpl::GetModuleList(ServerContext* context,
         if (rt != Runtime::RUNTIME_UNSPECIFIED && rt != req->runtime()) {
             return Status(grpc::INVALID_ARGUMENT, "Attempted redefiniton of the runtime for a module class");
         }
-
-
-        if (rt == req->runtime()) {
-            supportedModClasses.insert(it);
-            continue;
-        }
-
         
         moduleTable.moduleClassRuntimeMap[it] = req->runtime();
         supportedModClasses.insert(it);
@@ -333,7 +326,7 @@ RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& s
 
     // Make sure we got a control package with a CTRL_RUNTIME_PING message.
     if (!validCtrlRuntimePingPkt(pkt)) {
-        status = Status(grpc::INVALID_ARGUMENT, "Invalid control type or unspecified runtime");
+        status = Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid control type or unspecified runtime %s %s", Runtime_Name(pkt.control_val().runtime()).c_str(), CtrlType_Name(pkt.control_val().ctrl_type())).c_str());
         return nullptr;
     }
 
