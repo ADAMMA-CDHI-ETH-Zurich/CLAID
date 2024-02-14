@@ -532,6 +532,7 @@ public abstract class Module
 
         FunctionRunnable runnable = new FunctionRunnable(function, new ScheduleOnce(dateTime));
         timers.put(name, runnable);
+        this.runnableDispatcher.addRunnable(runnable);
     }
 
     private void unregisterAllPeriodicFunctions()
