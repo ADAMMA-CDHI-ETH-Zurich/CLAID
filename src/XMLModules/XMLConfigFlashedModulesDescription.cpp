@@ -1,3 +1,0 @@
-#include "XMLModules/XMLConfigFlashedModulesDescription.hpp"
-
-REGISTER_SERIALIZATION(claid::XMLConfigFlashedModulesDescription)

@@ -73,9 +73,9 @@ class TestModule2(Module):
         
         print("Data", data.get_data())
 
-module_factory = ModuleFactory()
 module_factory.register_module(TestModule)
 module_factory.register_module(TestModule2)
+module_factory = ModuleFactory()
 claid = CLAID()
 claid.start("/home/lastchance/Desktop/ModuleAPIV2/dispatch/python/test_config.json", "test_client", "user", "device", module_factory)
 

@@ -10,7 +10,7 @@ from local_dispatching.module_manager import ModuleManager
 from module.module_factory import ModuleFactory
 
 import platform
-import asyncio
+import os
 class CLAID():
 
     
@@ -42,6 +42,9 @@ class CLAID():
                 raise Exception("Failed to load CLAID library into Python. Unsupported OS \"{}\". Supported are only Linux, Darwin (macOS) and Windows").format(current_os)
 
             libname = pathlib.Path().absolute() / "dispatch/core/libclaid_capi{}".format(platform_library_extension)
+            if not os.path.isfile(libname):
+                current_file_path = str(os.path.dirname(os.path.abspath(__file__)))
+                libname = os.path.join(current_file_path, "dispatch/core/libclaid_capi{}".format(platform_library_extension))
             CLAID.claid_c_lib = ctypes.cdll.LoadLibrary(libname)
 
             # Required, otherwise claid_c_lib.attach_cpp_runtime will fail (same for shutdown_core etc).
