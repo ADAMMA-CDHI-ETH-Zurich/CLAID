@@ -8,11 +8,11 @@
 
 #include <stdlib.h>
 
+
 #include <fstream>
 #include <sstream>
 #include <cstring>
 #include <vector>
-
 #include <sys/stat.h>
 
 
@@ -58,6 +58,7 @@ bool claid::TensorFlowLiteNNInstance::setupModelFromFile(const std::string& mode
 		this->model =
 				tflite::FlatBufferModel::BuildFromFile(modelFile.c_str(),
 						NULL);
+
 
 		if (this->model)
 		{

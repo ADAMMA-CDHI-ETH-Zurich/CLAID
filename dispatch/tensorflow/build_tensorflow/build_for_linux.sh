@@ -9,15 +9,15 @@ compile_host_architecture()
    cd ${tflite_path}
 
    path=libs/${architecture}
-   mkdir -p ../${path}
+   mkdir -p ${current_path}/${path}
 
    bazel build //tensorflow/lite:tensorflowlite 
    
-   rm  -f ../${path}/libtensorflowlite.so
-   cp bazel-bin/tensorflow/lite/libtensorflowlite.so ../${path}/libtensorflowlite.so
+   rm  -f ${current_path}/${path}/libtensorflowlite.so
+   cp bazel-bin/tensorflow/lite/libtensorflowlite.so ${current_path}/${path}/libtensorflowlite.so
    cd ${current_path}
 
-   ln -s ${tflite_path} ${current_path}/tensorflow 
+  # ln -s ${tflite_path} ${current_path}/tensorflow 
 
 }
 

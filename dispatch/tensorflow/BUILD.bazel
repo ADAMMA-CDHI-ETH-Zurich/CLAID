@@ -4,7 +4,6 @@ package(default_visibility = ["//visibility:public"])
 
 
 
-
 cc_library(
     name = "android_tflite",
     srcs = ["tflite.cc"],
@@ -41,19 +40,28 @@ config_setting(
     },
 )
 
+
+current_path = ""
 cc_library(
     name = "tflite",
-    srcs = ["TensorFlowLiteNNInstance.cc", "TensorFlowLiteNNInstance.hh"],
-    hdrs = glob(["*.hh", "tf_inc/**/*.h"]),
-    linkopts = select({
-      ":x86": ["-ltensorflowlite", "-L/home/lastchance/Desktop/claid_external/libs/android/x86"],
-      ":armeabi-v7a": ["-ltensorflowlite", "-L/home/lastchance/Desktop/claid_external/libs/android/armeabi-v7a"],
-      ":arm64-v8a": ["-ltensorflowlite", "-L/home/lastchance/Desktop/claid_external/libs/android/arm64-v8a"],
-      ":x86_64": ["-ltensorflowlite", "-L/home/lastchance/Desktop/claid_external/libs/android/x86_64"],
-      "//conditions:default" : ["-ltensorflowlite", "-L/home/lastchance/Desktop/claid_external/libs/host", "-Iexternal/tensorflow"],
+    srcs = ["TensorFlowLiteNNInstance.cc", "TensorFlowLiteNNInstance.hh"] +
+    select({
+      ":x86": ["build_tensorflow/libs/android/x86/libtensorflowlite.so"],
+      ":armeabi-v7a": ["build_tensorflow/libs/android/armeabi-v7a/libtensorflowlite.so"],
+      ":arm64-v8a": ["build_tensorflow/libs/android/arm64-v8a/libtensorflowlite.so"],
+      ":x86_64": ["build_tensorflow/libs/android/x86_64/libtensorflowlite.so"],
+      "//conditions:default" : ["build_tensorflow/libs/android/host/libtensorflowlite.so"],
     }),
-    includes = ["tf_inc/"],
-    copts = ["-Itf_inc/"],
+    hdrs = glob(["*.hh", "build_tensorflow/tfinc/**/*.h"]),
+    # linkopts = select({
+    #   ":x86": ["-ltensorflowlite", "-Lbuild_tensorflow/libs/android/x86"],
+    #   ":armeabi-v7a": ["-ltensorflowlite", "-Lbuild_tensorflow/libs/android/armeabi-v7a"],
+    #   ":arm64-v8a": ["-ltensorflowlite", "-L/home/lastchance/Desktop/ModuleAPIV2/dispatch/tensorflow/build_tensorflow/libs/android/arm64-v8a"],
+    #   ":x86_64": ["-ltensorflowlite", "-Lbuild_tensorflow/libs/android/x86_64"],
+    #   "//conditions:default" : ["-ltensorflowlite", "-Lbuild_tensorflow/libs/host", "-Ibuild_tensorflow/tfinc"],
+    # }),
+    includes = ["build_tensorflow/tfinc/"],
+    copts = ["-Ibuild_tensorflow/tfinc/"],
     deps = ["//dispatch/core:CLAID"],
     linkstatic = True,
     alwayslink = True,
