@@ -1,0 +1,3 @@
+[submodule "dispatch/plugins/cough_detection"]
+	path = dispatch/plugins/cough_detection
+	url = https://github.com/ADAMMA-CDHI-ETH-Zurich/CLAIDCoughDetection.git
