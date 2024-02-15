@@ -50,7 +50,7 @@ cc_library(
       ":armeabi-v7a": ["build_tensorflow/libs/android/armeabi-v7a/libtensorflowlite.so"],
       ":arm64-v8a": ["build_tensorflow/libs/android/arm64-v8a/libtensorflowlite.so"],
       ":x86_64": ["build_tensorflow/libs/android/x86_64/libtensorflowlite.so"],
-      "//conditions:default" : ["build_tensorflow/libs/android/host/libtensorflowlite.so"],
+      "//conditions:default" : ["build_tensorflow/libs/host/libtensorflowlite.so"],
     }),
     hdrs = glob(["*.hh", "build_tensorflow/tfinc/**/*.h"]),
     # linkopts = select({
