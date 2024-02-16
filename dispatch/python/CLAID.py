@@ -131,3 +131,16 @@ class CLAID():
     
     def inject_new_modules(self, module_descriptions: dict):
         return self.__module_manager.inject_new_modules(module_descriptions)
+    
+    def get_available_modules(self):
+
+        self.update_module_annotations()
+        while not self.are_module_annotations_updated():
+            pass
+
+        return self.get_module_annotations()
+    
+    def hello_world(self):
+        CLAID.__load_claid_library()
+        CLAID.claid_c_lib.hello_world()
+

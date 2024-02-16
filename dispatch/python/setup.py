@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='claid',
@@ -8,7 +8,8 @@ setup(
     author='Patrick Langer',
     author_email='patrick.langer97@gmx.de',
     license='Apache 2',
-    packages=['claid'],
+    packages=find_packages(),
+    include_package_data=True,
     install_requires=['protobuf',
                       'grpcio',                     
                       ],
@@ -24,4 +25,10 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
     ],
+
+    entry_points='''
+        [console_scripts]
+        claid=claid.claid_cli:main
+    ''',
+
 )

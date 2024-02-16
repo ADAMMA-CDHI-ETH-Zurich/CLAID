@@ -96,5 +96,11 @@ bool load_new_config(void* handle, const char* config_file)
     return false;
 }
 
+__attribute__((visibility("default"))) __attribute__((used))
+void hello_world()
+{
+    printf("Hello world from the CLAID framework!\n");
+}
+
 
 }
