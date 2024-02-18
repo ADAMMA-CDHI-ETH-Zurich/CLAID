@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <regex>
 
 namespace claid {
 
@@ -46,6 +47,24 @@ class PropertyHelper
             {
                 value = defaultValue;
                 return true;
+            }
+        }
+
+        template<typename T>
+        bool getPropertiesWithNameThatMatchesRegularExpression(const std::string& regex, std::vector<T>& values)
+        {
+            values.clear(); 
+            std::regex pattern(regex);
+
+            for(const auto& entry : properties)
+            {
+                if (std::regex_match(entry.first, pattern)) 
+                {
+                    T tmpValue;
+                    std::istringstream iss(entry.second);
+                    iss >> tmpValue;
+                    values.push_back(tmpValue);
+                }
             }
         }
 

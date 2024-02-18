@@ -19,7 +19,7 @@
 
 #include "dispatch/proto/layerdata.pb.h"
 
-using namespace claid_ml;
+using namespace claid;
 
 
 #ifdef __ANDROID__
@@ -155,9 +155,9 @@ namespace claid
             bool runInference();
 
             bool applyInput(const size_t inputID, const void* data, const size_t numBytes);
-            bool applyInput(LayerData& layerData);
+            bool applyInput(const LayerData& layerData);
 
-            size_t getLayerDataNumBytes(LayerData& layerData);
+            size_t getLayerDataNumBytes(const LayerData& layerData);
 
             void getDimensionVectorFromTensor(TfLiteTensor* tensor, std::vector<int64_t>& dimensions);
 

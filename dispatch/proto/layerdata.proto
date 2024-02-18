@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package claid_ml;
+package claid;
 
-option go_package = "claid.ethz.ch/claid_ml";
+option go_package = "claid.ethz.ch/claid";
 
-option java_package = "adamma.c4dhi.claid_ml";
+option java_package = "adamma.c4dhi.claid";
 option java_outer_classname = "ClaidMachineLearning";
 option java_multiple_files = true;
 

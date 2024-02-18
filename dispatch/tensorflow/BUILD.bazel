@@ -62,7 +62,9 @@ cc_library(
     # }),
     includes = ["build_tensorflow/tfinc/"],
     copts = ["-Ibuild_tensorflow/tfinc/"],
-    deps = ["//dispatch/core:CLAID"],
+    deps = ["//dispatch/core:capi"],
     linkstatic = True,
     alwayslink = True,
 )
+
+

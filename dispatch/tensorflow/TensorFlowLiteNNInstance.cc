@@ -321,7 +321,7 @@ bool claid::TensorFlowLiteNNInstance::applyInput(const size_t inputID, const voi
  * @return true if data was copied successfully, false otherwise (e.g. invalid layer description,
  * input data containing mory bytes than required, etc.).
  */
-bool claid::TensorFlowLiteNNInstance::applyInput(LayerData& layerData)
+bool claid::TensorFlowLiteNNInstance::applyInput(const LayerData& layerData)
 {
 	int id = this->getInputIDFromLayerName(layerData.layer_name());
 	if(id == -1)
@@ -837,7 +837,7 @@ bool claid::TensorFlowLiteNNInstance::getOutputLayerNumBytes(const size_t output
  * @param LayerData layerData
  * @return size_t number of bytes
  */
-size_t claid::TensorFlowLiteNNInstance::getLayerDataNumBytes(LayerData& layerData)
+size_t claid::TensorFlowLiteNNInstance::getLayerDataNumBytes(const LayerData& layerData)
 {
 	return layerData.data().size();	
 }
