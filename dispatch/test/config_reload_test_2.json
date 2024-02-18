@@ -7,8 +7,8 @@
 			"modules": [{
 					"type": "TestModule3",
 					"id": "TestModule3",
-					"input_channels": [],
-					"output_channels": [],
+					"input_channels": {},
+					"output_channels": {},
 					"properties": {
 						"TestModule3Data" : "420"
 					}
@@ -16,8 +16,8 @@
 				{
 					"type": "TestModule4",
 					"id": "TestModule4",
-					"input_channels": [],
-					"output_channels": [],
+					"input_channels": {},
+					"output_channels": {},
 					"properties": {
 						"TestModule4Data" : "96"
 					}

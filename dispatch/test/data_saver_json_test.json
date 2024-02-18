@@ -8,8 +8,8 @@
 				{
 					"type": "TestSenderModule",
 					"id": "SenderModule1",
-					"input_channels": [],
-					"output_channels": ["Data"],
+					"input_channels": {},
+					"output_channels": {"Data" : "Data"},
 					"properties": {
 						"dataPeriodMs" : "100"
 					}
@@ -17,8 +17,8 @@
 				{
 					"type": "DataSaverModule",
 					"id": "DataSaverModule",
-					"input_channels": ["Data"],
-					"output_channels": [],
+					"input_channels": {"Data" : "Data"},
+					"output_channels": {},
 					"properties": {
 						"what": "Data",
 						"storagePath": "data_saver_json_test/",

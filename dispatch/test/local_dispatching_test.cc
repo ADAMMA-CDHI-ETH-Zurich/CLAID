@@ -25,10 +25,12 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
     ModuleTable modTable;
     for(auto& m : testModules) {
         modTable.setNeededModule(m.modId, m.modClass, m.props);
+        modTable.setModuleChannelToConnectionMappings(m.modId, channelToConnectionMappings, channelToConnectionMappings);
     }
 
     for(auto pkt : testChannels) {
         modTable.setExpectedChannel(pkt->channel(), pkt->source_module(), pkt->target_module());
+
     }
 
     DispatcherServer server(addr, modTable);
@@ -109,7 +111,7 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
     Logger::logInfo("%s", messageToString(initReq).c_str());
 
     auto clientStarted = client.startRuntime(initReq);
-    ASSERT_TRUE(clientStarted) << "Unable to start client !";
+    ASSERT_TRUE(clientStarted.ok()) << clientStarted.error_message();
 
     auto pkt12 = make_shared<DataPackage>(*chan12Pkt);
     pkt12->mutable_number_array_val()->add_val(101.0);

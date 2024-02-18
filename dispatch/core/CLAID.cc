@@ -23,7 +23,8 @@ namespace claid {
 
         if(started)
         {
-            Logger::logError("CLAID middleware start was called twice!");
+            startStatus = absl::UnavailableError("CLAID middleware start was called twice!");
+            Logger::logError("%s", startStatus.ToString().c_str());
             return false;
         }
         
@@ -31,17 +32,20 @@ namespace claid {
         
         if(handle == 0)
         {
-            Logger::logError("Failed to start CLAID middleware core (start_core), returned handle is 0.");
+            startStatus = absl::InvalidArgumentError("Failed to start CLAID middleware core (start_core), returned handle is 0.");
+            Logger::logError("%s", startStatus.ToString().c_str());
             return false;
         }
 
         if(!attachCppRuntime(handle))
         {
+            // AttachCppRuntime will set startStatus accordingly.
+            Logger::logError("%s", startStatus.ToString().c_str());
             return false;
         }
 
         started = true;
-
+        startStatus = absl::OkStatus();
         return true;
     }
 
@@ -88,6 +92,7 @@ namespace claid {
 
         if(!status.ok())
         {
+            startStatus = status;
             std::stringstream ss;
             ss << status;
             Logger::logFatal("%s", ss.str().c_str());
@@ -128,6 +133,11 @@ namespace claid {
         }   
         claid::MiddleWare* middleware = static_cast<claid::MiddleWare*>(handle);
         return middleware->isConnectedToRemoteServer();
+    }
+
+    absl::Status CLAID::getStartStatus() const
+    {
+        return this->startStatus;
     }
 
     absl::Status CLAID::getRemoteClientStatus() const

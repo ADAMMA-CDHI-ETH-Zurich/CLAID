@@ -8,8 +8,8 @@
 				{
 					"type": "TestSenderModule",
 					"id": "SenderModule1",
-					"input_channels": [],
-					"output_channels": ["TestChannel"],
+					"input_channels": {},
+					"output_channels": {"TestChannel" : "TestChannel"},
 					"properties": {
 						
 					}
@@ -26,8 +26,8 @@
 				{
 					"type": "TestReceiverModule",
 					"id": "ReceiverModule",
-					"input_channels": ["TestChannel"],
-					"output_channels": [],
+					"input_channels": {"TestChannel" : "TestChannel"},
+					"output_channels": {},
 					"properties": {
 						
 					}

@@ -108,7 +108,7 @@ class DispatcherClient {
     void shutdown();
     virtual ~DispatcherClient() { shutdown(); };
     std::unique_ptr<claidservice::ModuleListResponse> getModuleList();
-    bool startRuntime(const claidservice::InitRuntimeRequest& req);
+    grpc::Status startRuntime(const claidservice::InitRuntimeRequest& req);
   private:
     void processReading();
     void processWriting();

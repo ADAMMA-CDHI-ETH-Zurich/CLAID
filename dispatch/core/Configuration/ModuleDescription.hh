@@ -14,8 +14,8 @@ namespace claid
         std::string id;
         std::string moduleClass;
         std::string host;
-        std::vector<std::string> inputChannels;
-        std::vector<std::string> outputChannels;
+        std::map<std::string, std::string> inputChannels;
+        std::map<std::string, std::string> outputChannels;
         std::map<std::string, std::string> properties;
 
         ModuleDescription()

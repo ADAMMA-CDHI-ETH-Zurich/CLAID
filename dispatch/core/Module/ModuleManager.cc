@@ -175,9 +175,11 @@ absl::Status ModuleManager::start()
 
     InitRuntimeRequest initRuntimeRequest = makeInitRuntimeRequest();
 
-    if(!this->dispatcher.startRuntime(initRuntimeRequest))
+    grpc::Status dispatcherStatus = this->dispatcher.startRuntime(initRuntimeRequest);
+    if(!dispatcherStatus.ok())
     {
-        return absl::InvalidArgumentError("Failed to start C++ Runtime.");
+        return absl::Status(static_cast<absl::StatusCode>(dispatcherStatus.error_code()),
+                       dispatcherStatus.error_message());
     }
 
     this->running = true;

@@ -23,6 +23,8 @@ namespace claid
         bool started = false;
         void* handle;
 
+        absl::Status startStatus;
+
     public:
 
         // Starts the middleware and attaches to it.
@@ -36,8 +38,9 @@ namespace claid
         bool attachCppRuntime(void* handle);
 
         bool isConnectedToRemoteServer() const;
+        absl::Status getStartStatus() const;
         absl::Status getRemoteClientStatus() const;
-
+        
         absl::Status loadNewConfig(const std::string& newConfigFilePath);
     };
 

@@ -20,6 +20,7 @@ TEST(ModuleTableTestSuite, BasicModuleTableTest) {
     ModuleTable modTable;
     for(auto& m : testModules) {
         modTable.setNeededModule(m.modId, m.modClass, m.props);
+        modTable.setModuleChannelToConnectionMappings(m.modId, channelToConnectionMappings, channelToConnectionMappings);
     }
 
     map<string, vector<DataPackage>> pktsVecMap;

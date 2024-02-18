@@ -498,7 +498,7 @@ void makeControlRuntimePing(ControlPackage& pkt) {
     pkt.set_runtime(Runtime::RUNTIME_CPP);
 }
 
-bool DispatcherClient::startRuntime(const InitRuntimeRequest& req) {
+Status DispatcherClient::startRuntime(const InitRuntimeRequest& req) {
     // Initialize the runtime
     {
         ClientContext context;
@@ -506,7 +506,7 @@ bool DispatcherClient::startRuntime(const InitRuntimeRequest& req) {
         Status status = stub->InitRuntime(&context,req, &empty);
         if (!status.ok()) {
             claid::Logger::logInfo("Could not init request: %s", status.error_message().c_str());
-            return false;
+            return status;
         }
     }
 
@@ -519,28 +519,28 @@ bool DispatcherClient::startRuntime(const InitRuntimeRequest& req) {
     makeControlRuntimePing(*pingReq.mutable_control_val());
     if (!stream->Write(pingReq)) {
         claid::Logger::logInfo("Failed sending ping package to server.");
-        return false;
+        return Status(grpc::INVALID_ARGUMENT, "Failed to send ping package to server.");
     }
 
     // Wait for the valid response ping
     DataPackage pingResp;
     if (!stream->Read(&pingResp)) {
         claid::Logger::logInfo("Did not receive a ping package from server !");
-        return false;
+        return Status(grpc::INVALID_ARGUMENT, "Did not receive ping package to server.");
     }
 
     // TODO: @Stephan, shouldn't this here be pingResp ?
     // @Patrick:
     // Check whether the package read was a control package with the right type.
     if (pingReq.control_val().ctrl_type() != CtrlType::CTRL_RUNTIME_PING) {
-        return false;
+        return Status(grpc::INVALID_ARGUMENT, "Response to ping package was no CTRL_RUNTIME_PING.");
     }
     this->running = true;
 
     // Start the threads to service the input/output queues.
     writeThread = make_unique<thread>([this]() { processWriting(); });
     readThread = make_unique<thread>([this]() { processReading(); });
-    return true;
+    return Status::OK;
 }
 
 void DispatcherClient::processReading() {

@@ -65,6 +65,14 @@ void ModuleTable::setNeededModule(const string& moduleId, const string& moduleCl
     moduleProperties[moduleId] = properties;
 }
 
+void ModuleTable::setModuleChannelToConnectionMappings(const std::string& moduleId,
+      const std::map<std::string, std::string>& inputChannelToConnectionMappping,
+      const std::map<std::string, std::string>& outputChannelToConnectionMapping)
+{
+    moduleInputChannelsToConnectionMap[moduleId] = inputChannelToConnectionMappping;
+    moduleOutputChannelsToConnectionMap[moduleId] = outputChannelToConnectionMapping;
+}
+
 void ModuleTable::setExpectedChannel(const string& channelId, const string& source, const string& target) {
     unique_lock<shared_mutex> lock(chanMapMutex);
 
@@ -92,7 +100,8 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
                 chanPkt.channel() + "' : " + messageToString(chanPkt));
         }
 
-        const string& channelId = chanPkt.channel();
+        string channelId = chanPkt.channel();
+
         const string& src = chanPkt.source_module();
         const string& tgt = chanPkt.target_module();
 
@@ -104,6 +113,34 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
                 "Module \"", moduleId, "\" has to be either publisher or subscriber of the Channel, but neither was set."));
         }
 
+        // Module is publisher. The Module is an output channel of the Module.
+        if(src == moduleId)
+        {
+            if(moduleOutputChannelsToConnectionMap[moduleId][channelId] == "")
+            {
+                return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
+                "Invalid published channel \"", channelId, "for Module \"", moduleId, "\".", 
+                "Could not find where this Channel is connected/mapped to, as it was not found in the moduleOutputChannelsToConnectionMap.\n",
+                "Was the channel specified in the \"output_channels\" property of the Module?"));
+            }
+
+            // Map the channel name to the corresponding connection.
+            channelId = moduleOutputChannelsToConnectionMap[moduleId][channelId];
+        }
+        // Module is subscriber. The channel is an input channel of the Module.
+        else if(tgt == moduleId)
+        {
+            if(moduleInputChannelsToConnectionMap[moduleId][channelId] == "")
+            {
+                return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
+                "Invalid subscribed channel \"", channelId, " for Module \"", moduleId, "\".", 
+                "Could not find where this Channel is connected/mapped to, as it was not found in the moduleInputChannelsToConnectionMap.\n",
+                "Was the channel specified in the \"input_channels\" property of the Module?"));
+            }
+
+            // Map the channel name to the corresponding connection.
+            channelId = moduleInputChannelsToConnectionMap[moduleId][channelId];
+        }
 
         // Find the channel and verify and set the type.
         auto entry = findChannel(channelId);

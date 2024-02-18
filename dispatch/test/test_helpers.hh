@@ -113,6 +113,15 @@ const std::vector<std::shared_ptr<DataPackage>> testChannels = {
     chan12Pkt, chan13NumPkt, chan13StrPkt, chan23Pkt, chan23ProtoPkt, chan14Pkt, chan15Pkt, chan24Pkt, chan25Pkt
 };
 
+const std::map<std::string, std::string> channelToConnectionMappings = {
+    make_pair(chan12, chan12),
+    make_pair(chan13Num, chan13Num),
+    make_pair(chan13Str, chan13Str),
+    make_pair(chan23, chan23),
+    make_pair(chan23Proto, chan23Proto),
+    make_pair(chan12To45, chan12To45),
+};
+
 } // end namespace claidtest
 
 #endif

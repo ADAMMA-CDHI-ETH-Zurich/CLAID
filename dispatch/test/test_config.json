@@ -7,8 +7,8 @@
 			"modules": [{
 					"type": "MicrophoneCollector",
 					"id": "AudioRecorder1",
-					"input_channels": [],
-					"output_channels": ["AudioData"],
+					"input_channels": {},
+					"output_channels": {"AudioData" : "AudioDataStream"},
 					"properties": {
 						"samplingRate": "44100",
 						"channels": "MONO",
@@ -20,8 +20,8 @@
 				{
 					"type": "DataSaverModule",
 					"id": "AudioSaver",
-					"input_channels": ["AudioData"],
-					"output_channels": [],
+					"input_channels": {"AudioData" : "AudioDataStream"},
+					"output_channels": {},
 					"properties": {
 						"storagePath": "/sdcard/CLAID/AudioData",
 						"fileNameFormat": "Data_%d-%m-%y_%M.wav",
@@ -31,8 +31,8 @@
 				{
 					"type": "DataSyncModule",
 					"id": "FileSyncer",
-					"input_channels": ["RequestedFiles"],
-					"output_channels": ["AvailableFiles", "FileChannel"],
+					"input_channels": {"RequestedFiles" : "RequestedFiles"},
+					"output_channels": {"AvailableFiles" : "AvailableFiles", "FileChannel" : "FileChannel"},
 					"properties": {
 						"folderToSynchronize": "/sdcard/CLAID/AudioData"
 					}
@@ -48,8 +48,8 @@
 			"modules": [{
 				"type": "DataReceiverModule",
 				"id": "DataReceiver",
-				"input_channels": ["AvailableFiles", "FileChannel"],
-				"output_channels": ["RequestedFiles"],
+				"input_channels": {"AvailableFiles" : "AvailableFiles", "FileChannel" : "FileChannel"},
+				"output_channels": {"RequestedFiles" : "RequestedFiles"},
 				"properties": {
 					"outputFolder": "/srv/ALEX/${user_hash}/"
 				}

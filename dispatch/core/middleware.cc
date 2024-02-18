@@ -341,6 +341,9 @@ absl::Status MiddleWare::populateModuleTable(
         moduleTable.setNeededModule(moduleDescription.id,
             moduleDescription.moduleClass,
             moduleDescription.properties);
+
+        moduleTable.setModuleChannelToConnectionMappings(moduleDescription.id, 
+            moduleDescription.inputChannels, moduleDescription.outputChannels);
     }
 
     for(const auto& entry : channelDescriptions)

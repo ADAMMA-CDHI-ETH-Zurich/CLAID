@@ -55,6 +55,10 @@ class ModuleTable {
         const std::string& moduleClass,
         const std::map<std::string, std::string>& properties);
 
+    void setModuleChannelToConnectionMappings(const std::string& moduleId,
+      const std::map<std::string, std::string>& inputChannelToConnectionMappping,
+      const std::map<std::string, std::string>& outputChannelToConnectionMapping);
+
     // Sets a channel that will be defined and used by the connecting runtimes.
     // Usually this is information extracted from a config file. This happens before
     // any runtimes connect.
@@ -114,6 +118,12 @@ class ModuleTable {
     // Keeps track of mapping from the module instance to the name of that class that implements it.
     // map<module_id, module_class>
     std::map<std::string, std::string> moduleToClassMap; // maps module IDs to moduleClasses
+
+    // Maps the channel names of a module to the corresponding connection names.
+    // E.g., if the Module has a channel called "InputAudioData", the user might connect it to the Channel "AudioOutput" of another Module.
+    // He could do so by mapping "InputAudioData" on a Connection "AudioStream" and then mapping "AudioOutput" to the same "AudioStream" connection.
+    std::map<std::string, std::map<std::string, std::string>> moduleInputChannelsToConnectionMap;
+    std::map<std::string, std::map<std::string, std::string>> moduleOutputChannelsToConnectionMap;
 
     // Keeps track of the properties of each module.
     // map<module_id, Map<property_key, property_value>>

@@ -113,11 +113,15 @@ namespace claid
                     moduleDescription.properties.insert(make_pair(entry.first, entry.second));
                 }
 
-                moduleDescription.inputChannels =
-                    std::vector<std::string>(moduleDescription.inputChannels.begin(), moduleDescription.inputChannels.end());
+                for(auto entry : moduleConfig.input_channels())
+                {
+                    moduleDescription.inputChannels.insert(make_pair(entry.first, entry.second));
+                }
 
-                moduleDescription.outputChannels =
-                    std::vector<std::string>(moduleDescription.outputChannels.begin(), moduleDescription.outputChannels.end());
+                for(auto entry : moduleConfig.output_channels())
+                {
+                    moduleDescription.outputChannels.insert(make_pair(entry.first, entry.second));
+                }
 
                 if(moduleDescriptions.find(moduleDescription.id) != moduleDescriptions.end())
                 {
@@ -172,14 +176,20 @@ namespace claid
             {
                 const ModuleConfig& moduleConfig = host.modules(j);
 
-                for(const std::string& inputChannel : moduleConfig.input_channels())
+                // We map channel names to connections.
+                // For the middleware, it does not matter how channels are called, but what is the name of the "connection"
+                // that they are mapped to. E.g., if a Channel is called "InputAudioData" and connected to "AudioDataStream",
+                // then all the middleware needs to know that there is a subscriber for the "AudioDataStream".
+                // During Module initialization, the middleware maps published/subscribed channels of
+                // each Module automatically to the configured connection (check setChannelTypes function in module_table.cc).
+                for(const auto& entry : moduleConfig.input_channels())
                 {
-                    channelDescriptions[inputChannel].subscriberModules.push_back(moduleConfig.id());
+                    channelDescriptions[entry.second].subscriberModules.push_back(moduleConfig.id());
                 }
 
-                for(const std::string& outputChannel : moduleConfig.output_channels())
+                for(const auto& entry : moduleConfig.output_channels())
                 {
-                    channelDescriptions[outputChannel].publisherModules.push_back(moduleConfig.id());
+                    channelDescriptions[entry.second].publisherModules.push_back(moduleConfig.id());
                 }
             }
         }

@@ -42,7 +42,7 @@ class ReceiverModule : public Module
 
     void initialize(const std::map<std::string, std::string>& properties)
     {
-        channel = subscribe<std::string>("StringData", &ReceiverModule::onData, this);
+        channel = subscribe<std::string>("InputData", &ReceiverModule::onData, this);
     }
 
     void onData(ChannelData<std::string> data)
@@ -70,7 +70,7 @@ TEST(CppRuntimeTestSuite, CppRuntimeTest)
     bool result = claid.start(socket_path, config_file, host_id, user_id, device_id);
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
-    ASSERT_TRUE(result);
+    ASSERT_TRUE(result) << claid.getStartStatus();
     claid.shutdown();
     std::cout << "Waiting\n";
 
