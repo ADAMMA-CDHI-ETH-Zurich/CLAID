@@ -25,11 +25,9 @@ public class PermissionActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Logger.logInfo("request microphone permission8");
 
         this.setTheme();
         String[] permissions = getIntent().getStringArrayExtra(EXTRA_PERMISSIONS);
-        Logger.logInfo("request microphone permission9");
 
         int requestCode = getIntent().getIntExtra(EXTRA_REQUEST_CODE, DEFAULT_PERMISSION_REQUEST_CODE);
         this.requestPermissions(permissions, requestCode);

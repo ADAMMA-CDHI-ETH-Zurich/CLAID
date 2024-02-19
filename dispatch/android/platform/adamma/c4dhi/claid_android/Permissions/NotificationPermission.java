@@ -9,7 +9,7 @@ public class NotificationPermission extends Permission {
      private static final String userDialogTitle = "You need to allow notification permission";
      private static final String userDialogBody = "In the following screen you need to allow " +
              "notification permissions to use this app. If you can't see the option you need " +
-             "to open\nSettings->Apps->CLAIDDemo->Permissions.";
+             "to open\nSettings->Apps->YourCLAIDApp->Permissions.";
      private static final String[] NOTIFICATION_PERMISSION = {
              Manifest.permission.POST_NOTIFICATIONS
      };
