@@ -24,6 +24,7 @@
 #include "dispatch/core/Utilities/FileUtils.hh"
 #include "dispatch/core/Utilities/StringUtils.hh"
 #include "dispatch/proto/sensor_data_types.grpc.pb.h"
+#include "dispatch/proto/claidservice.grpc.pb.h"
 #ifdef __APPLE__
     #include "TargetConditionals.h"
     #if TARGET_OS_IPHONE
@@ -34,6 +35,7 @@
 #include "absl/strings/str_split.h"
 #include "absl/status/status.h"
 
+using claidservice::DataFile;
 
 namespace claid
 {

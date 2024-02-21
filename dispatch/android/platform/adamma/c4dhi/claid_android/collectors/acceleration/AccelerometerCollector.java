@@ -21,6 +21,9 @@ import adamma.c4dhi.claid_sensor_data.AccelerationData;
 
 import adamma.c4dhi.claid_platform_impl.CLAID;
 
+import adamma.c4dhi.claid.Module.ModuleAnnotator;
+
+
 public class AccelerometerCollector extends Module implements SensorEventListener 
 {
     private Channel<AccelerationData> accelerationDataChannel;
@@ -39,6 +42,21 @@ public class AccelerometerCollector extends Module implements SensorEventListene
     Sensor sensor;
 
     private int samplingFrequency;
+
+    public static void annotateModule(ModuleAnnotator annotator)
+    {
+        annotator.setModuleDescription("The AccelerometerCollector allows to record acceleration data using the devices built-in accelerometer."
+        + "The sampling frequency can be freely configured, however is subject to the limitations of the device (e.g., built-in sensor)."
+        + "The AccelerometerCollector features two recording modes: \"Batched\" and \"Streaming\"\n");
+
+        annotator.describeProperty("samplingFrequency", null);
+        annotator.describeProperty("outputMode", "Two modes are available: \"Batched\" and \"Streaming\"."
+        + "The Batched Mode is the normal mode for most scenarios. In this mode, acceleration data is aggregated and only posted to the output channel, "
+        + "if the amount of samples spans 1 second (e.g., 50 samples if configured to 50Hz)."
+        + "In the Streaming mode, each individual sample is posted to the channel without aggregation, which can be used for real-time scenarios.");
+    
+        annotator.describePublishChannel("AccelerationData", AccelerationData.class, "Output date");
+    }
 
 
     public void initialize(Map<String, String> properties)

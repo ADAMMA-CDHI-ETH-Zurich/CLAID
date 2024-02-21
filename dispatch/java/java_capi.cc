@@ -83,4 +83,29 @@ extern "C"
         return load_new_config(nativeHandle, stdConfigPath.c_str());
     }
 
+
+    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_setPayloadDataPath
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle, jstring path) 
+    {
+        void* nativeHandle = reinterpret_cast<void*>(handle);
+
+        std::string stdPayloadPath = jniStringToStdString(env, path);
+        set_payload_data_path(nativeHandle, stdPayloadPath.c_str());
+    }
+
+    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_enableDesignerMode
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle, jstring path) 
+    {
+        void* nativeHandle = reinterpret_cast<void*>(handle);
+        enable_designer_mode(nativeHandle);
+    }
+
+    __attribute__((visibility("default"))) __attribute__((used))
+    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_disableDesignerMode
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle) 
+    {
+        void* nativeHandle = reinterpret_cast<void*>(handle);
+        disable_designer_mode(nativeHandle);
+    }
+
 }

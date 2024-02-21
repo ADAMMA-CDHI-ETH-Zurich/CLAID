@@ -28,6 +28,10 @@ public abstract class JavaCLAIDBase
     private static native String getSocketPath(long handle);
 
     private static native boolean nativeLoadNewConfig(long handle, String config);
+
+    private static native void setPayloadDataPath(long handle, String path);
+    private static native void enableDesignerMode(long handle);
+    private static native void disableDesignerMode(long handle); 
     
     private static ModuleDispatcher moduleDispatcher;
     private static ModuleManager moduleManager;

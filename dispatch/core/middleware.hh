@@ -21,6 +21,8 @@
 #include "dispatch/core/Router/RoutingQueueMerger.hh"
 #include "dispatch/core/Router/RoutingQueueMergerGeneric.hh"
 
+using claidservice::ConfigUploadPayload;
+
 namespace claid
 {
     // Top container of the CLAID middleware.
@@ -46,6 +48,10 @@ namespace claid
             absl::Status loadNewConfig(const std::string& configPath);
             absl::Status loadNewConfig(const Configuration& configuration);
 
+            void setPayloadDataPath(const std::string& path);
+            void enableDesignerMode();
+            void disableDesignerMode();
+
             virtual ~MiddleWare();
 
 
@@ -60,6 +66,10 @@ namespace claid
             bool waitingForAllRuntimesToRestart = false;
             size_t numberOfRuntimesThatRestarted = 0;
 
+            // Path to specify where additional payload data is stored when a control message
+            // of type UPLOAD_CONFIG_AND_DATA is received. Requires designerMode to be activated in the configuration file.
+            std::string payloadDataPath = "";
+            bool designerModeActive = false;
 
             // TODO: Incorporate all variables into the code if necessary.
             std::string socketPath;

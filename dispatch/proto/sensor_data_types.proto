@@ -50,12 +50,6 @@ message AccelerationData
     repeated AccelerationSample samples = 1;
 }
 
-message DataFile
-{
-    string relative_path = 1;
-    bytes file_data = 2;
-}
-
 message HeartRateSample
 {
     int32 hr = 1;

@@ -81,6 +81,7 @@ enum CtrlType {
   CTRL_RESTART_RUNTIME_DONE             = 14;
   CTRL_REQUEST_MODULE_ANNOTATIONS       = 15;
   CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE  = 16;
+  CTRL_UPLOAD_CONFIG_AND_DATA               = 17; // Can be used to load a new config into a host alongside with additional data (model files, python code to inject etc.). Requires designer_mode in CLAIDConfig to be true.
   //CTRL_ADD_MODULE                         = 11; // Can be used to add a new Module at runtime (requires Module name, properties, channels). This package will be forwarded by the LocalRouter to the Middleware that can handle this Module.
   //CTRL_REMOVE_MODULE                      = 12; // Can be used to remove a Module at runtime.
   //CTRL_ADD_MODULE_SUCCESS                 = 13; // Sent as response to CTRL_ADD_MODULE the Module was added successfully.
@@ -102,9 +103,8 @@ message ControlPackage {
   AccumulatedStatus status                  = 4; // CTRL_STATUS: status sent towards root server
   ErrorMsg error_msg                        = 5; // CTRL_ERROR: Error report sent towards root server
   ActionRequest action_request              = 6; // CTRL_ACTION: action request sent to all children of the claid instance
-  AddModuleRequest add_module_request       = 7; // CTRL_ADD_MODULE
-  RemoveModuleRequest remove_module_request = 8; // CTRL_REMOVE_MODULE
-  map<string, ModuleAnnotation> module_annotations = 9; // CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE
+  map<string, ModuleAnnotation> module_annotations = 7; // CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE
+  ConfigUploadPayload config_upload_payload        = 8; // CTRL_UPLOAD_CONFIG_AND_DATA
 }
 
 message AccumulatedStatus {
@@ -314,7 +314,8 @@ message CLAIDConfig {
   string log_sink_host = 2; // If specified, all CLAID instances will forward their log messages to this host. 
   LogMessageSeverityLevel log_sink_severity_level = 3;  // If log_sink_host is specified, this flag indicates 
                                                         // what category of log messages will be sent to the log sink (only messages with severity level >= this flag will be sent).
-  LogSinkTransferMode log_sink_transfer_mode = 4; // Method of transfering log messages to the log_sink_host. Check LogSingTransferMode definition for mor edetails.
+  LogSinkTransferMode log_sink_transfer_mode = 4; // Method of transfering log messages to the log_sink_host. Check LogSingTransferMode definition for more details.
+  bool designer_mode = 5;                         // If true, other hosts can upload a new config (alongside additional data like model files or python code) to the host.
 }
 
 message HostConfig {
@@ -338,4 +339,16 @@ message ModuleConfig
   map<string, string> input_channels = 3; // Maps input channels to connections, e.g. "InputAudioDataChannel" : "AudioDataConnection"
   map<string, string> output_channels = 4; // Maps output channels to connections, e.g. "AudioDataToProcess" : "AudioDataConnection"
   map<string, string> properties = 5;
+}
+
+message DataFile
+{
+    string relative_path = 1;
+    bytes file_data = 2;
+}
+
+message ConfigUploadPayload
+{
+  CLAIDConfig config = 1;
+  repeated DataFile additional_files = 2;
 }

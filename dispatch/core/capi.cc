@@ -42,7 +42,7 @@ void shutdown_core(void* handle) {
         if (!status.ok()) 
         {
             // TODO: replace with proper logging.
-            claid::Logger::logInfo("Error shuting down middleware: %s", std::string(status.message()).c_str());
+            claid::Logger::logWarning("Error shuting down middleware: %s", std::string(status.message()).c_str());
         }
         delete middleWare;
     }
@@ -56,7 +56,7 @@ const char* get_socket_path(void* handle) {
         // This is only safe as long as middleWare does not get deleted.
         return middleWare->getSocketPath().c_str();
     }
-    claid::Logger::logInfo("Cannot get socket path from middleware, handle is null.");
+    claid::Logger::logError("Cannot get socket path from middleware, handle is null.");
     return "";
 }
 
@@ -92,7 +92,7 @@ bool load_new_config(void* handle, const char* config_file)
         }
         return true;
     }
-    claid::Logger::logInfo("Cannot get socket path from middleware, handle is null.");
+    claid::Logger::logError("Cannot get socket path from middleware, handle is null.");
     return false;
 }
 
@@ -100,6 +100,46 @@ __attribute__((visibility("default"))) __attribute__((used))
 void hello_world()
 {
     printf("Hello world from the CLAID framework!\n");
+}
+
+__attribute__((visibility("default"))) __attribute__((used))
+void set_payload_data_path(void* handle, const char* path)
+{
+    if(!handle)
+    {
+        claid::Logger::logError("Cannot set payload data path, handle is null.");
+        return;
+    }
+    std::string payloadPath(path);
+
+    auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
+    middleWare->setPayloadDataPath(payloadPath);
+}
+
+__attribute__((visibility("default"))) __attribute__((used))
+void enable_designer_mode(void* handle)
+{
+    if(!handle)
+    {
+        claid::Logger::logError("Cannot enable designer model, handle is null.");
+        return;
+    }
+
+    auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
+    middleWare->enableDesignerMode();
+}
+
+__attribute__((visibility("default"))) __attribute__((used))
+void disable_designer_mode(void* handle)
+{
+    if(!handle)
+    {
+        claid::Logger::logError("Cannot enable designer model, handle is null.");
+        return;
+    }
+
+    auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
+    middleWare->disableDesignerMode();
 }
 
 

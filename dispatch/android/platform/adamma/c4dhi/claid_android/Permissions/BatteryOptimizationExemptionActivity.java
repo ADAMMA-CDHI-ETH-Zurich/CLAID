@@ -60,7 +60,7 @@ public class BatteryOptimizationExemptionActivity extends Activity {
                 builder.setMessage("On the next page, please disable battery optimizations. This is required to make CLAID run in the background as long as possible.");
                 builder.setPositiveButton("OK", (dialog, id) -> {
                     showBatteryOptimizationIntent(context);
-
+                    finish();
                     
                 });
                 builder.setCancelable(false);
@@ -128,6 +128,7 @@ public class BatteryOptimizationExemptionActivity extends Activity {
                         public void onClick(DialogInterface dialog, int which) {
                             buttonClicked.set(true);
                             showBatteryOptimizationIntent(context);
+                            finish();
                         }
                     })
                     .show());
@@ -135,36 +136,8 @@ public class BatteryOptimizationExemptionActivity extends Activity {
             
             }
 
-            while(!buttonClicked.get())
-            {
-                try {
-                    Thread.sleep(20);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            while(!isAppOnForeground())
-            {
-                try {
-                    Thread.sleep(20);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            PackageManager packageManager = this.getPackageManager();
-            Intent intent = packageManager.getLaunchIntentForPackage(this
-                    .getPackageName());
-            ComponentName componentName = intent.getComponent();
-            Intent mainIntent = Intent.makeRestartActivityTask(componentName);
-            this.startActivity(mainIntent);
-            Runtime.getRuntime().exit(0);
         }
-        else
-        {
-            finish();
-        }
+
     }
 
     private static void showBatteryOptimizationIntent(Context context)

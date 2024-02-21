@@ -471,6 +471,24 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
             this->forwardControlPackageToTargetRuntime(controlPackage);
             break;
         }
+        case CtrlType::CTRL_UPLOAD_CONFIG_AND_DATA:
+        {
+            if(!this->designerModeActive)
+            {
+                Logger::logError("Received control package CTRL_UPLOAD_CONFIG_AND DATA from host \"%s\", "
+                "however designer mode of this host (\"%s\") is disabled. Uploading a new config is forbidden.", controlPackage->source_host().c_str(), this->hostId.c_str());
+                return;
+            }
+            if(this->payloadDataPath == "")
+            {
+                Logger::logError("Received control package CTRL_UPLOAD_CONFIG_AND DATA from host \"%s\", "
+                "however payloadDataStoragePath of this host (\"%s\") is empty. Cannot load new config because we do not know where to store payload data.", controlPackage->source_host().c_str(), this->hostId.c_str());
+                return;
+            }
+
+            const ConfigUploadPayload& payload = controlPackage->control_val().config_upload_payload();
+        }
+        break;  
         default:
         {
             Logger::logWarning("Middleware received unsupported control package %s", CtrlType_Name(controlPackage->control_val().ctrl_type()).c_str());
@@ -740,4 +758,19 @@ void MiddleWare::readLogMessages()
 std::shared_ptr<SharedQueue<LogMessage>> MiddleWare::getLogMessagesQueue()
 {
     return nullptr;
+}
+
+void MiddleWare::setPayloadDataPath(const std::string& path)
+{
+    this->payloadDataPath = path;
+}
+
+void MiddleWare::enableDesignerMode()
+{
+    this->designerModeActive = true;
+}
+
+void MiddleWare::disableDesignerMode()
+{
+    this->designerModeActive = false;
 }
