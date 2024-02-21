@@ -134,6 +134,9 @@ class CLAID():
     
     def get_available_modules(self):
 
+        if not self.__started:
+            raise RuntimeError("Cannot get available modules. CLAID is not running, you have to start it first.")
+
         self.update_module_annotations()
         while not self.are_module_annotations_updated():
             pass
@@ -144,3 +147,19 @@ class CLAID():
         CLAID.__load_claid_library()
         CLAID.claid_c_lib.hello_world()
 
+
+    def get_input_channels_of_module(self, module_annotation):
+        channels = list()
+        for channel in module_annotation.channel_definition:
+            if channel.target_module != "":
+                channels.append(channel.channel)
+
+        return channels
+
+    def get_output_channels_of_module(self, module_annotation):
+        channels = list()
+        for channel in module_annotation.channel_definition:
+            if channel.source_module != "":
+                channels.append(channel.channel)
+
+        return channels

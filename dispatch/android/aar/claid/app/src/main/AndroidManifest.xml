@@ -16,6 +16,8 @@
     <uses-permission android:name="android.settings.MANAGE_ALL_FILES_ACCESS_PERMISSION" />
 
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
@@ -66,6 +68,12 @@
 
         <activity
             android:name="adamma.c4dhi.claid_android.Permissions.PermissionActivity"
+            android:exported="true">
+
+        </activity>
+
+        <activity
+            android:name="adamma.c4dhi.claid_android.Permissions.BatteryOptimizationExemptionActivity"
             android:exported="true">
 
         </activity>

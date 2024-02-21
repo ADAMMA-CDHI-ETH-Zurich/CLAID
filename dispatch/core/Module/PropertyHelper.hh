@@ -66,6 +66,7 @@ class PropertyHelper
                     values.push_back(tmpValue);
                 }
             }
+            return values.size() > 0;
         }
 
         bool wasAnyPropertyUnknown() const

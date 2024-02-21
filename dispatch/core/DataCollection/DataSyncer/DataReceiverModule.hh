@@ -41,6 +41,17 @@ namespace claid
     // and stored in the path.
     class DataReceiverModule : public Module
     {
+        public:
+            static void annotateModule(ModuleAnnotator& annotator)
+            {
+                annotator.setModuleDescription(absl::StrCat(
+                    "The DataReceiverModule is the counterpart to the DataSyncModule. Together, the two Modules allow to synchronize files stored on the file system between different hosts.\n"
+                    "Files can be synchronized based on a synchronization intervall (for example, every hour). Each file is tagged with the original host and user name, allowing you to\n"
+                    "receive data from many different hosts and users and store it in separate folders."
+                ));
+
+               
+            }
 
         private:
 

@@ -30,55 +30,84 @@ public class BatteryOptimizationExemptionActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Logger.logInfo("Checking battery optimization 6");
+
         this.setTheme();
        
         this.requestBatteryOptimizationExemption();
+        Logger.logInfo("Checking battery optimization 7");
+
     }
 
     private void requestBatteryOptimizationExemption()
     {
+        Logger.logInfo("Checking battery optimization 8");
+
         AtomicBoolean buttonClicked = new AtomicBoolean();
         buttonClicked.set(false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) 
         {
+            Logger.logInfo("Checking battery optimization 9");
+
             Context context = this;
             if(!CLAID.isWearOS(context))
             {
-                runOnUiThread(() ->
-                    new AlertDialog.Builder(context)
-                    .setMessage("On the next page, please disable battery optimizations. This is required to make CLAID run in the background as long as possible.")
-                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            buttonClicked.set(true);
-                            showBatteryOptimizationIntent(context);
-                        }
-                    })
-                    .show());
-               
-                    while(!buttonClicked.get())
-                    {
-                        try {
-                            Thread.sleep(20);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-        
-                    while(!isAppOnForeground())
-                    {
-                        try {
-                            Thread.sleep(20);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-        
-                    BatteryOptimizationExemption exemption = new BatteryOptimizationExemption();
-                    if(!exemption.isGranted())
-                    {
-                        requestBatteryOptimizationExemption();
-                    }
+                Logger.logInfo("Checking battery optimization 10");
+
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Battery optimization exemption");
+                builder.setMessage("On the next page, please disable battery optimizations. This is required to make CLAID run in the background as long as possible.");
+                builder.setPositiveButton("OK", (dialog, id) -> {
+                    showBatteryOptimizationIntent(context);
+
+                    
+                });
+                builder.setCancelable(false);
+                builder.setIcon(android.R.drawable.ic_dialog_alert);
+                builder.show();
+
+             
+
+                    // while(!buttonClicked.get())
+                    // {
+                    //     Logger.logInfo("Checking battery optimization 13");
+
+                    //     try {
+                    //         Thread.sleep(20);
+                    //     } catch (InterruptedException e) {
+                    //         throw new RuntimeException(e);
+                    //     }
+                    // }
+                    // Logger.logInfo("Checking battery optimization 14");
+
+                    // while(!isAppOnForeground())
+                    // {
+                    //     Logger.logInfo("Checking battery optimization 15");
+
+                    //     try {
+                    //         Thread.sleep(20);
+                    //     } catch (InterruptedException e) {
+                    //         throw new RuntimeException(e);
+                    //     }
+                    // }
+                    // Logger.logInfo("Checking battery optimization 16");
+
+                    // BatteryOptimizationExemption exemption = new BatteryOptimizationExemption();
+                    // if(!exemption.isGranted())
+                    // {
+                    //     Logger.logInfo("Checking battery optimization 17");
+
+                    //     requestBatteryOptimizationExemption();
+                    // }
+                    // else
+                    // {
+                    //     Logger.logInfo("Checking battery optimization 18");
+
+                    //     finish();
+                    // }
+                    // Logger.logInfo("Checking battery optimization 19");
+
             }
             else
             {

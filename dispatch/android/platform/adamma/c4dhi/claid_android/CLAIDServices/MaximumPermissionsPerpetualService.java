@@ -257,7 +257,7 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
         if((persistanceConfig.DISABLE_BATTERY_OPTIMIZATIONS || persistanceConfig.MONITOR_TRY_RESTART_IF_CRASHED_OR_EXITED) 
             && !CLAID.isBatteryOptimizationDisabled(context))
         {
-            Logger.logInfo("Requesting exemption from battery optimization");
+            Logger.logInfo("Requesting exemption from battery optimization " + CLAID.isBatteryOptimizationDisabled(context));
             CLAID.requestBatteryOptimizationExemption(context); 
         }
 

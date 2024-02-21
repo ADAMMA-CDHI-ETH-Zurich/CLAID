@@ -36,11 +36,14 @@ public class BatteryOptimizationExemption extends Permission
             Logger.logInfo("We have battery optimization exemtpion.");
             return;
         }
+        Logger.logInfo("Checking battery optimization 4");
 
         Intent intent = new Intent(getContext(), BatteryOptimizationExemptionActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         Logger.logInfo("request microphone permission6");
 
         getContext().startActivity(intent);
+        Logger.logInfo("Checking battery optimization 5");
+
     }
 }

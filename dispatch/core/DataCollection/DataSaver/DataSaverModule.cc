@@ -21,22 +21,7 @@
 #include "dispatch/core/DataCollection/DataSaver/DataSaverModule.hh"
 namespace claid
 {
-    void DataSaverModule::annotateModule(ModuleAnnotator& annotator)
-    {
-        annotator.setModuleDescription(absl::StrCat(
-            "The DataSaverModule allows to serialize data arriving on any channel to files on the local file system.\n",
-            "The Module can subscribe to ANY channel with any data type and automatically serialzes incoming data accordingly.\n",
-            "Naming of the files as well as the file format can be configured. For example, it is possible to store data every minute or hour etc.\n",
-            "and group all data into different directories.\n",
-            "Different file formats are supported. Binary and JSON serialization are supported for every data type.\n",
-            "Some formats are only available for certain data types (e.g., serializing AudioData to MP3).\n"
-        ));
-
-        annotator.describeProperty("what", "String: Name of the channel which data chall be serialized.");
-
-        annotator.describeSubscribeChannel<int>("what", "Input channel for the data");
-    }
-
+    
     
     void DataSaverModule::initialize(const std::map<std::string, std::string>& propertiesMap)
     {
