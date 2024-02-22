@@ -29,6 +29,9 @@ namespace claid
 
         public:
 
+            Configuration();
+            Configuration(const claidservice::CLAIDConfig& config);
+
             absl::Status fromJSONString(const std::string& json);
             absl::Status toJSONString(std::string& jsonOutput) const;
 
@@ -42,6 +45,8 @@ namespace claid
             bool hostExistsInConfiguration(const std::string& hostname) const;
 
             LogMessageSeverityLevel getMinLogSeverityLevelToPrint(const std::string& hostName) const;
+
+            bool isDesignerModeEnabled() const;
     };
 
 

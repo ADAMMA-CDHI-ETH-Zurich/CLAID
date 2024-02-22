@@ -3,6 +3,8 @@
 #include "dispatch/core/CLAID.hh"
 #include "dispatch/core/Logger/Logger.hh"
 #include "dispatch/core/Router/RoutingTreeParser.hh"
+#include "dispatch/core/Utilities/Path.hh"
+#include "dispatch/core/Utilities/FileUtils.hh"
 
 using namespace claid;
 using namespace std;
@@ -91,6 +93,15 @@ absl::Status MiddleWare::start() {
     if(!status.ok())
     {
         return status;
+    }
+
+    if(config.isDesignerModeEnabled())
+    {
+        this->enableDesignerMode();
+    }
+    else
+    {
+        this->disableDesignerMode();
     }
 
     Logger::logInfo("Middleware started.");
@@ -473,20 +484,7 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
         }
         case CtrlType::CTRL_UPLOAD_CONFIG_AND_DATA:
         {
-            if(!this->designerModeActive)
-            {
-                Logger::logError("Received control package CTRL_UPLOAD_CONFIG_AND DATA from host \"%s\", "
-                "however designer mode of this host (\"%s\") is disabled. Uploading a new config is forbidden.", controlPackage->source_host().c_str(), this->hostId.c_str());
-                return;
-            }
-            if(this->payloadDataPath == "")
-            {
-                Logger::logError("Received control package CTRL_UPLOAD_CONFIG_AND DATA from host \"%s\", "
-                "however payloadDataStoragePath of this host (\"%s\") is empty. Cannot load new config because we do not know where to store payload data.", controlPackage->source_host().c_str(), this->hostId.c_str());
-                return;
-            }
-
-            const ConfigUploadPayload& payload = controlPackage->control_val().config_upload_payload();
+            this->handleUploadConfigAndPayloadMessage(controlPackage);
         }
         break;  
         default:
@@ -747,6 +745,15 @@ absl::Status MiddleWare::loadNewConfig(const Configuration& config)
     }
     Logger::setMinimimSeverityLevelToPrint(config.getMinLogSeverityLevelToPrint(this->hostId));
 
+    if(config.isDesignerModeEnabled())
+    {
+        this->enableDesignerMode();
+    }
+    else
+    {
+        this->disableDesignerMode();
+    }
+
     return absl::OkStatus();
 }
 
@@ -773,4 +780,85 @@ void MiddleWare::enableDesignerMode()
 void MiddleWare::disableDesignerMode()
 {
     this->designerModeActive = false;
+}
+
+
+void MiddleWare::handleUploadConfigAndPayloadMessage(std::shared_ptr<DataPackage> controlPackage)
+{
+    const ConfigUploadPayload& payload = controlPackage->control_val().config_upload_payload();
+    if(!this->designerModeActive)
+    {
+        Logger::logError("Received control package CTRL_UPLOAD_CONFIG_AND DATA from host \"%s\", "
+        "however designer mode of this host (\"%s\") is disabled. Uploading a new config is forbidden.", controlPackage->source_host().c_str(), this->hostId.c_str());
+        return;
+    }
+    if(this->payloadDataPath == "")
+    {
+        Logger::logError("Received control package CTRL_UPLOAD_CONFIG_AND DATA from host \"%s\", "
+        "however payloadDataStoragePath of this host (\"%s\") is empty. Cannot load new config because we do not know where to store payload data.", controlPackage->source_host().c_str(), this->hostId.c_str());
+        return;
+    }
+
+    if(!storePayload(payload))
+    {
+        Logger::logError("Failed to store payload");
+    }
+
+    notifyAllRuntimesAboutNewPayload();
+    Configuration newConfig(payload.config());
+    absl::Status status = loadNewConfig(newConfig);
+    if(!status.ok())
+    {
+        Logger::logError("Failed to load new config: %s", status.ToString().c_str());
+    }
+}
+
+bool MiddleWare::storePayload(const ConfigUploadPayload& payload)
+{
+    for(const claidservice::DataFile& dataFile : payload.payload_files())
+    {
+        const std::string& relativePath = dataFile.relative_path();
+        std::string folderPath;
+        std::string filePath;
+        Path::splitPathIntoFolderAndFileName(relativePath, folderPath, filePath);
+        printf("folder file %s %s\n", folderPath.c_str(), filePath.c_str());
+            
+        if(folderPath != "")
+        {
+            std::string targetFolderPath = this->payloadDataPath + std::string("/") + folderPath;
+            if(!FileUtils::dirExists(targetFolderPath))
+            {
+                if(!FileUtils::createDirectoriesRecursively(targetFolderPath))
+                {
+                    Logger::logError("%s", absl::StrCat("Error in DataReceiverModule, cannot create target folder \"", targetFolderPath, "\".").c_str());
+                    return false;
+                }
+            }
+        }
+
+        std::string targetFilePath = 
+                    this->payloadDataPath + std::string("/") + folderPath + std::string("/") + filePath;
+        std::fstream file(targetFilePath, std::ios::out | std::ios::binary);
+        if(!file.is_open())
+        {
+            Logger::logError("%s", absl::StrCat("Error, cannot save binary data to \"", targetFilePath, "\".\n. Could not open File for writing.").c_str());
+            return false;
+        }
+
+        
+        file.write(dataFile.file_data().data(), dataFile.file_data().size());
+    }
+    return true;
+}
+
+void MiddleWare::notifyAllRuntimesAboutNewPayload()
+{
+    std::shared_ptr<DataPackage> package = std::make_shared<DataPackage>();
+    ControlPackage& ctrlPackage = *package->mutable_control_val();
+    
+    ctrlPackage.set_ctrl_type(CtrlType::CTRL_ON_NEW_CONFIG_PAYLOAD_DATA);
+    package->set_source_host(this->hostId);
+    package->set_target_host(this->hostId);
+    this->forwardControlPackageToAllRuntimes(package);
+    Logger::logInfo("Forwarding CTRL_ON_NEW_CONFIG_PAYLOAD_DATA package to all local runtimes");
 }

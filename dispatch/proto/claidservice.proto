@@ -81,7 +81,8 @@ enum CtrlType {
   CTRL_RESTART_RUNTIME_DONE             = 14;
   CTRL_REQUEST_MODULE_ANNOTATIONS       = 15;
   CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE  = 16;
-  CTRL_UPLOAD_CONFIG_AND_DATA               = 17; // Can be used to load a new config into a host alongside with additional data (model files, python code to inject etc.). Requires designer_mode in CLAIDConfig to be true.
+  CTRL_UPLOAD_CONFIG_AND_DATA               = 17; // Will be received by the middleware (not forwarded to the Runtimes). Can be used to load a new config into a host alongside with additional data (model files, python code to inject etc.). Requires designer_mode in CLAIDConfig to be true.
+  CTRL_ON_NEW_CONFIG_PAYLOAD_DATA           = 18; // Will be sent by the middleware to all local Runtimes after the Middleware received a package of type CTRL_UPLOAD_CONFIG_AND_DATA. Informs the Runtimes that new payloads are available.
   //CTRL_ADD_MODULE                         = 11; // Can be used to add a new Module at runtime (requires Module name, properties, channels). This package will be forwarded by the LocalRouter to the Middleware that can handle this Module.
   //CTRL_REMOVE_MODULE                      = 12; // Can be used to remove a Module at runtime.
   //CTRL_ADD_MODULE_SUCCESS                 = 13; // Sent as response to CTRL_ADD_MODULE the Module was added successfully.
@@ -104,7 +105,7 @@ message ControlPackage {
   ErrorMsg error_msg                        = 5; // CTRL_ERROR: Error report sent towards root server
   ActionRequest action_request              = 6; // CTRL_ACTION: action request sent to all children of the claid instance
   map<string, ModuleAnnotation> module_annotations = 7; // CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE
-  ConfigUploadPayload config_upload_payload        = 8; // CTRL_UPLOAD_CONFIG_AND_DATA
+  ConfigUploadPayload config_upload_payload        = 8; // CTRL_UPLOAD_CONFIG_AND_DATA and CTRL_ON_NEW_CONFIG_PAYLOAD_DATA;
 }
 
 message AccumulatedStatus {
@@ -343,12 +344,22 @@ message ModuleConfig
 
 message DataFile
 {
-    string relative_path = 1;
-    bytes file_data = 2;
+  string relative_path = 1;
+  bytes file_data = 2;
+}
+
+message ModuleInjectionDescription
+{
+  repeated string module_names = 1; // Names of modules to inject.
+  repeated string module_file = 2; // Name of the file in which the Module can be found. 
+  Runtime runtime = 3; // Runtime which shall inject this module.
 }
 
 message ConfigUploadPayload
 {
   CLAIDConfig config = 1;
-  repeated DataFile additional_files = 2;
+  repeated DataFile payload_files = 2;
+
+  // Contains names of Modules which were sent as payload and can be injected by the corresponding Runtimes.
+  repeated ModuleInjectionDescription modules_to_inject = 3; 
 }

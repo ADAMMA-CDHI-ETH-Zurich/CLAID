@@ -22,6 +22,7 @@
 #include "dispatch/core/Module/Module.hh"
 #include "dispatch/core/Utilities/FileUtils.hh"
 #include "dispatch/core/Utilities/StringUtils.hh"
+#include "dispatch/core/Utilities/Path.hh"
 #include "dispatch/proto/sensor_data_types.grpc.pb.h"
 #include "dispatch/proto/claidservice.grpc.pb.h"
 
@@ -122,28 +123,7 @@ namespace claid
             }
 
 
-            // Splits a/b/c/d.txt into a/b/c and d.txt
-            void splitPathIntoFolderAndFileName(const std::string& path, std::string& folderPath, std::string& fileName)
-            {
-                if(path.find("/") == std::string::npos)
-                {
-                    // No folder, assume path is only a fileName.
-                    folderPath = "";
-                    fileName = path;
-                    return;
-                }
-                int index = path.size() - 1;
-                while(index > 0)
-                {
-                    if(path[index] == '/')
-                    {
-                        folderPath = path.substr(0, index);
-                        fileName = path.substr(index + 1, path.size());
-                        return;
-                    }
-                    index--;
-                }
-            }
+            
 
             void getListOfFilesInTargetDirectory(std::vector<std::string>& output)
             {
@@ -212,7 +192,7 @@ namespace claid
                 const std::string& relativePath = dataFile.relative_path();
                 std::string folderPath;
                 std::string filePath;
-                splitPathIntoFolderAndFileName(relativePath, folderPath, filePath);
+                Path::splitPathIntoFolderAndFileName(relativePath, folderPath, filePath);
                 printf("folder file %s %s\n", folderPath.c_str(), filePath.c_str());
                  
                 if(folderPath != "")

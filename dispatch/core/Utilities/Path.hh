@@ -149,6 +149,28 @@ namespace claid
                 return *this;
             }
 
+            // Splits a/b/c/d.txt into a/b/c and d.txt
+            static void splitPathIntoFolderAndFileName(const std::string& path, std::string& folderPath, std::string& fileName)
+            {
+                if(path.find("/") == std::string::npos)
+                {
+                    // No folder, assume path is only a fileName.
+                    folderPath = "";
+                    fileName = path;
+                    return;
+                }
+                int index = path.size() - 1;
+                while(index > 0)
+                {
+                    if(path[index] == '/')
+                    {
+                        folderPath = path.substr(0, index);
+                        fileName = path.substr(index + 1, path.size());
+                        return;
+                    }
+                    index--;
+                }
+            }
 
     };
 }

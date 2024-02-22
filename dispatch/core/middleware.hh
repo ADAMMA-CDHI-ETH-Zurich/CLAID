@@ -136,6 +136,11 @@ namespace claid
 
             void readLogMessages();
             std::shared_ptr<SharedQueue<LogMessage>> getLogMessagesQueue();
+
+
+            void handleUploadConfigAndPayloadMessage(std::shared_ptr<DataPackage> controlPackage);
+            bool storePayload(const ConfigUploadPayload& payload);
+            void notifyAllRuntimesAboutNewPayload();
     };
 }
 

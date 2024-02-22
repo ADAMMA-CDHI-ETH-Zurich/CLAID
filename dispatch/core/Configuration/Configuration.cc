@@ -11,6 +11,16 @@ using claidservice::ModuleConfig;
 
 namespace claid
 {
+    Configuration::Configuration()
+    {
+
+    }
+
+    Configuration::Configuration(const claidservice::CLAIDConfig& config) : config(config)
+    {
+
+    }
+
     absl::Status Configuration::fromJSONString(const std::string& json)
     {
         google::protobuf::util::JsonParseOptions options2;
@@ -237,6 +247,11 @@ namespace claid
             }
         }
         return LogMessageSeverityLevel::INFO;
+    }
+
+    bool Configuration::isDesignerModeEnabled() const
+    {
+        return config.designer_mode();
     }
     
 }

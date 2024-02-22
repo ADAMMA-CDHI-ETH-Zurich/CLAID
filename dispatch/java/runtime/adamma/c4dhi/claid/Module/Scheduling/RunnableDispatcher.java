@@ -14,6 +14,15 @@ import java.sql.Time;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 
 public class RunnableDispatcher 
 {
@@ -42,9 +51,11 @@ public class RunnableDispatcher
                 return Long.MAX_VALUE;
             }
 
-            long now = System.currentTimeMillis();
+            LocalDateTime now = LocalDateTime.now();
             LocalDateTime nextExecutionTime = scheduledRunnables.keySet().iterator().next();
-            long timeUntilNextRunnableIsDue = localDateTimeToMilliseconds(nextExecutionTime) - now;
+
+            long timeUntilNextRunnableIsDue = localDateTimeToMilliseconds(nextExecutionTime) - localDateTimeToMilliseconds(now);
+            writeToLogFile("Calculating getWaitDurationUntilNextRunnableIsDue " + now.toString() + " " + nextExecutionTime.toString() + " " + timeUntilNextRunnableIsDue);
 
             // Make sure we do not return a negative duration.
             return timeUntilNextRunnableIsDue < 0 ? 0 : timeUntilNextRunnableIsDue;
@@ -64,10 +75,16 @@ public class RunnableDispatcher
 
         mutex.lock();
         try {
+            writeToLogFile("condition variable waiting for "  + waitTime + " milliseconds");
+
             conditionVariable.await(waitTime, TimeUnit.MILLISECONDS);
+            writeToLogFile("Condition variable awoke");
         } catch (InterruptedException e) {
+            writeToLogFile("Interrupted exception");
             Thread.currentThread().interrupt();
+
         } finally {
+            writeToLogFile("Condition variable awoke unlocking");
             mutex.unlock();
         }
     }
@@ -95,12 +112,16 @@ public class RunnableDispatcher
 
             if (scheduledRunnable.schedule.doesRunnableHaveToBeRepeated())
              {
+                writeToLogFile("Runnable needs to be repeated ");
+
                 mutex.lock();
                 try {
 
                     scheduledRunnable.schedule.updateExecutionTime();
 
                     LocalDateTime newExecutionTime = scheduledRunnable.schedule.getExecutionTime();
+                    writeToLogFile("Runnable new execution time " + newExecutionTime.toString());
+
 
                     // Reinsert the runnable with the new scheduled execution time.
                     // Note that the runnable was removed from scheduledRunnables in the getAndRemoveDueRunnables() function.
@@ -215,16 +236,54 @@ public class RunnableDispatcher
         List<ScheduledRunnable> dueRunnables = new ArrayList<>();
         while (running) {
             do {
+                writeToLogFile("Scheduler woke up.");
                 Logger.logInfo("Scheduling " );
                 // While we process runnables, it is possible
                 // that another runnable becomes due in the meantime.
                 // Hence, we repeat this loop until there are no more
                 // runnables that are due.
                 dueRunnables = getAndRemoveDueRunnables();
+                writeToLogFile("Scheduler due runnables: " + dueRunnables.size());
+
                 processRunnables(dueRunnables);
             } while (!dueRunnables.isEmpty());
             rescheduleRequired = false;
             waitUntilRunnableIsDueOrRescheduleIsRequired();
         }
+    }
+
+    private FileOutputStream fos = null;
+    void writeToLogFile(String data) 
+    {
+        try {
+
+            if(fos == null)
+            {
+                // Create a new File instance
+                File file = new File("/sdcard/Android/media/adamma.c4dhi.org.alex_data_collection/scheduler_log.txt");
+
+                // Use FileOutputStream to open the file in append mode
+                fos = new FileOutputStream(file, true);
+            }
+            // Get the current date and time
+            String dateTime = getCurrentDateTime();
+
+            // Combine date, time, and data
+            String entry = dateTime + " - " + data + "\n";
+
+            // Write the data to the file
+            fos.write(entry.getBytes());
+
+            // Close the file output stream
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static String getCurrentDateTime() {
+        // Get the current date and time in the desired format
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
+        Date currentDate = new Date();
+        return dateFormat.format(currentDate);
     }
 }
