@@ -56,8 +56,16 @@ class CLAID():
             CLAID.claid_c_lib.get_socket_path.argtypes = [ctypes.c_void_p]
             CLAID.claid_c_lib.get_socket_path.restype = ctypes.c_char_p
 
-            CLAID.claid_c_lib.load_new_config.restype = ctypes.c_bool
             CLAID.claid_c_lib.load_new_config.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+            CLAID.claid_c_lib.load_new_config.restype = ctypes.c_bool
+
+            CLAID.claid_c_lib.enable_designer_mode.argtypes = [ctypes.c_void_p]
+            CLAID.claid_c_lib.enable_designer_mode.restype = None
+
+            CLAID.claid_c_lib.disable_designer_mode.argtypes = [ctypes.c_void_p]
+            CLAID.claid_c_lib.disable_designer_mode.restype = None
+
+            
         CLAID.claid_c_lib_loaded = True
     
     def __init__(self, module_injection_storage_path = None):

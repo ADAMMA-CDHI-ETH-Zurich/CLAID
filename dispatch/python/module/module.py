@@ -126,6 +126,9 @@ class Module(ABC):
             runnable=function_runnable,
             schedule=ScheduleOnce(start_time))
 
+        if name in self.__timers:
+            self.__timers[name].runnable.invalidate()
+
         self.__timers[name] = runnable
         self.__runnable_dispatcher.addRunnable(runnable)
 

@@ -11,6 +11,7 @@ absl::Status BatchJSONSerializer::beginNewFile(const std::string& filePath)
     Logger::logInfo("BatchJSONSerializer beginning file %s", filePath.c_str());
     this->currentFilePath = filePath;
     this->data = nullptr;
+    this->overrideExistingFiles = overrideExistingFiles;
     return absl::OkStatus();
 };
 
@@ -21,7 +22,7 @@ absl::Status BatchJSONSerializer::finishFile()
         return absl::InvalidArgumentError("BatchJSONSerializer failed to finish file. Current data is null.");
     }
 
-    std::ofstream outputFile(this->currentFilePath, std::ios::app);
+    std::ofstream outputFile(this->currentFilePath, this->overrideExistingFiles ? (std::ios::out) : (std::ios::app));
 
     if(!outputFile.is_open())
     {

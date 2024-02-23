@@ -187,6 +187,13 @@ namespace claid
             std::static_pointer_cast<Runnable>(functionRunnable), 
             ScheduleOnce(startTime));
 
+        auto it = this->timers.find(name);
+        if(it != this->timers.end())
+        {
+            // Make old scheduled runnable invalid.
+            it->second.runnable->invalidate();
+        }
+
         this->timers.insert(std::make_pair(name, scheduledRunnable));
         this->runnableDispatcher.addRunnable(scheduledRunnable);
     }

@@ -39,13 +39,12 @@ namespace claid
                     "Different data formats (e.g., binary, json, ...) and file naming conventions (store data in one file per minute/hour/day etc.) are supported.\n"
                 ));
 
-                annotator.describeProperty("what", "String: Name of the channel which data chall be serialized.");
                 annotator.describeProperty("storagePath", "Path to a folder where to store files.");
                 annotator.describeProperty("fileNameFormat", "Naming convention for the files that data will be serialized to. You can use time format identifiers.\n"
                 "For example, my_data_%H_%M.json would store data in one file per minute (e.g., my_data_12_30 for data recorded at 12:30).");
                 annotator.describeProperty("fileType", "Data format for storing the data. Typically available are json, binary, batch_json and batch_binary.");
-
-                annotator.describeSubscribeChannel<int>("what", "Input channel for the data");
+                annotator.describeProperty("overrideExistingFiles", "If set to \"true\", an existing output file will be written whenever there is new data which would be stored in that file.");
+                annotator.describeSubscribeChannel<int>("DataChannel", "Input channel for the data");
             }
         private:
             FileSaver fileSaver;

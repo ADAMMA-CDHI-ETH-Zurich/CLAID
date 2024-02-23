@@ -33,8 +33,8 @@ class PropertyHelper
             }
         }
         
-        template<typename T>
-        bool getProperty(const std::string& key, T& value, const T& defaultValue) 
+        template<typename T, typename U>
+        bool getOptionalProperty(const std::string& key, T& value, const U& defaultValue) 
         {
             auto it = properties.find(key);
             if (it != properties.end()) 

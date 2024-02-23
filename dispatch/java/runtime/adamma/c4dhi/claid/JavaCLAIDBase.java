@@ -30,6 +30,8 @@ public abstract class JavaCLAIDBase
     private static native boolean nativeLoadNewConfig(long handle, String config);
 
     private static native void setPayloadDataPath(long handle, String path);
+    private static native String getPayloadDataPath(long handle);
+    
     private static native void enableDesignerMode(long handle);
     private static native void disableDesignerMode(long handle); 
     

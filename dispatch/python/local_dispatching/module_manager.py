@@ -9,15 +9,17 @@ from dispatch.proto.claidservice_pb2 import *
 from threading import Thread
 import time
 
+import sys
+
 class ModuleManager():
 
-    def __init__(self, module_dispatcher, module_factory, modules_injection_storage_path = None):
+    def __init__(self, module_dispatcher, module_factory):
         self.__module_dispatcher = module_dispatcher
         self.__module_factory = module_factory
         # In Python, it is possible to add Modules at runtime.
 
-        if modules_injection_storage_path is not None:
-            self.__module_injector = ModuleInjector(modules_injection_storage_path, self.__module_factory)
+       
+        self.__module_injector = ModuleInjector(self.__module_factory)
         self.__running_modules = dict()    
 
         # self.__from_module_dispatcher_queue = ThreadSafeChannel()
@@ -316,4 +318,23 @@ class ModuleManager():
 
 
     def inject_modules_from_config_upload_payload(self, payload):
-        
+
+        module_injections = dict()
+
+        for module_injection in payload.modules_to_inject:
+            if module_injection.runtime != Runtime.RUNTIME_PYTHON:
+                continue
+
+            if module_injection.module_file not in module_injections:
+                module_injections[module_injection.module_file] = list()
+
+            module_injections[module_injection.module_file].append(module_injection.module_name)
+
+
+        for entry in module_injections:
+            if not self.__module_injector.inject_claid_modules_from_python_file(payload.payload_data_path, entry, module_injections[entry]):
+                Logger.log_error("Failed to inject modules {}".format(module_injections[entry]))
+                return False
+            
+        return True
+

@@ -117,6 +117,19 @@ void set_payload_data_path(void* handle, const char* path)
 }
 
 __attribute__((visibility("default"))) __attribute__((used))
+const char* get_payload_data_path(void* handle)
+{
+    if(!handle)
+    {
+        claid::Logger::logError("Cannot set payload data path, handle is null.");
+        return "";
+    }
+
+    auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
+    return middleWare->getPayloadDataPath().c_str();
+}
+
+__attribute__((visibility("default"))) __attribute__((used))
 void enable_designer_mode(void* handle)
 {
     if(!handle)

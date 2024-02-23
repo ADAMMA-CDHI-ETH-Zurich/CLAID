@@ -772,6 +772,11 @@ void MiddleWare::setPayloadDataPath(const std::string& path)
     this->payloadDataPath = path;
 }
 
+const std::string& MiddleWare::getPayloadDataPath() const
+{
+    return this->payloadDataPath;
+}
+
 void MiddleWare::enableDesignerMode()
 {
     this->designerModeActive = true;
@@ -781,7 +786,6 @@ void MiddleWare::disableDesignerMode()
 {
     this->designerModeActive = false;
 }
-
 
 void MiddleWare::handleUploadConfigAndPayloadMessage(std::shared_ptr<DataPackage> controlPackage)
 {

@@ -21,7 +21,7 @@ absl::Status BatchBinarySerializer::finishFile()
         return absl::InvalidArgumentError("BatchBinarySerializer failed to finish file. Current data is null.");
     }
 
-    std::ofstream outputFile(this->currentFilePath, std::ios::app);
+    std::ofstream outputFile(this->currentFilePath, (this->overrideExistingFiles ? (std::ios::out) : (std::ios::app)) | std::ios::binary);
 
     if(!outputFile.is_open())
     {

@@ -31,12 +31,16 @@ namespace claid
         std::string storagePath;
         std::string fileNameFormat;
         std::string fileType;
+        bool overrideExistingFiles;
 
 
         properties.getProperty("what", what);
         properties.getProperty("storagePath", storagePath);
         properties.getProperty("fileNameFormat", fileNameFormat);
         properties.getProperty("fileType", fileType);
+        properties.getOptionalProperty("overrideExistingFiles", overrideExistingFiles, false);
+
+        Logger::logInfo("DataSaver override existing files: %d", overrideExistingFiles);
 
         if(properties.wasAnyPropertyUnknown())
         {
@@ -47,7 +51,8 @@ namespace claid
             return;
         }
 
-        absl::Status status = this->fileSaver.initialize(what, storagePath, fileNameFormat, fileType);
+
+        absl::Status status = this->fileSaver.initialize(what, storagePath, fileNameFormat, fileType, overrideExistingFiles);
         if(!status.ok())
         {
             this->moduleFatal(status);

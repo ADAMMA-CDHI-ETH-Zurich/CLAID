@@ -362,4 +362,5 @@ message ConfigUploadPayload
 
   // Contains names of Modules which were sent as payload and can be injected by the corresponding Runtimes.
   repeated ModuleInjectionDescription modules_to_inject = 3; 
+  string payload_data_path = 4; // Current payloadDataPath (path where the middleware stores payloads).
 }

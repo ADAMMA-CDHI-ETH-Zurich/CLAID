@@ -531,6 +531,13 @@ public abstract class Module
         }
 
         FunctionRunnable runnable = new FunctionRunnable(function, new ScheduleOnce(dateTime));
+
+        if(timers.containsKey((name)))
+        {
+            // Delete existing scheduled function with same name.
+            timers.get(name).invalidate();
+        }
+
         timers.put(name, runnable);
         this.runnableDispatcher.addRunnable(runnable);
     }

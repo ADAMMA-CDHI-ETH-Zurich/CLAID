@@ -49,6 +49,7 @@ namespace claid
             absl::Status loadNewConfig(const Configuration& configuration);
 
             void setPayloadDataPath(const std::string& path);
+            const std::string& getPayloadDataPath() const;
             void enableDesignerMode();
             void disableDesignerMode();
 

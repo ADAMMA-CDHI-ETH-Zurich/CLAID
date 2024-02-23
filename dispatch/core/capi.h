@@ -16,6 +16,8 @@ extern "C"
     bool load_new_config(void* handle, const char* config_file);
 
     void set_payload_data_path(void* handle, const char* path);
+    const char* get_payload_data_path(void* handle);
+    
     void enable_designer_mode(void* handle);
     void disable_designer_mode(void* handle);
 

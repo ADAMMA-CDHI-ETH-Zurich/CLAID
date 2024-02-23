@@ -90,6 +90,20 @@ extern "C"
         set_payload_data_path(nativeHandle, stdPayloadPath.c_str());
     }
 
+    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_getPayloadDataPath
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle) 
+    {
+        if(!handle)
+        {
+            claid::Logger::logError("Cannot set payload data path, handle is null.");
+            return "";
+        }
+
+        const char* socketPath = get_socket_path(nativeHandle);
+
+        return stdStringToJString(env, socketPath);
+    }
+
     JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_enableDesignerMode
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) 
     {

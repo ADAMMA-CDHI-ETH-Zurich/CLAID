@@ -73,10 +73,17 @@ class DataSerializer
             return absl::OkStatus();
         }
 
+        bool overrideExistingFiles = false;
+
     public:
 
         virtual ~DataSerializer() {}
         
+        void setOverrideExistingFiles(bool overrideExistingFiles)
+        {
+            this->overrideExistingFiles = overrideExistingFiles;
+        }
+
         virtual absl::Status beginNewFile(const std::string& file) = 0;
         virtual absl::Status finishFile() = 0;
 

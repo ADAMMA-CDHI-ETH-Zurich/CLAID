@@ -66,10 +66,7 @@ extern "C"
     JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_getSocketPath
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) {
         void* nativeHandle = reinterpret_cast<void*>(handle);
-        std::cout << "test\n";
         const char* socketPath = get_socket_path(nativeHandle);
-        std::cout << "got socket\n";
-        std::cout << "got socket path " << socketPath << "\n";
 
         return stdStringToJString(env, socketPath);
     }
@@ -93,6 +90,20 @@ extern "C"
         set_payload_data_path(nativeHandle, stdPayloadPath.c_str());
     }
 
+    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_getPayloadDataPath
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle) 
+    {
+        if(!handle)
+        {
+            claid::Logger::logError("Cannot set payload data path, handle is null.");
+            return "";
+        }
+
+        const char* socketPath = get_socket_path(nativeHandle);
+
+        return stdStringToJString(env, socketPath);
+    }
+
     JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_enableDesignerMode
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle, jstring path) 
     {
@@ -107,5 +118,4 @@ extern "C"
         void* nativeHandle = reinterpret_cast<void*>(handle);
         disable_designer_mode(nativeHandle);
     }
-
 }

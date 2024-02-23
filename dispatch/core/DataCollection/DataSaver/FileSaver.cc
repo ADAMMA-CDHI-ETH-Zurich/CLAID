@@ -29,7 +29,8 @@ namespace claid
 
     }
 
-    absl::Status FileSaver::initialize(const std::string& what, const std::string& storagePath, const std::string& fileNameFomat, const std::string& fileType)
+    absl::Status FileSaver::initialize(const std::string& what, const std::string& storagePath, 
+        const std::string& fileNameFomat, const std::string& fileType, bool overrideExistingFiles = false)
     {  
         if(this->initialized)
         {
@@ -40,6 +41,7 @@ namespace claid
         this->storagePath = storagePath;
         this->fileNameFormat = fileNameFomat;
         this->fileType = fileType;
+        this->overrideExistingFiles = overrideExistingFiles;
 
         if(this->storagePath.size() > 0 && this->storagePath[this->storagePath.size() - 1] != '/')
         {
@@ -51,6 +53,8 @@ namespace claid
         {
             return absl::NotFoundError(absl::StrCat("Unable to find serializer for data type \"", fileType, "\"."));
         }
+
+        this->serializer->setOverrideExistingFiles(overrideExistingFiles);
 
         std::string channelName = this->what;
         claid::StringUtils::stringReplaceAll(channelName, "/", "_");

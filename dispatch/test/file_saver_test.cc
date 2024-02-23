@@ -41,7 +41,7 @@ TEST(FileSaverTestSuite, FileSaverTest)
 
 
     FileSaver fileSaver;
-    absl::Status status = fileSaver.initialize(what, storagePath, fileNameFormat, dataType);
+    absl::Status status = fileSaver.initialize(what, storagePath, fileNameFormat, dataType, false);
     ASSERT_TRUE(status.ok()) << status;
 
 
