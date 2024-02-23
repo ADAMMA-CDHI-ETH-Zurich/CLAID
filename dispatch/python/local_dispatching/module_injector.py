@@ -15,15 +15,13 @@ class ModuleInjector():
         sys.path.append(storage_path_for_injected_modules)
 
     
-    # raw_python_code is the content of a python file read to a string (NOT the path to a file).
-    # name is the file name that the raw_python_code will be saved to under storage_path_for_injected_modules.
-    # The file is saved and then imported using importlib.import_module. 
+    # python_file_path is the path to a python file.
     # module_names is a list of CLAID module names (i.e., class names) which can be found in the python file (i.e., 
     # they need to be defined in the raw_python_code). They will be added to the CLAID ModuleFactory.
     # If you call this function again with the same name, then the previous code will be overriden and the 
     # python code will be updated using importlib.reload.
     # It is currently NOT possible to unload modules.
-    def inject_claid_modules_from_python_file(self, name: str, raw_python_code: str, module_names : list):
+    def inject_claid_modules_from_python_file(self, name: str, module_names : list):
         python_handle = None
         try:
             file_path = os.path.join(self.storage_path_for_injected_modules, name)

@@ -105,7 +105,7 @@ message ControlPackage {
   ErrorMsg error_msg                        = 5; // CTRL_ERROR: Error report sent towards root server
   ActionRequest action_request              = 6; // CTRL_ACTION: action request sent to all children of the claid instance
   map<string, ModuleAnnotation> module_annotations = 7; // CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE
-  ConfigUploadPayload config_upload_payload        = 8; // CTRL_UPLOAD_CONFIG_AND_DATA and CTRL_ON_NEW_CONFIG_PAYLOAD_DATA;
+  ConfigUploadPayload config_upload_payload        = 8; // CTRL_UPLOAD_CONFIG_AND_DATA and CTRL_ON_NEW_CONFIG_PAYLOAD_DATA
 }
 
 message AccumulatedStatus {
@@ -350,8 +350,8 @@ message DataFile
 
 message ModuleInjectionDescription
 {
-  repeated string module_names = 1; // Names of modules to inject.
-  repeated string module_file = 2; // Name of the file in which the Module can be found. 
+  string module_name = 1; // Names of modules to inject.
+  string module_file = 2; // Name of the file in which the Module can be found. 
   Runtime runtime = 3; // Runtime which shall inject this module.
 }
 

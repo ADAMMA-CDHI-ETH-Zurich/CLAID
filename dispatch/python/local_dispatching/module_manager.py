@@ -230,6 +230,10 @@ class ModuleManager():
         elif packet.control_val.ctrl_type == CtrlType.CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE:
             self.__module_annotations = packet.control_val.module_annotations
             self.__module__anotations_updated = True
+        elif packet.control_val.ctrl_type == CtrlType.CTRL_ON_NEW_CONFIG_PAYLOAD_DATA:
+            payload = packet.control_val.config_upload_payload
+            
+            self.inject_modules_from_config_upload_payload(payload)
 
         else:
             Logger.log_warning(f"ModuleManager received package with unsupported control val {packet.control_val.ctrl_type}")
@@ -311,3 +315,5 @@ class ModuleManager():
         return True
 
 
+    def inject_modules_from_config_upload_payload(self, payload):
+        
