@@ -5,6 +5,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import adamma.c4dhi.claid.Logger.Logger;
+import adamma.c4dhi.claid_platform_impl.CLAID;
 
 import java.util.concurrent.TimeUnit;
 import java.util.Map;
@@ -260,7 +261,7 @@ public class RunnableDispatcher
             if(fos == null)
             {
                 // Create a new File instance
-                File file = new File("/sdcard/Android/media/adamma.c4dhi.org.alex_data_collection/scheduler_log.txt");
+                File file = new File(CLAID.getMediaDirPath(CLAID.getContext()) + "/scheduler_log.txt");
 
                 // Use FileOutputStream to open the file in append mode
                 fos = new FileOutputStream(file, true);

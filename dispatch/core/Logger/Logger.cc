@@ -93,17 +93,20 @@ void claid::Logger::log(const LogMessageSeverityLevel severityLevel,
 
 	ss << "] " << message;
 
-    {
-        std::unique_lock<std::mutex> lock(loggerMutex);
-        if(severityLevel >= Logger::minSeverityLevelToPrintAndStore)
-        {
+    // {
+    //     std::unique_lock<std::mutex> lock(loggerMutex);
+    //     if(severityLevel >= Logger::minSeverityLevelToPrintAndStore)
+    //     {
             #ifdef __ANDROID__
-                LOGCAT(ss.str().c_str(), __LINE__);
+            // Can lead to segfaults (on WearOS only ?) if log message is too long
+            // Todo: Investigate this
+            //     LOGCAT(ss.str().c_str(), __LINE__);
+            __android_log_print(ANDROID_LOG_INFO,claid::Logger::logTag.c_str(),"%s", ss.str().c_str());
             #else
                 std::cout << ss.str().c_str() << "\n" << std::flush;
             #endif
-        }
-    }
+    //     }
+    // }
 
     
 	

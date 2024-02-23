@@ -132,6 +132,11 @@ public class PropertyHelper
         return this.unknownProperties;
     }
 
+    public String getMissingPropertiesErrorString()
+    {
+        return "Missing properties: [" + unknownPropertiesToString() +  "]. Please sepcify the properties in the configuration file.";
+    }
+
     public String unknownPropertiesToString() {
         String returnValue = new String();
 

@@ -7,6 +7,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicReference;
@@ -22,7 +24,12 @@ import adamma.c4dhi.claid_sensor_data.AccelerationData;
 import adamma.c4dhi.claid_platform_impl.CLAID;
 
 import adamma.c4dhi.claid.Module.ModuleAnnotator;
+import adamma.c4dhi.claid.Module.PropertyHelper.PropertyHelper;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 public class AccelerometerCollector extends Module implements SensorEventListener 
 {
@@ -41,7 +48,8 @@ public class AccelerometerCollector extends Module implements SensorEventListene
     SensorManager sensorManager;
     Sensor sensor;
 
-    private int samplingFrequency;
+    private Integer samplingFrequency;
+    private String outputMode;
 
     public static void annotateModule(ModuleAnnotator annotator)
     {
@@ -50,25 +58,36 @@ public class AccelerometerCollector extends Module implements SensorEventListene
         + "The AccelerometerCollector features two recording modes: \"Batched\" and \"Streaming\"\n");
 
         annotator.describeProperty("samplingFrequency", null);
-        annotator.describeProperty("outputMode", "Two modes are available: \"Batched\" and \"Streaming\"."
-        + "The Batched Mode is the normal mode for most scenarios. In this mode, acceleration data is aggregated and only posted to the output channel, "
+        annotator.describeProperty("outputMode", "Two modes are available: \"BATCHED\" and \"STREAM\"."
+        + "The BATCHED Mode is the normal mode for most scenarios. In this mode, acceleration data is aggregated and only posted to the output channel, "
         + "if the amount of samples spans 1 second (e.g., 50 samples if configured to 50Hz)."
-        + "In the Streaming mode, each individual sample is posted to the channel without aggregation, which can be used for real-time scenarios.");
+        + "In the STREAM mode, each individual sample is posted to the channel without aggregation, which can be used for real-time scenarios.");
     
         annotator.describePublishChannel("AccelerationData", AccelerationData.class, "Output date");
     }
 
 
-    public void initialize(Map<String, String> properties)
+    public void initialize(Map<String, String> propertiesMap)
     {
-        moduleInfo("AccelerometerCollector init");
-        if(!properties.containsKey("samplingFrequency"))
+
+        PropertyHelper propertyHelper = new PropertyHelper(propertiesMap);
+        this.samplingFrequency = propertyHelper.getProperty("samplingFrequency", Integer.class);
+        this.outputMode = propertyHelper.getProperty("outputMode", String.class);
+
+        if(propertyHelper.wasAnyPropertyUnknown())
         {
-            moduleFatal("Missing property \"samplingFrequency\"");
+            this.moduleFatal(propertyHelper.getMissingPropertiesErrorString());
             return;
         }
 
-        this.samplingFrequency = Integer.parseInt(properties.get("samplingFrequency"));
+        if(!this.outputMode.toUpperCase().equals("STREAM") && !this.outputMode.toUpperCase().equals("BATCHED"))
+        {
+            moduleFatal("Unknown output mode \"" + this.outputMode + "\". Expected one of [STREAM, BATCHED].");
+            return;
+        }
+
+        moduleInfo("AccelerometerCollector init " + this.samplingFrequency + " " + this.outputMode);
+
 
         this.accelerationDataChannel = this.publish("AccelerationData", AccelerationData.class);
 
@@ -85,21 +104,40 @@ public class AccelerometerCollector extends Module implements SensorEventListene
     public synchronized void sampleAccelerationData()
     {
         AccelerationSample sample = latestSample.get();
-        collectedAccelerationSamples.add(sample);
 
-        if(collectedAccelerationSamples.size() == samplingFrequency)
+        if(sample == null)
+        {
+            return;
+        }
+
+        if(this.outputMode.toUpperCase().equals("STREAM"))
         {
             AccelerationData.Builder data = AccelerationData.newBuilder();
 
-            for(AccelerationSample collectedSample : collectedAccelerationSamples)
-            {   
-                data.addSamples(collectedSample);
-            }
+          
+            data.addSamples(sample);
+        
 
             this.accelerationDataChannel.post(data.build());
-
-            collectedAccelerationSamples.clear();
         }
+        else
+        {
+            collectedAccelerationSamples.add(sample);
+
+            if(collectedAccelerationSamples.size() == samplingFrequency)
+            {
+                AccelerationData.Builder data = AccelerationData.newBuilder();
+
+                for(AccelerationSample collectedSample : collectedAccelerationSamples)
+                {   
+                    data.addSamples(collectedSample);
+                }
+
+                this.accelerationDataChannel.post(data.build());
+                collectedAccelerationSamples.clear();
+            }
+        }
+        
     }
 
 
@@ -109,16 +147,22 @@ public class AccelerometerCollector extends Module implements SensorEventListene
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
         {
             // Dividing per g to uniform with iOS
-            double x = sensorEvent.values[0] / SensorManager.GRAVITY_EARTH;;
-            double y = sensorEvent.values[1] / SensorManager.GRAVITY_EARTH;
-            double z = sensorEvent.values[2] / SensorManager.GRAVITY_EARTH;
+            double x = sensorEvent.values[0] ;/// SensorManager.GRAVITY_EARTH;;
+            double y = sensorEvent.values[1] ;/// SensorManager.GRAVITY_EARTH;
+            double z = sensorEvent.values[2] ;/// SensorManager.GRAVITY_EARTH;
+
+            LocalDateTime currentTime = LocalDateTime.now();
 
             AccelerationSample.Builder sample = AccelerationSample.newBuilder();
             sample.setAccelerationX((double) x);
             sample.setAccelerationY((double) y);
             sample.setAccelerationZ((double) z);
             sample.setSensorBodyLocation("unknown/smartphone");
-            sample.setUnixTimestampInMs(System.currentTimeMillis());
+            sample.setUnixTimestampInMs(currentTime.toInstant(ZoneOffset.UTC).toEpochMilli());
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+            String formattedString = currentTime.format(formatter);
+            sample.setEffectiveTimeFrame(formattedString);
 
             this.latestSample.set(sample.build());
            // System.out.println("Sensor data " +  x + " " +  y + " " + z);

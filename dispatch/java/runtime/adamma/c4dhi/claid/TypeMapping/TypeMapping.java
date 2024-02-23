@@ -650,7 +650,7 @@ public class TypeMapping {
                     GeneratedMessageV3 instance = (GeneratedMessageV3) getProtoMessageInstance((Class<T>) dataTypeClass);
                     final ProtoCodec protoCodec = getProtoCodec(instance);
 
-                    Blob blob = protoCodec.encode((GeneratedMessageV3) v);
+                    Blob blob = protoCodec.encode((GeneratedMessageV3)v);
 
                     return dataPackageBuilderCopy(p)
                             .setBlobVal(blob)

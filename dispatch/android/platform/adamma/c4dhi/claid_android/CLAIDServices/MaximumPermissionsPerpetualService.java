@@ -100,7 +100,7 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
 
                 if(!description.deserializeFromFile(restartDescriptionPath))
                 {
-                    final String msg = "Failed to restart MaximumPermissionsPerpetualService. Cannot load ServiceRestartDescription from file \"" + description + "\"";
+                    final String msg = "Failed to restart MaximumPermissionsPerpetualService. Cannot load ServiceRestartDescription from file \"" + restartDescriptionPath + "\"";
                     // This will throw a RuntimeException
                     CLAID.onUnrecoverableException(msg);
                 }

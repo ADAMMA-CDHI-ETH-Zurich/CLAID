@@ -6,6 +6,7 @@ import adamma.c4dhi.claid.Module.ModuleFactory;
 import android.app.Application;
 
 
+import adamma.c4dhi.claid_platform_impl.CLAID;
 public class PersistentModuleFactory extends ModuleFactory {
 
     private Application application;
@@ -26,6 +27,8 @@ public class PersistentModuleFactory extends ModuleFactory {
         }
 
         this.application = application;
+
+        CLAID.registerDefaultModulesToFactory((ModuleFactory) this);
     }
 
     public Application getApplication()

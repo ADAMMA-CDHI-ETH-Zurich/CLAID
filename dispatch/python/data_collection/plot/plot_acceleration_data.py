@@ -1,5 +1,4 @@
 import os
-import xmltodict
 import matplotlib.pyplot as plt
 from datetime import datetime
 from time import time
@@ -8,12 +7,10 @@ import numpy as np
 from tqdm import tqdm
 import matplotlib
 
-from dispatch.python.data_collection.load.load_sensor_data import *
+
 from dispatch.proto.sensor_data_types_pb2 import AccelerationData
 
-
-
-def plot_acceleration_data(data: AccelerationData):
+def update_acceleration_data(data: AccelerationData, fig, axs):
 
     xs = list()
     ys = list()
@@ -26,8 +23,10 @@ def plot_acceleration_data(data: AccelerationData):
         zs.append(sample.acceleration_z)
         times.append(datetime.utcfromtimestamp(sample.unix_timestamp_in_ms/1000))
 
+    update_acceleration_data_raw(xs,ys,zs,times,fig,axs)
 
-    fig, axs = plt.subplots(3)
+
+def update_acceleration_data_raw(xs,ys,zs,times,fig,axs):
 
     data = [xs,ys,zs]
 
@@ -35,7 +34,9 @@ def plot_acceleration_data(data: AccelerationData):
     cmap = plt.get_cmap("tab10")
     ctr = 0
     for ax, values, label in tqdm(zip(axs, data, labels)):
-        ax.plot(times, values, label = label, color=cmap(ctr))
+        line, = ax
+        line.set_data(values)
+        #ax.plot(times, values, label = label, color=cmap(ctr))
 
         # set datetime formatter for x axis
         xfmt = mdates.DateFormatter('%H:%M')
@@ -45,7 +46,7 @@ def plot_acceleration_data(data: AccelerationData):
             # set fontsize of ticks
         ax.tick_params(axis='x', which='major')
         #ax.set_xlim(datetime(year=RECORD_YEAR, day=RECORD_DAY,month=RECORD_MONTH,hour=0), datetime(year=RECORD_YEAR, day=RECORD_DAY+1,month=RECORD_MONTH,hour=0))
-        #ax.set_ylim(-3000, 3000)
+        ax.set_ylim(-2, 2)
         ax.grid()
         ax.set_ylabel(label)
         if(ctr != 2):
@@ -58,6 +59,16 @@ def plot_acceleration_data(data: AccelerationData):
     plt.xticks(rotation=90)
 
 
-    fig.set_size_inches(20,10, forward=True)
-    fig.set_dpi(200)
-    plt.show()
+    # fig.set_size_inches(20,10, forward=True)
+    # fig.set_dpi(200)
+    plt.pause(0.00000001)
+
+
+def plot_acceleration_data(data: AccelerationData, blocking = False):
+    fig, axs = plt.subplots(3)
+
+    update_acceleration_data(data, fig=fig, axs=axs)
+
+    plt.show(block=blocking)
+    return fig, axs
+

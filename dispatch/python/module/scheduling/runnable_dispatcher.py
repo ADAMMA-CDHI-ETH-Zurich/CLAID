@@ -5,13 +5,14 @@ from logger.logger import Logger
 from datetime import datetime
 
 class RunnableDispatcher:
-    def __init__(self):
+    def __init__(self, main_thread_runnables_queue):
         self.scheduled_runnables = []
         self.mutex = threading.Lock()
         self.condition_variable = threading.Condition(self.mutex)
         self.reschedule_required = False
         self.stopped = True
         self.thread = None
+        self.main_thread_runnables_queue = main_thread_runnables_queue
 
     def get_wait_duration_until_next_runnable_is_due(self):
         with self.mutex:
@@ -31,6 +32,7 @@ class RunnableDispatcher:
         # Hence, we will wait forever and wake up if a reschedule is required.
         wait_time_in_seconds = float(self.get_wait_duration_until_next_runnable_is_due() / 1000)
 
+        Logger.log_info("Wait until runnable is due")
         # The return value of wait_for can be used to determine whether the wait exited because time passed (False),
         # or because the predicate (self.reschedule_required or self.stopped) evaluates to True (True).
         # However, we are not interested in distinguishing the two cases.
@@ -40,24 +42,17 @@ class RunnableDispatcher:
             self.condition_variable.wait_for(
                 lambda: self.reschedule_required or self.stopped, wait_time_in_seconds
             )
+        Logger.log_info("Woke up in python scheduler")
 
     def process_runnable(self, scheduled_runnable):
         if self.stopped:
             return
 
         if scheduled_runnable.runnable.is_valid():
-            if scheduled_runnable.runnable.catch_exceptions:
-                try:
-                    Logger.log_info(
-                       f"Running runnable! Remaining runnables: {len(self.scheduled_runnables)}"
-                    )
-                    scheduled_runnable.runnable.run()
-                except Exception as e:
-                    scheduled_runnable.runnable.set_exception(str(e))
-            else:
-                scheduled_runnable.runnable.run()
-
-            scheduled_runnable.runnable.was_executed = True
+            
+            # SWitch to the main thread
+            self.main_thread_runnables_queue.put(scheduled_runnable)
+            
 
             if scheduled_runnable.runnable.stop_dispatcher_after_this_runnable:
                 # No more runnables will be executed after this one!
@@ -131,12 +126,13 @@ class RunnableDispatcher:
         Logger.log_info("RunnableDispatcher shutdown.")
 
     def start(self):
-        Logger.log_info("Starting RunnableDispatcher")
+        Logger.log_info("Python Starting RunnableDispatcher")
         with self.mutex:
             if not self.stopped:
                 return False
 
             self.stopped = False
+            Logger.log_info("Python Starting RunnableDispatcher")
             self.thread = threading.Thread(target=self.run_scheduling)
             self.thread.start()
             return True
@@ -164,6 +160,6 @@ class RunnableDispatcher:
                 f"Added runnable to RunnableDispatcher, total runnables now: {len(self.scheduled_runnables)}")
 
             self.reschedule_required = True
-            self.condition_variable.notify()
+            self.condition_variable.notify_all()
             # This will lead to a wake up, so we can reschedule.
            

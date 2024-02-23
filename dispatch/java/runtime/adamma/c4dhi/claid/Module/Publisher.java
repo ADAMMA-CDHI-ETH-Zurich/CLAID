@@ -34,6 +34,7 @@ public class Publisher<T>
         DataPackage dataPackage = builder.build();
 
         dataPackage = this.mutator.setPackagePayload(dataPackage, data);
+        System.out.println("DATA PACKAGE 123 " + dataPackage.toString());
 
 
         this.toModuleManagerQueue.add(dataPackage);

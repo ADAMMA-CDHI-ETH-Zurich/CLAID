@@ -29,8 +29,7 @@ class Subscriber(AbstractSubscriber):
     def on_new_data(self, package):
 
         data = self.mutator.get_package_payload(package)
-
-        channel_data = ChannelData(
+        channel_data = ChannelData( 
             data,
             datetime.fromtimestamp(package.unix_timestamp_ms / 1000.0),
             package.source_user_token

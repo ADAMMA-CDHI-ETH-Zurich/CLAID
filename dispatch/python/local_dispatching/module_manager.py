@@ -13,10 +13,11 @@ import sys
 
 class ModuleManager():
 
-    def __init__(self, module_dispatcher, module_factory):
+    def __init__(self, module_dispatcher, module_factory, main_thread_runnables_queue):
         self.__module_dispatcher = module_dispatcher
         self.__module_factory = module_factory
         # In Python, it is possible to add Modules at runtime.
+        self.main_thread_runnables_queue = main_thread_runnables_queue
 
        
         self.__module_injector = ModuleInjector(self.__module_factory)
@@ -72,7 +73,7 @@ class ModuleManager():
             module = self.__running_modules[key]
 
             Logger.log_info(f"Calling module.start() for Module \"{module.get_id()}\".")
-            module.start(subscriber_publisher, descriptor.properties)
+            module.start(subscriber_publisher, descriptor.properties, self.main_thread_runnables_queue)
             Logger.log_info(f"Module \"{module.get_id()}\" has started.")
 
         return True
@@ -185,9 +186,9 @@ class ModuleManager():
 
         if not self.__channel_subscriber_publisher.is_data_package_compatible_with_channel(data_package, module_id):
             payload_case = data_package.WhichOneof("payload_oneof")
-            Logger.log_info(f"ModuleManager received package with target for Module \"{module_id}\" on Channel \"{channel_name}\",\n"
+            Logger.log_info(f"ModuleManager received package with target for Module \"{module_id}\" on Channel \"{channel_name}\", "
                             f"however the data type of payload of the package did not match the data type of the Channel.\n"
-                            f"Expected payload type \"{self.__channel_subscriber_publisher.get_payload_case_of_channel(channel_name).name}\" but got \"{payload_case}")
+                            f"Expected payload type \"{self.__channel_subscriber_publisher.get_payload_case_of_channel(channel_name, module_id)}\" but got \"{payload_case}")
             return
 
         subscriber_list = self.__channel_subscriber_publisher.get_subscriber_instances_of_module(channel_name, module_id)
@@ -199,7 +200,6 @@ class ModuleManager():
             subscriber.on_new_data(data_package)
 
     def handle_package_with_control_val(self, packet):
-        Logger.log_info("PYTHON HANDLE PACKAGE")
         if packet.control_val.ctrl_type == CtrlType.CTRL_CONNECTED_TO_REMOTE_SERVER:
             for module_id, module in self.__running_modules.items():
                 module.notify_connected_to_remote_server()

@@ -1,9 +1,13 @@
-from module.module import Module
+from claid.module.module import Module
 from logger.logger import Logger 
+
+from data_collection.plot.acceleration_view import AccelerationView
 
 class ModuleFactory:
     def __init__(self):
         self.registered_module_classes = {}
+
+        self.register_module(AccelerationView)
 
     def register_module(self, clz):
         class_name = clz.__name__

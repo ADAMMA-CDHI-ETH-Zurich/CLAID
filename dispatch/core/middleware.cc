@@ -67,6 +67,13 @@ absl::Status MiddleWare::start() {
         return status;
     }
 
+    for(auto& entry : allModuleDescriptions)
+    {
+        ModuleDescription& moduleDescription = entry.second;
+        moduleTable.setModuleChannelToConnectionMappings(moduleDescription.id, 
+            moduleDescription.inputChannels, moduleDescription.outputChannels);
+    }
+
     status = populateModuleTable(hostModuleDescriptions, channelDescriptions, moduleTable);
     if (!status.ok()) {
         return status;
@@ -352,9 +359,6 @@ absl::Status MiddleWare::populateModuleTable(
         moduleTable.setNeededModule(moduleDescription.id,
             moduleDescription.moduleClass,
             moduleDescription.properties);
-
-        moduleTable.setModuleChannelToConnectionMappings(moduleDescription.id, 
-            moduleDescription.inputChannels, moduleDescription.outputChannels);
     }
 
     for(const auto& entry : channelDescriptions)

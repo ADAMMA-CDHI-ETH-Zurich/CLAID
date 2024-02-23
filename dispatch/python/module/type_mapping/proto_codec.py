@@ -31,14 +31,19 @@ class ProtoCodec:
     def decode(self, blob: Blob) -> Message:
         return_value = self.msg.__class__()
 
-   
         try:
+            
+            if len(blob.payload) == 0:
+                Logger.log_warning("Cannot parse protobuf message of type {}. Payload data is null. Very likely the sender Module postet a protobuf message without data").format(self.full_name)
+                return return_value
+
             if not return_value.ParseFromString(blob.payload):
-                Logger.logError("Failed to parse protobuf message of type. ParseFromString failed.")
+                Logger.log_error("Failed to parse protobuf message of type {}. ParseFromString failed.").format(self.full_name)
+            
                 return None
 
             return return_value
         except Exception as e:
             # Replace with actual error handling/logging
-            Logger.logError("Failed to parse protobuf message from Blob: %s", str(e))
+            Logger.log_error("Failed to parse protobuf message from Blob: %s", str(e))
             return None

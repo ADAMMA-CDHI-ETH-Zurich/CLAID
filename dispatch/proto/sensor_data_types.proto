@@ -43,6 +43,7 @@ message AccelerationSample
     double acceleration_z = 3;
     string sensor_body_location = 4;
     uint64 unix_timestamp_in_ms = 5;
+    string effective_time_frame = 6;
 }
 
 message AccelerationData

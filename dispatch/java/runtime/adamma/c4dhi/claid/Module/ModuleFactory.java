@@ -12,10 +12,16 @@ import java.util.Map;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
+import adamma.c4dhi.claid_platform_impl.CLAID;
+
 public class ModuleFactory
 {
     private Map<String, Class<? extends Module>> registeredModuleClasses = new HashMap<>();
 
+    public ModuleFactory()
+    {
+        CLAID.registerDefaultModulesToFactory(this);
+    }
 
     public boolean registerModule(Class<? extends Module> clz)
     {

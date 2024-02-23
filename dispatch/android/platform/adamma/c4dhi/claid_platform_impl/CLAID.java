@@ -29,6 +29,7 @@ import adamma.c4dhi.claid_android.Configuration.CLAIDSpecialPermissionsConfig;
 import adamma.c4dhi.claid_android.CLAIDServices.CLAIDService;
 import adamma.c4dhi.claid_android.Permissions.*;
 import adamma.c4dhi.claid_android.Receivers.DeviceOwnerReceiver;
+import adamma.c4dhi.claid_android.collectors.acceleration.AccelerometerCollector;
 import android.content.Context;
 import android.app.Application;
 
@@ -69,6 +70,8 @@ import android.net.wifi.WifiManager;
 import android.Manifest;
 import androidx.core.app.ActivityCompat;
 
+import adamma.c4dhi.claid_android.collectors.battery.BatteryCollector;
+import adamma.c4dhi.claid_android.collectors.acceleration.AccelerometerCollector;
 
 public class CLAID extends JavaCLAIDBase
 {
@@ -208,6 +211,14 @@ public class CLAID extends JavaCLAIDBase
             ServiceManager.startMaximumPermissionsPerpetualService(context, socketPath, configFilePath, hostId, userId, deviceId, enduranceConfig));
         
         return true;
+    }
+
+    public static ModuleFactory registerDefaultModulesToFactory(ModuleFactory factory)
+    {
+        factory.registerModule(BatteryCollector.class);
+        factory.registerModule(AccelerometerCollector.class);
+
+        return factory;
     }
 
     public static<T extends Application> PersistentModuleFactory getPersistentModuleFactory(T application)
@@ -669,6 +680,7 @@ public class CLAID extends JavaCLAIDBase
                 }
         }
     }
+
 
 
 }

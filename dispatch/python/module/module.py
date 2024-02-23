@@ -19,8 +19,8 @@ class Module(ABC):
         self.__is_initialized = False
         self.__is_terminating = False
         self.__subscriber_publisher = None
-        self.__runnable_dispatcher = RunnableDispatcher()
         self.__timers = dict()
+
 
     def module_fatal(self, error):
         errorMsg = f"Module \"{self.__id}\": {error}"
@@ -36,12 +36,14 @@ class Module(ABC):
         Logger.log(SeverityLevel.WARNING, warningMsg)
 
 
-    def start(self, subscriber_publisher, properties):
+    def start(self, subscriber_publisher, properties, main_thread_runnables_queue):
         if self.__is_initialized:
             self.module_error("Initialize called twice!")
             return False
 
         self.__subscriber_publisher = subscriber_publisher
+
+        self.__runnable_dispatcher = RunnableDispatcher(main_thread_runnables_queue)
 
         
         if not self.__runnable_dispatcher.start():

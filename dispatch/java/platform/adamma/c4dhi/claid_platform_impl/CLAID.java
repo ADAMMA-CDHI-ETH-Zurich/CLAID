@@ -28,4 +28,9 @@ public class CLAID extends JavaCLAIDBase
     {
         return attachJavaRuntimeInternal(handle, factory);
     }
+
+    public static ModuleFactory registerDefaultModulesToFactory(ModuleFactory factory)
+    {
+        return factory;
+    }
 }

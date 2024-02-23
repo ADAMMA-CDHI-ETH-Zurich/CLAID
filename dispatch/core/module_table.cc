@@ -225,14 +225,39 @@ void ModuleTable::addOutputPackets(const claidservice::DataPackage pkt,
                           const ChannelEntry* chanEntry,
                           SharedQueue<claidservice::DataPackage>& queue) const {
 
+    Logger::logInfo("ModuleTable add output packets");
     // Make a copy of the incoming packet and augment it.
     auto cpPkt = pkt;
     augmentFieldValues(cpPkt);
-    for(auto& it : chanEntry->targets) {
-        auto outPkt = make_shared<DataPackage>(cpPkt);
-        outPkt->set_target_module(it.first);
-        Logger::logInfo("Received package from %s", pkt.source_module().c_str());
-        queue.push_back(outPkt);
+    for(auto& it : chanEntry->targets) 
+    {
+        const std::string& targetModuleName = it.first;
+        Logger::logInfo("ModuleTable add %s ", targetModuleName.c_str());
+        auto moduleConnectionIt = this->moduleInputChannelsToConnectionMap.find(targetModuleName);
+
+        if(moduleConnectionIt == this->moduleInputChannelsToConnectionMap.end())
+        {
+            Logger::logWarning("ModuleTable could not find Module \"%s\" in moduleInputChannelsToConnectionMap.", targetModuleName.c_str());
+            continue;
+        }
+        const std::map<std::string, std::string>& targetModuleInputChannelMappings = moduleConnectionIt->second;
+        for(const auto& entry : targetModuleInputChannelMappings)
+        {
+            Logger::logInfo("ModuleTable add output packets %s %s", entry.first.c_str(), entry.second.c_str());
+            // Look for all Channels of the Module that map to the connection of the Channel.
+            // Map the connection name to the individual channel name of the Module.
+            // This allows Modules to arbitrarily name their input and output channels, the actual connection
+            // is defined by the user in the configuration file.
+            if(entry.second == pkt.channel())
+            {
+                auto outPkt = make_shared<DataPackage>(cpPkt);
+                outPkt->set_target_module(targetModuleName);
+
+                outPkt->set_channel(entry.first); // Set channel name to the channel name of the module (which maps to the connection).
+                Logger::logInfo("ModuleTable debug Received package from %s %s %s", pkt.source_module().c_str(), entry.first.c_str(), entry.second.c_str());
+                queue.push_back(outPkt);
+            }            
+        }
     }
 }
 

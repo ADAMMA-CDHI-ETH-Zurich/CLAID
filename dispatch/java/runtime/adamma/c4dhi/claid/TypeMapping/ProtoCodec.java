@@ -16,46 +16,38 @@ class ProtoCodec {
     private final String fullName;
     private final GeneratedMessageV3 msg;
 
-    // Corresponds to dart -> ProtoEncoder
-    private final Function<GeneratedMessageV3, Blob> encoder;
-
-    // Corresponds to dart -> ProtoEncoder
-    private final Function<Blob, GeneratedMessageV3> decoder;
+ 
 
   
     ProtoCodec(final GeneratedMessageV3 msg) 
     {
         this.msg = msg;
         this.fullName = msg.getDescriptorForType().getFullName();
-        this.encoder = buildEncoder();
-        this.decoder = buildDecoder();
+
     }
 
-    // Function<T, R>
-    private Function<GeneratedMessageV3, Blob> buildEncoder() {
-        return (protoMessage) -> {
-            ByteString serializedData = ByteString.copyFrom(protoMessage.toByteArray());
+    
+    public <T extends GeneratedMessageV3> Blob encode(T protoMessage)
+    {
+        ByteString serializedData = ByteString.copyFrom(protoMessage.toByteArray());
+        
+        Blob.Builder blobBuilder = Blob.newBuilder();
+        blobBuilder.setCodec(Codec.CODEC_PROTO);
+        blobBuilder.setPayload(serializedData);
+        blobBuilder.setMessageType(fullName);
 
-            Blob.Builder blobBuilder = Blob.newBuilder();
-            blobBuilder.setCodec(Codec.CODEC_PROTO);
-            blobBuilder.setPayload(serializedData);
-            blobBuilder.setMessageType(fullName);
-
-            return blobBuilder.build();
-        };
+        return blobBuilder.build();
     }
 
-    // Function<T, R>
-    private Function<Blob, GeneratedMessageV3> buildDecoder() 
+    public GeneratedMessageV3 decode(Blob blob)
     {
         GeneratedMessageV3.Builder messageBuilder = (GeneratedMessageV3.Builder) this.msg.newBuilderForType();
 
-        return (blob) -> {
-            Blob typedBlob = (Blob) blob;
+        
            
             try
             {
-                return (GeneratedMessageV3) messageBuilder.mergeFrom(typedBlob.getPayload().toByteArray()).build();
+                return (GeneratedMessageV3) messageBuilder.mergeFrom(blob.getPayload().toByteArray()).build();
             }
             catch(InvalidProtocolBufferException e)
             {
@@ -63,16 +55,6 @@ class ProtoCodec {
                 return null;
             }
         
-        };  
-    }
-
-    public Blob encode(GeneratedMessageV3 t)
-    {
-        return encoder.apply( t);
-    }
-
-    public GeneratedMessageV3 decode(Blob blob)
-    {
-        return (GeneratedMessageV3) decoder.apply(blob);
+        
     }
 }

@@ -86,6 +86,7 @@ class ChannelSubscriberPublisher:
 
     def get_payload_case_of_channel(self, channel_name: str, receiver_module: str) -> str:
         if receiver_module in self.__example_packages_for_each_module:
+            print(self.__example_packages_for_each_module)
             for template_package in self.__example_packages_for_each_module[receiver_module]:
                 if template_package.channel == channel_name:
                     return template_package.WhichOneof("payload_oneof")
