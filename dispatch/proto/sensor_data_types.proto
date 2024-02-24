@@ -35,6 +35,34 @@ message AudioData
     AudioChannels channels = 5;
 }
 
+message AccelerationUnitValue
+{
+    string unit = 1;
+    double value = 2;
+}
+
+message ActivityName
+{
+    string type = 1;
+}
+
+enum BodyLocation
+{
+    left_ankle = 0;
+    right_ankle = 1;
+    left_hip = 2;
+    right_hip = 3;
+    left_thigh = 4;
+    right_thigh = 5;
+    left_thorax = 6;
+    middle_left_thorax = 7;
+    left_upper_arm = 8;
+    right_upper_arm = 9;
+    left_wrist = 10;
+    right_wrist = 11;
+
+}
+
 // Follows open mHealth standard.
 message AccelerationSample
 {

@@ -10,7 +10,7 @@ absl::Status JSONSerializer::beginNewFile(const std::string& filePath)
 {
     Logger::logInfo("JSONSerializer beginning file %s", filePath.c_str());
     this->currentFilePath = filePath;
-    this->outputFile = std::ofstream(this->currentFilePath, (this->overrideExistingFiles ? (std::ios::app) : std::ios::out));
+    this->outputFile = std::ofstream(this->currentFilePath, (this->overrideExistingFiles ? (std::ios::out) : std::ios::app));
     if(!outputFile.is_open())
     {
         return absl::UnavailableError(absl::StrCat("JSONSerializer failed to open file \"", this->currentFilePath, "\" for writing"));
@@ -54,7 +54,7 @@ absl::Status JSONSerializer::onNewData(std::shared_ptr<const google::protobuf::M
 
     if(this->overrideExistingFiles)
     {
-        this->outputFile = std::ofstream(this->currentFilePath, (this->overrideExistingFiles ? (std::ios::app) : std::ios::out));
+        this->outputFile = std::ofstream(this->currentFilePath, (this->overrideExistingFiles ? (std::ios::out) : std::ios::app));
     }
 
     std::string jsonOutput = "";

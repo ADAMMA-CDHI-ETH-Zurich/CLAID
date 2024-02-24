@@ -93,7 +93,7 @@ public class AccelerometerCollector extends Module implements SensorEventListene
 
         sensorManager = (SensorManager) CLAID.getContext().getSystemService(Context.SENSOR_SERVICE); 
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER); 
-        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, sensor, SENSOR_DELAY_GAME        );
 
         int samplingPerioid = 1000/samplingFrequency;
 
@@ -147,9 +147,9 @@ public class AccelerometerCollector extends Module implements SensorEventListene
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
         {
             // Dividing per g to uniform with iOS
-            double x = sensorEvent.values[0] ;/// SensorManager.GRAVITY_EARTH;;
-            double y = sensorEvent.values[1] ;/// SensorManager.GRAVITY_EARTH;
-            double z = sensorEvent.values[2] ;/// SensorManager.GRAVITY_EARTH;
+            double x = sensorEvent.values[0] / SensorManager.GRAVITY_EARTH;;
+            double y = sensorEvent.values[1] / SensorManager.GRAVITY_EARTH;
+            double z = sensorEvent.values[2] / SensorManager.GRAVITY_EARTH;
 
             LocalDateTime currentTime = LocalDateTime.now();
 

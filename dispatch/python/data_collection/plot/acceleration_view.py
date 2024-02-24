@@ -15,27 +15,16 @@ class AccelerationView(Module):
         self.zs = []
         self.times = []
 
-        self.fig, (ax_x, ax_y, ax_z) = plt.subplots(3, 1, sharex=True)
-        self.fig.suptitle('Acceleration Data')
+        self.fig, self.axs = plt.subplots(3)
 
-        ax_x.set_ylim(-10, 10)
-        ax_y.set_ylim(-10, 10)
-        ax_z.set_ylim(-10, 10)    
+        self.lines = list()
+        for ax in self.axs:
+            ax.set_ylim(-2,2)
+            line, = ax.plot(np.random.randn(200))
+            self.lines.append(line)
 
-        self.max_points = 100
-
-        ax_x.set_xlim(0,self.max_points)
-        ax_y.set_xlim(0,self.max_points)
-        ax_z.set_xlim(0,self.max_points)
-
-        self.line_x, = ax_x.plot(np.zeros(self.max_points), np.zeros(self.max_points), label='X-axis')
-        self.line_y, = ax_y.plot(np.zeros(self.max_points), np.zeros(self.max_points), label='Y-axis')
-        self.line_z, = ax_z.plot(np.zeros(self.max_points), np.zeros(self.max_points), label='Z-axis')
-
-        ax_x.legend()
-        ax_y.legend()
-        ax_z.legend()
-        self.ctr = 0
+        plt.show(block=False)
+        self.max_points = 200
     
     def frame_generator(self):
         frame_number = 0
@@ -46,14 +35,6 @@ class AccelerationView(Module):
     def initialize(self, properties):
         self.input_channel = self.subscribe("InputData", AccelerationData(), self.onData)
 
-    def update(self, frame):
-        print("animation called")
-        x_acceleration, y_acceleration, z_acceleration = self.get_acceleration_data()
-
-        # Plotting
-        self.line_x.set_data(range(len(x_acceleration)), x_acceleration)
-        self.line_y.set_data(range(len(y_acceleration)), y_acceleration)
-        self.line_z.set_data(range(len(z_acceleration)), z_acceleration)
 
 
     def get_acceleration_data(self):
@@ -74,11 +55,20 @@ class AccelerationView(Module):
             self.zs = self.zs[-self.max_points:]
             self.times = self.times[-self.max_points:]
 
-        if self.ctr == None:
-            self.ctr = 0
-        self.ctr += 1
-        if self.ctr == 2:
-            self.fig.canvas.draw()
+
+            for ax, line, data in zip(self.axs, self.lines, [self.xs, self.ys, self.zs]):
+
+                line.set_ydata(data)
+                ax.draw_artist(ax.patch)
+                ax.draw_artist(line)
+            self.fig.canvas.update()
             self.fig.canvas.flush_events()
-            self.ctr = 0
+
+        # if self.ctr == None:
+        #     self.ctr = 0
+        # self.ctr += 1
+        # if self.ctr == 2:
+        #     self.fig.canvas.draw()
+        #     self.fig.canvas.flush_events()
+        #     self.ctr = 0
 

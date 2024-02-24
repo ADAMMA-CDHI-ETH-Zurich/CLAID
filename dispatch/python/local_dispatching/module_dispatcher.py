@@ -99,6 +99,7 @@ class ModuleDispatcher:
 
         while self.__running:
             data = self.__to_middleware_queue.get()
+            print("Python to middleware queue got: " + str(data))
             if not data is None:
                 yield data
             elif not self.__running:

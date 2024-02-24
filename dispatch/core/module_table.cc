@@ -204,11 +204,13 @@ const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt) const {
 
     auto entry = (const_cast<ModuleTable*>(this))->findChannel(pkt.channel());
     if (!entry) {
+        Logger::logError("Could not find channel \"%s\" in ModuleTable", pkt.channel().c_str());
         return nullptr;
     }
 
     auto srcIt = entry->sources.find(pkt.source_module());
     if (srcIt == entry->sources.end()) {
+        Logger::logError("Unknown source for channel \"%s\"", pkt.channel().c_str());
         return nullptr;
     }
 
@@ -233,6 +235,7 @@ void ModuleTable::addOutputPackets(const claidservice::DataPackage pkt,
     {
         const std::string& targetModuleName = it.first;
         Logger::logInfo("ModuleTable add %s ", targetModuleName.c_str());
+
         auto moduleConnectionIt = this->moduleInputChannelsToConnectionMap.find(targetModuleName);
 
         if(moduleConnectionIt == this->moduleInputChannelsToConnectionMap.end())
@@ -405,3 +408,24 @@ void ModuleTable::clearLookupTables()
 
 
 }
+
+bool ModuleTable::lookupOutputConnectionForChannelOfModule(const std::string& sourceModule, const std::string& channelName, std::string& connectionName) const
+{
+    auto it = this->moduleOutputChannelsToConnectionMap.find(sourceModule);
+    if(it == this->moduleOutputChannelsToConnectionMap.end())
+    {
+        return false;
+    }
+
+    const std::map<std::string, std::string>& outputChannelMappingsOfModule = it->second;
+
+    auto it2 = outputChannelMappingsOfModule.find(channelName);
+    if(it2 == outputChannelMappingsOfModule.end())
+    {
+        return false;
+    }
+
+    connectionName = it2->second;
+    return true;
+}
+
