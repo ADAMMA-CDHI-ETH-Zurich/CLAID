@@ -147,7 +147,7 @@ public class AccelerometerCollector extends Module implements SensorEventListene
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
         {
             // Dividing per g to uniform with iOS
-            double x = sensorEvent.values[0] / SensorManager.GRAVITY_EARTH;;
+            double x = sensorEvent.values[0] / SensorManager.GRAVITY_EARTH;
             double y = sensorEvent.values[1] / SensorManager.GRAVITY_EARTH;
             double z = sensorEvent.values[2] / SensorManager.GRAVITY_EARTH;
 
