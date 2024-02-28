@@ -1,4 +1,4 @@
-package adamma.c4dhi.claid_android.collectors.acceleration;
+package adamma.c4dhi.claid_android.collectors.motion;
 
 import android.content.Context;
 import android.hardware.Sensor;
@@ -54,7 +54,7 @@ public class AccelerometerCollector extends Module implements SensorEventListene
     public static void annotateModule(ModuleAnnotator annotator)
     {
         annotator.setModuleDescription("The AccelerometerCollector allows to record acceleration data using the devices built-in accelerometer."
-        + "The sampling frequency can be freely configured, however is subject to the limitations of the device (e.g., built-in sensor)."
+        + "The sampling frequency can be freely configured, however is subject to the limitations of the device (i.e., built-in sensor speicifcations)."
         + "The AccelerometerCollector features two recording modes: \"Batched\" and \"Streaming\"\n");
 
         annotator.describeProperty("samplingFrequency", null);
@@ -63,7 +63,7 @@ public class AccelerometerCollector extends Module implements SensorEventListene
         + "if the amount of samples spans 1 second (e.g., 50 samples if configured to 50Hz)."
         + "In the STREAM mode, each individual sample is posted to the channel without aggregation, which can be used for real-time scenarios.");
     
-        annotator.describePublishChannel("AccelerationData", AccelerationData.class, "Output date");
+        annotator.describePublishChannel("AccelerationData", AccelerationData.class, "Channel where the recorded Date will be streamed to.");
     }
 
 
@@ -93,7 +93,7 @@ public class AccelerometerCollector extends Module implements SensorEventListene
 
         sensorManager = (SensorManager) CLAID.getContext().getSystemService(Context.SENSOR_SERVICE); 
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER); 
-        sensorManager.registerListener(this, sensor, SENSOR_DELAY_GAME        );
+        sensorManager.registerListener(this, sensor, SENSOR_DELAY_FASTEST);
 
         int samplingPerioid = 1000/samplingFrequency;
 
