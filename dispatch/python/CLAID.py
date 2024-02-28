@@ -8,6 +8,7 @@ from logger.logger import Logger
 from local_dispatching.module_dispatcher import ModuleDispatcher
 from local_dispatching.module_manager import ModuleManager
 from module.module_factory import ModuleFactory
+from module.thread_safe_channel import ThreadSafeChannel
 
 import platform
 import os
@@ -76,7 +77,7 @@ class CLAID():
         self.__handle = 0
         self.__cpp_runtime_handle = 0
         self.__started = False
-        self.module_injection_storage_path = module_injection_storage_path
+        self.__main_thread_queue = ThreadSafeChannel()
 
 
 
@@ -108,7 +109,8 @@ class CLAID():
 
         Logger.log_info("Successfully started CLAID")
 
-        return True
+        # This will block indefinitely and wakes up when there are runnables to execute
+        self.process_runnables_blocking()
 
     def start(self, config_file_path, host_id, user_id, device_id, module_factory):
         return self.startCustomSocket("unix:///tmp/claid_socket.grpc", config_file_path, host_id, user_id, device_id, module_factory)
@@ -117,7 +119,7 @@ class CLAID():
 
         self.__module_dispatcher = ModuleDispatcher(socket_path)
 
-        self.__module_manager = ModuleManager(self.__module_dispatcher, module_factory, self.module_injection_storage_path)
+        self.__module_manager = ModuleManager(self.__module_dispatcher, module_factory, self.__main_thread_queue)
         print("starting Python runtime")
 
         return self.__module_manager.start()
@@ -188,3 +190,24 @@ class CLAID():
                 channels.append(channel.channel)
 
         return channels
+    
+    def process_runnables_blocking(self):
+
+        while self.__started:
+            scheduled_runnable = self.__main_thread_queue.get()
+
+            if scheduled_runnable is None:
+                continue
+
+            if scheduled_runnable.runnable.catch_exceptions:
+                try:
+                    Logger.log_info(
+                    f"Running runnable! Remaining runnables: {len(self.scheduled_runnables)}"
+                    )
+                    scheduled_runnable.runnable.run()
+                except Exception as e:
+                    scheduled_runnable.runnable.set_exception(str(e))
+            else:
+                scheduled_runnable.runnable.run()
+
+            scheduled_runnable.runnable.was_executed = True

@@ -2,12 +2,14 @@ from claid.module.module import Module
 from logger.logger import Logger 
 
 from data_collection.plot.acceleration_view import AccelerationView
+from data_collection.plot.gyroscope_view import GyroscopeView
 
 class ModuleFactory:
     def __init__(self):
         self.registered_module_classes = {}
 
         self.register_module(AccelerationView)
+        self.register_module(GyroscopeView)
 
     def register_module(self, clz):
         class_name = clz.__name__
