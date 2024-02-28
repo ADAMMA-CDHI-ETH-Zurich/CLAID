@@ -49,18 +49,6 @@ void shutdown_core(void* handle) {
 }
 
 __attribute__((visibility("default"))) __attribute__((used))
-const char* get_socket_path(void* handle) {
-    if (handle) {
-        auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
-        
-        // This is only safe as long as middleWare does not get deleted.
-        return middleWare->getSocketPath().c_str();
-    }
-    claid::Logger::logError("Cannot get socket path from middleware, handle is null.");
-    return "";
-}
-
-__attribute__((visibility("default"))) __attribute__((used))
 void* attach_cpp_runtime(void* handle)
 {
     claid::Logger::logInfo("Attach C++ runtime called %u", handle);
@@ -127,6 +115,54 @@ const char* get_payload_data_path(void* handle)
 
     auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
     return middleWare->getPayloadDataPath().c_str();
+}
+
+__attribute__((visibility("default"))) __attribute__((used))
+const char* get_socket_path(void* handle) {
+    if (handle) {
+        auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
+        
+        // This is only safe as long as middleWare does not get deleted.
+        return middleWare->getSocketPath().c_str();
+    }
+    claid::Logger::logError("Cannot get socket path from middleware, handle is null.");
+    return "";
+}
+
+__attribute__((visibility("default"))) __attribute__((used))
+const char* get_host_id(void* handle) {
+    if (handle) {
+        auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
+        
+        // This is only safe as long as middleWare does not get deleted.
+        return middleWare->getHostId().c_str();
+    }
+    claid::Logger::logError("Cannot get hostId from middleware, handle is null.");
+    return "";
+}
+
+__attribute__((visibility("default"))) __attribute__((used))
+const char* get_user_id(void* handle) {
+    if (handle) {
+        auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
+        
+        // This is only safe as long as middleWare does not get deleted.
+        return middleWare->getUserId().c_str();
+    }
+    claid::Logger::logError("Cannot get userId from middleware, handle is null.");
+    return "";
+}
+
+__attribute__((visibility("default"))) __attribute__((used))
+const char* get_device_id(void* handle) {
+    if (handle) {
+        auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
+        
+        // This is only safe as long as middleWare does not get deleted.
+        return middleWare->getDeviceId().c_str();
+    }
+    claid::Logger::logError("Cannot get deviceId from middleware, handle is null.");
+    return "";
 }
 
 __attribute__((visibility("default"))) __attribute__((used))

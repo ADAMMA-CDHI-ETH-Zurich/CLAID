@@ -26,6 +26,9 @@ public abstract class JavaCLAIDBase
     private static native long attachCppRuntime(long handle);
     
     private static native String getSocketPath(long handle);
+    private static native String getHostId(long handle);
+    private static native String getUserId(long handle);
+    private static native String getDeviceId(long handle);
 
     private static native boolean nativeLoadNewConfig(long handle, String config);
 

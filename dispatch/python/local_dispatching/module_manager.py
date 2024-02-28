@@ -33,6 +33,9 @@ class ModuleManager():
 
         self.__module__anotations_updated = False
 
+        self.__module_annotations_for_host = dict() # a dict containing the Host name as key and the ModuleAnnotations for the host as value
+        self.__module__anotations_updated_for_host = dict() # a dict containg the Host name as key and a boolean value indicating whether the known module annotations are corrected as the value
+
 
     def instantiate_module(self, module_id, module_class):
 
@@ -230,8 +233,11 @@ class ModuleManager():
 
             self.__restart_control_package = packet
         elif packet.control_val.ctrl_type == CtrlType.CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE:
-            self.__module_annotations = packet.control_val.module_annotations
-            self.__module__anotations_updated = True
+
+            host_name = packet.source_host # Sender of the module annotations
+            self.__module_annotations_for_host[host_name] = packet.control_val.module_annotations
+            self.__module__anotations_updated_for_host[host_name] = True
+
         elif packet.control_val.ctrl_type == CtrlType.CTRL_ON_NEW_CONFIG_PAYLOAD_DATA:
             payload = packet.control_val.config_upload_payload
             
@@ -280,10 +286,12 @@ class ModuleManager():
 
         self.__to_module_dispatcher_queue.put(response)
 
-    def update_module_annotations(self):
-        self.__module__anotations_updated = False
+    def update_module_annotations_of_host(self, host):
+        self.__module__anotations_updated_for_host[host] = False
         
         package = DataPackage()
+        package.target_host = host
+        # package.source_host = ... will be set by middleware
         ctrl_package = package.control_val
 
         ctrl_package.ctrl_type = CtrlType.CTRL_REQUEST_MODULE_ANNOTATIONS
@@ -292,11 +300,11 @@ class ModuleManager():
 
         self.__to_module_dispatcher_queue.put(package)
 
-    def are_module_annotations_updated(self):
-        return self.__module__anotations_updated
+    def are_module_annotations_of_host_updated(self, host):
+        return self.__module__anotations_updated_for_host[host]
     
-    def get_module_annotations(self):
-        return self.__module_annotations
+    def get_module_annotations_of_host(self, host):
+        return self.__module_annotations_for_host[host]
     
     # dict[str, List]
     # dict(code, module_names)

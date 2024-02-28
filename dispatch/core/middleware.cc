@@ -390,6 +390,21 @@ const std::string& MiddleWare::getSocketPath() const
     return socketPath;
 }
 
+const std::string& MiddleWare::getHostId() const
+{
+    return hostId;
+}
+
+const std::string& MiddleWare::getUserId() const
+{
+    return userId;
+}
+
+const std::string& MiddleWare::getDeviceId() const
+{
+    return deviceId;
+}
+
 bool MiddleWare::isConnectedToRemoteServer() const
 {
     return this->remoteDispatcherClient != nullptr && this->remoteDispatcherClient->isConnected();

@@ -71,6 +71,29 @@ extern "C"
         return stdStringToJString(env, socketPath);
     }
 
+    JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_getHostId
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle) {
+        void* nativeHandle = reinterpret_cast<void*>(handle);
+        const char* hostId = get_host_id(nativeHandle);
+
+        return stdStringToJString(env, hostId);
+    }
+
+    JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_getUserId
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle) {
+        void* nativeHandle = reinterpret_cast<void*>(handle);
+        const char* userId = get_user_id(nativeHandle);
+
+        return stdStringToJString(env, userId);
+    }
+
+    JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_getDeviceId
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle) {
+        void* nativeHandle = reinterpret_cast<void*>(handle);
+        const char* deviceId = get_device_id(nativeHandle);
+
+        return stdStringToJString(env, deviceId);
+    }
 
     JNIEXPORT jboolean JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeLoadNewConfig
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle, jstring configPath) {

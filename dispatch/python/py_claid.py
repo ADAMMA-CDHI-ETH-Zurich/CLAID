@@ -78,12 +78,12 @@ module_factory = ModuleFactory()
 # module_factory.register_module(TestModule2)
 claid = CLAID()
 claid.hello_world()
-exit(0)
 claid.start("/Users/planger/Development/ModuleAPIV2/dispatch/python/test_config.json", "test_client", "user", "device", module_factory)
 
 
 print("Getting available modules")
 print(claid.get_available_modules())
+print(claid.get_current_host_id())
 print("done")
 
 

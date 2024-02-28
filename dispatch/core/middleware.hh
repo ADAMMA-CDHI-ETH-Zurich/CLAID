@@ -34,13 +34,16 @@ namespace claid
                 const std::string& configurationPath,
                 const std::string& hostId,
                 const std::string& userId,
-                const std::string& deficeId
+                const std::string& deviceId
             );
 
             absl::Status start();
             absl::Status shutdown();
 
             const std::string& getSocketPath() const;
+            const std::string& getHostId() const;
+            const std::string& getUserId() const;
+            const std::string& getDeviceId() const;
 
             bool isConnectedToRemoteServer() const;
             absl::Status getRemoteClientStatus() const;
