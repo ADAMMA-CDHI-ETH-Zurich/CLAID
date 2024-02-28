@@ -93,11 +93,11 @@ public class AccelerometerCollector extends Module implements SensorEventListene
 
         sensorManager = (SensorManager) CLAID.getContext().getSystemService(Context.SENSOR_SERVICE); 
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER); 
-        sensorManager.registerListener(this, sensor, SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
 
         int samplingPerioid = 1000/samplingFrequency;
 
-        registerPeriodicFunction("AccelerometerSampling", () -> sampleAccelerationData(), Duration.ofMillis(samplingPerioid));
+        //registerPeriodicFunction("AccelerometerSampling", () -> sampleAccelerationData(), Duration.ofMillis(samplingPerioid));
     }
 
 
@@ -147,9 +147,9 @@ public class AccelerometerCollector extends Module implements SensorEventListene
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
         {
             // Dividing per g to uniform with iOS
-            double x = sensorEvent.values[0] / SensorManager.GRAVITY_EARTH;
-            double y = sensorEvent.values[1] / SensorManager.GRAVITY_EARTH;
-            double z = sensorEvent.values[2] / SensorManager.GRAVITY_EARTH;
+            double x = sensorEvent.values[0] ;/// SensorManager.GRAVITY_EARTH;
+            double y = sensorEvent.values[1] ;/// SensorManager.GRAVITY_EARTH;
+            double z = sensorEvent.values[2] ;/// SensorManager.GRAVITY_EARTH;
 
             LocalDateTime currentTime = LocalDateTime.now();
 
@@ -164,7 +164,21 @@ public class AccelerometerCollector extends Module implements SensorEventListene
             String formattedString = currentTime.format(formatter);
             sample.setEffectiveTimeFrame(formattedString);
 
-            this.latestSample.set(sample.build());
+            AccelerationSample theSample = sample.build();
+            this.latestSample.set(theSample);
+            this.collectedAccelerationSamples.add(theSample);
+            if(this.collectedAccelerationSamples.size() == 100)
+            {
+                AccelerationData.Builder data = AccelerationData.newBuilder();
+
+                for(AccelerationSample collectedSample : collectedAccelerationSamples)
+                {   
+                    data.addSamples(collectedSample);
+                }
+
+                this.accelerationDataChannel.post(data.build());
+                collectedAccelerationSamples.clear();
+            }
            // System.out.println("Sensor data " +  x + " " +  y + " " + z);
         }
     }

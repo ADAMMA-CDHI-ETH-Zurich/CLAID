@@ -91,11 +91,11 @@ public class GyroscopeCollector extends Module implements SensorEventListener
 
         sensorManager = (SensorManager) CLAID.getContext().getSystemService(Context.SENSOR_SERVICE); 
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE); 
-        sensorManager.registerListener(this, sensor, SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
 
         int samplingPerioid = 1000/samplingFrequency;
 
-        registerPeriodicFunction("GyroscopeSampling", () -> sampleGyroscopeData(), Duration.ofMillis(samplingPerioid));
+        //registerPeriodicFunction("GyroscopeSampling", () -> sampleGyroscopeData(), Duration.ofMillis(samplingPerioid));
     }
 
 
@@ -133,6 +133,7 @@ public class GyroscopeCollector extends Module implements SensorEventListener
 
                 this.GyroscopeDataChannel.post(data.build());
                 collectedGyroscopeSamples.clear();
+                
             }
         }
         
@@ -144,10 +145,9 @@ public class GyroscopeCollector extends Module implements SensorEventListener
     {
         if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE)
         {
-            // Dividing per g to uniform with iOS
-            double x = sensorEvent.values[0] / SensorManager.GRAVITY_EARTH;
-            double y = sensorEvent.values[1] / SensorManager.GRAVITY_EARTH;
-            double z = sensorEvent.values[2] / SensorManager.GRAVITY_EARTH;
+            double x = sensorEvent.values[0];
+            double y = sensorEvent.values[1];
+            double z = sensorEvent.values[2];
 
             LocalDateTime currentTime = LocalDateTime.now();
 
@@ -162,7 +162,24 @@ public class GyroscopeCollector extends Module implements SensorEventListener
             String formattedString = currentTime.format(formatter);
             sample.setEffectiveTimeFrame(formattedString);
 
-            this.latestSample.set(sample.build());
+
+            GyroscopeSample theSample = sample.build();
+
+
+            this.latestSample.set(theSample);
+            this.collectedGyroscopeSamples.add(theSample);
+            if(this.collectedGyroscopeSamples.size() == 100)
+            {
+                GyroscopeData.Builder data = GyroscopeData.newBuilder();
+
+                for(GyroscopeSample collectedSample : collectedGyroscopeSamples)
+                {   
+                    data.addSamples(collectedSample);
+                }
+
+                this.GyroscopeDataChannel.post(data.build());
+                collectedGyroscopeSamples.clear();
+            }
            // System.out.println("Sensor data " +  x + " " +  y + " " + z);
         }
     }
