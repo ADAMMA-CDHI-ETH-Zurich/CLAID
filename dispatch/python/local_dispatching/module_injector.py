@@ -4,13 +4,17 @@ import pathlib
 import os
 import copy
 
+import inspect
+
 import sys
+
+from claid.module import Module
+
 # Helper class for the module_manager
 # Allows to inject new Modules at runtime by importing or updating (new) Python files.
 class ModuleInjector():
-    def __init__(self, module_factory):
+    def __init__(self):
         self.injected_modules = dict() # stores name of injected python files, their lib handles and the module names.
-        self.original_module_factory = copy.copy(module_factory)
 
     
     # base path is the path of where the python files are located (typically this is the payloadDataPath of the middleware)
@@ -23,33 +27,66 @@ class ModuleInjector():
     def inject_claid_modules_from_python_file(self, base_path: str, python_module_name: str, claid_module_names : list):
         
         sys.path.append(base_path)
-
         
         python_handle = None
         try:
 
             python_module_name = python_module_name.replace(".py", "")
 
-            if python_module_name in self.injected_modules:
-                Logger.log_debug(f"ModuleInjector: Python code {python_module_name} already exists, updating lib.")
-                python_handle = importlib.reload(python_module_name)
-            else:
-                Logger.log_debug(f"ModuleInjector: Python code {python_module_name} not injected before, importing module")
-                python_handle = importlib.import_module(python_module_name)
+            python_handle = self.__load_get_python_module(python_module_name)
+
             self.injected_modules[python_module_name] = (python_handle, claid_module_names)
+            
             return True
         except Exception as e:
             Logger.log_error(f"Failed to inject new CLAID Module from Python Module/Code \"{python_module_name}\":  {e}")
             return False
         
-                
+    def __load_get_python_module(self, python_module_name: str):
+
+        if python_module_name in self.injected_modules:
+            Logger.log_debug(f"ModuleInjector: Python code {python_module_name} already exists, updating lib.")
+            python_handle = importlib.reload(python_module_name)
+            return python_handle
+        else:
+            Logger.log_debug(f"ModuleInjector: Python code {python_module_name} not injected before, importing module")
+            python_handle = importlib.import_module(python_module_name)
+            return python_handle
 
 
-    def rebuild_get_module_factory(self):
+        
+    def inject_claid_modules_from_all_files_in_folder(self, folder_path : str):
+        
+        files = [f for f in os.listdir(folder_path) if f.endswith(".py")]
 
-        new_module_factory = copy.copy(self.original_module_factory)
+        
+        found_modules = list()
+        for file in files:
+            python_module_path = os.path.join(folder_path, file.replace(".py", ""))
 
-        print(self.injected_modules)
+            if python_module_path not in found_modules:
+                found_modules.append(python_module_path)
+
+        for python_module_path in found_modules:
+
+            Logger.log_debug("Loading Python file {}".format(python_module_path))
+            python_handle = self.__load_get_python_module(python_module_path)
+
+            all_classes = inspect.getmembers(python_handle, inspect.isclass)
+
+            # Filter classes based on inheritance
+            claid_module_class_names = [name for name, cls in all_classes if issubclass(cls, Module) and cls != Module]
+
+            Logger.log_debug("Found classes {} in Python file {}".format(claid_module_class_names, python_module_path))
+
+            self.injected_modules[python_module_path] = (python_handle, claid_module_class_names)
+            
+
+
+    def get_injected_module_classes(self):
+
+
+        module_classes = list()
         for code_name in self.injected_modules:
             print(self.injected_modules[code_name])
             python_handle, module_names = self.injected_modules[code_name]
@@ -69,8 +106,7 @@ class ModuleInjector():
                     Logger.log_warning(f"Failed to inject CLAID Module \"{module_name}\" from code \"{code_name}\"." + \
                                     "Module definition was found, but is not callable (i.e., is neither class nor function).")
                     
-                new_module_factory.register_module(clz)
+                module_classes.append(clz)
                 Logger.log_debug(f"Registered module {module_name} of python code {code_name}")
         
-        self.original_module_factory = new_module_factory
-        return self.original_module_factory
+        return module_classes

@@ -8,3 +8,4 @@ pip_package:
 	rm -fr pip_package/claid/dispatch/python
 	mv pip_package/claid/setup.py pip_package/setup.py
 	cp MANIFEST.in pip_package/MANIFEST.in
+

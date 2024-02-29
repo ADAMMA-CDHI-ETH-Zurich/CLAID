@@ -10,6 +10,12 @@ from local_dispatching.module_manager import ModuleManager
 from module.module_factory import ModuleFactory
 from module.thread_safe_channel import ThreadSafeChannel
 
+from module.scheduling.function_runnable import FunctionRunnable
+
+from module.scheduling.schedule_once import ScheduleOnce
+from module.scheduling.schedule_immediately_indefinitely import ScheduleImmediatelyIndefinitely
+from module.scheduling.external_scheduled_runnable import ExternalScheduledRunnable
+
 import platform
 import os
 
@@ -49,7 +55,9 @@ class CLAID():
             if not os.path.isfile(libname):
                 current_file_path = str(os.path.dirname(os.path.abspath(__file__)))
                 libname = os.path.join(current_file_path, "dispatch/core/libclaid_capi{}".format(platform_library_extension))
-            CLAID.claid_c_lib = ctypes.cdll.LoadLibrary(libname)
+            print("Calling loadlibrary")
+            CLAID.claid_c_lib = ctypes.CDLL(libname)
+            print("Loading CLAID load library")
 
             # Required, otherwise claid_c_lib.attach_cpp_runtime will fail (same for shutdown_core etc).
             CLAID.claid_c_lib.start_core.restype = ctypes.c_void_p
@@ -73,6 +81,7 @@ class CLAID():
             CLAID.claid_c_lib.load_new_config.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
         CLAID.claid_c_lib_loaded = True
     
+        print("CLAID c lib loaded")
     def __init__(self, module_injection_storage_path = None):
         self.__handle = 0
         self.__cpp_runtime_handle = 0
@@ -83,6 +92,8 @@ class CLAID():
 
     def startCustomSocket(self, socket_path, config_file_path, host_id, user_id, device_id, module_factory):
         CLAID.__load_claid_library()
+
+        Logger.log_info("Starting CLAID")
 
         if(self.__started):
             raise Exception("Failed to start CLAID, start was called twice")
@@ -133,30 +144,30 @@ class CLAID():
         return True
     
 
-    def update_module_annotations_for_host(self, host_name):
-        self.__module_manager.update_module_annotations_for_host(host_name)
+    def update_module_annotations_of_host(self, host_name):
+        self.__module_manager.update_module_annotations_of_host(host_name)
 
     def are_module_annotations_of_host_updated(self, host_name):
         return self.__module_manager.are_module_annotations_of_host_updated(host_name)
     
-    def get_module_annotations_for_host(self, host_name):
-        return self.__module_manager.get_module_annotations_for_host(host_name)
+    def get_module_annotations_of_host(self, host_name):
+        return self.__module_manager.get_module_annotations_of_host(host_name)
 
     def inject_new_modules(self, module_descriptions: dict):
         return self.__module_manager.inject_new_modules(module_descriptions)
     
     def get_current_host_id(self):
-        return str(CLAID.claid_c_lib.get_host_id(self.__handle))
+        return CLAID.claid_c_lib.get_host_id(self.__handle).decode('utf-8')
 
     def get_available_modules_on_this_host(self):
-        return self.get_available_modules_for_host(self.get_current_host_name())
+        return self.get_available_modules_for_host(self.get_current_host_id())
 
     def get_available_modules_for_host(self, host_name):
 
         if not self.__started:
             raise RuntimeError("Cannot get available modules. CLAID is not running, you have to start it first.")
 
-        self.update_module_annotations_for_host(host_name)
+        self.update_module_annotations_of_host(host_name)
         start_time = int(round(time.time() * 1000))
 
         while not self.are_module_annotations_of_host_updated(host_name):
@@ -168,7 +179,7 @@ class CLAID():
             
 
 
-        return self.get_module_annotations_for_host(host_name)
+        return self.get_module_annotations_of_host(host_name)
     
     def hello_world(self):
         CLAID.__load_claid_library()
@@ -211,3 +222,42 @@ class CLAID():
                 scheduled_runnable.runnable.run()
 
             scheduled_runnable.runnable.was_executed = True
+
+            if isinstance(scheduled_runnable, ExternalScheduledRunnable):
+                # Reschedule the runnable is only done here for ExternalScheduledRunnables (i.e., 
+                # Runnables outside of the CLAID framework). All other runnables are scheduled inside
+                # each Modules individual RunnableDispatcher.
+
+                if scheduled_runnable.schedule.does_runnable_have_to_be_repeated():
+                    self.__main_thread_queue.put(scheduled_runnable)
+
+    
+    # Allows to inject internal functions as runnables in the __main_thread_queue.
+    # This can be required for certain frameworks to run on the same (main) thread as CLAID,
+    # e.g. for GUI frameworks like Qt.
+    def register_external_function_on_claid_thread_run_once(self, function):
+        function_runnable = FunctionRunnable(function)
+
+        
+        runnable =  ExternalScheduledRunnable(
+                function_runnable,
+                schedule=ScheduleOnce.now()
+            )
+
+        self.__main_thread_queue.put(runnable)
+
+    def register_external_function_on_claid_thread_repeat_indefinitely(self, function):
+        function_runnable = FunctionRunnable(function)
+
+        
+        runnable = ExternalScheduledRunnable(
+                function_runnable,
+                schedule=ScheduleImmediatelyIndefinitely.startNow()
+            )
+        
+        self.__main_thread_queue.put(runnable)
+
+
+    # Allows an external entity to subscribe to log messages received by the CLAID framework.
+    def subscribe_log_messages(self, callback):
+        pass

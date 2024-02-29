@@ -79,6 +79,10 @@ class GyroscopeView(Module):
 
             cv2.waitKey(1)
 
+            self.xs.clear()
+            self.ys.clear()
+            self.zs.clear()
+
         # if self.ctr == None:
         #     self.ctr = 0
         # self.ctr += 1
