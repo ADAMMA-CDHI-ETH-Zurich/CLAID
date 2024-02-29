@@ -3,7 +3,6 @@ from logger.logger import Logger
 from module.channel_subscriber_publisher import ChannelSubscriberPublisher
 from module.module_annotator import ModuleAnnotator
 from module.thread_safe_channel import ThreadSafeChannel
-from local_dispatching.module_injector import ModuleInjector
 from dispatch.proto.claidservice_pb2 import * 
 
 from threading import Thread
@@ -20,7 +19,6 @@ class ModuleManager():
         self.main_thread_runnables_queue = main_thread_runnables_queue
 
        
-        self.__module_injector = ModuleInjector(self.__module_factory)
         self.__running_modules = dict()    
 
         # self.__from_module_dispatcher_queue = ThreadSafeChannel()
@@ -310,16 +308,14 @@ class ModuleManager():
     # dict(code, module_names)
     def inject_new_modules(self, module_descrption: dict):
 
-        if self.__module_injector is None:
-            return False
+        
 
         for code_name in module_descrption:
             code, module_names = module_descrption[code_name]
-            if not self.__module_injector.inject_claid_modules_from_python_file(code_name, code, module_names):
+            if not self.__module_factory.inject_claid_modules_from_python_file(code_name, code, module_names):
                 return False
             
-        
-        self.__module_factory = self.__module_injector.rebuild_get_module_factory()
+       
         self.__module_factory.print_registered_modules()
 
         return True
@@ -340,7 +336,7 @@ class ModuleManager():
 
 
         for entry in module_injections:
-            if not self.__module_injector.inject_claid_modules_from_python_file(payload.payload_data_path, entry, module_injections[entry]):
+            if not self.__module_factory.inject_claid_modules_from_python_file(payload.payload_data_path, entry, module_injections[entry]):
                 Logger.log_error("Failed to inject modules {}".format(module_injections[entry]))
                 return False
             

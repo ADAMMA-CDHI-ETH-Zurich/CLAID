@@ -44,6 +44,8 @@ class AccelerationView(Module):
         cv2.imshow("AccelerationView", np.zeros((200,200,3)))
         cv2.waitKey(1)
 
+        
+
 
     def get_acceleration_data(self):
         return self.xs, self.ys, self.zs
@@ -77,6 +79,10 @@ class AccelerationView(Module):
             cv2.imshow('AccelerationView', cv2.cvtColor(img_plot, cv2.COLOR_RGBA2BGR))
 
             cv2.waitKey(1)
+
+            self.xs.clear()
+            self.ys.clear()
+            self.zs.clear()
 
         # if self.ctr == None:
         #     self.ctr = 0
