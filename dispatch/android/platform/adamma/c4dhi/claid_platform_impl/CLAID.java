@@ -93,6 +93,8 @@ public class CLAID extends JavaCLAIDBase
     
     private static PowerManager.WakeLock claidWakeLock;
 
+    private static Runnable onCLAIDStartedCallback = null;
+
     // Starts the middleware and attaches to it.
     // Volatile, as CLAID might only run as long as the App is in the foreground.
     public static boolean start(Context context, final String socketPath, 
@@ -127,7 +129,17 @@ public class CLAID extends JavaCLAIDBase
             adjustedConfigPath = tmpConfigPath;
         }
 
-        return startInternal(socketPath, adjustedConfigPath, hostId, userId, deviceId, moduleFactory);
+        boolean result = startInternal(socketPath, adjustedConfigPath, hostId, userId, deviceId, moduleFactory);
+
+        if(result) 
+        {
+            if(onCLAIDStartedCallback != null)
+            {
+                onCLAIDStartedCallback.run();
+            }
+        }
+        return result;
+    
     }
 
     // Starts the middleware and attaches to it.
@@ -211,6 +223,11 @@ public class CLAID extends JavaCLAIDBase
             ServiceManager.startMaximumPermissionsPerpetualService(context, socketPath, configFilePath, hostId, userId, deviceId, enduranceConfig));
         
         return true;
+    }
+
+    public static void onStarted(Runnable runnable)
+    {
+        CLAID.onCLAIDStartedCallback = runnable;
     }
 
     public static ModuleFactory registerDefaultModulesToFactory(ModuleFactory factory)

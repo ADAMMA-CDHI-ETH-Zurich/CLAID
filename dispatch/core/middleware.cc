@@ -821,6 +821,7 @@ const std::string& MiddleWare::getPayloadDataPath() const
 
 void MiddleWare::enableDesignerMode()
 {
+    Logger::logInfo("Middleware enabled designer mdoe");
     this->designerModeActive = true;
 }
 

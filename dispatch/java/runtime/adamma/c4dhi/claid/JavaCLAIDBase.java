@@ -25,18 +25,18 @@ public abstract class JavaCLAIDBase
     // Attaches C++ runtime to the middleware and returns a handle to the C++ runtime.
     private static native long attachCppRuntime(long handle);
     
-    private static native String getSocketPath(long handle);
-    private static native String getHostId(long handle);
-    private static native String getUserId(long handle);
-    private static native String getDeviceId(long handle);
+    private static native String nativeGetSocketPath(long handle);
+    private static native String nativeGetHostId(long handle);
+    private static native String nativeGetUserId(long handle);
+    private static native String nativeGetDeviceId(long handle);
 
     private static native boolean nativeLoadNewConfig(long handle, String config);
 
-    private static native void setPayloadDataPath(long handle, String path);
-    private static native String getPayloadDataPath(long handle);
+    private static native void nativeSetPayloadDataPath(long handle, String path);
+    private static native String nativeGetPayloadDataPath(long handle);
     
-    private static native void enableDesignerMode(long handle);
-    private static native void disableDesignerMode(long handle); 
+    private static native void nativeEnableDesignerMode(long handle);
+    private static native void nativeDisableDesignerMode(long handle); 
     
     private static ModuleDispatcher moduleDispatcher;
     private static ModuleManager moduleManager;
@@ -102,7 +102,7 @@ public abstract class JavaCLAIDBase
 
     protected static boolean attachJavaRuntimeInternal(long handle, ModuleFactory factory)
     {
-        String socketPath = getSocketPath(handle);
+        String socketPath = getSocketPath();
         return attachJavaRuntimeInternal(socketPath, factory);
     }
 
@@ -111,6 +111,46 @@ public abstract class JavaCLAIDBase
         return nativeLoadNewConfig(handle, config);
     }
 
+    public static String getSocketPath()
+    {
+        return nativeGetSocketPath(handle);
+    }
 
+    public static String getHostId()
+    {
+        return nativeGetHostId(handle);
+    }
+
+    public static String getUserId()
+    {
+        return nativeGetUserId(handle);
+    }
+
+    public static String getDeviceId()
+    {
+        return nativeGetDeviceId(handle);
+    }
+
+
+    public static void setPayloadDataPath(String path)
+    {
+        nativeSetPayloadDataPath(handle, path);
+    }
+
+    public static String getPayloadDataPath()
+    {
+        return nativeGetPayloadDataPath(handle);
+    }
+    
+    public static void enableDesignerMode()
+    {
+        Logger.logInfo("Java enable designer mode caled");
+        nativeEnableDesignerMode(handle);
+    }
+
+    public static void disableDesignerMode()
+    {
+        nativeDisableDesignerMode(handle);
+    }
 
 }

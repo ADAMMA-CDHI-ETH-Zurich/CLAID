@@ -173,6 +173,7 @@ void enable_designer_mode(void* handle)
         claid::Logger::logError("Cannot enable designer model, handle is null.");
         return;
     }
+    claid::Logger::logInfo("capi enable designer mode called");
 
     auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
     middleWare->enableDesignerMode();

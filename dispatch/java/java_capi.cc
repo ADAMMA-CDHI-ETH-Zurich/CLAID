@@ -63,7 +63,7 @@ extern "C"
         return reinterpret_cast<jlong>(attach_cpp_runtime(nativeHandle));
     }
 
-    JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_getSocketPath
+        JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeGetSocketPath
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) {
         void* nativeHandle = reinterpret_cast<void*>(handle);
         const char* socketPath = get_socket_path(nativeHandle);
@@ -71,7 +71,7 @@ extern "C"
         return stdStringToJString(env, socketPath);
     }
 
-    JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_getHostId
+    JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeGetHostId
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) {
         void* nativeHandle = reinterpret_cast<void*>(handle);
         const char* hostId = get_host_id(nativeHandle);
@@ -79,7 +79,7 @@ extern "C"
         return stdStringToJString(env, hostId);
     }
 
-    JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_getUserId
+    JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeGetUserId
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) {
         void* nativeHandle = reinterpret_cast<void*>(handle);
         const char* userId = get_user_id(nativeHandle);
@@ -87,7 +87,7 @@ extern "C"
         return stdStringToJString(env, userId);
     }
 
-    JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_getDeviceId
+    JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeGetDeviceId
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) {
         void* nativeHandle = reinterpret_cast<void*>(handle);
         const char* deviceId = get_device_id(nativeHandle);
@@ -104,8 +104,7 @@ extern "C"
         return load_new_config(nativeHandle, stdConfigPath.c_str());
     }
 
-
-    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_setPayloadDataPath
+    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeSetPayloadDataPath
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle, jstring path) 
     {
         void* nativeHandle = reinterpret_cast<void*>(handle);
@@ -114,7 +113,7 @@ extern "C"
         set_payload_data_path(nativeHandle, stdPayloadPath.c_str());
     }
 
-    JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_getPayloadDataPath
+    JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeGetPayloadDataPath
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) 
     {
         void* nativeHandle = reinterpret_cast<void*>(handle);
@@ -123,15 +122,14 @@ extern "C"
         return stdStringToJString(env, socketPath);
     }
 
-    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_enableDesignerMode
-    (JNIEnv *env, jobject CLAIDOBJ, jlong handle, jstring path) 
+    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeEnableDesignerMode
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle) 
     {
         void* nativeHandle = reinterpret_cast<void*>(handle);
         enable_designer_mode(nativeHandle);
     }
 
-    __attribute__((visibility("default"))) __attribute__((used))
-    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_disableDesignerMode
+    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeDisableDesignerMode
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) 
     {
         void* nativeHandle = reinterpret_cast<void*>(handle);
