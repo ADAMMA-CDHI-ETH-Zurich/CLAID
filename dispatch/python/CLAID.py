@@ -79,6 +79,19 @@ class CLAID():
 
             CLAID.claid_c_lib.load_new_config.restype = ctypes.c_bool
             CLAID.claid_c_lib.load_new_config.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+
+
+            CLAID.claid_c_lib.enable_designer_mode.argtypes = [ctypes.c_void_p]
+            CLAID.claid_c_lib.enable_designer_mode.restype = None
+
+            CLAID.claid_c_lib.disable_designer_mode.argtypes = [ctypes.c_void_p]
+            CLAID.claid_c_lib.disable_designer_mode.restype = None
+
+            CLAID.claid_c_lib.set_payload_data_path.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+            CLAID.claid_c_lib.set_payload_data_path.restype = None
+
+            CLAID.claid_c_lib.get_payload_data_path.argtypes = [ctypes.c_void_p]
+            CLAID.claid_c_lib.get_payload_data_path.restype = ctypes.c_char_p
         CLAID.claid_c_lib_loaded = True
     
         print("CLAID c lib loaded")
@@ -267,3 +280,18 @@ class CLAID():
 
     def register_on_disconnected_from_server_callback(self, callback):
         self.__module_manager.register_on_disconnected_from_server_callback(callback)
+
+    def upload_config_to_host(self, host_name: str, config: CLAIDConfig):
+        self.__module_manager.upload_config_to_host(self, host_name, config)
+
+    def enable_designer_mode(self):
+        CLAID.claid_c_lib.enable_designer_mode(self.__handle)
+
+    def disable_designer_mode(self):
+        CLAID.claid_c_lib.disable_designer_mode(self.__handle)
+
+    def set_payload_data_path(self, path: str):
+        CLAID.claid_c_lib.set_payload_data_path(self.__handle, string_to_c_string(path))
+
+    def get_payload_data_path(self) -> str:
+        return CLAID.claid_c_lib.get_payload_data_path(self.__handle).decode('utf-8')

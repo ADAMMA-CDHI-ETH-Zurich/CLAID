@@ -143,6 +143,7 @@ namespace claid
             {
                 // Forward to middleware
                 this->incomingQueue.push_back(std::make_shared<DataPackage>(pkt));
+                break;
             }
         }
     }
