@@ -118,10 +118,11 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         {
             if(moduleOutputChannelsToConnectionMap[moduleId][channelId] == "")
             {
-                return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
+                Logger::logWarning("%s", absl::StrCat(
                 "Invalid published channel \"", channelId, "for Module \"", moduleId, "\".", 
                 "Could not find where this Channel is connected/mapped to, as it was not found in the moduleOutputChannelsToConnectionMap.\n",
-                "Was the channel specified in the \"output_channels\" property of the Module?"));
+                "Was the channel specified in the \"output_channels\" property of the Module?").c_str());
+                continue;
             }
 
             // Map the channel name to the corresponding connection.
@@ -132,10 +133,11 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         {
             if(moduleInputChannelsToConnectionMap[moduleId][channelId] == "")
             {
-                return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
+                Logger::logWarning("%s", absl::StrCat(
                 "Invalid subscribed channel \"", channelId, " for Module \"", moduleId, "\".", 
                 "Could not find where this Channel is connected/mapped to, as it was not found in the moduleInputChannelsToConnectionMap.\n",
-                "Was the channel specified in the \"input_channels\" property of the Module?"));
+                "Was the channel specified in the \"input_channels\" property of the Module?").c_str());
+                continue;
             }
 
             // Map the channel name to the corresponding connection.
@@ -145,7 +147,8 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         // Find the channel and verify and set the type.
         auto entry = findChannel(channelId);
         if (!entry) {
-            return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Channel \"", channelId, "\" not known, did you specify it in the configuration file?"));
+            Logger::logWarning("%s", absl::StrCat("Channel \"", channelId, "\" not known, did you specify it in the configuration file?").c_str());
+            continue;
         }
 
         // If the type was already set and the type doesn't match we return an error.

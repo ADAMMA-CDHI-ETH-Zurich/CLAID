@@ -281,8 +281,8 @@ class CLAID():
     def register_on_disconnected_from_server_callback(self, callback):
         self.__module_manager.register_on_disconnected_from_server_callback(callback)
 
-    def upload_config_to_host(self, host_name: str, config: CLAIDConfig):
-        self.__module_manager.upload_config_to_host(self, host_name, config)
+    def upload_config_to_host(self, host_name: str, config):
+        self.__module_manager.upload_config_to_host(host_name, config)
 
     def enable_designer_mode(self):
         CLAID.claid_c_lib.enable_designer_mode(self.__handle)

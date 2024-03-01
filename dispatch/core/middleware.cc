@@ -102,14 +102,14 @@ absl::Status MiddleWare::start() {
         return status;
     }
 
-    if(config.isDesignerModeEnabled())
-    {
-        this->enableDesignerMode();
-    }
-    else
-    {
-        this->disableDesignerMode();
-    }
+    // if(config.isDesignerModeEnabled())
+    // {
+    //     this->enableDesignerMode();
+    // }
+    // else
+    // {
+    //     this->disableDesignerMode();
+    // }
 
     Logger::logInfo("Middleware started.");
 
@@ -436,6 +436,9 @@ void MiddleWare::readControlPackages()
 
 void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackage)
 {
+    Logger::logInfo("Middleware received control package %s from Runtime %s\n%s", CtrlType_Name(controlPackage->control_val().ctrl_type()).c_str(), Runtime_Name(controlPackage->control_val().runtime()).c_str(),
+    messageToString(*controlPackage).c_str());
+
     switch(controlPackage->control_val().ctrl_type())
     {
         case CtrlType::CTRL_CONNECTED_TO_REMOTE_SERVER:
@@ -503,7 +506,27 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
         }
         case CtrlType::CTRL_UPLOAD_CONFIG_AND_DATA:
         {
-            this->handleUploadConfigAndPayloadMessage(controlPackage);
+            if(this->configUploadThread != nullptr)
+            {
+                if(!this->uploadingConfigFinished)
+                {
+                    Logger::logError("Received CTRL_UPLOAD_CONFIG_AND_DATA control message, which currently cannot be processed, since we are already\n"
+                    "loading a new config right now (config reload thread busy).");
+                    return;
+                }
+                else
+                {
+                    this->configUploadThread->join();
+                    this->configUploadThread = nullptr;
+                    this->uploadingConfigFinished = false;
+                }
+            }
+            
+            this->uploadingConfigFinished = false;
+            this->configUploadPackage = *controlPackage;
+            this->configUploadThread = make_unique<std::thread>([&]() {
+                    this->handleUploadConfigAndPayloadMessage();
+            });
         }
         break;  
         default:
@@ -764,14 +787,14 @@ absl::Status MiddleWare::loadNewConfig(const Configuration& config)
     }
     Logger::setMinimimSeverityLevelToPrint(config.getMinLogSeverityLevelToPrint(this->hostId));
 
-    if(config.isDesignerModeEnabled())
-    {
-        this->enableDesignerMode();
-    }
-    else
-    {
-        this->disableDesignerMode();
-    }
+    // if(config.isDesignerModeEnabled())
+    // {
+    //     this->enableDesignerMode();
+    // }
+    // else
+    // {
+    //     this->disableDesignerMode();
+    // }
 
     return absl::OkStatus();
 }
@@ -806,25 +829,33 @@ void MiddleWare::disableDesignerMode()
     this->designerModeActive = false;
 }
 
-void MiddleWare::handleUploadConfigAndPayloadMessage(std::shared_ptr<DataPackage> controlPackage)
+void MiddleWare::handleUploadConfigAndPayloadMessage()
 {
-    const ConfigUploadPayload& payload = controlPackage->control_val().config_upload_payload();
+    DataPackage& controlPackage = this->configUploadPackage;
+    Logger::logInfo("got config package: %s", messageToString(controlPackage).c_str());
+    const ConfigUploadPayload& payload = controlPackage.control_val().config_upload_payload();
     if(!this->designerModeActive)
     {
         Logger::logError("Received control package CTRL_UPLOAD_CONFIG_AND DATA from host \"%s\", "
-        "however designer mode of this host (\"%s\") is disabled. Uploading a new config is forbidden.", controlPackage->source_host().c_str(), this->hostId.c_str());
+        "however designer mode of this host (\"%s\") is disabled. Uploading a new config is forbidden.", controlPackage.source_host().c_str(), this->hostId.c_str());
+        this->uploadingConfigFinished = true;
         return;
     }
-    if(this->payloadDataPath == "")
+    if(payload.payload_files().size() > 0)
     {
-        Logger::logError("Received control package CTRL_UPLOAD_CONFIG_AND DATA from host \"%s\", "
-        "however payloadDataStoragePath of this host (\"%s\") is empty. Cannot load new config because we do not know where to store payload data.", controlPackage->source_host().c_str(), this->hostId.c_str());
-        return;
-    }
-
-    if(!storePayload(payload))
-    {
-        Logger::logError("Failed to store payload");
+        if(this->payloadDataPath == "")
+        {
+            Logger::logError("Received control package CTRL_UPLOAD_CONFIG_AND DATA from host \"%s\", with additional payloads."
+            "However payloadDataStoragePath of this host (\"%s\") is empty. Cannot load new config because we do not know where to store payload data.", controlPackage.source_host().c_str(), this->hostId.c_str());
+            this->uploadingConfigFinished = true;
+            return;
+        }
+        if(!storePayload(payload))
+        {
+            Logger::logError("Failed to store payload");
+            this->uploadingConfigFinished = true;
+            return;
+        }
     }
 
     notifyAllRuntimesAboutNewPayload();
@@ -834,6 +865,7 @@ void MiddleWare::handleUploadConfigAndPayloadMessage(std::shared_ptr<DataPackage
     {
         Logger::logError("Failed to load new config: %s", status.ToString().c_str());
     }
+    this->uploadingConfigFinished = true;
 }
 
 bool MiddleWare::storePayload(const ConfigUploadPayload& payload)

@@ -46,7 +46,7 @@ namespace claid
 
             LogMessageSeverityLevel getMinLogSeverityLevelToPrint(const std::string& hostName) const;
 
-            bool isDesignerModeEnabled() const;
+            // bool isDesignerModeEnabled() const;
     };
 
 

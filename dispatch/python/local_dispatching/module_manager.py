@@ -368,12 +368,12 @@ class ModuleManager():
         # package.source_host = ... will be set by middleware
         ctrl_package = package.control_val
 
-        ctrl_package.ctrl_type = CtrlType.CTRL_UPLOAD_CONFIG_AND_PAYLOAD
+        ctrl_package.ctrl_type = CtrlType.CTRL_UPLOAD_CONFIG_AND_DATA
         ctrl_package.runtime = Runtime.RUNTIME_PYTHON
 
         config_payload = ConfigUploadPayload()
-        config_payload = config
-        ctrl_package.config_upload_payload = config_payload
+        config_payload.config.CopyFrom(config)
+        ctrl_package.config_upload_payload.CopyFrom(config_payload)
    
 
         self.__to_module_dispatcher_queue.put(package)

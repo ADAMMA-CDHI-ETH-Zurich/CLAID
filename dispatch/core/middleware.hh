@@ -112,6 +112,18 @@ namespace claid
 
             std::unique_ptr<std::thread> controlPackageHandlerThread = nullptr; 
 
+            // Thread needed to load a new config if a message CTRL_UPLOAD_CONFIG_AND_DATA is received.
+            // Loading a new config blocks the thread that calls loadNewConfig until the new config is loaded successfully.
+            // Normally, this is fine and expected, since the thread calling loadNewConfig is not the same thread that processes control messages.
+            // However if another host wants to upload a new config remotely, he would send a control message CTRL_UPLOAD_CONFIG_AND_DATA.
+            // This message is processed in the thread processing control packages, which would then need to call loadNewConfig.
+            // However, loadNewConfig is blocking and waiting until all runtimes have sent the control messages CTRL_UNLOAD_MODULES_DONE and CTRL_RESTART_RUNTIME_DONE
+            // However, these messages would never be processed, since the thread processing control packages is still blocked on loadNewConfig -> deadlock.
+            // Hence, in this case we use a separate helper thread.
+            std::unique_ptr<std::thread> configUploadThread;
+            bool uploadingConfigFinished = false;
+            DataPackage configUploadPackage;
+
             absl::Status getHostModuleAndChannelDescriptions(const std::string& hostId, const Configuration& config,
                 HostDescriptionMap& hostDescriptions, ModuleDescriptionMap& allModuleDescriptions,
                 ModuleDescriptionMap& hostModuleDescriptions, ChannelDescriptionMap& channelDescriptions);
@@ -142,7 +154,7 @@ namespace claid
             std::shared_ptr<SharedQueue<LogMessage>> getLogMessagesQueue();
 
 
-            void handleUploadConfigAndPayloadMessage(std::shared_ptr<DataPackage> controlPackage);
+            void handleUploadConfigAndPayloadMessage();
             bool storePayload(const ConfigUploadPayload& payload);
             void notifyAllRuntimesAboutNewPayload();
     };

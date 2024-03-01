@@ -316,7 +316,7 @@ message CLAIDConfig {
   LogMessageSeverityLevel log_sink_severity_level = 3;  // If log_sink_host is specified, this flag indicates 
                                                         // what category of log messages will be sent to the log sink (only messages with severity level >= this flag will be sent).
   LogSinkTransferMode log_sink_transfer_mode = 4; // Method of transfering log messages to the log_sink_host. Check LogSingTransferMode definition for more details.
-  bool designer_mode = 5;                         // If true, other hosts can upload a new config (alongside additional data like model files or python code) to the host.
+  //bool designer_mode = 5;                         // If true, other hosts can upload a new config (alongside additional data like model files or python code) to the host.
 }
 
 message HostConfig {

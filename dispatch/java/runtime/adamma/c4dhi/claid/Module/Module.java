@@ -131,7 +131,7 @@ public abstract class Module
         this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> terminateInternal()));
 
 
-        while(!this.isTerminating)
+        while(this.isTerminating)
         {
             try {
                 Thread.sleep(20);

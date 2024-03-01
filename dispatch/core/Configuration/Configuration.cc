@@ -225,8 +225,10 @@ namespace claid
 
     bool Configuration::hostExistsInConfiguration(const std::string& host) const
     {
+        Logger::logInfo("host exists in config");
         for(auto& hostIt : config.hosts()) 
         {
+            Logger::logInfo("Hosts %s", hostIt.hostname().c_str());
             if (hostIt.hostname() == host) 
             {
                 return true;
@@ -249,9 +251,9 @@ namespace claid
         return LogMessageSeverityLevel::INFO;
     }
 
-    bool Configuration::isDesignerModeEnabled() const
-    {
-        return config.designer_mode();
-    }
+    // bool Configuration::isDesignerModeEnabled() const
+    // {
+    //     return config.designer_mode();
+    // }
     
 }

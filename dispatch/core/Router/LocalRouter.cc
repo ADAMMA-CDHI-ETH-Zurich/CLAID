@@ -43,7 +43,7 @@ namespace claid {
 
     absl::Status LocalRouter::routeControlPackage(std::shared_ptr<DataPackage> package)
     {
-        Logger::logInfo("LocalRouter routing control package");
+        Logger::logInfo("LocalRouter routing control package %s", CtrlType_Name(package->control_val().ctrl_type()).c_str());
         this->moduleTable.controlPackagesQueue().push_front(package);
         return absl::OkStatus();
     }

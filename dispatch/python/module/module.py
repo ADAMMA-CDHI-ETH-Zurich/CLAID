@@ -10,7 +10,9 @@ from module.subscriber import Subscriber
 from abc import ABC, abstractmethod
 
 from datetime import datetime
-
+from module.scheduling.function_runnable_with_params import FunctionRunnableWithParams
+from module.scheduling.scheduled_runnable import ScheduledRunnable
+from module.scheduling.schedule_once import ScheduleOnce
 
 class Module(ABC):
     def __init__(self):
@@ -53,13 +55,26 @@ class Module(ABC):
         self.__is_initializing = True
         self.__is_initialized = False
 
-        self.initialize_internal(properties)
+
+        function_runnable = FunctionRunnableWithParams(self.__initialize_internal)
+        function_runnable.set_params(properties)
+
+        self.__runnable_dispatcher.add_runnable(
+            ScheduledRunnable(
+                function_runnable,
+                ScheduleOnce(datetime.now())
+            )
+        )       
+
+        while not self.__is_initialized:
+            pass
+
 
         self.__is_initializing = False
         self.__subscriber_publisher = None
         return True
 
-    def initialize_internal(self, properties):
+    def __initialize_internal(self, properties):
         self.initialize(properties)
         self.__is_initialized = True
 
@@ -149,7 +164,17 @@ class Module(ABC):
     def shutdown(self):
         self.__is_terminating = True
 
-        self.terminate_internal()
+        function_runnable = FunctionRunnable(self.terminate_internal)
+
+        self.__runnable_dispatcher.add_runnable(
+            ScheduledRunnable(
+                function_runnable,
+                ScheduleOnce(datetime.now())
+            )
+        )       
+        while self.__is_terminating:
+            pass
+
 
         Logger.log_info("Runnable dispatcher stop 1")
         self.__runnable_dispatcher.stop()
