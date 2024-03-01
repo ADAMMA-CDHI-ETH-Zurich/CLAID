@@ -14,7 +14,12 @@ class AccelerationView(Module):
     def __init__(self):
         super().__init__()
 
+    @staticmethod
+    def annotate_module(annotator):
+        annotator.set_module_description("A Module allowing to plot 3 dimensional acceleration data (X, Y, Z axis) in realtime using matplotlib.")
     
+        annotator.describe_subscribe_channel("InputData", AccelerationData(), "Channel with incoming acceleration data.")
+
     def frame_generator(self):
         frame_number = 0
         while True:
@@ -29,10 +34,12 @@ class AccelerationView(Module):
 
         self.fig, self.axs = plt.subplots(3)
         self.max_points = 100
+        
+        self.window_name = "AccelerationView"
 
         self.lines = list()
         for ax in self.axs:
-            ax.set_ylim(-2,2)
+            ax.set_ylim(-2*9.80655,2*9.80655)
             line, = ax.plot(np.random.randn(100))
             self.lines.append(line)
 
@@ -40,8 +47,8 @@ class AccelerationView(Module):
         self.fig.canvas.draw()
 
         self.input_channel = self.subscribe("InputData", AccelerationData(), self.onData)
-        cv2.namedWindow("AccelerationView", cv2.WINDOW_AUTOSIZE) 
-        cv2.imshow("AccelerationView", np.zeros((200,200,3)))
+        cv2.namedWindow(self.window_name, cv2.WINDOW_AUTOSIZE) 
+        cv2.imshow(self.window_name, np.zeros((200,200,3)))
         cv2.waitKey(1)
 
         
@@ -76,13 +83,13 @@ class AccelerationView(Module):
             self.fig.canvas.draw()
             img_plot = np.array(self.fig.canvas.renderer.buffer_rgba())
 
-            cv2.imshow('AccelerationView', cv2.cvtColor(img_plot, cv2.COLOR_RGBA2BGR))
+            cv2.imshow(self.window_name, cv2.cvtColor(img_plot, cv2.COLOR_RGBA2BGR))
 
             cv2.waitKey(1)
 
-            self.xs.clear()
-            self.ys.clear()
-            self.zs.clear()
+    def terminate(self):
+        print("AccelerationView is shutting down")
+        self.destroyWindow(self.window_name)
 
         # if self.ctr == None:
         #     self.ctr = 0

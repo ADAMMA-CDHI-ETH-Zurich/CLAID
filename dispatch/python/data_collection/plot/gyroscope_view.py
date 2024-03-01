@@ -1,5 +1,5 @@
 from claid.module import Module
-from claid.dispatch.proto.sensor_data_types_pb2 import AccelerationData
+from claid.dispatch.proto.sensor_data_types_pb2 import GyroscopeData
 from datetime import datetime
 
 import matplotlib.pyplot as plt
@@ -14,6 +14,11 @@ class GyroscopeView(Module):
     def __init__(self):
         super().__init__()
 
+    @staticmethod
+    def annotate_module(annotator):
+        annotator.set_module_description("A Module allowing to plot 3 dimensional gyroscope data (X, Y, Z axis) in realtime using matplotlib.")
+    
+        annotator.describe_subscribe_channel("InputData", GyroscopeData(), "Channel with incoming acceleration data.")
     
     def frame_generator(self):
         frame_number = 0
@@ -30,19 +35,22 @@ class GyroscopeView(Module):
         self.fig, self.axs = plt.subplots(3)
         self.max_points = 100
 
+        self.window_name = "GyroscopeView"
+
+
         self.lines = list()
         for ax in self.axs:
-            ax.set_ylim(-2,2)
+            ax.set_ylim(-2*9.80655,2*9.80655)
             line, = ax.plot(np.random.randn(100))
             self.lines.append(line)
 
   
         self.fig.canvas.draw()
 
-        self.input_channel = self.subscribe("InputData", AccelerationData(), self.onData)
+        self.input_channel = self.subscribe("InputData", GyroscopeData(), self.onData)
 
-        cv2.namedWindow("GyroscopeView", cv2.WINDOW_AUTOSIZE) 
-        cv2.imshow("GyroscopeView", np.zeros((200,200,3)))
+        cv2.namedWindow(self.window_name, cv2.WINDOW_AUTOSIZE) 
+        cv2.imshow(self.window_name, np.zeros((200,200,3)))
         cv2.waitKey(1)
 
 
@@ -53,9 +61,9 @@ class GyroscopeView(Module):
         data = channel_data.get_data()
 
         for sample in data.samples:
-            self.xs.append(sample.acceleration_x)
-            self.ys.append(sample.acceleration_y)
-            self.zs.append(sample.acceleration_z)
+            self.xs.append(sample.gyroscope_x)
+            self.ys.append(sample.gyroscope_y)
+            self.zs.append(sample.gyroscope_z)
             self.times.append(datetime.utcfromtimestamp(sample.unix_timestamp_in_ms / 1000))
 
         if len(self.xs) > self.max_points:
@@ -75,14 +83,13 @@ class GyroscopeView(Module):
             self.fig.canvas.draw()
             img_plot = np.array(self.fig.canvas.renderer.buffer_rgba())
 
-            cv2.imshow('GyroscopeView', cv2.cvtColor(img_plot, cv2.COLOR_RGBA2BGR))
+            cv2.imshow(self.window_name, cv2.cvtColor(img_plot, cv2.COLOR_RGBA2BGR))
 
             cv2.waitKey(1)
 
-            self.xs.clear()
-            self.ys.clear()
-            self.zs.clear()
-
+    def terminate(self):
+        print("GyroscopeView is shutting down")
+        self.destroyWindow(self.window_name)
         # if self.ctr == None:
         #     self.ctr = 0
         # self.ctr += 1

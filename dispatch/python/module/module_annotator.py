@@ -34,7 +34,7 @@ class ModuleAnnotator:
         self.annotation.channel_definition.append(example_package)
         self.annotation.channel_description.append(channel_description)
 
-    def describe_subscribe_channel(self, data_type_example, channel_name: str, channel_description: str):
+    def describe_subscribe_channel(self, channel_name: str, data_type_example, channel_description: str):
         example_package = self.prepare_example_package(data_type_example, self.module_type, channel_name, False)
         self.annotation.channel_definition.append(example_package)
         self.annotation.channel_description.append(channel_description)

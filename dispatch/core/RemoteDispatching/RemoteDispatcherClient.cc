@@ -245,6 +245,7 @@ namespace claid
             }
             default: 
             {
+                // Forward to middleware
                 this->clientTable.getFromRemoteClientQueue().push_back(std::make_shared<DataPackage>(pkt));
                 break;
             }

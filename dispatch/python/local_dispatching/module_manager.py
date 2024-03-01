@@ -361,3 +361,19 @@ class ModuleManager():
     def __on_disconnected_from_remote_server(self):
         for callback in self.__on_disconnected_from_remote_server_callbacks:
             callback()
+
+    def upload_config_to_host(self, host_name: str, config: CLAIDConfig):
+        package = DataPackage()
+        package.target_host = host_name
+        # package.source_host = ... will be set by middleware
+        ctrl_package = package.control_val
+
+        ctrl_package.ctrl_type = CtrlType.CTRL_UPLOAD_CONFIG_AND_PAYLOAD
+        ctrl_package.runtime = Runtime.RUNTIME_PYTHON
+
+        config_payload = ConfigUploadPayload()
+        config_payload = config
+        ctrl_package.config_upload_payload = config_payload
+   
+
+        self.__to_module_dispatcher_queue.put(package)
