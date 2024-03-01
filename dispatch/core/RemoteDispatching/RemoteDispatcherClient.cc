@@ -245,7 +245,7 @@ namespace claid
             }
             default: 
             {
-                Logger::logWarning("Invalid ctrl type in RemoteDispatcherClient");
+                this->clientTable.getFromRemoteClientQueue().push_back(std::make_shared<DataPackage>(pkt));
                 break;
             }
         }
