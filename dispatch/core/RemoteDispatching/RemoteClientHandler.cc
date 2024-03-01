@@ -101,6 +101,7 @@ namespace claid
             if (!status.ok()) 
             {
                 // TODO: remove once we have a cleanup function added.
+                Logger::logError("RemoteClientHandler: %s", status.error_message().c_str());
                 return status;
             }
         }
@@ -140,8 +141,8 @@ namespace claid
             }
             default: 
             {
-                status = grpc::Status(grpc::INVALID_ARGUMENT, "Invalid ctrl type in RemoteClientHandler");
-                break;
+                // Forward to middleware
+                this->incomingQueue.push_back(std::make_shared<DataPackage>(pkt));
             }
         }
     }

@@ -95,7 +95,7 @@ public class GyroscopeCollector extends Module implements SensorEventListener
 
         int samplingPerioid = 1000/samplingFrequency;
 
-        //registerPeriodicFunction("GyroscopeSampling", () -> sampleGyroscopeData(), Duration.ofMillis(samplingPerioid));
+        registerPeriodicFunction("GyroscopeSampling", () -> sampleGyroscopeData(), Duration.ofMillis(samplingPerioid));
     }
 
 
@@ -133,7 +133,6 @@ public class GyroscopeCollector extends Module implements SensorEventListener
 
                 this.GyroscopeDataChannel.post(data.build());
                 collectedGyroscopeSamples.clear();
-                
             }
         }
         
@@ -162,24 +161,7 @@ public class GyroscopeCollector extends Module implements SensorEventListener
             String formattedString = currentTime.format(formatter);
             sample.setEffectiveTimeFrame(formattedString);
 
-
-            GyroscopeSample theSample = sample.build();
-
-
-            this.latestSample.set(theSample);
-            this.collectedGyroscopeSamples.add(theSample);
-            if(this.collectedGyroscopeSamples.size() == 100)
-            {
-                GyroscopeData.Builder data = GyroscopeData.newBuilder();
-
-                for(GyroscopeSample collectedSample : collectedGyroscopeSamples)
-                {   
-                    data.addSamples(collectedSample);
-                }
-
-                this.GyroscopeDataChannel.post(data.build());
-                collectedGyroscopeSamples.clear();
-            }
+            this.latestSample.set(sample.build());
            // System.out.println("Sensor data " +  x + " " +  y + " " + z);
         }
     }
