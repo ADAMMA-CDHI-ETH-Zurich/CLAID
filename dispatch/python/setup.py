@@ -12,7 +12,9 @@ setup(
     include_package_data=True,
     install_requires=['protobuf',
                       'grpcio',
-                      'numpy'                     
+                      'numpy',      
+                      'matplotlib',      
+                      'opencv-python'   
                       ],
 
     classifiers=[

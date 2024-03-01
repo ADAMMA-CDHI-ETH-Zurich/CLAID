@@ -259,5 +259,11 @@ class CLAID():
 
 
     # Allows an external entity to subscribe to log messages received by the CLAID framework.
-    def subscribe_log_messages(self, callback):
+    def subscribe_for_log_messages(self, callback):
         pass
+
+    def register_on_connected_to_server_callback(self, callback):
+        self.__module_manager.register_on_connected_to_server_callback(callback)
+
+    def register_on_disconnected_from_server_callback(self, callback):
+        self.__module_manager.register_on_disconnected_from_server_callback(callback)

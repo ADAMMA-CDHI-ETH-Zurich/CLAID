@@ -269,9 +269,9 @@ namespace claid
                 // It's alright, null pkt can happen due to spurious wakeups or when toRemoteClientQueue.interruptOnce() is called.
                 // interruptable_pop_front() waits but can be woken up due to spurious wakeups, in contrast to pop_front() which will always 
                 // ever return if data is really available, or the channel is closed.
-                Logger::logInfo("RemoteDispatcherClient: pkt is null");
                 if (toRemoteClientQueue.is_closed()) 
                 {
+                    Logger::logInfo("RemoteDispatcherClient: pkt is null and queue is closed, shutting down.");
                     break;
                 }
             } 

@@ -3,7 +3,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_cat.h"
-
+#include "dispatch/core/proto_util.hh"
 namespace claid {
     
     ClientRouter::ClientRouter(const std::string& currentHost,
@@ -21,7 +21,8 @@ namespace claid {
         const std::string& targetModule = dataPackage->target_module();
 
         Logger::logInfo("ClientRouter routing package from host \"%s\" (Module \"%s\"), "
-                        "destined for host \"%s\" (Module \"%s\").", sourceHost.c_str(), sourceModule.c_str(), targetHost.c_str(), targetModule.c_str());
+                        "destined for host \"%s\" (Module \"%s\"):\n%s.", sourceHost.c_str(), sourceModule.c_str(), targetHost.c_str(), targetModule.c_str(),
+                        messageToString(*dataPackage).c_str());
 
         if(!canReachHost(targetHost))
         {

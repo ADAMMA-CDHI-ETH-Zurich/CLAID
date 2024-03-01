@@ -34,6 +34,8 @@ class ModuleManager():
         self.__module_annotations_for_host = dict() # a dict containing the Host name as key and the ModuleAnnotations for the host as value
         self.__module__anotations_updated_for_host = dict() # a dict containg the Host name as key and a boolean value indicating whether the known module annotations are corrected as the value
 
+        self.__on_connected_to_remote_server_callbacks = list()
+        self.__on_disconnected_from_remote_server_callbacks = list()
 
     def instantiate_module(self, module_id, module_class):
 
@@ -204,9 +206,13 @@ class ModuleManager():
         if packet.control_val.ctrl_type == CtrlType.CTRL_CONNECTED_TO_REMOTE_SERVER:
             for module_id, module in self.__running_modules.items():
                 module.notify_connected_to_remote_server()
+
+            self.__on_connected_to_remote_server()
         elif packet.control_val.ctrl_type == CtrlType.CTRL_DISCONNECTED_FROM_REMOTE_SERVER:
             for module_id, module in self.__running_modules.items():
                 module.notify_disconnected_from_remote_server()
+            
+            self.__on_disconnected_from_remote_server()
         elif packet.control_val.ctrl_type == CtrlType.CTRL_UNLOAD_MODULES:
             self.shutdown_modules()
 
@@ -342,3 +348,16 @@ class ModuleManager():
             
         return True
 
+    def register_on_connected_to_server_callback(self, callback):
+        self.__on_connected_to_remote_server_callbacks.append(callback)
+
+    def register_on_disconnected_from_server_callback(self, callback):
+        self.__on_disconnected_from_remote_server_callbacks.append(callback)
+
+    def __on_connected_to_remote_server(self):
+        for callback in self.__on_connected_to_remote_server_callbacks:
+            callback()
+
+    def __on_disconnected_from_remote_server(self):
+        for callback in self.__on_disconnected_from_remote_server_callbacks:
+            callback()

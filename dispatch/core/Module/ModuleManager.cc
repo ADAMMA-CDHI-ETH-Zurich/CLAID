@@ -255,7 +255,7 @@ void ModuleManager::onPackageReceivedFromModulesDispatcher(std::shared_ptr<DataP
 
     if(dataPackage->has_control_val())
     {
-        Logger::logInfo("ModuleManager received DataPackage with controlVal %d", dataPackage->control_val().ctrl_type());
+        Logger::logInfo("ModuleManager received DataPackage with controlVal %d (%s)", dataPackage->control_val().ctrl_type(), CtrlType_Name(dataPackage->control_val().ctrl_type()).c_str());
         handlePackageWithControlVal(dataPackage);
         return;
     }
