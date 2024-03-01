@@ -143,7 +143,7 @@ namespace claid
 
 
             absl::Status unloadAllModulesInAllLocalRuntimes();
-            absl::Status loadNewConfigIntoModuleTable(const Configuration& config);
+            absl::Status loadNewConfigIntoModuleTableAndRouter(const Configuration& config);
             absl::Status restartRuntimesWithNewConfig();
 
             void readControlPackages();

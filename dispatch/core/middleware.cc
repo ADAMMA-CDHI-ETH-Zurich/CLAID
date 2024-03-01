@@ -623,7 +623,7 @@ absl::Status MiddleWare::getHostModuleAndChannelDescriptions(const std::string& 
 }
     
 
-absl::Status MiddleWare::loadNewConfigIntoModuleTable(const Configuration& config)
+absl::Status MiddleWare::loadNewConfigIntoModuleTableAndRouter(const Configuration& config)
 {
     // This is ONLY safe to do, if all Modules in all Runtimes have been unloaded!!
     if(!this->modulesUnloaded)
@@ -709,6 +709,25 @@ absl::Status MiddleWare::loadNewConfigIntoModuleTable(const Configuration& confi
         }
     }
         
+    Logger::logInfo("Stopping Router.");
+    status = this->masterRouter->stop();
+    if(!status.ok())
+    {
+        return status;
+    }
+    Logger::logInfo("Updating Router.");
+    status = this->masterRouter->updateHostAndModuleDescriptions(hostDescriptions, allModuleDescriptions);
+    if(!status.ok())
+    {
+        return status;
+    }
+    Logger::logInfo("Starting router");
+    status = this->masterRouter->start();
+    if(!status.ok())
+    {
+        return status;
+    }
+
     this->currentConfiguration = config;
     
     this->moduleTable.clearLookupTables();
@@ -777,8 +796,9 @@ absl::Status MiddleWare::loadNewConfig(const Configuration& config)
     }
 
     Logger::logInfo("Done unloading all Modules in all local runtimes.");
+    
 
-    status = this->loadNewConfigIntoModuleTable(config);
+    status = this->loadNewConfigIntoModuleTableAndRouter(config);
     if(!status.ok())
     {
         return status;

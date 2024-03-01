@@ -306,6 +306,21 @@ namespace claid
         }
         return false;
     }
+
+    absl::Status MasterRouter::updateHostAndModuleDescriptions(const HostDescriptionMap& hostDescriptions,
+                const ModuleDescriptionMap& moduleDescriptions)
+    {
+        if(this->active)
+        {
+            return absl::InternalError("Cannot update host and module descriptions of MasterRouter. Router is running, you first have to stop and then later restart it.");
+        }
+
+        this->hostDescriptions = hostDescriptions;
+        this->moduleDescriptions = moduleDescriptions;
+
+        return absl::OkStatus();
+    }
+
 }
 
 

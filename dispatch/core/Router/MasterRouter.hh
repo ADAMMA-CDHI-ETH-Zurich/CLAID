@@ -46,8 +46,9 @@ namespace claid
             bool active = false;
 
             const std::string currentHost;
-            const HostDescriptionMap hostDescriptions;
-            const ModuleDescriptionMap moduleDescriptions;
+            
+            HostDescriptionMap hostDescriptions;
+            ModuleDescriptionMap moduleDescriptions;
 
             absl::Status lastError;
 
@@ -84,6 +85,8 @@ namespace claid
             absl::Status getLastError();
 
             absl::Status routePackage(std::shared_ptr<DataPackage> dataPackage) override final;
+            absl::Status updateHostAndModuleDescriptions(const HostDescriptionMap& hostDescriptions,
+                const ModuleDescriptionMap& moduleDescriptions);
             bool canReachHost(const std::string& hostname) override final;
     };
 }
