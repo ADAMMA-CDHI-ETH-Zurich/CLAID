@@ -79,12 +79,17 @@ public class ModuleFactory
 
     public boolean getModuleAnnotation(String className, ModuleAnnotator moduleAnnotator) 
     {
+        Logger.logInfo("Getting module annotations for " + className + " 1");
         if (!registeredModuleClasses.containsKey(className)) 
         {
+            Logger.logInfo("Getting module annotations for " + className + " 2");
+
             return false;
         } 
         else 
         {
+            Logger.logInfo("Getting module annotations for " + className + "3");
+
             Class<?> classType = registeredModuleClasses.get(className);
             String annotateModuleFunction = "annotateModule";
 
@@ -93,19 +98,34 @@ public class ModuleFactory
 
             try 
             {
+                Logger.logInfo("Getting module annotations for " + className + " 4");
+
                 // Attempt to get the method with the specified name and parameter types
                 Method method = classType.getDeclaredMethod(annotateModuleFunction, parameterTypes);
-
+                Logger.logInfo("Getting module annotations for " + className + " 5");
                 Object result = method.invoke(null, moduleAnnotator);
                 return true;
             } 
             catch (NoSuchMethodException e) 
             {
+                Logger.logInfo("Getting module annotations for " + className + " 6 " + e.getMessage());
+
                // Logger.logError("Method not found: " + annotateModuleFunction);
                 return false;
             } 
-            catch (IllegalAccessException | InvocationTargetException e) 
+            catch (IllegalAccessException e) 
             {
+                Logger.logInfo("Getting module annotations for " + className + " 7 " + e.getMessage() + " " + e + " " + e.getCause());
+                e.printStackTrace();
+
+              //  Logger.logError("Error invoking method: " + e.getMessage());
+                return false;
+            }
+            catch(InvocationTargetException e)
+            {
+                Logger.logInfo("Getting module annotations for " + className + " 8 " + e.getMessage() + " " + e + " " + e.getCause());
+                e.printStackTrace();
+
               //  Logger.logError("Error invoking method: " + e.getMessage());
                 return false;
             }

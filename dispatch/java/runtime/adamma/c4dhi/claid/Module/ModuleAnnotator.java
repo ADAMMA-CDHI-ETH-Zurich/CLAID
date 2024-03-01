@@ -32,11 +32,31 @@ public class ModuleAnnotator {
 
     public void describeProperty(String propertyName, String propertyDescription) 
     {
-        this.annotation = this.annotation.addProperties(propertyName).addPropertyDescriptions(propertyDescription);
+        if(propertyName == null){
+            return;
+        }
+        if(propertyDescription == null)
+        {
+            propertyDescription = "";
+        }
+        Logger.logInfo("Describe property 1 " + propertyName);
+        this.annotation.addProperties(propertyName);
+        Logger.logInfo("Describe property 2 " + propertyDescription);
+
+        this.annotation.addPropertyDescriptions(propertyDescription);
+        Logger.logInfo("Describe property 3 " + propertyDescription);
+
     }
 
     private void describePublishChannelDataType(String channelName, DataType dataType, String channelDescription) 
     {
+        if(channelName == null){
+            return;
+        }
+        if(channelDescription == null)
+        {
+            channelDescription = "";
+        }
         DataPackage examplePackage = prepareExamplePackage(dataType, moduleType, channelName, true);
         this.annotation.addChannelDefinition(examplePackage);
         this.annotation.addChannelDescription(channelDescription);
