@@ -37,6 +37,10 @@ namespace claid
             return status;
         }
 
+
+
+
+
         std::cout << "RemoteClientHandler created !" << remoteClientHandler << " " << std::endl;
 
         // Return the package to the sender, to acknowledge that w
@@ -56,12 +60,12 @@ namespace claid
 
         // HERE: processReading stopped, which means the client has lost connection.
         // TODO: IMPLEMENT SHUTDOWN
-        std::cout << "Reading failed or ended: " << status.error_message() << "\n";
-        std::cout << "Client \"" << makeRemoteClientIdentifier(remoteClientInfo) << " disconnected or died!\n";
-        std::cout << "Unregistering and forgetting client!\n";
+        Logger::logWarning("Reading failed or ended: %s", status.error_message().c_str());
+        Logger::logWarning("Client \"%s\" disconnected or died", makeRemoteClientIdentifier(remoteClientInfo).c_str());
+        Logger::logWarning("Unregistering and forgetting client!\n");
 
         this->stopAndRemoveRemoteClientHandler(remoteClientInfo);
-        std::cout << "And we are done! Bye bye client, see you next time\n";
+        Logger::logWarning("And we are done! Bye bye client, see you next time\n");
 
         return status;
     }

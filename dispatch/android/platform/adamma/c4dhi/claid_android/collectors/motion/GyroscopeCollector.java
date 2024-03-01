@@ -91,7 +91,7 @@ public class GyroscopeCollector extends Module implements SensorEventListener
 
         sensorManager = (SensorManager) CLAID.getContext().getSystemService(Context.SENSOR_SERVICE); 
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE); 
-        sensorManager.registerListener(this, sensor, SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
 
         int samplingPerioid = 1000/samplingFrequency;
 
@@ -144,10 +144,9 @@ public class GyroscopeCollector extends Module implements SensorEventListener
     {
         if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE)
         {
-            // Dividing per g to uniform with iOS
-            double x = sensorEvent.values[0] / SensorManager.GRAVITY_EARTH;
-            double y = sensorEvent.values[1] / SensorManager.GRAVITY_EARTH;
-            double z = sensorEvent.values[2] / SensorManager.GRAVITY_EARTH;
+            double x = sensorEvent.values[0];
+            double y = sensorEvent.values[1];
+            double z = sensorEvent.values[2];
 
             LocalDateTime currentTime = LocalDateTime.now();
 

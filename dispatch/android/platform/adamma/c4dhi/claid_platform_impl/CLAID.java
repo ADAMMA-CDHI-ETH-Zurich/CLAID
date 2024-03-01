@@ -29,7 +29,6 @@ import adamma.c4dhi.claid_android.Configuration.CLAIDSpecialPermissionsConfig;
 import adamma.c4dhi.claid_android.CLAIDServices.CLAIDService;
 import adamma.c4dhi.claid_android.Permissions.*;
 import adamma.c4dhi.claid_android.Receivers.DeviceOwnerReceiver;
-import adamma.c4dhi.claid_android.collectors.acceleration.AccelerometerCollector;
 import android.content.Context;
 import android.app.Application;
 
@@ -71,7 +70,8 @@ import android.Manifest;
 import androidx.core.app.ActivityCompat;
 
 import adamma.c4dhi.claid_android.collectors.battery.BatteryCollector;
-import adamma.c4dhi.claid_android.collectors.acceleration.AccelerometerCollector;
+import adamma.c4dhi.claid_android.collectors.motion.AccelerometerCollector;
+import adamma.c4dhi.claid_android.collectors.motion.GyroscopeCollector;
 
 public class CLAID extends JavaCLAIDBase
 {
@@ -217,6 +217,7 @@ public class CLAID extends JavaCLAIDBase
     {
         factory.registerModule(BatteryCollector.class);
         factory.registerModule(AccelerometerCollector.class);
+        factory.registerModule(GyroscopeCollector.class);
 
         return factory;
     }

@@ -82,46 +82,38 @@ public class TypeMapping {
         {
             if (GeneratedMessageV3.class.isAssignableFrom(clz)) 
             {
-                System.out.println("Is protobuf type");
                 T instance = getProtoMessageInstance(clz);
                 return instance;
             }
             else if (clz == Double.class) {
-                System.out.println("Is Double type");
                 // For Double, create an instance with a default value of 0.0
                 Double instance = 0.0;
                 return (T) instance;
             } else if (clz == Integer.class) {
-                System.out.println("Is Integer type");
                 // For Integer, create an instance with a default value of 0
                 Integer instance = 0;
                 return (T) instance;
             } 
             else if (clz == Short.class) {
-                System.out.println("Is Long type");
                 // For Long, create an instance with a default value of 0L
                 Short instance = 0;
                 return (T) instance;
             } 
             else if (clz == Long.class) {
-                System.out.println("Is Long type");
                 // For Long, create an instance with a default value of 0L
                 Long instance = 0L;
                 return (T) instance;
             } else if (clz == Float.class) {
-                System.out.println("Is Float type");
                 // For Float, create an instance with a default value of 0.0f
                 Float instance = 0.0f;
                 return (T) instance;
             } else if (clz == Boolean.class) {
-                System.out.println("Is Boolean type");
                 // For Boolean, create an instance with a default value of false
                 Boolean instance = false;
                 return (T) instance;
             } 
             else
             {
-                System.out.println("Is not protobuf type");
                 T instance = clz.getDeclaredConstructor().newInstance();
                 return instance;
             }
@@ -256,7 +248,6 @@ public class TypeMapping {
             );
         }
         
-        System.out.println("Test1");
 
         // LIST / ARRAY
         if (dataType.isGeneric() && dataTypeClass == ArrayList.class) 
@@ -425,7 +416,6 @@ public class TypeMapping {
         }
 
         // MAP
-        System.out.println("Test: " + dataType.isGeneric() + " " + (boolean) (dataTypeClass == Map.class) + " " + dataType.getName());
         if (dataType.isGeneric() && dataTypeClass == Map.class) 
         {
             // getName returns a hardcoded string for generic types, which was
