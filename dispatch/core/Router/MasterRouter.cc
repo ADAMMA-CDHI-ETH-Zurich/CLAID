@@ -170,6 +170,7 @@ namespace claid
         this->active = false;
         this->incomingQueue.interruptOnce();
         this->processingThread->join();
+        this->processingThread = nullptr;
         return absl::OkStatus();
     }   
 
