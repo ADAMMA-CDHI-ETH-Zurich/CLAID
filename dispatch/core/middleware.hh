@@ -129,6 +129,7 @@ namespace claid
                 ModuleDescriptionMap& hostModuleDescriptions, ChannelDescriptionMap& channelDescriptions);
 
             absl::Status populateModuleTable(
+                const ModuleDescriptionMap& allModuleDescriptions,
                 const ModuleDescriptionMap& moduleDescriptions,
                 const ChannelDescriptionMap& channelDescriptions,
                 claid::ModuleTable& moduleTable);

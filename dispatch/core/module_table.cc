@@ -408,6 +408,8 @@ void ModuleTable::clearLookupTables()
     moduleRuntimeMap.clear();
     chanMap.clear(),
     moduleAnnotations.clear();
+    moduleInputChannelsToConnectionMap.clear();
+    moduleOutputChannelsToConnectionMap.clear();
 
 
 }

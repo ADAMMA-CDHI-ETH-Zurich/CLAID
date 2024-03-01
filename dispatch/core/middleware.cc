@@ -67,14 +67,8 @@ absl::Status MiddleWare::start() {
         return status;
     }
 
-    for(auto& entry : allModuleDescriptions)
-    {
-        ModuleDescription& moduleDescription = entry.second;
-        moduleTable.setModuleChannelToConnectionMappings(moduleDescription.id, 
-            moduleDescription.inputChannels, moduleDescription.outputChannels);
-    }
 
-    status = populateModuleTable(hostModuleDescriptions, channelDescriptions, moduleTable);
+    status = populateModuleTable(allModuleDescriptions, hostModuleDescriptions, channelDescriptions, moduleTable);
     if (!status.ok()) {
         return status;
     }
@@ -347,12 +341,20 @@ absl::Status MiddleWare::shutdown()
 }
 
 absl::Status MiddleWare::populateModuleTable(
-    const ModuleDescriptionMap& moduleDescriptions,
+    const ModuleDescriptionMap& allModuleDescriptions,
+    const ModuleDescriptionMap& hostModuleDescriptions,
     const ChannelDescriptionMap& channelDescriptions,
     ModuleTable& moduleTable)
 {
-    Logger::logInfo("Module size: %d", moduleDescriptions.size());
-    for(const auto& entry : moduleDescriptions)
+    Logger::logInfo("Module size: %d", hostModuleDescriptions.size());
+    for(auto& entry : allModuleDescriptions)
+    {
+        const ModuleDescription& moduleDescription = entry.second;
+        moduleTable.setModuleChannelToConnectionMappings(moduleDescription.id, 
+            moduleDescription.inputChannels, moduleDescription.outputChannels);
+    }
+
+    for(const auto& entry : hostModuleDescriptions)
     {
         const ModuleDescription& moduleDescription = entry.second;
 
@@ -360,6 +362,8 @@ absl::Status MiddleWare::populateModuleTable(
             moduleDescription.moduleClass,
             moduleDescription.properties);
     }
+
+
 
     for(const auto& entry : channelDescriptions)
     {
@@ -708,7 +712,7 @@ absl::Status MiddleWare::loadNewConfigIntoModuleTable(const Configuration& confi
     this->currentConfiguration = config;
     
     this->moduleTable.clearLookupTables();
-    status = populateModuleTable(hostModuleDescriptions, channelDescriptions, moduleTable);
+    status = populateModuleTable(allModuleDescriptions, hostModuleDescriptions, channelDescriptions, moduleTable);
     if (!status.ok()) {
         return status;
     }
