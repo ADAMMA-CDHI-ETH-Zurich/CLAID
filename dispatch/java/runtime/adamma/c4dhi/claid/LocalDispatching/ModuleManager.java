@@ -433,6 +433,10 @@ public class ModuleManager
     
     public void postLogMessage(LogMessage logMessage)
     {
+        if(!this.running)
+        {
+            return;
+        }
         DataPackage.Builder responseBuilder = DataPackage.newBuilder();
         ControlPackage.Builder ctrlPackageBuilder = responseBuilder.getControlValBuilder();
 

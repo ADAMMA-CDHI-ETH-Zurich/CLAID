@@ -126,7 +126,7 @@ class ModuleDispatcher:
         ping_resp = self.await_ping_package()
 
         if(ping_resp.control_val.ctrl_type != CtrlType.CTRL_RUNTIME_PING):
-            logger.log_error(f"Sent ping package to middleware and expected ping package as response, but got: {ping_resp}")
+            Logger.log_error(f"Sent ping package to middleware and expected ping package as response, but got: {ping_resp}")
             return False
 
         return True

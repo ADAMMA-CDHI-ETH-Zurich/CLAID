@@ -111,7 +111,6 @@ class CLAID():
     def startCustomSocket(self, socket_path, config_file_path, host_id, user_id, device_id, module_factory):
         CLAID.__load_claid_library()
 
-        Logger.claid_instance = self
         Logger.log_info("Starting CLAID")
 
         if(self.__started):
@@ -136,6 +135,7 @@ class CLAID():
         
         if not self.attach_python_runtime(socket_path, module_factory):
             raise Exception("Failed to attach Python runtime")
+        Logger.claid_instance = self
 
         Logger.log_info("Successfully started CLAID")
 
@@ -301,7 +301,8 @@ class CLAID():
         return CLAID.claid_c_lib.get_payload_data_path(self.__handle).decode('utf-8')
     
     def get_log_sink_severity_level(self) -> LogMessageSeverityLevel:
-        return LogMessageSeverityLevel(CLAID.claid_c_lib.get_log_message_severity_level(self.__handle))
+        value = CLAID.claid_c_lib.get_log_sink_severity_level(self.__handle)
+        return LogMessageSeverityLevel.Value(LogMessageSeverityLevel.keys()[value])
     
     def post_log_message(self, log_message: LogMessage):
         self.__module_manager.post_log_message(log_message)

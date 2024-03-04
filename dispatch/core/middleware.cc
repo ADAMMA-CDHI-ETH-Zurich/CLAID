@@ -96,11 +96,6 @@ absl::Status MiddleWare::start() {
         return status;
     }
 
-    {
-        std::unique_lock<std::mutex>(this->logSinkConfigurationMutex);
-        config.getLogSinkConfiguration(this->logSinkConfiguration, this->logMessagesQueue);
-        Logger::setLogSinkConfiguration(this->logSinkConfiguration);
-    }
     // if(config.isDesignerModeEnabled())
     // {
     //     this->enableDesignerMode();
@@ -123,6 +118,7 @@ absl::Status MiddleWare::start() {
     });
 
     this->currentConfiguration = config;
+    this->setupLogSink();
 
 
     return absl::OkStatus();
@@ -294,7 +290,10 @@ absl::Status MiddleWare::startRouter(const std::string& currentHost, const HostD
 
 void MiddleWare::setupLogSink()
 {
-    
+    std::unique_lock<std::mutex>(this->logSinkConfigurationMutex);
+    Logger::setMinimumSeverityLevelToPrint(this->currentConfiguration.getMinLogSeverityLevelToPrint(this->hostId));
+    currentConfiguration.getLogSinkConfiguration(this->logSinkConfiguration, this->logMessagesQueue);
+    Logger::setLogSinkConfiguration(this->logSinkConfiguration);
 }
 
 absl::Status MiddleWare::shutdown()
@@ -886,12 +885,7 @@ absl::Status MiddleWare::loadNewConfig(const Configuration& config)
     }
 
 
-    {
-        std::unique_lock<std::mutex>(this->logSinkConfigurationMutex);
-        Logger::setMinimumSeverityLevelToPrint(config.getMinLogSeverityLevelToPrint(this->hostId));
-        config.getLogSinkConfiguration(this->logSinkConfiguration, this->logMessagesQueue);
-        Logger::setLogSinkConfiguration(this->logSinkConfiguration);
-    }
+    this->setupLogSink();
         
 
 
