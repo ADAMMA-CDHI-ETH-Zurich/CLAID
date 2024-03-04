@@ -89,7 +89,7 @@ class GyroscopeView(Module):
 
     def terminate(self):
         print("GyroscopeView is shutting down")
-        self.destroyWindow(self.window_name)
+        cv2.destroyWindow(self.window_name)
         # if self.ctr == None:
         #     self.ctr = 0
         # self.ctr += 1

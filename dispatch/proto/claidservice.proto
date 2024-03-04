@@ -248,13 +248,27 @@ message RemoveModuleRequest
 //   map<string, string> properties = 5;
 // }
 
+enum PropertyType
+{
+  PROPERTY_TYPE_DEFAULT = 0; // property type not further specified (i.e., input text in the CLAID designer).
+  PROPERTY_TYPE_ENUM = 1;
+};
+
+message PropertyHint
+{
+  PropertyType property_type = 1;
+  repeated string property_type_enum_values = 2; // If the property type is ENUM, then property_type_enum_values contains the possible names of enum values.
+};
+
 message ModuleAnnotation
 {
   string module_description  = 1;
-  repeated string properties = 2;
-  repeated string property_descriptions = 3;
-  repeated DataPackage channel_definition = 4;
-  repeated string channel_description = 5;
+  string module_category = 2;
+  repeated string properties = 3;
+  repeated string property_descriptions = 4;
+  map<string, PropertyHint> property_hints = 5;
+  repeated DataPackage channel_definition = 6;
+  repeated string channel_description = 7;
 }
 
 

@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.apple.laf.ClientPropertyApplicator.Property;
+
 public class ModuleAnnotator {
 
     private ModuleAnnotation.Builder annotation;
@@ -30,7 +32,32 @@ public class ModuleAnnotator {
         this.annotation = this.annotation.setModuleDescription(moduleDescription);
     }
 
+    public PropertyHint makeDefaultProperty()
+    {
+        PropertyHint.Builder propertyHint = PropertyHint.newBuilder();
+        propertyHint.setPropertyType(PropertyType.PROPERTY_TYPE_DEFAULT);
+        return propertyHint.build();
+    }
+
+    public PropertyHint makeEnumProperty(String[] enumValues)
+    {
+        PropertyHint.Builder propertyHint = PropertyHint.newBuilder();
+        propertyHint.setPropertyType(PropertyType.PROPERTY_TYPE_ENUM);
+
+        for(String value : enumValues)
+        {
+            propertyHint.addPropertyTypeEnumValues(value);
+        }   
+        return propertyHint.build();
+    }
+
     public void describeProperty(String propertyName, String propertyDescription) 
+    {
+        describeProperty(propertyName, propertyDescription, makeDefaultProperty());
+    }
+
+
+    public void describeProperty(String propertyName, String propertyDescription, PropertyHint propertyHint) 
     {
         if(propertyName == null){
             return;
@@ -44,6 +71,7 @@ public class ModuleAnnotator {
         Logger.logInfo("Describe property 2 " + propertyDescription);
 
         this.annotation.addPropertyDescriptions(propertyDescription);
+        this.annotation.addPropertyHints(propertyHint);
         Logger.logInfo("Describe property 3 " + propertyDescription);
 
     }

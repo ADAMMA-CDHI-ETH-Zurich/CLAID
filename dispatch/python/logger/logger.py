@@ -16,7 +16,7 @@ class Logger:
 
     @staticmethod
     def log_debug(message):
-        Logger.log(LogMessageSeverityLevel.DEBUG, message)
+        Logger.log(LogMessageSeverityLevel.DEBUG_VERBOSE, message)
 
     @staticmethod
     def log_info(message):
