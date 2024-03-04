@@ -111,6 +111,7 @@ class CLAID():
     def startCustomSocket(self, socket_path, config_file_path, host_id, user_id, device_id, module_factory):
         CLAID.__load_claid_library()
 
+        Logger.claid_instance = self
         Logger.log_info("Starting CLAID")
 
         if(self.__started):
