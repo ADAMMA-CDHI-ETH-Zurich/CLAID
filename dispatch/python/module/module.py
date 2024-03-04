@@ -13,6 +13,7 @@ from datetime import datetime
 from module.scheduling.function_runnable_with_params import FunctionRunnableWithParams
 from module.scheduling.scheduled_runnable import ScheduledRunnable
 from module.scheduling.schedule_once import ScheduleOnce
+from dispatch.proto.claidservice_pb2 import LogMessageSeverityLevel, LogMessage, LogMessageEntityType, Runtime
 
 class Module(ABC):
     def __init__(self):
@@ -26,17 +27,24 @@ class Module(ABC):
 
     def module_fatal(self, error):
         errorMsg = f"Module \"{self.__id}\": {error}"
-        Logger.log(SeverityLevel.FATAL, errorMsg)
+        Logger.log(LogMessageSeverityLevel.FATAL, errorMsg, LogMessageEntityType.MODULE, self.id)
         raise Exception(errorMsg)
 
     def module_error(self, error):
         errorMsg = f"Module \"{self.__id}\": {error}"
-        Logger.log(SeverityLevel.ERROR, errorMsg)
+        Logger.log(LogMessageSeverityLevel.ERROR, errorMsg, LogMessageEntityType.MODULE, self.id)
 
     def module_warning(self, warning):
         warningMsg = f"Module \"{self.__id}\": {warning}"
-        Logger.log(SeverityLevel.WARNING, warningMsg)
+        Logger.log(LogMessageSeverityLevel.WARNING, warningMsg, LogMessageEntityType.MODULE, self.id)
 
+    def module_info(self, info):
+        infoMsg = f"Module \"{self.__id}\": {info}"
+        Logger.log(LogMessageSeverityLevel.INFO, infoMsg, LogMessageEntityType.MODULE, self.id)
+
+    def module_debug(self, dbg):
+        dbgMessage = f"Module \"{self.__id}\": {dbg}"
+        Logger.log(LogMessageSeverityLevel.DEBUG_VERBOSE, dbgMessage, LogMessageEntityType.MODULE, self.id)
 
     def start(self, subscriber_publisher, properties, main_thread_runnables_queue):
         if self.__is_initialized:

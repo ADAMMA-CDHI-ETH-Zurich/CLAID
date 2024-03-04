@@ -37,6 +37,8 @@ class ModuleManager():
         self.__on_connected_to_remote_server_callbacks = list()
         self.__on_disconnected_from_remote_server_callbacks = list()
 
+        self.__log_sink_log_message_callback = None
+
     def instantiate_module(self, module_id, module_class):
 
         if not self.__module_factory.is_module_class_registered(module_class):
@@ -247,6 +249,10 @@ class ModuleManager():
             
             self.inject_modules_from_config_upload_payload(payload)
 
+        elif packet.control_val.ctrl_type == CtrlType.CTRL_LOG_SINK_LOG_MESSAGE_STREAM:
+            if self.__log_sink_log_message_callback != None:
+                self.__log_sink_log_message_callback(packet)
+
         else:
             Logger.log_warning(f"ModuleManager received package with unsupported control val {packet.control_val.ctrl_type}")
 
@@ -389,4 +395,24 @@ class ModuleManager():
 
         
         ctrl_package.log_message.CopyFrom(log_message)
+        self.__to_module_dispatcher_queue.put(package)
+
+    def subscribe_log_sink_log_messages(self, callback):
+        self.__log_sink_log_message_callback = callback
+
+        ctrl_package = package.control_val
+
+        ctrl_package.ctrl_type = CtrlType.CTRL_SUBSCRIBE_TO_LOG_SINK_LOG_MESSAGE_STREAM
+        ctrl_package.runtime = Runtime.RUNTIME_PYTHON
+
+        self.__to_module_dispatcher_queue.put(package)
+
+    def unsubscribe_log_sink_log_messages(self):
+        self.__log_sink_log_message_callback = None
+
+        ctrl_package = package.control_val
+
+        ctrl_package.ctrl_type = CtrlType.CTRL_UNSUBSCRIBE_FROM_LOG_SINK_LOG_MESSAGE_STREAM
+        ctrl_package.runtime = Runtime.RUNTIME_PYTHON
+
         self.__to_module_dispatcher_queue.put(package)

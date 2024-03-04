@@ -277,9 +277,7 @@ class CLAID():
         self.__main_thread_queue.put(runnable)
 
 
-    # Allows an external entity to subscribe to log messages received by the CLAID framework.
-    def subscribe_for_log_messages(self, callback):
-        pass
+    
 
     def register_on_connected_to_server_callback(self, callback):
         self.__module_manager.register_on_connected_to_server_callback(callback)
@@ -307,3 +305,10 @@ class CLAID():
     
     def post_log_message(self, log_message: LogMessage):
         self.__module_manager.post_log_message(log_message)
+
+    # Allows an external entity to subscribe to log messages received by the CLAID framework.
+    def subscribe_log_sink_log_messages(self, callback):
+        self.__module_manager.subscribe_for_log_sink_log_messages(callback)
+
+    def unsubscribe_log_sink_log_messages(self):
+        self.__module_manager.unsubscribe_log_sink_log_messages()
