@@ -57,8 +57,6 @@ namespace claid
 				static LogMessageSeverityLevel minSeverityLevelToPrintAndStore;
 				static std::unique_ptr<std::ofstream> logFile;
 
-				static bool loggingToLogSinkEnabled;
-				static LogMessageSeverityLevel minSeverityLevelToForwardToLogSinkHost;
 				static LogSinkConfiguration logSinkConfiguration;
 				static void forwardLogMessageToLogSink(std::shared_ptr<LogMessage> logMessage);
 				
@@ -68,7 +66,8 @@ namespace claid
 			// static void setLogTag(std::string logTag);
 			static std::string getLastLogMessage();
 
-			static void log(const LogMessageSeverityLevel severityLevel, const std::string& message, const LogMessageEntityType entityType, const std::string entityName, Runtime runtime);
+			static void log(const LogMessageSeverityLevel severityLevel, const std::string& message, const LogMessageEntityType entityType, const std::string entityName);
+
 			static void log(const LogMessageSeverityLevel severityLevel, const char* format, ...);
 			static void logDebug(const char* format, ...);
 			static void logInfo(const char* format, ...);
@@ -78,10 +77,12 @@ namespace claid
 
 			// All log messages are forward to the middleware, which can then process them separately.
 			// Useful to send messages to the log_sink host or to allow individual runtimes to receive all log messages.
-			static void setMinimimSeverityLevelToPrint(const LogMessageSeverityLevel minSeverityLevel);
+			static void setMinimumSeverityLevelToPrint(const LogMessageSeverityLevel minSeverityLevel);
 
-			void enableLogSinkTransferModeStoreAndUpload(const std::string& storagePath, LogMessageSeverityLevel minSeverityLevel);
-			void enableLogSinkTransferModeStream(std::shared_ptr<SharedQueue<LogMessage>> logMessageQueue, LogMessageSeverityLevel minSeverityLevel);
+			static void setLogSinkConfiguration(const LogSinkConfiguration& logSinkConfiguration);
+
+			// void enableLogSinkTransferModeStoreAndUpload(const std::string& storagePath, LogMessageSeverityLevel minSeverityLevel);
+			// void enableLogSinkTransferModeStream(std::shared_ptr<SharedQueue<LogMessage>> logMessageQueue, LogMessageSeverityLevel minSeverityLevel);
 
 			// // Returns true if log file was created successfully.
 			// static bool enableLoggingToFile(const std::string& path);

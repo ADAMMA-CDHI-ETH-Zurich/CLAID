@@ -34,32 +34,32 @@ namespace claid
     void Module::moduleFatal(const std::string& error) const
     {
         std::string errorMsg = "Module \"" + id + "\": " + error;
-        Logger::log(LogMessageSeverityLevel::FATAL, errorMsg, LogMessageEntityType::MODULE, this->id, Runtime::RUNTIME_CPP);
+        Logger::log(LogMessageSeverityLevel::FATAL, errorMsg, LogMessageEntityType::MODULE, this->id);
         CLAID_THROW(claid::Exception, errorMsg);
     }
 
     void Module::moduleError(const std::string& error) const
     {
         std::string errorMsg = "Module \"" + id + "\": " + error;
-        Logger::log(LogMessageSeverityLevel::ERROR, errorMsg, LogMessageEntityType::MODULE, this->id, Runtime::RUNTIME_CPP);
+        Logger::log(LogMessageSeverityLevel::ERROR, errorMsg, LogMessageEntityType::MODULE, this->id);
     }
 
     void Module::moduleWarning(const std::string& warning) const
     {
         std::string warningMsg = "Module \"" + id + "\": " + warning;
-        Logger::log(LogMessageSeverityLevel::WARNING, warningMsg, LogMessageEntityType::MODULE, this->id, Runtime::RUNTIME_CPP);
+        Logger::log(LogMessageSeverityLevel::WARNING, warningMsg, LogMessageEntityType::MODULE, this->id);
     }
 
     void Module::moduleInfo(const std::string& warning) const
     {
         std::string warningMsg = "Module \"" + id + "\": " + warning;
-        Logger::log(LogMessageSeverityLevel::INFO, warningMsg, LogMessageEntityType::MODULE, this->id, Runtime::RUNTIME_CPP);
+        Logger::log(LogMessageSeverityLevel::INFO, warningMsg, LogMessageEntityType::MODULE, this->id);
     }
 
     void Module::moduleDebug(const std::string& warning) const
     {
         std::string warningMsg = "Module \"" + id + "\": " + warning;
-        Logger::log(LogMessageSeverityLevel::DEBUG_VERBOSE, warningMsg, LogMessageEntityType::MODULE, this->id, Runtime::RUNTIME_CPP);
+        Logger::log(LogMessageSeverityLevel::DEBUG_VERBOSE, warningMsg, LogMessageEntityType::MODULE, this->id);
     }
 
     void Module::moduleFatal(absl::Status error) const

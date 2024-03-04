@@ -12,10 +12,40 @@ namespace claid {
         this->annotation.set_module_description(moduleDescription);
     }
 
+    void ModuleAnnotator::setModuleCategory(const std::string& moduleCategory)
+    {
+        this->annotation.set_module_category(moduleCategory);
+    }
+
+    PropertyHint ModuleAnnotator::makeDefaultProperty()
+    {
+        PropertyHint propertyHint;
+        propertyHint.set_property_type(PropertyType::PROPERTY_TYPE_DEFAULT);
+        return propertyHint;
+    }
+
+    PropertyHint ModuleAnnotator::makeEnumProperty(const std::vector<std::string>& enumValues)
+    {
+        PropertyHint propertyHint;
+        propertyHint.set_property_type(PropertyType::PROPERTY_TYPE_ENUM);
+
+        for(const std::string& value : enumValues)
+        {
+            *propertyHint.add_property_type_enum_values() = value;
+        }   
+        return propertyHint;
+    }
+
     void ModuleAnnotator::describeProperty(const std::string& propertyName, const std::string& propertyDescription)
+    {
+        this->describeProperty(propertyName, propertyDescription, makeDefaultProperty());
+    }
+
+    void ModuleAnnotator::describeProperty(const std::string& propertyName, const std::string& propertyDescription, PropertyHint propertyHint)
     {
         this->annotation.add_properties(propertyName);
         this->annotation.add_property_descriptions(propertyDescription);
+        *this->annotation.add_property_hints() = propertyHint;
     }
 
     const ModuleAnnotation& ModuleAnnotator::getAnnotation() const

@@ -25,8 +25,6 @@ LogMessageSeverityLevel claid::Logger::minSeverityLevelToPrintAndStore = LogMess
 std::unique_ptr<std::ofstream> claid::Logger::logFile = nullptr;
 
 
-bool claid::Logger::loggingToLogSinkEnabled = false;
-LogMessageSeverityLevel claid::Logger::minSeverityLevelToForwardToLogSinkHost = LogMessageSeverityLevel::WARNING;
 claid::LogSinkConfiguration claid::Logger::logSinkConfiguration;
 
 #ifdef __ANDROID__
@@ -65,7 +63,7 @@ void claid::Logger::logInfo(const char *format, ...)
         va_end(args) ;
 
 		
-		claid::Logger::log(LogMessageSeverityLevel::INFO, result, LogMessageEntityType::MIDDLEWARE, "", Runtime::RUNTIME_CPP);
+		claid::Logger::log(LogMessageSeverityLevel::INFO, result, LogMessageEntityType::MIDDLEWARE, "");
     }
 
     catch( const std::bad_alloc& )
@@ -78,7 +76,7 @@ void claid::Logger::logInfo(const char *format, ...)
 
 void claid::Logger::log(const LogMessageSeverityLevel severityLevel, 
     const std::string& message, const LogMessageEntityType entityType, 
-    const std::string entityName, Runtime runtime)
+    const std::string entityName)
 {
 
 	std::stringstream ss;
@@ -117,9 +115,8 @@ void claid::Logger::log(const LogMessageSeverityLevel severityLevel,
     logMessage->set_unix_timestamp_in_ms(Time::now().toUnixTimestampMilliseconds());
     logMessage->set_entity_type(entityType);
     logMessage->set_entity_name(entityName);
-    logMessage->set_runtime(runtime);
+    logMessage->set_runtime(Runtime::RUNTIME_CPP);
     forwardLogMessageToLogSink(logMessage);
-
 }
 
 void claid::Logger::log(const LogMessageSeverityLevel severityLevel, const char* format, ...)
@@ -135,7 +132,7 @@ void claid::Logger::log(const LogMessageSeverityLevel severityLevel, const char*
         std::string result( sz, ' ' ) ;
         std::vsnprintf( &result.front(), sz, format, args_copy ) ;
 
-		claid::Logger::log(severityLevel, result, LogMessageEntityType::MIDDLEWARE, "", Runtime::RUNTIME_CPP);
+		claid::Logger::log(severityLevel, result, LogMessageEntityType::MIDDLEWARE, "");
 
 		// This is not thread safe....
 		// Leads to segfault if multiple threads access it at the same time.
@@ -167,7 +164,7 @@ void claid::Logger::logDebug(const char* format, ...)
         std::string result( sz, ' ' ) ;
         std::vsnprintf( &result.front(), sz, format, args_copy ) ;
 
-		claid::Logger::log(LogMessageSeverityLevel::DEBUG_VERBOSE, result, LogMessageEntityType::MIDDLEWARE, "", Runtime::RUNTIME_CPP);
+		claid::Logger::log(LogMessageSeverityLevel::DEBUG_VERBOSE, result, LogMessageEntityType::MIDDLEWARE, "");
 
         va_end(args_copy) ;
         va_end(args) ;
@@ -194,7 +191,7 @@ void claid::Logger::logWarning(const char* format, ...)
         std::string result( sz, ' ' ) ;
         std::vsnprintf( &result.front(), sz, format, args_copy ) ;
 
-		claid::Logger::log(LogMessageSeverityLevel::WARNING, result, LogMessageEntityType::MIDDLEWARE, "", Runtime::RUNTIME_CPP);
+		claid::Logger::log(LogMessageSeverityLevel::WARNING, result, LogMessageEntityType::MIDDLEWARE, "");
 
         va_end(args_copy) ;
         va_end(args) ;
@@ -221,7 +218,7 @@ void claid::Logger::logError(const char* format, ...)
         std::string result( sz, ' ' ) ;
         std::vsnprintf( &result.front(), sz, format, args_copy ) ;
 
-		claid::Logger::log(LogMessageSeverityLevel::ERROR, result, LogMessageEntityType::MIDDLEWARE, "", Runtime::RUNTIME_CPP);
+		claid::Logger::log(LogMessageSeverityLevel::ERROR, result, LogMessageEntityType::MIDDLEWARE, "");
 
         va_end(args_copy) ;
         va_end(args) ;
@@ -248,7 +245,7 @@ void claid::Logger::logFatal(const char* format, ...)
         std::string result( sz, ' ' ) ;
         std::vsnprintf( &result.front(), sz, format, args_copy ) ;
 
-		claid::Logger::log(LogMessageSeverityLevel::FATAL, result, LogMessageEntityType::MIDDLEWARE, "", Runtime::RUNTIME_CPP);
+		claid::Logger::log(LogMessageSeverityLevel::FATAL, result, LogMessageEntityType::MIDDLEWARE, "");
 
         va_end(args_copy) ;
         va_end(args) ;
@@ -335,62 +332,63 @@ std::string claid::Logger::getLastLogMessage()
 	return claid::Logger::lastLogMessage;
 }
 
-void claid::Logger::setMinimimSeverityLevelToPrint(const LogMessageSeverityLevel minSeverityLevel)
+void claid::Logger::setMinimumSeverityLevelToPrint(const LogMessageSeverityLevel minSeverityLevel)
 {
     std::unique_lock<std::mutex> lock(loggerMutex);
     claid::Logger::minSeverityLevelToPrintAndStore = minSeverityLevel;
 }
 
 
-void claid::Logger::enableLogSinkTransferModeStoreAndUpload(const std::string& storagePath, LogMessageSeverityLevel minSeverityLevel)
+// void claid::Logger::enableLogSinkTransferModeStoreAndUpload(const std::string& storagePath, LogMessageSeverityLevel minSeverityLevel)
+// {
+//     std::unique_lock<std::mutex> lock(loggerMutex);
+//     LogSinkConfiguration logSinkConfiguration;
+//     logSinkConfiguration.logSinkLogStoragePath = storagePath;
+//     logSinkConfiguration.logSinkTransferMode = LogSinkTransferMode::STORE_AND_UPLOAD;
+
+//     claid::Logger::logSinkConfiguration = logSinkConfiguration;
+
+//     claid::Logger::loggingToLogSinkEnabled = true;
+//     claid::Logger::minSeverityLevelToForwardToLogSinkHost = minSeverityLevel;
+// }
+
+// void claid::Logger::enableLogSinkTransferModeStream(std::shared_ptr<claid::SharedQueue<LogMessage>> logMessageQueue, LogMessageSeverityLevel minSeverityLevel)
+// {
+//     std::unique_lock<std::mutex> lock(loggerMutex);
+//     LogSinkConfiguration logSinkConfiguration;
+//     logSinkConfiguration.logSinkQueue = logMessageQueue;
+//     logSinkConfiguration.logSinkTransferMode = LogSinkTransferMode::STREAM;
+
+//     claid::Logger::logSinkConfiguration = logSinkConfiguration;
+
+//     claid::Logger::loggingToLogSinkEnabled = true;
+//     claid::Logger::minSeverityLevelToForwardToLogSinkHost = minSeverityLevel;
+// }
+
+void claid::Logger::setLogSinkConfiguration(const LogSinkConfiguration& logSinkConfiguration)
 {
     std::unique_lock<std::mutex> lock(loggerMutex);
-    LogSinkConfiguration logSinkConfiguration;
-    logSinkConfiguration.logSinkLogStoragePath = storagePath;
-    logSinkConfiguration.transferMode = LogSinkTransferMode::STORE_AND_UPLOAD;
-
-    claid::Logger::logSinkConfiguration = logSinkConfiguration;
-
-    claid::Logger::loggingToLogSinkEnabled = true;
-    claid::Logger::minSeverityLevelToForwardToLogSinkHost = minSeverityLevel;
+    Logger::logSinkConfiguration = logSinkConfiguration;
 }
 
-void claid::Logger::enableLogSinkTransferModeStream(std::shared_ptr<claid::SharedQueue<LogMessage>> logMessageQueue, LogMessageSeverityLevel minSeverityLevel)
-{
-    std::unique_lock<std::mutex> lock(loggerMutex);
-    LogSinkConfiguration logSinkConfiguration;
-    logSinkConfiguration.logSinkQueue = logMessageQueue;
-    logSinkConfiguration.transferMode = LogSinkTransferMode::STREAM;
-
-    claid::Logger::logSinkConfiguration = logSinkConfiguration;
-
-    claid::Logger::loggingToLogSinkEnabled = true;
-    claid::Logger::minSeverityLevelToForwardToLogSinkHost = minSeverityLevel;
-}
 
 void claid::Logger::forwardLogMessageToLogSink(std::shared_ptr<LogMessage> logMessage)
 {
-    if(!claid::Logger::loggingToLogSinkEnabled || logMessage->severity_level() < claid::Logger::minSeverityLevelToForwardToLogSinkHost)
+    std::unique_lock<std::mutex> lock(loggerMutex);
+    if(!claid::Logger::logSinkConfiguration.loggingToLogSinkEnabled() || logMessage->severity_level() < claid::Logger::logSinkConfiguration.logSinkSeverityLevel)
     {
         return;
     }
 
-    LogSinkConfiguration configuration;
-    
+ 
+    if(Logger::logSinkConfiguration.logSinkTransferMode == LogSinkTransferMode::STREAM)
     {
-        std::unique_lock<std::mutex> lock(loggerMutex);
-        // Get copy to not block the thread longer than necessary.
-        configuration = claid::Logger::logSinkConfiguration;
-    }
-
-    if(configuration.transferMode == LogSinkTransferMode::STREAM)
-    {
-        if(configuration.logSinkQueue == nullptr)
+        if(Logger::logSinkConfiguration.logSinkQueue == nullptr)
         {
             return;
         }
 
-        configuration.logSinkQueue->push_back(logMessage);
+        Logger::logSinkConfiguration.logSinkQueue->push_back(logMessage);
     }
  
 

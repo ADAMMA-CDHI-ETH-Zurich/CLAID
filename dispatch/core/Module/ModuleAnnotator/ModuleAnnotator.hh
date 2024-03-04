@@ -9,7 +9,8 @@
 using claidservice::DataPackage;
 using claidservice::CtrlType;
 using claidservice::ModuleAnnotation;
-
+using claidservice::PropertyHint;
+using claidservice::PropertyType;
 
 namespace claid
 {
@@ -52,7 +53,13 @@ namespace claid
             ModuleAnnotator(const std::string& moduleType);
 
             void setModuleDescription(const std::string& moduleDescription);
+            void setModuleCategory(const std::string& moduleCategory);
+
+            PropertyHint makeDefaultProperty();
+            PropertyHint makeEnumProperty(const std::vector<std::string>& enumValues);
+
             void describeProperty(const std::string& propertyName, const std::string& propertyDescription);
+            void describeProperty(const std::string& propertyName, const std::string& propertyDescription, PropertyHint propertyHint);
 
             template<typename T>
             void describePublishChannel(const std::string& channelName, const std::string& channelDescription)

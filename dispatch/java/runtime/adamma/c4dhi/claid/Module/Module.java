@@ -1,7 +1,6 @@
 package adamma.c4dhi.claid.Module;
 
 import adamma.c4dhi.claid.Logger.Logger;
-import adamma.c4dhi.claid.Logger.SeverityLevel;
 import adamma.c4dhi.claid.Module.Scheduling.FunctionRunnable;
 import adamma.c4dhi.claid.Module.Scheduling.FunctionRunnable;
 import adamma.c4dhi.claid.Module.Scheduling.RunnableDispatcher;
@@ -10,6 +9,7 @@ import adamma.c4dhi.claid.Module.Scheduling.ScheduleRepeatedIntervall;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduledRunnable;
 import adamma.c4dhi.claid.TypeMapping.DataType;
 import adamma.c4dhi.claid.DataPackage;
+import adamma.c4dhi.claid.LogMessageSeverityLevel;
 
 
 import java.util.ArrayList;
@@ -45,33 +45,33 @@ public abstract class Module
     public void moduleFatal(final String error)
     {
         String errorMsg = "Module \"" + this.id + "\": " + error;
-        Logger.log(SeverityLevel.FATAL, errorMsg);
+        Logger.log(LogMessageSeverityLevel.FATAL, errorMsg);
         throw new RuntimeException(errorMsg);
     }
 
     public void moduleError(final String error)
     {
         String errorMsg = "Module \"" + this.id + "\": " + error;
-        Logger.log(SeverityLevel.ERROR, errorMsg);
-        throw new RuntimeException(errorMsg);
+        Logger.log(LogMessageSeverityLevel.ERROR, errorMsg);
+        //throw new RuntimeException(errorMsg);
     }
 
     protected void moduleWarning(final String warning)
     {
         String warningMsg = "Module \"" + this.id + "\": " + warning;
-        Logger.log(SeverityLevel.WARNING, warningMsg);
+        Logger.log(LogMessageSeverityLevel.WARNING, warningMsg);
     }
 
     protected void moduleInfo(final String info)
     {
         String infoMsg = "Module \"" + this.id + "\": " + info;
-        Logger.log(SeverityLevel.INFO, infoMsg);
+        Logger.log(LogMessageSeverityLevel.INFO, infoMsg);
     }
 
     protected void moduleDebug(final String debug)
     {
         String debugMsg = "Module \"" + this.id + "\": " + debug;
-        Logger.log(SeverityLevel.WARNING, debugMsg);
+        Logger.log(LogMessageSeverityLevel.WARNING, debugMsg);
     }
 
     public boolean start(ChannelSubscriberPublisher subscriberPublisher, Map<String, String> properties)

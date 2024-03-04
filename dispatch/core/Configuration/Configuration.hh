@@ -13,6 +13,7 @@
 #include "dispatch/core/Configuration/HostDescription.hh"
 #include "dispatch/core/Configuration/ModuleDescription.hh"
 #include "dispatch/core/Configuration/ChannelDescription.hh"
+#include "dispatch/core/Logger/LogSinkConfiguration.hh"
 
 using namespace std;
 
@@ -41,6 +42,8 @@ namespace claid
             absl::Status getModuleDescriptions(ModuleDescriptionMap& moduleDescriptions) const;
             absl::Status getChannelDescriptions(ChannelDescriptionMap& channelDescriptions) const;
             absl::Status extractModulesForHost(const string& hostId, const ModuleDescriptionMap& allModuleDescriptions, ModuleDescriptionMap& modulesForHost) const;
+
+            void getLogSinkConfiguration(LogSinkConfiguration& configuration);
 
             bool hostExistsInConfiguration(const std::string& hostname) const;
 

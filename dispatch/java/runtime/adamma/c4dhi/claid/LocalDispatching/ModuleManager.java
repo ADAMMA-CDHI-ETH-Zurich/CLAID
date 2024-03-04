@@ -7,7 +7,7 @@ import adamma.c4dhi.claid.Module.ModuleFactory;
 import adamma.c4dhi.claid.Module.ThreadSafeChannel;
 import adamma.c4dhi.claid.LocalDispatching.ModuleInstanceKey;
 import adamma.c4dhi.claid.Logger.Logger;
-import adamma.c4dhi.claid.Logger.SeverityLevel;
+import adamma.c4dhi.claid.LogMessageSeverityLevel;
 
 import adamma.c4dhi.claid.ModuleAnnotation;
 

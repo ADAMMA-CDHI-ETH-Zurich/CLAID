@@ -22,6 +22,7 @@ extern "C"
     const char* get_user_id(void* handle);
     const char* get_device_id(void* handle);
 
+    int get_log_sink_severity_level(void* handle);
 
     void enable_designer_mode(void* handle);
     void disable_designer_mode(void* handle);

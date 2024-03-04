@@ -83,6 +83,8 @@ enum CtrlType {
   CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE  = 16;
   CTRL_UPLOAD_CONFIG_AND_DATA               = 17; // Will be received by the middleware (not forwarded to the Runtimes). Can be used to load a new config into a host alongside with additional data (model files, python code to inject etc.). Requires designer_mode in CLAIDConfig to be true.
   CTRL_ON_NEW_CONFIG_PAYLOAD_DATA           = 18; // Will be sent by the middleware to all local Runtimes after the Middleware received a package of type CTRL_UPLOAD_CONFIG_AND_DATA. Informs the Runtimes that new payloads are available.
+  CTRL_LOCAL_LOG_MESSAGE                    = 19; // Can be used by the individual runtimes connected to the middleware to forward log messages to the middleware, which might forward it to the log sink host.
+  CTRL_LOG_MESSAGE_STREAM_TO_LOG_SINK       = 20; // Can be used by CLAID instances to stream log messages to the log sink host. Might be send out by the middleware when a CTRL_LOCAL_LOG_MESSAGE was received by any local runtime.
   //CTRL_ADD_MODULE                         = 11; // Can be used to add a new Module at runtime (requires Module name, properties, channels). This package will be forwarded by the LocalRouter to the Middleware that can handle this Module.
   //CTRL_REMOVE_MODULE                      = 12; // Can be used to remove a Module at runtime.
   //CTRL_ADD_MODULE_SUCCESS                 = 13; // Sent as response to CTRL_ADD_MODULE the Module was added successfully.
@@ -266,7 +268,7 @@ message ModuleAnnotation
   string module_category = 2;
   repeated string properties = 3;
   repeated string property_descriptions = 4;
-  map<string, PropertyHint> property_hints = 5;
+  repeated PropertyHint property_hints = 5;
   repeated DataPackage channel_definition = 6;
   repeated string channel_description = 7;
 }
@@ -330,6 +332,7 @@ message CLAIDConfig {
   LogMessageSeverityLevel log_sink_severity_level = 3;  // If log_sink_host is specified, this flag indicates 
                                                         // what category of log messages will be sent to the log sink (only messages with severity level >= this flag will be sent).
   LogSinkTransferMode log_sink_transfer_mode = 4; // Method of transfering log messages to the log_sink_host. Check LogSingTransferMode definition for more details.
+  string log_sink_log_storage_path = 5; // If tranfer mode is store and upload, then this path indicates where to store the temporary files.
   //bool designer_mode = 5;                         // If true, other hosts can upload a new config (alongside additional data like model files or python code) to the host.
 }
 

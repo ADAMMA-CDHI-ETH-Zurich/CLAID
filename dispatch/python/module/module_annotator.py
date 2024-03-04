@@ -1,4 +1,4 @@
-from dispatch.proto.claidservice_pb2 import ModuleAnnotation, DataPackage
+from dispatch.proto.claidservice_pb2 import ModuleAnnotation, DataPackage, PropertyHint, PropertyType
 from module.type_mapping.type_mapping import TypeMapping
 
 class ModuleAnnotator:
@@ -25,9 +25,29 @@ class ModuleAnnotator:
     def set_module_description(self, module_description: str):
         self.annotation.module_description = module_description
 
-    def describe_property(self, property_name: str, property_description: str):
+    def set_module_category(self, module_category: str):
+        self.annotation.module_category = module_category
+    
+    def make_default_property(self):
+        property_hint = PropertyHint()
+        property_hint.property_type = PropertyType.PROPERTY_TYPE_DEFAULT
+        return property_hint
+
+    def make_enum_property(self, enum_values : list):
+        property_hint = PropertyHint
+        property_hint.property_type = PropertyType.PROPERTY_TYPE_ENUM
+        property_hint.enum_values = enum_values
+        return property_hint
+
+    def describe_property(self, property_name: str, property_description: str, property_hint : PropertyHint = None):
         self.annotation.properties.append(property_name)
         self.annotation.property_descriptions.append(property_description)
+
+        if property_hint == None:
+            property_hint = self.make_default_property()
+        
+        self.annotation.property_hints.append(property_hint)
+
 
     def describe_publish_channel(self, channel_name: str, data_type_example, channel_description: str):
         example_package = self.prepare_example_package(data_type_example, self.module_type, channel_name, True)

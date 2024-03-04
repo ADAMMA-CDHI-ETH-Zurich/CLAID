@@ -48,7 +48,7 @@ absl::Status MiddleWare::start() {
         Logger::logInfo("Unable to parse config file: %s", string(status.message()).c_str());
         return status;
     }
-    Logger::setMinimimSeverityLevelToPrint(config.getMinLogSeverityLevelToPrint(this->hostId));
+    Logger::setMinimumSeverityLevelToPrint(config.getMinLogSeverityLevelToPrint(this->hostId));
 
     HostDescriptionMap hostDescriptions;
 
@@ -95,6 +95,8 @@ absl::Status MiddleWare::start() {
     {
         return status;
     }
+
+    this->logSinkConfiguration = config.getLogSinkConfiguration();
 
     // if(config.isDesignerModeEnabled())
     // {
@@ -281,6 +283,11 @@ absl::Status MiddleWare::startRouter(const std::string& currentHost, const HostD
 
 
     return absl::OkStatus();
+}
+
+void MiddleWare::setupLogSink()
+{
+    
 }
 
 absl::Status MiddleWare::shutdown()
@@ -809,7 +816,10 @@ absl::Status MiddleWare::loadNewConfig(const Configuration& config)
     {
         return status;
     }
-    Logger::setMinimimSeverityLevelToPrint(config.getMinLogSeverityLevelToPrint(this->hostId));
+    Logger::setMinimumSeverityLevelToPrint(config.getMinLogSeverityLevelToPrint(this->hostId));
+
+    this->logSinkConfiguration = config.getLogSinkConfiguration();
+
 
     // if(config.isDesignerModeEnabled())
     // {
@@ -942,3 +952,9 @@ void MiddleWare::notifyAllRuntimesAboutNewPayload()
     this->forwardControlPackageToAllRuntimes(package);
     Logger::logInfo("Forwarding CTRL_ON_NEW_CONFIG_PAYLOAD_DATA package to all local runtimes");
 }
+
+int MiddleWare::getLogSinkSeverityLevel() const
+{
+    return static_cast<int>(this->logSinkConfiguration.logSinkSeverityLevel);
+}
+

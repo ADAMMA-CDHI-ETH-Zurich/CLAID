@@ -33,6 +33,7 @@ namespace claid
         public:
             static void annotateModule(ModuleAnnotator& annotator)
             {
+                annotator.setModuleCategory("DataCollection");
                 annotator.setModuleDescription(absl::StrCat(
                     "The DataSaverModule allows to serialize data arriving on any channel to files on the local file system.\n",
                     "The Module can subscribe to ANY channel with any data type and automatically serialzes incoming data accordingly.\n",

@@ -16,6 +16,7 @@ class AccelerationView(Module):
 
     @staticmethod
     def annotate_module(annotator):
+        annotator.set_module_category("Visualization")
         annotator.set_module_description("A Module allowing to plot 3 dimensional acceleration data (X, Y, Z axis) in realtime using matplotlib.")
     
         annotator.describe_subscribe_channel("InputData", AccelerationData(), "Channel with incoming acceleration data.")

@@ -213,10 +213,15 @@ namespace claid
             // Check if the channel has no publishers.
             if(channelDescription.publisherModules.empty())
             {
-                return absl::InvalidArgumentError(
-                        absl::StrCat("Configuration: Channel \"",
+                // No error. It's fine to leave channels unconnected.
+                Logger::logWarning("%s", 
+                    absl::StrCat("Configuration: Channel \"",
                         channelDescription.channelName,
-                        "\" has no publishers, therefore the subscribers would never receive data."));
+                        "\" has no publishers, therefore the subscribers would never receive data.").c_str());
+                // return absl::InvalidArgumentError(
+                //         absl::StrCat("Configuration: Channel \"",
+                //         channelDescription.channelName,
+                //         "\" has no publishers, therefore the subscribers would never receive data."));
             }
 
         }
@@ -225,10 +230,8 @@ namespace claid
 
     bool Configuration::hostExistsInConfiguration(const std::string& host) const
     {
-        Logger::logInfo("host exists in config");
         for(auto& hostIt : config.hosts()) 
         {
-            Logger::logInfo("Hosts %s", hostIt.hostname().c_str());
             if (hostIt.hostname() == host) 
             {
                 return true;
@@ -236,6 +239,18 @@ namespace claid
         }
         return false;
     }
+
+    void Configuration::getLogSinkConfiguration(LogSinkConfiguration& configuration)
+    {
+        configuration.logSinkHost = this->config.log_sink_host();
+        configuration.logSinkLogStoragePath = this->config.log_sink_log_storage_path();
+        configuration.logSinkTransferMode = this->config.log_sink_transfer_mode();
+        configuration.logSinkSeverityLevel = this->config.log_sink_severity_level();
+        // configuration.logSinkSeverityLevel = 
+        //     this->config.has_log_sink_severity_level() ? 
+        //         this->config.log_sink_severity_level() : LogMessageSeverityLevel::INFO;
+    }
+
 
     LogMessageSeverityLevel Configuration::getMinLogSeverityLevelToPrint(const std::string& hostName) const
     {

@@ -21,6 +21,8 @@
 #include "dispatch/core/Router/RoutingQueueMerger.hh"
 #include "dispatch/core/Router/RoutingQueueMergerGeneric.hh"
 
+#include "dispatch/core/Logger/LogSinkConfiguration.hh"
+
 using claidservice::ConfigUploadPayload;
 
 namespace claid
@@ -44,6 +46,8 @@ namespace claid
             const std::string& getHostId() const;
             const std::string& getUserId() const;
             const std::string& getDeviceId() const;
+
+            int getLogSinkSeverityLevel() const;
 
             bool isConnectedToRemoteServer() const;
             absl::Status getRemoteClientStatus() const;
@@ -83,6 +87,7 @@ namespace claid
             std::string deviceId;
 
             Configuration currentConfiguration;
+            LogSinkConfiguration logSinkConfiguration;
 
             ModuleTable moduleTable;
             HostUserTable hostUserTable;
@@ -141,6 +146,7 @@ namespace claid
             
             absl::Status startRouter(const std::string& currentHost, const HostDescriptionMap& hostDescriptions, const ModuleDescriptionMap& moduleDescriptions);
 
+            void setupLogSink();
 
             absl::Status unloadAllModulesInAllLocalRuntimes();
             absl::Status loadNewConfigIntoModuleTableAndRouter(const Configuration& config);

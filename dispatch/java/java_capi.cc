@@ -135,4 +135,11 @@ extern "C"
         void* nativeHandle = reinterpret_cast<void*>(handle);
         disable_designer_mode(nativeHandle);
     }
+
+    JNIEXPORT jint JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeGetLogSinkSeverityLevel
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle) 
+    {
+        void* nativeHandle = reinterpret_cast<void*>(handle);
+        return get_log_sink_severity_level(nativeHandle);
+    }
 }

@@ -37,6 +37,8 @@ public abstract class JavaCLAIDBase
     
     private static native void nativeEnableDesignerMode(long handle);
     private static native void nativeDisableDesignerMode(long handle); 
+
+    private static native int nativeGetLogSinkSeverityLevel();
     
     private static ModuleDispatcher moduleDispatcher;
     private static ModuleManager moduleManager;
@@ -81,6 +83,16 @@ public abstract class JavaCLAIDBase
         started = true;
 
         return true;
+    }
+
+    protected static void shutdown()
+    {
+        if(handle == 0)
+        {
+            return;
+        }
+
+        shutdownCore(handle);
     }
 
     // Attaches to the Middleware, but does not start it.
@@ -153,4 +165,8 @@ public abstract class JavaCLAIDBase
         nativeDisableDesignerMode(handle);
     }
 
+    public static int getLogSinkSeverityLevel()
+    {
+        return nativeGetLogSinkSeverityLevel(handle);
+    }
 }

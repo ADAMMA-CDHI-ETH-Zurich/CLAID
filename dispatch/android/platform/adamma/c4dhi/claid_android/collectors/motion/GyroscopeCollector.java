@@ -51,6 +51,7 @@ public class GyroscopeCollector extends Module implements SensorEventListener
 
     public static void annotateModule(ModuleAnnotator annotator)
     {
+        annotator.setModuleCategory("DataCollection");
         annotator.setModuleDescription("The GyroscopeCollector allows to record gyrpscpüe data using the devices built-in gyroscope of the device."
         + "The sampling frequency can be freely configured, however is subject to the limitations of the device (i.e., built-in sensor speicifications)."
         + "The GyroscopeCollector features two recording modes: \"Batched\" and \"Streaming\"\n");
@@ -59,7 +60,8 @@ public class GyroscopeCollector extends Module implements SensorEventListener
         annotator.describeProperty("outputMode", "Two modes are available: \"BATCHED\" and \"STREAM\"."
         + "The BATCHED Mode is the normal mode for most scenarios. In this mode, gyroscope data is aggregated and only posted to the output channel, "
         + "if the amount of samples spans 1 second (e.g., 50 samples if configured to 50Hz)."
-        + "In the STREAM mode, each individual sample is posted to the channel without aggregation, which can be used for real-time scenarios.");
+        + "In the STREAM mode, each individual sample is posted to the channel without aggregation, which can be used for real-time scenarios.",
+        annotator.makeEnumProperty(new String[]{"STREAM", "BATCHED"}));
     
         annotator.describePublishChannel("GyroscopeData", GyroscopeData.class, "Channel where the recorded Date will be streamed to.");
     }

@@ -14,9 +14,19 @@ namespace claid
 {
     struct LogSinkConfiguration
     {
+        std::string logSinkHost;
         std::string logSinkLogStoragePath;
-        std::shared_ptr<SharedQueue<LogMessage>> logSinkQueue = nullptr;
+
         // Severity level determining what log messages are forward to the log sink host.
-        LogSinkTransferMode transferMode = LogSinkTransferMode::STORE_AND_UPLOAD;
+        LogMessageSeverityLevel logSinkSeverityLevel = LogMessageSeverityLevel::INFO;
+        LogSinkTransferMode logSinkTransferMode = LogSinkTransferMode::STORE_AND_UPLOAD;
+
+        // To be filled out by the middleware.
+        std::shared_ptr<SharedQueue<LogMessage>> logSinkQueue = nullptr;
+
+        bool loggingToLogSinkEnabled() const
+        {
+            return logSinkHost != "";
+        }
     };
 }

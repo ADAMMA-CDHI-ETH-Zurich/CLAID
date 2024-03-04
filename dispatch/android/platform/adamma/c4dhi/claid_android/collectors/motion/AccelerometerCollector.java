@@ -53,6 +53,7 @@ public class AccelerometerCollector extends Module implements SensorEventListene
 
     public static void annotateModule(ModuleAnnotator annotator)
     {
+        annotator.setModuleCategory("DataCollection");
         annotator.setModuleDescription("The AccelerometerCollector allows to record acceleration data using the devices built-in accelerometer."
         + "The sampling frequency can be freely configured, however is subject to the limitations of the device (i.e., built-in sensor speicifcations)."
         + "The AccelerometerCollector features two recording modes: \"Batched\" and \"Streaming\"\n");
@@ -61,7 +62,8 @@ public class AccelerometerCollector extends Module implements SensorEventListene
         annotator.describeProperty("outputMode", "Two modes are available: \"BATCHED\" and \"STREAM\"."
         + "The BATCHED Mode is the normal mode for most scenarios. In this mode, acceleration data is aggregated and only posted to the output channel, "
         + "if the amount of samples spans 1 second (e.g., 50 samples if configured to 50Hz)."
-        + "In the STREAM mode, each individual sample is posted to the channel without aggregation, which can be used for real-time scenarios.");
+        + "In the STREAM mode, each individual sample is posted to the channel without aggregation, which can be used for real-time scenarios.",
+        annotator.makeEnumProperty(new String[]{"STREAM", "BATCHED"}));
     
         annotator.describePublishChannel("AccelerationData", AccelerationData.class, "Channel where the recorded Date will be streamed to.");
     }

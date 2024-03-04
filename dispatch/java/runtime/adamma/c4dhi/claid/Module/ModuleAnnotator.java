@@ -9,12 +9,13 @@ import adamma.c4dhi.claid.TypeMapping.DataType;
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.TypeMapping.Mutator;
 import adamma.c4dhi.claid.TypeMapping.TypeMapping;
+import adamma.c4dhi.claid.PropertyHint;
+import adamma.c4dhi.claid.PropertyType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.apple.laf.ClientPropertyApplicator.Property;
 
 public class ModuleAnnotator {
 
@@ -30,6 +31,11 @@ public class ModuleAnnotator {
     public void setModuleDescription(String moduleDescription) 
     {
         this.annotation = this.annotation.setModuleDescription(moduleDescription);
+    }
+
+    public void setModuleCategory(String moduleCategory)
+    {
+        this.annotation.setModuleCategory(moduleCategory);
     }
 
     public PropertyHint makeDefaultProperty()
