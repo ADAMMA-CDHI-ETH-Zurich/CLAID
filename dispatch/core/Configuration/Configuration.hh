@@ -43,7 +43,7 @@ namespace claid
             absl::Status getChannelDescriptions(ChannelDescriptionMap& channelDescriptions) const;
             absl::Status extractModulesForHost(const string& hostId, const ModuleDescriptionMap& allModuleDescriptions, ModuleDescriptionMap& modulesForHost) const;
 
-            void getLogSinkConfiguration(LogSinkConfiguration& configuration);
+            void getLogSinkConfiguration(LogSinkConfiguration& configuration, std::shared_ptr<SharedQueue<LogMessage>> logMessagesQueue) const;
 
             bool hostExistsInConfiguration(const std::string& hostname) const;
 

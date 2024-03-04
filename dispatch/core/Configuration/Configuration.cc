@@ -240,12 +240,13 @@ namespace claid
         return false;
     }
 
-    void Configuration::getLogSinkConfiguration(LogSinkConfiguration& configuration)
+    void Configuration::getLogSinkConfiguration(LogSinkConfiguration& configuration, std::shared_ptr<SharedQueue<LogMessage>> logMessagesQueue) const
     {
         configuration.logSinkHost = this->config.log_sink_host();
         configuration.logSinkLogStoragePath = this->config.log_sink_log_storage_path();
         configuration.logSinkTransferMode = this->config.log_sink_transfer_mode();
         configuration.logSinkSeverityLevel = this->config.log_sink_severity_level();
+        configuration.logSinkQueue = logMessagesQueue;
         // configuration.logSinkSeverityLevel = 
         //     this->config.has_log_sink_severity_level() ? 
         //         this->config.log_sink_severity_level() : LogMessageSeverityLevel::INFO;

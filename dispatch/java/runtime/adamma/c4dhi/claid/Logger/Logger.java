@@ -4,6 +4,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import adamma.c4dhi.claid.LogMessageSeverityLevel;
 import adamma.c4dhi.claid.LogMessageEntityType;
+import adamma.c4dhi.claid.LogMessage;
+import adamma.c4dhi.claid.Runtime;
+
+import adamma.c4dhi.claid_platform_impl.CLAID;
 
 public class Logger {
 
@@ -27,7 +31,7 @@ public class Logger {
 
         LogMessage.Builder logMessageBuilder = LogMessage.newBuilder();
 
-        if(level >= CLAID.logSinkSeverityLevel())
+        if(level.compareTo(CLAID.getLogSinkSeverityLevel()) >= 0)
         {
             // Set values for the LogMessage fields
             logMessageBuilder.setLogMessage(message);
@@ -35,7 +39,7 @@ public class Logger {
             logMessageBuilder.setUnixTimestampInMs(System.currentTimeMillis());
             logMessageBuilder.setEntityType(entityType);
             logMessageBuilder.setEntityName(entityName);
-            logMessageBuilder.setRuntime(LogMessage.Runtime.RUNTIME_JAVA);
+            logMessageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
 
             // Build the LogMessage
             LogMessage logMessage = logMessageBuilder.build();

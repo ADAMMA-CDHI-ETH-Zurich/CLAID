@@ -3,7 +3,7 @@ from logger.logger import Logger
 from module.channel_subscriber_publisher import ChannelSubscriberPublisher
 from module.module_annotator import ModuleAnnotator
 from module.thread_safe_channel import ThreadSafeChannel
-from dispatch.proto.claidservice_pb2 import * 
+from dispatch.proto.claidservice_pb2 import LogMessage
 
 from threading import Thread
 import time
@@ -375,5 +375,18 @@ class ModuleManager():
         config_payload.config.CopyFrom(config)
         ctrl_package.config_upload_payload.CopyFrom(config_payload)
    
+        self.__to_module_dispatcher_queue.put(package)
 
+    def post_log_message(self, log_message: LogMessage):
+
+        package = DataPackage()
+        # package.source_host = ... will be set by middleware
+
+        ctrl_package = package.control_val
+
+        ctrl_package.ctrl_type = CtrlType.CTRL_LOCAL_LOG_MESSAGE
+        ctrl_package.runtime = Runtime.RUNTIME_PYTHON
+
+        
+        ctrl_package.log_message.CopyFrom(log_message)
         self.__to_module_dispatcher_queue.put(package)

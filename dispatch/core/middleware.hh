@@ -87,7 +87,6 @@ namespace claid
             std::string deviceId;
 
             Configuration currentConfiguration;
-            LogSinkConfiguration logSinkConfiguration;
 
             ModuleTable moduleTable;
             HostUserTable hostUserTable;
@@ -113,7 +112,11 @@ namespace claid
             std::unique_ptr<RoutingQueueMerger> routingQueueMerger;
             SharedQueue<DataPackage> masterInputQueue;
 
+            std::mutex logSinkConfigurationMutex;
+            LogSinkConfiguration logSinkConfiguration;
             std::shared_ptr<SharedQueue<LogMessage>> logMessagesQueue;
+            std::unique_ptr<std::thread> logMessageHandlerThread = nullptr;
+            std::set<Runtime> runtimesThatSubscribedToLogSinkStream;
 
             std::unique_ptr<std::thread> controlPackageHandlerThread = nullptr; 
 
@@ -128,6 +131,8 @@ namespace claid
             std::unique_ptr<std::thread> configUploadThread;
             bool uploadingConfigFinished = false;
             DataPackage configUploadPackage;
+
+
 
             absl::Status getHostModuleAndChannelDescriptions(const std::string& hostId, const Configuration& config,
                 HostDescriptionMap& hostDescriptions, ModuleDescriptionMap& allModuleDescriptions,
@@ -157,9 +162,9 @@ namespace claid
             void forwardControlPackageToAllRuntimes(std::shared_ptr<DataPackage> package);
             void forwardControlPackageToTargetRuntime(std::shared_ptr<DataPackage> package);
 
-            void readLogMessages();
-            std::shared_ptr<SharedQueue<LogMessage>> getLogMessagesQueue();
-
+            void readLocalLogMessages();
+            void handleLocalLogMessage(std::shared_ptr<LogMessage> logMessage);
+            void forwardLogSinkLogStreamMessageToRuntimesThatSubscribed(std::shared_ptr<DataPackage> package);
 
             void handleUploadConfigAndPayloadMessage();
             bool storePayload(const ConfigUploadPayload& payload);

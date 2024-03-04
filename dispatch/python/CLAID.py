@@ -16,6 +16,8 @@ from module.scheduling.schedule_once import ScheduleOnce
 from module.scheduling.schedule_immediately_indefinitely import ScheduleImmediatelyIndefinitely
 from module.scheduling.external_scheduled_runnable import ExternalScheduledRunnable
 
+from dispatch.proto.claidservice_pb2 import LogMessage, LogMessageSeverityLevel
+
 import platform
 import os
 
@@ -92,6 +94,9 @@ class CLAID():
 
             CLAID.claid_c_lib.get_payload_data_path.argtypes = [ctypes.c_void_p]
             CLAID.claid_c_lib.get_payload_data_path.restype = ctypes.c_char_p
+
+            CLAID.claid_c_lib.get_log_sink_severity_level.argtypes = [ctypes.c_void_p]
+            CLAID.claid_c_lib.get_log_sink_severity_level.restype = ctypes.c_int
         CLAID.claid_c_lib_loaded = True
     
         print("CLAID c lib loaded")
@@ -295,3 +300,9 @@ class CLAID():
 
     def get_payload_data_path(self) -> str:
         return CLAID.claid_c_lib.get_payload_data_path(self.__handle).decode('utf-8')
+    
+    def get_log_sink_severity_level(self) -> LogMessageSeverityLevel:
+        return LogMessageSeverityLevel(CLAID.claid_c_lib.get_log_message_severity_level(self.__handle))
+    
+    def post_log_message(self, log_message: LogMessage):
+        self.__module_manager.post_log_message(log_message)

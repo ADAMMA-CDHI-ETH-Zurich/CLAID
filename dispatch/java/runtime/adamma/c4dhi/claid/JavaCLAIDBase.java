@@ -4,6 +4,7 @@ import adamma.c4dhi.claid.LocalDispatching.ModuleDispatcher;
 import adamma.c4dhi.claid.LocalDispatching.ModuleManager;
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.Module.ModuleFactory;
+import adamma.c4dhi.claid.LogMessage;
 
 
 public abstract class JavaCLAIDBase
@@ -38,14 +39,14 @@ public abstract class JavaCLAIDBase
     private static native void nativeEnableDesignerMode(long handle);
     private static native void nativeDisableDesignerMode(long handle); 
 
-    private static native int nativeGetLogSinkSeverityLevel();
+    private static native int nativeGetLogSinkSeverityLevel(long handle);
     
     private static ModuleDispatcher moduleDispatcher;
     private static ModuleManager moduleManager;
 
     private static boolean started = false;
-    private static long handle;
-    private static long cppRuntimeHandle;
+    private static long handle = 0;
+    private static long cppRuntimeHandle = 0;
 
     
 
@@ -165,8 +166,18 @@ public abstract class JavaCLAIDBase
         nativeDisableDesignerMode(handle);
     }
 
-    public static int getLogSinkSeverityLevel()
+    public static LogMessageSeverityLevel getLogSinkSeverityLevel()
     {
-        return nativeGetLogSinkSeverityLevel(handle);
+        return LogMessageSeverityLevel.values()[nativeGetLogSinkSeverityLevel(handle)];
+    }
+
+    public static void postLogMessage(LogMessage logMessage)
+    {
+        if(handle == 0)
+        {
+            return;
+        }
+
+        moduleManager.postLogMessage(logMessage);        
     }
 }

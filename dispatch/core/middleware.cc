@@ -96,8 +96,11 @@ absl::Status MiddleWare::start() {
         return status;
     }
 
-    this->logSinkConfiguration = config.getLogSinkConfiguration();
-
+    {
+        std::unique_lock<std::mutex>(this->logSinkConfigurationMutex);
+        config.getLogSinkConfiguration(this->logSinkConfiguration, this->logMessagesQueue);
+        Logger::setLogSinkConfiguration(this->logSinkConfiguration);
+    }
     // if(config.isDesignerModeEnabled())
     // {
     //     this->enableDesignerMode();
@@ -113,6 +116,10 @@ absl::Status MiddleWare::start() {
 
     this->controlPackageHandlerThread = std::make_unique<std::thread>([this]() {
         this->readControlPackages();
+    });
+
+    this->logMessageHandlerThread = std::make_unique<std::thread>([this]() {
+        this->readLocalLogMessages();
     });
 
     this->currentConfiguration = config;
@@ -342,6 +349,19 @@ absl::Status MiddleWare::shutdown()
         this->controlPackageHandlerThread = nullptr;
     }
 
+    if(this->logMessageHandlerThread != nullptr)
+    {
+        this->logMessagesQueue->interruptOnce();
+        this->logMessageHandlerThread->join();
+        this->controlPackageHandlerThread = nullptr;
+    }
+
+    if(this->configUploadThread != nullptr)
+    {
+        this->configUploadThread->join();
+        this->configUploadThread = nullptr;
+    }
+
     
     Logger::logInfo("Middleware successfully shut down.");
     return absl::OkStatus();
@@ -538,8 +558,52 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
             this->configUploadThread = make_unique<std::thread>([&]() {
                     this->handleUploadConfigAndPayloadMessage();
             });
+            break;  
         }
-        break;  
+        case CtrlType::CTRL_LOCAL_LOG_MESSAGE:
+        {
+            std::shared_ptr<LogMessage> logMessage(new LogMessage(controlPackage->control_val().log_message()));
+            this->logMessagesQueue->push_back(logMessage);
+            break;
+        }
+        case CtrlType::CTRL_LOG_SINK_LOG_MESSAGE_STREAM:
+        {
+            this->forwardLogSinkLogStreamMessageToRuntimesThatSubscribed(controlPackage);
+            break;
+        }
+        case CtrlType::CTRL_SUBSCRIBE_TO_LOG_SINK_LOG_MESSAGE_STREAM:
+        {
+            if(controlPackage->source_host() != this->hostId)
+            {
+                Logger::logError("A request was made by host \"%s\" to subscribe to the log stream messages of host \"%s\", which is not allowed. "
+                "Only local runtimes can subscribe to the log stream messags of this host", 
+                controlPackage->source_host().c_str(), this->hostId.c_str());
+                return;
+            }
+            this->runtimesThatSubscribedToLogSinkStream.insert(controlPackage->control_val().runtime());
+            break;
+        }
+        case CtrlType::CTRL_UNSUBSCRIBE_FROM_LOG_SINK_LOG_MESSAGE_STREAM:
+        {
+            if(controlPackage->source_host() != this->hostId)
+            {
+                Logger::logError("A request was made by host \"%s\" to unsubscribe to the log stream messages of host \"%s\", which is not allowed. "
+                "Only local runtimes can subscribe to the log stream messags of this host", 
+                controlPackage->source_host().c_str(), this->hostId.c_str());
+                return;
+            }
+
+            auto it = this->runtimesThatSubscribedToLogSinkStream.find(controlPackage->control_val().runtime());
+            if(it == this->runtimesThatSubscribedToLogSinkStream.end())
+            {
+                Logger::logWarning("Runtime %s tried to unsubscribe from log sink log messages stream, however the runtime never subscribed before",
+                Runtime_Name(controlPackage->control_val().runtime()).c_str());
+                return;
+            }
+
+            this->runtimesThatSubscribedToLogSinkStream.erase(it);
+            break;
+        }
         default:
         {
             Logger::logWarning("Middleware received unsupported control package %s", CtrlType_Name(controlPackage->control_val().ctrl_type()).c_str());
@@ -563,7 +627,11 @@ void MiddleWare::forwardControlPackageToAllRuntimes(std::shared_ptr<DataPackage>
 void MiddleWare::forwardControlPackageToTargetRuntime(std::shared_ptr<DataPackage> package)
 {
     std::shared_ptr<SharedQueue<DataPackage>> queue = this->moduleTable.getOutputQueueOfRuntime(package->control_val().runtime());
-    queue->push_back(package);
+    
+    if(queue != nullptr)
+    {
+        queue->push_back(package);
+    }
 }
 
 
@@ -816,9 +884,15 @@ absl::Status MiddleWare::loadNewConfig(const Configuration& config)
     {
         return status;
     }
-    Logger::setMinimumSeverityLevelToPrint(config.getMinLogSeverityLevelToPrint(this->hostId));
 
-    this->logSinkConfiguration = config.getLogSinkConfiguration();
+
+    {
+        std::unique_lock<std::mutex>(this->logSinkConfigurationMutex);
+        Logger::setMinimumSeverityLevelToPrint(config.getMinLogSeverityLevelToPrint(this->hostId));
+        config.getLogSinkConfiguration(this->logSinkConfiguration, this->logMessagesQueue);
+        Logger::setLogSinkConfiguration(this->logSinkConfiguration);
+    }
+        
 
 
     // if(config.isDesignerModeEnabled())
@@ -834,14 +908,58 @@ absl::Status MiddleWare::loadNewConfig(const Configuration& config)
 }
 
 
-void MiddleWare::readLogMessages()
+void MiddleWare::readLocalLogMessages()
 {
+    while(this->running)
+    {
+        std::shared_ptr<LogMessage> logMessage = this->logMessagesQueue->interruptable_pop_front();
+
+        if(logMessage == nullptr)
+        {
+            continue;
+        }
+
+        this->handleLocalLogMessage(logMessage);
+    }
+}
+
+void MiddleWare::handleLocalLogMessage(std::shared_ptr<LogMessage> logMessage)
+{
+    std::unique_lock<std::mutex>(this->logSinkConfigurationMutex);
+
+    if(!this->logSinkConfiguration.loggingToLogSinkEnabled())
+    {
+        return;
+    }
+
+    if(this->logSinkConfiguration.logSinkTransferMode == LogSinkTransferMode::STREAM)
+    {
+        std::shared_ptr<DataPackage> package = std::make_shared<DataPackage>();
+        ControlPackage& ctrlPackage = *package->mutable_control_val();
+        
+        ctrlPackage.set_ctrl_type(CtrlType::CTRL_LOG_SINK_LOG_MESSAGE_STREAM);
+        *ctrlPackage.mutable_log_message() = *logMessage;
+        package->set_source_host(this->hostId);
+        package->set_target_host(this->logSinkConfiguration.logSinkHost);
+        this->masterInputQueue.push_back(package);
+    }
     
 }
-std::shared_ptr<SharedQueue<LogMessage>> MiddleWare::getLogMessagesQueue()
+
+void MiddleWare::forwardLogSinkLogStreamMessageToRuntimesThatSubscribed(std::shared_ptr<DataPackage> package)
 {
-    return nullptr;
+    for(Runtime runtime : runtimesThatSubscribedToLogSinkStream)
+    {
+        std::shared_ptr<DataPackage> packageCopy(new DataPackage(*package));
+        std::shared_ptr<SharedQueue<DataPackage>> queue = this->moduleTable.getOutputQueueOfRuntime(runtime);
+    
+        if(queue != nullptr)
+        {
+            queue->push_back(packageCopy);
+        }
+    }
 }
+
 
 void MiddleWare::setPayloadDataPath(const std::string& path)
 {

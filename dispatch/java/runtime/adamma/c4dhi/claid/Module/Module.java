@@ -45,33 +45,33 @@ public abstract class Module
     public void moduleFatal(final String error)
     {
         String errorMsg = "Module \"" + this.id + "\": " + error;
-        Logger.log(LogMessageSeverityLevel.FATAL, errorMsg);
+        Logger.log(LogMessageSeverityLevel.FATAL, errorMsg, LogMessageEntityType.MODULE, this.id);
         throw new RuntimeException(errorMsg);
     }
 
     public void moduleError(final String error)
     {
         String errorMsg = "Module \"" + this.id + "\": " + error;
-        Logger.log(LogMessageSeverityLevel.ERROR, errorMsg);
+        Logger.log(LogMessageSeverityLevel.ERROR, errorMsg, LogMessageEntityType.MODULE, this.id);
         //throw new RuntimeException(errorMsg);
     }
 
     protected void moduleWarning(final String warning)
     {
         String warningMsg = "Module \"" + this.id + "\": " + warning;
-        Logger.log(LogMessageSeverityLevel.WARNING, warningMsg);
+        Logger.log(LogMessageSeverityLevel.WARNING, warningMsg, LogMessageEntityType.MODULE, this.id);
     }
 
     protected void moduleInfo(final String info)
     {
         String infoMsg = "Module \"" + this.id + "\": " + info;
-        Logger.log(LogMessageSeverityLevel.INFO, infoMsg);
+        Logger.log(LogMessageSeverityLevel.INFO, infoMsg, LogMessageEntityType.MODULE, this.id);
     }
 
     protected void moduleDebug(final String debug)
     {
         String debugMsg = "Module \"" + this.id + "\": " + debug;
-        Logger.log(LogMessageSeverityLevel.WARNING, debugMsg);
+        Logger.log(LogMessageSeverityLevel.WARNING, debugMsg, LogMessageEntityType.MODULE, this.id);
     }
 
     public boolean start(ChannelSubscriberPublisher subscriberPublisher, Map<String, String> properties)

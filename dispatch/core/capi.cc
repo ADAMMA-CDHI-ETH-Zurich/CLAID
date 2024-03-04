@@ -197,7 +197,7 @@ int get_log_sink_severity_level(void* handle)
     if(!handle)
     {
         claid::Logger::logError("Cannot get log sink severity level, handle is null.");
-        return;
+        return 0;
     }
 
     auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);

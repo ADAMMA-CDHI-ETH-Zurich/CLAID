@@ -30,6 +30,7 @@ import adamma.c4dhi.claid.ModuleListResponse;
 import adamma.c4dhi.claid.ModuleListResponse.ModuleDescriptor;
 import adamma.c4dhi.claid.ControlPackage;
 import adamma.c4dhi.claid.CtrlType;
+import adamma.c4dhi.claid.LogMessage;
 
 import io.grpc.stub.StreamObserver;
 
@@ -426,9 +427,22 @@ public class ModuleManager
         responseBuilder.setSourceHost(this.restartControlPackage.getTargetHost());
         responseBuilder.setTargetHost(this.restartControlPackage.getSourceHost());
 
-        // Use the responseBuilder to build the final DataPackage
         DataPackage response = responseBuilder.build();
         this.fromModulesChannel.add(response);
     }
-  
+    
+    public void postLogMessage(LogMessage logMessage)
+    {
+        DataPackage.Builder responseBuilder = DataPackage.newBuilder();
+        ControlPackage.Builder ctrlPackageBuilder = responseBuilder.getControlValBuilder();
+
+        ctrlPackageBuilder.setCtrlType(CtrlType.CTRL_LOCAL_LOG_MESSAGE);
+        ctrlPackageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
+        ctrlPackageBuilder.setLogMessage(logMessage);
+        // Target and source host will be filled out by the router automatically, since this is a local control message.
+
+        DataPackage response = responseBuilder.build();
+        this.fromModulesChannel.add(response);
+    }
+
 }

@@ -1,18 +1,45 @@
-from dispatch.proto.claidservice_pb2 import LogMessageSeverityLevel
+from dispatch.proto.claidservice_pb2 import LogMessageSeverityLevel, LogMessage, LogMessageEntityType, Runtime
 
 from datetime import datetime
 import sys
 
 
 class Logger:
+
+    # Workaround for that there can be multiple CLAID instances in Python/C++ but only one Logger instance.
+    # For now we assume that users will only use one instance of CLAID at a time.
+    # For the future, the Logging class needs a redesign.
+    claid_instance = None
+
     @staticmethod
-    def log(level, message):
+    def log(level, message, log_message_entity_type = LogMessageEntityType.MIDDLEWARE, log_message_entity = "PYTHON_RUNTIME"):
         output = f"[{Logger.get_time_string()} | CLAID - {LogMessageSeverityLevel.Name(level)}] {message}\n"
 
         if level in {LogMessageSeverityLevel.ERROR, LogMessageSeverityLevel.FATAL}:
             print(output, file=sys.stderr)
         else:
             print(output)
+
+
+        if Logger.claid_instance != None:
+
+            severity_level = Logger.claid_instance.get_log_sink_severity_level()
+
+            if level >= severity_level:
+                log_message = LogMessage()
+
+                # Set values for the LogMessage fields
+                log_message.log_message = message
+                log_message.severity_level = LogMessageSeverityLevel.INFO
+                log_message.unix_timestamp_in_ms = int(datetime.now().timestamp() * 1000)
+                log_message.entity_type = log_message_entity_type
+                log_message.entity_name = log_message_entity
+                log_message.runtime = Runtime.RUNTIME_PYTHON
+
+
+                # Forward the LogMessage to your log sink function
+                Logger.claid_instance.postLogMessag(log_message)
+
 
     @staticmethod
     def log_debug(message):
@@ -45,3 +72,5 @@ class Logger:
         # Format the current date and time using the formatter
         formatted_datetime = current_datetime.strftime(formatter)
         return formatted_datetime
+    
+
