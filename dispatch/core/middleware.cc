@@ -559,7 +559,7 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
             });
             break;  
         }
-        case CtrlType::CTRL_LOCAL_LOG_MESSAGE:
+        /*case CtrlType::CTRL_LOCAL_LOG_MESSAGE:
         {
             std::shared_ptr<LogMessage> logMessage(new LogMessage(controlPackage->control_val().log_message()));
             this->logMessagesQueue->push_back(logMessage);
@@ -602,7 +602,7 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
 
             this->runtimesThatSubscribedToLogSinkStream.erase(it);
             break;
-        }
+        }*/
         default:
         {
             Logger::logWarning("Middleware received unsupported control package %s", CtrlType_Name(controlPackage->control_val().ctrl_type()).c_str());
