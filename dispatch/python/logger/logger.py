@@ -38,7 +38,7 @@ class Logger:
 
 
                 # Forward the LogMessage to your log sink function
-                Logger.claid_instance.post_log_message(log_message)
+               # Logger.claid_instance.post_log_message(log_message)
 
 
     @staticmethod

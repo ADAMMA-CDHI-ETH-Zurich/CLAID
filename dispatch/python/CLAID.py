@@ -34,8 +34,6 @@ class CLAID():
         if CLAID.claid_c_lib_loaded:
             return
 
-        print("Loading CLAID lib")
-        print(type(CLAID.claid_c_lib))
         if(isinstance(CLAID.claid_c_lib, int)):
 
             # Get the current operating system
@@ -57,9 +55,7 @@ class CLAID():
             if not os.path.isfile(libname):
                 current_file_path = str(os.path.dirname(os.path.abspath(__file__)))
                 libname = os.path.join(current_file_path, "dispatch/core/libclaid_capi{}".format(platform_library_extension))
-            print("Calling loadlibrary")
             CLAID.claid_c_lib = ctypes.CDLL(libname)
-            print("Loading CLAID load library")
 
             # Required, otherwise claid_c_lib.attach_cpp_runtime will fail (same for shutdown_core etc).
             CLAID.claid_c_lib.start_core.restype = ctypes.c_void_p
