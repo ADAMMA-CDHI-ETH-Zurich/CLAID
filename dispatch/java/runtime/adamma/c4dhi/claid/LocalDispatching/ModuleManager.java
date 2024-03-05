@@ -446,7 +446,7 @@ public class ModuleManager
         // Target and source host will be filled out by the router automatically, since this is a local control message.
 
         DataPackage response = responseBuilder.build();
-        this.fromModulesChannel.add(response);
+       // this.fromModulesChannel.add(response);
     }
 
 }

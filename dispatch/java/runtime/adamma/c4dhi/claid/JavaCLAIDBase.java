@@ -168,6 +168,10 @@ public abstract class JavaCLAIDBase
 
     public static LogMessageSeverityLevel getLogSinkSeverityLevel()
     {
+        if(handle == 0)
+        {
+            return LogMessageSeverityLevel.DEBUG_VERBOSE;
+        }
         return LogMessageSeverityLevel.values()[nativeGetLogSinkSeverityLevel(handle)];
     }
 

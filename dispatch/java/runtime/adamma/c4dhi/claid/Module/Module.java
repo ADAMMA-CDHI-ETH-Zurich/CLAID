@@ -10,6 +10,7 @@ import adamma.c4dhi.claid.Module.Scheduling.ScheduledRunnable;
 import adamma.c4dhi.claid.TypeMapping.DataType;
 import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.LogMessageSeverityLevel;
+import adamma.c4dhi.claid.LogMessageEntityType;
 
 
 import java.util.ArrayList;
