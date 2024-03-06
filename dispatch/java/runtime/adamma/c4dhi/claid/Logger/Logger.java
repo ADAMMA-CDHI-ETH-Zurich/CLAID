@@ -30,7 +30,7 @@ public class Logger {
         }
 
         LogMessage.Builder logMessageBuilder = LogMessage.newBuilder();
-
+/*
         if(level.compareTo(CLAID.getLogSinkSeverityLevel()) >= 0)
         {
             // Set values for the LogMessage fields
@@ -44,7 +44,7 @@ public class Logger {
             // Build the LogMessage
             LogMessage logMessage = logMessageBuilder.build();
             CLAID.postLogMessage(logMessage);
-        }
+        }*/
     }
 
 

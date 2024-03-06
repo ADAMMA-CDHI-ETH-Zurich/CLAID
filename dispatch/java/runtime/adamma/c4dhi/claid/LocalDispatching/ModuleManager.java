@@ -167,6 +167,7 @@ public class ModuleManager
                 moduleAnnotations.put(registeredModuleClass, moduleAnnotator.getAnnotations());
             }
         }
+        Logger.logInfo("Module annotations: " + moduleAnnotations.toString());
 
 
         ModuleListResponse moduleList = this.dispatcher.getModuleList(registeredModuleClasses, moduleAnnotations);
