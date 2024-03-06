@@ -208,6 +208,16 @@ class CLAID():
                 channels.append(channel.channel)
 
         return channels
+    
+    def get_input_channel_types_of_module(self, module_annotation):
+        channel_types = dict() # str: DataPackage (where DataPackage indicates the Channel data type)
+
+        for channel in module_annotation.channel_definition:
+            if channel.target_module != "":
+                channel_types[channel.channel] = channel
+
+        return channel_types
+
 
     def get_output_channels_of_module(self, module_annotation):
         channels = list()
@@ -217,9 +227,19 @@ class CLAID():
 
         return channels
     
+    def get_output_channel_types_of_module(self, module_annotation):
+        channel_types = dict() # str: DataPackage (where DataPackage indicates the Channel data type)
+
+        for channel in module_annotation.channel_definition:
+            if channel.source_module != "":
+                channel_types[channel.channel] = channel
+
+        return channel_types
+    
     def process_runnables_blocking(self):
 
         while self.__started:
+
             scheduled_runnable = self.__main_thread_queue.get()
 
             if scheduled_runnable is None:
@@ -246,7 +266,6 @@ class CLAID():
                 if scheduled_runnable.schedule.does_runnable_have_to_be_repeated():
                     self.__main_thread_queue.put(scheduled_runnable)
 
-    
     # Allows to inject internal functions as runnables in the __main_thread_queue.
     # This can be required for certain frameworks to run on the same (main) thread as CLAID,
     # e.g. for GUI frameworks like Qt.
