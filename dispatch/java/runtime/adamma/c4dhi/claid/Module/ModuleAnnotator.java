@@ -57,6 +57,15 @@ public class ModuleAnnotator {
         return propertyHint.build();
     }
 
+    public PropertyHint makeIntegerProperty(long min, long max)
+    {
+        PropertyHint.Builder propertyHint = PropertyHint.newBuilder();
+        propertyHint.setPropertyType(PropertyType.PROPERTY_TYPE_INT);
+        propertyHint.setPropertyTypeIntMin(min);
+        propertyHint.setPropertyTypeIntMax(max);
+        return propertyHint.build();
+    }
+
     public void describeProperty(String propertyName, String propertyDescription) 
     {
         describeProperty(propertyName, propertyDescription, makeDefaultProperty());

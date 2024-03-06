@@ -56,7 +56,9 @@ public class GyroscopeCollector extends Module implements SensorEventListener
         + "The sampling frequency can be freely configured, however is subject to the limitations of the device (i.e., built-in sensor speicifications)."
         + "The GyroscopeCollector features two recording modes: \"Batched\" and \"Streaming\"\n");
 
-        annotator.describeProperty("samplingFrequency", "Frequency in Hz with which to record gyroscope data. Only decimal values allowed. Subject to physical limitations of the device and Gyroscope.");
+        annotator.describeProperty("samplingFrequency", "Frequency in Hz with which to record gyroscope data. Only decimal values allowed. Subject to physical limitations of the device and Gyroscope.",
+        makeIntegerProperty(1, 200));
+        
         annotator.describeProperty("outputMode", "Two modes are available: \"BATCHED\" and \"STREAM\"."
         + "The BATCHED Mode is the normal mode for most scenarios. In this mode, gyroscope data is aggregated and only posted to the output channel, "
         + "if the amount of samples spans 1 second (e.g., 50 samples if configured to 50Hz)."

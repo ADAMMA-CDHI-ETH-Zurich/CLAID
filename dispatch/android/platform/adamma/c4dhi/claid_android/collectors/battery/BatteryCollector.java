@@ -27,6 +27,7 @@ public class BatteryCollector extends Module
 
     public static void annotateModule(ModuleAnnotator annotator)
     {
+        annotator.setModuleCategory("DataCollection");
         annotator.setModuleDescription("The BatteryCollector allows to extract the current battery level and "
         + "charging state (i.e., charging, not charging, charging wirelessly, ...) of the device.\n"
         + "The BatteryCollector currently features one mode: Periodically.\n");

@@ -9,4 +9,7 @@ pip_package:
 	rm -fr pip_package/claid/external
 	mv pip_package/claid/setup.py pip_package/setup.py
 	cp MANIFEST.in pip_package/MANIFEST.in
-
+	cp README.md pip_package/README.md
+	cp LICENSE.txt pip_package/LICENSE.txt
+	cp NOTICES pip_package/NOTICES
+	cp -r graphics pip_package/graphics
