@@ -15,6 +15,8 @@ from module.scheduling.scheduled_runnable import ScheduledRunnable
 from module.scheduling.schedule_once import ScheduleOnce
 from dispatch.proto.claidservice_pb2 import LogMessageSeverityLevel, LogMessage, LogMessageEntityType, Runtime
 
+import time
+
 class Module(ABC):
     def __init__(self):
         self.__id = None
@@ -51,6 +53,7 @@ class Module(ABC):
             self.module_error("Initialize called twice!")
             return False
 
+        Logger.log_info("Module start called")
         self.__subscriber_publisher = subscriber_publisher
 
         self.__runnable_dispatcher = RunnableDispatcher(main_thread_runnables_queue)
@@ -75,7 +78,8 @@ class Module(ABC):
         )       
 
         while not self.__is_initialized:
-            pass
+            time.sleep(1)
+            print("sleep")
 
 
         self.__is_initializing = False
@@ -83,6 +87,7 @@ class Module(ABC):
         return True
 
     def __initialize_internal(self, properties):
+        Logger.log_info("Initialize internal called")
         self.initialize(properties)
         self.__is_initialized = True
 
@@ -155,7 +160,7 @@ class Module(ABC):
             self.__timers[name].runnable.invalidate()
 
         self.__timers[name] = runnable
-        self.__runnable_dispatcher.addRunnable(runnable)
+        self.__runnable_dispatcher.add_runnable(runnable)
 
     def unregister_periodic_function(self, name):
         if name not in self.__timers:

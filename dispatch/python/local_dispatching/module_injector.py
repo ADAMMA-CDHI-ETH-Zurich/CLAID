@@ -92,6 +92,7 @@ class ModuleInjector():
         for code_name in self.injected_modules:
             print(self.injected_modules[code_name])
             python_handle, module_names = self.injected_modules[code_name]
+            print("python handle ", python_handle)
             if python_handle is None:
                 continue
 

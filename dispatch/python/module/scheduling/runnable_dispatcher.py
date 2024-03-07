@@ -50,9 +50,9 @@ class RunnableDispatcher:
 
         if scheduled_runnable.runnable.is_valid():
             
+
             # SWitch to the main thread
             self.main_thread_runnables_queue.put(scheduled_runnable)
-            
 
             if scheduled_runnable.runnable.stop_dispatcher_after_this_runnable:
                 # No more runnables will be executed after this one!

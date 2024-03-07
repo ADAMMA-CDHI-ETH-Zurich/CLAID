@@ -38,6 +38,7 @@ class ModuleFactory:
         self.all_available_module_classes.clear()
         self.all_available_module_classes.update(self.registered_module_classes)
         self.all_available_module_classes.update(self.__module_injector.get_injected_module_classes())
+        Logger.log_info("Available instances from path " + str(self.all_available_module_classes))
 
         
     def inject_modules_from_python_file(self, base_path: str, python_module_name: str, claid_module_names : list):
@@ -46,9 +47,11 @@ class ModuleFactory:
         self.all_available_module_classes.clear()
         self.all_available_module_classes.update(self.registered_module_classes)
         self.all_available_module_classes.update(self.__module_injector.get_injected_module_classes())
-    
+        Logger.log_info("Available instances from file " + str(self.all_available_module_classes))
+
 
     def get_instance(self, class_name, module_id):
+        Logger.log_info("Available instances " + str(self.all_available_module_classes))
         if class_name in self.all_available_module_classes:
             try:
                 module = self.all_available_module_classes[class_name]()
@@ -80,6 +83,7 @@ class ModuleFactory:
         return module_class in self.all_available_module_classes
 
     def get_registered_module_classes(self):
+        Logger.log_info("Available instances " + str(self.all_available_module_classes))
         return list(self.all_available_module_classes.keys())
     
     def print_registered_modules(self):

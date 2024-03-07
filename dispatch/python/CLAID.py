@@ -20,8 +20,8 @@ from dispatch.proto.claidservice_pb2 import LogMessage, LogMessageSeverityLevel
 
 import platform
 import os
-
 import time
+import threading
 
 class CLAID():
 
@@ -101,6 +101,7 @@ class CLAID():
         self.__cpp_runtime_handle = 0
         self.__started = False
         self.__main_thread_queue = ThreadSafeChannel()
+        self.__module_manager_thread = None
 
 
 
@@ -129,8 +130,8 @@ class CLAID():
         if(self.__cpp_runtime_handle == 0):
             raise Exception("Failed to start CLAID, could not start C++ runtime")
         
-        if not self.attach_python_runtime(socket_path, module_factory):
-            raise Exception("Failed to attach Python runtime")
+        self.attach_python_runtime(socket_path, module_factory)
+           
         Logger.claid_instance = self
 
         Logger.log_info("Successfully started CLAID")
@@ -148,8 +149,13 @@ class CLAID():
         self.__module_manager = ModuleManager(self.__module_dispatcher, module_factory, self.__main_thread_queue)
         print("starting Python runtime")
 
-        return self.__module_manager.start()
-    
+        # In Python, we have to launch the ModuleManager in a separate thread, because each Module will
+        # forward all of it's runnables to the main thread. If the ModuleManager would also be called from the main thread,
+        # then it would block during module.start(), as the Modules inject a runnable with their initialize function to the main thread queue -> deadlock.
+        self.__module_manager_thread = threading.Thread(target=self.__module_manager.start)
+        self.__module_manager_thread.start()
+        print("Started ModuleManager thread")
+
     def load_new_config_test(self, config_path):
         print("Load new config 1 ", config_path)
         config_path_c = string_to_c_string(config_path)
