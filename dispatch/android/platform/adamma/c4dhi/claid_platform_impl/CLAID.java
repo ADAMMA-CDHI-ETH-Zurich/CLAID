@@ -29,6 +29,7 @@ import adamma.c4dhi.claid_android.Configuration.CLAIDSpecialPermissionsConfig;
 import adamma.c4dhi.claid_android.CLAIDServices.CLAIDService;
 import adamma.c4dhi.claid_android.Permissions.*;
 import adamma.c4dhi.claid_android.Receivers.DeviceOwnerReceiver;
+import adamma.c4dhi.claid_android.UserFeedback.TextToSpeechModule;
 import android.content.Context;
 import android.app.Application;
 
@@ -72,6 +73,10 @@ import androidx.core.app.ActivityCompat;
 import adamma.c4dhi.claid_android.collectors.battery.BatteryCollector;
 import adamma.c4dhi.claid_android.collectors.motion.AccelerometerCollector;
 import adamma.c4dhi.claid_android.collectors.motion.GyroscopeCollector;
+
+import adamma.c4dhi.claid_android.UserFeedback.NotificationModule;
+import adamma.c4dhi.claid_android.UserFeedback.TextToSpeechModule;
+
 
 public class CLAID extends JavaCLAIDBase
 {
@@ -235,6 +240,8 @@ public class CLAID extends JavaCLAIDBase
         factory.registerModule(BatteryCollector.class);
         factory.registerModule(AccelerometerCollector.class);
         factory.registerModule(GyroscopeCollector.class);
+        factory.registerModule(NotificationModule.class);
+        factory.registerModule(TextToSpeechModule.class);
 
         return factory;
     }
