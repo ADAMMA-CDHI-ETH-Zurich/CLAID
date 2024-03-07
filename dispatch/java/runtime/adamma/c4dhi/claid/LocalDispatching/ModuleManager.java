@@ -296,11 +296,20 @@ public class ModuleManager
         }
         Logger.logInfo("Checking compatibility.");
 
+    
         if(!subscriberPublisher.isDataPackageCompatibleWithChannel(dataPackage))
         {
-            Logger.logInfo("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n"
+            if(subscriberPublisher.getPayloadCaseOfChannel(channelName).name().equals(DataPackage.DataPackage.PayloadOneofCase.PAYLOADONEOF_NOT_SET.name()))
+            {
+                Logger.logError("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n"
+                + "however the Module has never subscribed to that channel (payload type is \"" + DataPackage.DataPackage.PayloadOneofCase.PAYLOADONEOF_NOT_SET + "\").");
+            }
+            else
+            {
+                Logger.logInfo("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n"
             + "however the data type of payload of the package did not match the data type of the Channel.\n"
             + "Expected payload type \"" + subscriberPublisher.getPayloadCaseOfChannel(channelName).name() + "\" but got \"" + dataPackage.getPayloadOneofCase().name());
+            }
             return;
         }
         Logger.logInfo("Data package is compatible");

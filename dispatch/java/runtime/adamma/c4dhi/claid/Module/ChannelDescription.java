@@ -153,6 +153,11 @@ public class ChannelDescription
 
     public boolean doesDataTypeOfPackageMatchChannel(DataPackage dataPackage)
     {
+        if(this.templatePackage == null)
+        {
+            return false;
+        }
+
         return dataPackage.getPayloadOneofCase() == this.templatePackage.getPayloadOneofCase(); 
     }
 
