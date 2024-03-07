@@ -294,6 +294,7 @@ public class ModuleManager
             Logger.logError("ModuleManager received DataPackage, however SubscriberPublisher is Null.");
             return;
         }
+        Logger.logInfo("Checking compatibility.");
 
         if(!subscriberPublisher.isDataPackageCompatibleWithChannel(dataPackage))
         {
@@ -302,7 +303,7 @@ public class ModuleManager
             + "Expected payload type \"" + subscriberPublisher.getPayloadCaseOfChannel(channelName).name() + "\" but got \"" + dataPackage.getPayloadOneofCase().name());
             return;
         }
-
+        Logger.logInfo("Data package is compatible");
         ArrayList<AbstractSubscriber> subscriberList = this.subscriberPublisher.getSubscriberInstancesOfModule(channelName, moduleId);
 
         if(subscriberList == null)
@@ -314,6 +315,8 @@ public class ModuleManager
 
         for(AbstractSubscriber subscriber : subscriberList)
         {
+            Logger.logInfo("Subscriber on new data " + dataPackage);
+
             subscriber.onNewData(dataPackage);
         }
     }
