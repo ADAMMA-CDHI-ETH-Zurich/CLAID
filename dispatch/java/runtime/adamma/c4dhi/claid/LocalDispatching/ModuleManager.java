@@ -299,10 +299,10 @@ public class ModuleManager
     
         if(!subscriberPublisher.isDataPackageCompatibleWithChannel(dataPackage))
         {
-            if(subscriberPublisher.getPayloadCaseOfChannel(channelName).name().equals(DataPackage.DataPackage.PayloadOneofCase.PAYLOADONEOF_NOT_SET.name()))
+            if(subscriberPublisher.getPayloadCaseOfChannel(channelName).name().equals(DataPackage.PayloadOneofCase.PAYLOADONEOF_NOT_SET.name()))
             {
                 Logger.logError("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n"
-                + "however the Module has never subscribed to that channel (payload type is \"" + DataPackage.DataPackage.PayloadOneofCase.PAYLOADONEOF_NOT_SET + "\").");
+                + "however the Module has never subscribed to that channel (payload type is \"" + DataPackage.PayloadOneofCase.PAYLOADONEOF_NOT_SET + "\").");
             }
             else
             {

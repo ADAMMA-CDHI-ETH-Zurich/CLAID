@@ -43,11 +43,11 @@ public class NotificationModule extends Module
     public void initialize(Map<String, String> initialize)
     {
         moduleInfo("NotificationModule Initialize");
-        return;/*
+      
         //new NotificationPermission().blockingRequest();
         this.notificationDataChannel = this.subscribe("NotificationText", String.class, (data) -> onNotificationRequest(data));
         context = (Context) CLAID.getContext();
-        notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);*/
+        notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     public void onNotificationRequest(ChannelData<String> data)
