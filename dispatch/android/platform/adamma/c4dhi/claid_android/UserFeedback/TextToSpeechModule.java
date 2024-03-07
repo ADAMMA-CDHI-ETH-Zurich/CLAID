@@ -64,10 +64,6 @@ public class TextToSpeechModule extends Module implements TextToSpeech.OnInitLis
         {
             return Locale.CANADA_FRENCH;
         }
-        else if (this.speechLanguage.toUpperCase().equals("GERMANY"))
-        {
-            return Locale.GERMANY;
-        }
         else if (this.speechLanguage.toUpperCase().equals("ITALY"))
         {
             return Locale.ITALY;
@@ -110,7 +106,7 @@ public class TextToSpeechModule extends Module implements TextToSpeech.OnInitLis
                     result == TextToSpeech.LANG_NOT_SUPPORTED) 
             {
                 this.initialized = false;
-                moduleError("Failed to initialize text to speech engine.");
+                moduleError("Failed to initialize text to speech engine. " + result );
                 // Handle language not supported or missing data
             } else {
                 // Text-to-Speech is ready
