@@ -31,6 +31,8 @@ import adamma.c4dhi.claid_sensor_data.AudioData;
 import adamma.c4dhi.claid_sensor_data.AudioEncoding;
 import adamma.c4dhi.claid_sensor_data.AudioChannels;
 
+import java.util.Map;
+
 
 public class MicrophoneCollector extends Module
 {
@@ -63,7 +65,7 @@ public class MicrophoneCollector extends Module
     private final String DATA_IDENTIFIER = "MicrophoneAudioData";
 
 
-    public void initialize()
+    public void initialize(Map<String, String> properties)
     {
         System.out.println("Calling init of MicrophoneCollector");
         //new MicrophonePermission().blockingRequest();

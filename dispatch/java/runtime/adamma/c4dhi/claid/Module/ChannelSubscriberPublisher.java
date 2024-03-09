@@ -141,14 +141,16 @@ public class ChannelSubscriberPublisher
 
         ChannelDescription description = this.channelDescriptions.get(channelName);
 
-        return description.doesDataTypeOfPackageMatchChannel(dataPackage);
-    }
+        boolean result =  description.doesDataTypeOfPackageMatchChannel(dataPackage);
 
+        return result;
+    }
+    
     public DataPackage.PayloadOneofCase getPayloadCaseOfChannel(final String channelName)
     {
         if(!this.channelDescriptions.containsKey(channelName))
         {
-            return null;
+            return DataPackage.PayloadOneofCase.PAYLOADONEOF_NOT_SET;
         }
 
         ChannelDescription description = this.channelDescriptions.get(channelName);

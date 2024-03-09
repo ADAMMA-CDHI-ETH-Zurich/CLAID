@@ -294,15 +294,25 @@ public class ModuleManager
             Logger.logError("ModuleManager received DataPackage, however SubscriberPublisher is Null.");
             return;
         }
+        Logger.logInfo("Checking compatibility.");
 
+    
         if(!subscriberPublisher.isDataPackageCompatibleWithChannel(dataPackage))
         {
-            Logger.logInfo("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n"
+            if(subscriberPublisher.getPayloadCaseOfChannel(channelName).name().equals(DataPackage.PayloadOneofCase.PAYLOADONEOF_NOT_SET.name()))
+            {
+                Logger.logError("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n"
+                + "however the Module has never subscribed to that channel (payload type is \"" + DataPackage.PayloadOneofCase.PAYLOADONEOF_NOT_SET + "\").");
+            }
+            else
+            {
+                Logger.logInfo("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n"
             + "however the data type of payload of the package did not match the data type of the Channel.\n"
             + "Expected payload type \"" + subscriberPublisher.getPayloadCaseOfChannel(channelName).name() + "\" but got \"" + dataPackage.getPayloadOneofCase().name());
+            }
             return;
         }
-
+        Logger.logInfo("Data package is compatible");
         ArrayList<AbstractSubscriber> subscriberList = this.subscriberPublisher.getSubscriberInstancesOfModule(channelName, moduleId);
 
         if(subscriberList == null)
@@ -314,6 +324,8 @@ public class ModuleManager
 
         for(AbstractSubscriber subscriber : subscriberList)
         {
+            Logger.logInfo("Subscriber on new data " + dataPackage);
+
             subscriber.onNewData(dataPackage);
         }
     }

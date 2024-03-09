@@ -155,10 +155,7 @@ public abstract class Module
         this.isInitialized = true;
     }
 
-    protected void initialize(Map<String, String> properties)
-    {
-        System.out.println("Module base initialize");
-    }
+    protected abstract void initialize(Map<String, String> properties);
 
     private void terminateInternal()
     {

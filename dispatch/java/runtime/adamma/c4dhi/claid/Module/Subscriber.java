@@ -50,8 +50,8 @@ public class Subscriber<T extends Object> extends AbstractSubscriber
         // Convert Instant to LocalDateTime
         LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
 
-
         ChannelData channelData = new ChannelData(value, dateTime, data.getSourceUserToken());
+
         this.invokeCallback(channelData);
 
         /*if(dataType.isInstance(data))
