@@ -97,11 +97,9 @@ public class RunnableDispatcher
 
         if (scheduledRunnable.isValid()) 
         {
-            Logger.logInfo("Running runnable");
 
             scheduledRunnable.run();
             
-            Logger.logInfo("Done running runnalbe");
 
 
             /*if (scheduledRunnable.runnable.stopDispatcherAfterThisRunnable) {
@@ -238,7 +236,6 @@ public class RunnableDispatcher
         while (running) {
             do {
                 writeToLogFile("Scheduler woke up.");
-                Logger.logInfo("Scheduling " );
                 // While we process runnables, it is possible
                 // that another runnable becomes due in the meantime.
                 // Hence, we repeat this loop until there are no more
@@ -256,6 +253,7 @@ public class RunnableDispatcher
     private FileOutputStream fos = null;
     void writeToLogFile(String data) 
     {
+        /*
         try {
 
             if(fos == null)
@@ -278,7 +276,7 @@ public class RunnableDispatcher
             // Close the file output stream
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        } */
     }
 
     private static String getCurrentDateTime() {

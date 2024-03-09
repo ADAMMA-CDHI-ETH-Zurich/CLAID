@@ -130,14 +130,13 @@ class CLAID():
         if(self.__cpp_runtime_handle == 0):
             raise Exception("Failed to start CLAID, could not start C++ runtime")
         
+        Logger.claid_instance = self
+        Logger.log_info("Successfully started CLAID")
         self.attach_python_runtime(socket_path, module_factory)
            
-        Logger.claid_instance = self
 
-        Logger.log_info("Successfully started CLAID")
 
         # This will block indefinitely and wakes up when there are runnables to execute
-        self.process_runnables_blocking()
 
     def start(self, config_file_path, host_id, user_id, device_id, module_factory):
         return self.startCustomSocket("unix:///tmp/claid_socket.grpc", config_file_path, host_id, user_id, device_id, module_factory)
@@ -155,6 +154,9 @@ class CLAID():
         self.__module_manager_thread = threading.Thread(target=self.__module_manager.start)
         self.__module_manager_thread.start()
         print("Started ModuleManager thread")
+
+        self.__started = True
+        self.process_runnables_blocking()
 
     def load_new_config_test(self, config_path):
         print("Load new config 1 ", config_path)
