@@ -348,7 +348,7 @@ class ModuleManager():
 
             module_injections[module_injection.module_file].append(module_injection.module_name)
 
-
+        print("Module injections: " + str(module_injections))
         for entry in module_injections:
             if not self.__module_factory.inject_claid_modules_from_python_file(payload.payload_data_path, entry, module_injections[entry]):
                 Logger.log_error("Failed to inject modules {}".format(module_injections[entry]))
