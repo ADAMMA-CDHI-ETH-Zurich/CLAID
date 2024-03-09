@@ -38,6 +38,22 @@ class ModuleAnnotator:
         property_hint.property_type = PropertyType.PROPERTY_TYPE_ENUM
         property_hint.enum_values = enum_values
         return property_hint
+    
+
+    def make_integer_property(self, min, max):
+        property_hint = PropertyHint
+        property_hint.property_type = PropertyType.PROPERTY_TYPE_INT
+        property_hint.property_type_int_min = min
+        property_hint.property_type_int_max = max
+        
+        return property_hint
+
+
+    def make_path_property(self):
+        property_hint = PropertyHint
+        property_hint.property_type = PropertyType.PROPERTY_TYPE_PATH
+        
+        return property_hint
 
     def describe_property(self, property_name: str, property_description: str, property_hint : PropertyHint = None):
         self.annotation.properties.append(property_name)

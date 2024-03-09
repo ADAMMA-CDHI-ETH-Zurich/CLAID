@@ -57,6 +57,8 @@ namespace claid
 
             PropertyHint makeDefaultProperty();
             PropertyHint makeEnumProperty(const std::vector<std::string>& enumValues);
+            PropertyHint makeIntegerProperty(int64_t min, int64_t max);
+            PropertyHint makePathProperty();
 
             void describeProperty(const std::string& propertyName, const std::string& propertyDescription);
             void describeProperty(const std::string& propertyName, const std::string& propertyDescription, PropertyHint propertyHint);

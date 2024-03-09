@@ -27,14 +27,12 @@ namespace claid
     {
         PropertyHelper properties(propertiesMap);
 
-        std::string what;
         std::string storagePath;
         std::string fileNameFormat;
         std::string fileType;
         bool overrideExistingFiles;
 
 
-        properties.getProperty("what", what);
         properties.getProperty("storagePath", storagePath);
         properties.getProperty("fileNameFormat", fileNameFormat);
         properties.getProperty("fileType", fileType);
@@ -52,13 +50,13 @@ namespace claid
         }
 
 
-        absl::Status status = this->fileSaver.initialize(what, storagePath, fileNameFormat, fileType, overrideExistingFiles);
+        absl::Status status = this->fileSaver.initialize("DataChannel", storagePath, fileNameFormat, fileType, overrideExistingFiles);
         if(!status.ok())
         {
             this->moduleFatal(status);
         }
         Logger::logInfo("DataChannel subscribe");
-        this->dataChannel = this->subscribe(what, &DataSaverModule::onData, this);
+        this->dataChannel = this->subscribe("DataChannel", &DataSaverModule::onData, this);
     }
 
     void DataSaverModule::onData(ChannelData<AnyProtoType> data)

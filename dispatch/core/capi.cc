@@ -6,6 +6,10 @@
 
 #include "dispatch/core/CLAID.hh"
 
+#include "dispatch/proto/sensor_data_types.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
+
+
 extern "C"
 {
 
@@ -204,5 +208,40 @@ int get_log_sink_severity_level(void* handle)
     return middleWare->getLogSinkSeverityLevel();
 }
 
+// Make sure all sensor data types are included.
+// URGENT TODO: Fix bazel not linking in all protobuf types from a cc_proto_library.
+// Possibly related to https://github.com/bazelbuild/bazel/issues/18459
 
+// Instantiate AudioData
+claid::AudioData audioData;
+
+// Instantiate AccelerationUnitValue
+claid::AccelerationUnitValue accelerationUnitValue;
+
+// Instantiate ActivityName
+claid::ActivityName activityName;
+
+// Instantiate AccelerationSample
+claid::AccelerationSample accelerationSample;
+
+// Instantiate AccelerationData
+claid::AccelerationData accelerationData;
+
+// Instantiate GyroscopeSample
+claid::GyroscopeSample gyroscopeSample;
+
+// Instantiate GyroscopeData
+claid::GyroscopeData gyroscopeData;
+
+// Instantiate HeartRateSample
+claid::HeartRateSample heartRateSample;
+
+// Instantiate HeartRateData
+claid::HeartRateData heartRateData;
+
+// Instantiate BatterySample
+claid::BatterySample batterySample;
+
+// Instantiate BatteryData
+claid::BatteryData batteryData;
 }

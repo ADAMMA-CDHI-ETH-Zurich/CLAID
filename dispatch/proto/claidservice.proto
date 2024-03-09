@@ -258,6 +258,7 @@ enum PropertyType
   PROPERTY_TYPE_DEFAULT = 0; // property type not further specified (i.e., input text in the CLAID designer).
   PROPERTY_TYPE_ENUM = 1;
   PROPERTY_TYPE_INT = 2;
+  PROPERTY_TYPE_PATH = 3;
 };
 
 message PropertyHint

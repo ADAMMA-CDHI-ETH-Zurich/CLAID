@@ -36,6 +36,14 @@ namespace claid {
         return propertyHint;
     }
 
+    PropertyHint ModuleAnnotator::makePathProperty()
+    {
+        PropertyHint propertyHint;
+        propertyHint.set_property_type(PropertyType::PROPERTY_TYPE_PATH);
+
+        return propertyHint;
+    }
+
     void ModuleAnnotator::describeProperty(const std::string& propertyName, const std::string& propertyDescription)
     {
         this->describeProperty(propertyName, propertyDescription, makeDefaultProperty());

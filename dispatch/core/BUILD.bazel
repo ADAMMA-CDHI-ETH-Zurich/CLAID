@@ -14,6 +14,8 @@ cc_binary(
     ],
     deps = [
         ":capi",
+        "//dispatch/proto:claidservice_cc_proto",
+        "//dispatch/proto:claidservice_cc_grpc",
     ],
 )
 
@@ -31,6 +33,8 @@ cc_library(
         "CLAID.hh"]),
     deps = [
         ":CLAID",
+         "//dispatch/proto:claidservice_cc_proto",
+        "//dispatch/proto:claidservice_cc_grpc",
     ],
     linkstatic = True,   # only create a static lib
     alwayslink = True,   # include everything in dependents
@@ -71,6 +75,8 @@ cc_library(
         ":cpp_modules",
         "@com_google_protobuf//:protobuf",
     ],
+
+
 )
 
 
@@ -97,6 +103,8 @@ cc_library(
         ":logger",
         ":local_dispatching",
     ],
+   
+
 )
 
 cc_library(
@@ -116,6 +124,7 @@ cc_library(
         "//dispatch/proto:claidservice_cc_proto",
         "//dispatch/proto:claidservice_cc_grpc",
     ],
+
 )
 
 cc_library(
@@ -136,6 +145,7 @@ cc_library(
         "//dispatch/proto:claidservice_cc_proto",
         "//dispatch/proto:claidservice_cc_grpc",
     ],
+
 )
 
 cc_library(
@@ -161,6 +171,9 @@ cc_library(
         "//dispatch/proto:claidservice_cc_proto",
         "//dispatch/proto:claidservice_cc_grpc",
     ],
+    linkstatic = True,   # only create a static lib
+    alwayslink = True,   # include everything in dependents
+
 )
 
 
@@ -173,6 +186,7 @@ cc_library(
         "@com_google_protobuf//:protobuf",
         ":logger",
     ],
+
 )
 
 cc_library(
@@ -189,6 +203,8 @@ cc_library(
         "//dispatch/proto:claidservice_cc_proto",
         "//dispatch/proto:claidservice_cc_grpc",
     ],
+
+
 )
 
 cc_library(
@@ -198,7 +214,9 @@ cc_library(
     deps = [
         "//dispatch/proto:claidservice_cc_proto",
         "//dispatch/proto:claidservice_cc_grpc"
-    ]
+    ],
+  
+
 )
 
 cc_library(
@@ -210,6 +228,7 @@ cc_library(
         "//dispatch/proto:claidservice_cc_proto",
         "//dispatch/proto:claidservice_cc_grpc"
     ],
-    # linkstatic = True,   # only create a static lib
-    # alwayslink = True,   # include everything in dependents
+    linkstatic = True,   # only create a static lib
+    alwayslink = True,   # include everything in dependents
+
 )

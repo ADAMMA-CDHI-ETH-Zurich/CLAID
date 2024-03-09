@@ -58,7 +58,7 @@ namespace claid
 
         std::string channelName = this->what;
         claid::StringUtils::stringReplaceAll(channelName, "/", "_");
-        claid::StringUtils::stringReplaceAll(this->storagePath, "\%channel_name", channelName);
+        // claid::StringUtils::stringReplaceAll(this->storagePath, "\%channel_name", channelName);
         
 
         absl::Status status = this->createStorageFolder(Path(this->storagePath));

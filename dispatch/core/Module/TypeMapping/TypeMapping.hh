@@ -273,6 +273,17 @@ namespace claid {
                             "This message is unknown to the current instance of CLAID. This might happen, if the message was sent by a remotely "
                             "connected instanceof CLAID, which has implemented a new Protobuf message. Make sure that both, the current and remotely connected instance "
                             "of CLAID know the same protobuf types.", messageType.c_str());
+                     
+                        // const google::protobuf::DescriptorPool* pool = google::protobuf::DescriptorPool::generated_pool();
+                        // // Get all file descriptors in the pool
+                        // const google::protobuf::DescriptorPool::DescriptorMap& descriptors = pool->internal_generated_pool().
+                        // Logger::logError("Registered protobuf classes are: ");
+                        // // Iterate through file descriptors
+                        // for (const auto& entry : descriptors) {
+                        //     const google::protobuf::Descriptor* descriptor = entry.second;
+                        //     std::cout << "Full Name: " << descriptor->full_name() << std::endl;
+                        // }
+
                         throw std::invalid_argument("ProtoCodec.decode failed for AnyProtoType");
                     }
 

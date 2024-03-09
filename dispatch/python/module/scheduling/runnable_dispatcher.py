@@ -32,7 +32,6 @@ class RunnableDispatcher:
         # Hence, we will wait forever and wake up if a reschedule is required.
         wait_time_in_seconds = float(self.get_wait_duration_until_next_runnable_is_due() / 1000)
 
-        Logger.log_info("Wait until runnable is due")
         # The return value of wait_for can be used to determine whether the wait exited because time passed (False),
         # or because the predicate (self.reschedule_required or self.stopped) evaluates to True (True).
         # However, we are not interested in distinguishing the two cases.
@@ -42,7 +41,6 @@ class RunnableDispatcher:
             self.condition_variable.wait_for(
                 lambda: self.reschedule_required or self.stopped, wait_time_in_seconds
             )
-        Logger.log_info("Woke up in python scheduler")
 
     def process_runnable(self, scheduled_runnable):
         if self.stopped:

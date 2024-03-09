@@ -79,7 +79,6 @@ class Module(ABC):
 
         while not self.__is_initialized:
             time.sleep(1)
-            print("sleep")
 
 
         self.__is_initializing = False
@@ -146,7 +145,7 @@ class Module(ABC):
         self.__runnable_dispatcher.add_runnable(runnable)
         Logger.log_info(f"Registered periodic runnable {name}")
 
-    def register_scheduled_function(self, name, start_time, function):
+    def register_scheduled_function(self, name, function, start_time):
         if start_time < datetime.now():
             self.module_warning(f"Failed to schedule function \"{name}\" at time {start_time.strftime('%d.%m.%y - %H:%M:%S')}. "
                                f"The time is in the past. It is now: {datetime.now().strftime('%d.%m.%y - %H:%M:%S')}")
