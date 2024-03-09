@@ -154,7 +154,7 @@ class CLAID():
         self.__module_manager_thread = threading.Thread(target=self.__module_manager.start)
         self.__module_manager_thread.start()
         print("Started ModuleManager thread")
-
+        self.__module_factory = module_factory
         self.__started = True
         self.process_runnables_blocking()
 
@@ -308,6 +308,10 @@ class CLAID():
     def register_on_disconnected_from_server_callback(self, callback):
         self.__module_manager.register_on_disconnected_from_server_callback(callback)
 
+    def upload_config_to_host_with_payload(self, host_name: str, config, config_payload):
+        self.__module_manager.upload_config_to_host_with_payload(host_name, config, config_payload)
+
+
     def upload_config_to_host(self, host_name: str, config):
         self.__module_manager.upload_config_to_host(host_name, config)
 
@@ -336,3 +340,6 @@ class CLAID():
 
     def unsubscribe_log_sink_log_messages(self):
         self.__module_manager.unsubscribe_log_sink_log_messages()
+
+    def get_module_factory(self):
+        return self.__module_factory

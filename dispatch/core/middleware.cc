@@ -1005,7 +1005,7 @@ void MiddleWare::handleUploadConfigAndPayloadMessage()
         }
     }
 
-    notifyAllRuntimesAboutNewPayload();
+    notifyAllRuntimesAboutNewPayload(payload);
     Configuration newConfig(payload.config());
     absl::Status status = loadNewConfig(newConfig);
     if(!status.ok())
@@ -1053,7 +1053,7 @@ bool MiddleWare::storePayload(const ConfigUploadPayload& payload)
     return true;
 }
 
-void MiddleWare::notifyAllRuntimesAboutNewPayload()
+void MiddleWare::notifyAllRuntimesAboutNewPayload(const ConfigUploadPayload& payload)
 {
     std::shared_ptr<DataPackage> package = std::make_shared<DataPackage>();
     ControlPackage& ctrlPackage = *package->mutable_control_val();
@@ -1061,6 +1061,12 @@ void MiddleWare::notifyAllRuntimesAboutNewPayload()
     ctrlPackage.set_ctrl_type(CtrlType::CTRL_ON_NEW_CONFIG_PAYLOAD_DATA);
     package->set_source_host(this->hostId);
     package->set_target_host(this->hostId);
+
+    ConfigUploadPayload& payloadCopy = *ctrlPackage.mutable_config_upload_payload();
+    payloadCopy = payload;
+    payloadCopy.set_payload_data_path(this->payloadDataPath);
+
+
     this->forwardControlPackageToAllRuntimes(package);
     Logger::logInfo("Forwarding CTRL_ON_NEW_CONFIG_PAYLOAD_DATA package to all local runtimes");
 }

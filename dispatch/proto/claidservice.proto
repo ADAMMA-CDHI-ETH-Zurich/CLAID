@@ -279,6 +279,9 @@ message ModuleAnnotation
   repeated PropertyHint property_hints = 5;
   repeated DataPackage channel_definition = 6;
   repeated string channel_description = 7;
+  bool is_injectable = 8;
+  
+  repeated string file_dependencies = 9;
 }
 
 

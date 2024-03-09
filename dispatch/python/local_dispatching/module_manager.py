@@ -335,12 +335,14 @@ class ModuleManager():
 
     def inject_modules_from_config_upload_payload(self, payload):
 
+        print("Injecting modules from payload: ", payload.modules_to_inject)
         module_injections = dict()
 
         for module_injection in payload.modules_to_inject:
             if module_injection.runtime != Runtime.RUNTIME_PYTHON:
                 continue
 
+            print("Checking for module injections")
             if module_injection.module_file not in module_injections:
                 module_injections[module_injection.module_file] = list()
 
@@ -369,6 +371,11 @@ class ModuleManager():
             callback()
 
     def upload_config_to_host(self, host_name: str, config: CLAIDConfig):
+        
+        self.upload_config_to_host_with_payload(host_name, config, ConfigUploadPayload())
+
+
+    def upload_config_to_host_with_payload(self, host_name: str, config: CLAIDConfig, config_payload: ConfigUploadPayload):
         package = DataPackage()
         package.target_host = host_name
         # package.source_host = ... will be set by middleware
@@ -377,7 +384,6 @@ class ModuleManager():
         ctrl_package.ctrl_type = CtrlType.CTRL_UPLOAD_CONFIG_AND_DATA
         ctrl_package.runtime = Runtime.RUNTIME_PYTHON
 
-        config_payload = ConfigUploadPayload()
         config_payload.config.CopyFrom(config)
         ctrl_package.config_upload_payload.CopyFrom(config_payload)
    

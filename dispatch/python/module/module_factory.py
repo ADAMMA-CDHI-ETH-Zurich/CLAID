@@ -93,3 +93,12 @@ class ModuleFactory:
         Logger.log_info("Registered Module classes: ")
         for key in self.all_available_module_classes:
             Logger.log_info(key)
+
+    def get_path_to_python_file_of_module(self, module_type):
+
+        if not self.is_module_class_registered(module_type):
+            return None
+        
+        import inspect
+        clz = self.all_available_module_classes[module_type]
+        return inspect.getfile(clz)

@@ -169,6 +169,7 @@ const char* get_device_id(void* handle) {
     return "";
 }
 
+
 __attribute__((visibility("default"))) __attribute__((used))
 void enable_designer_mode(void* handle)
 {

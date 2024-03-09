@@ -75,5 +75,11 @@ class ModuleAnnotator:
         self.annotation.channel_definition.append(example_package)
         self.annotation.channel_description.append(channel_description)
 
+    def make_injectable(self):
+        self.annotation.is_injectable = True
+
+    def add_dependency(self, dependency: str):
+        self.annotation.file_dependencies.append(dependency)
+
     def get_annotations(self) -> ModuleAnnotation:
         return self.annotation

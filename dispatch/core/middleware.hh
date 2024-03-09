@@ -168,7 +168,7 @@ namespace claid
 
             void handleUploadConfigAndPayloadMessage();
             bool storePayload(const ConfigUploadPayload& payload);
-            void notifyAllRuntimesAboutNewPayload();
+            void notifyAllRuntimesAboutNewPayload(const ConfigUploadPayload& payload);
     };
 }
 
