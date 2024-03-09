@@ -49,8 +49,7 @@ cc_library(
     deps = [
         ":CLAID",
     ],
-    linkstatic = True,   # only create a static lib
-    alwayslink = True,   # include everything in dependents
+
 )
 
 cc_library(
@@ -171,8 +170,7 @@ cc_library(
         "//dispatch/proto:claidservice_cc_proto",
         "//dispatch/proto:claidservice_cc_grpc",
     ],
-    linkstatic = True,   # only create a static lib
-    alwayslink = True,   # include everything in dependents
+
 
 )
 

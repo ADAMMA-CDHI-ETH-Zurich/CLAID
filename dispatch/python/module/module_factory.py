@@ -1,9 +1,6 @@
 from claid.module.module import Module
 from logger.logger import Logger 
 
-from data_collection.plot.acceleration_view import AccelerationView
-from data_collection.plot.gyroscope_view import GyroscopeView
-
 from local_dispatching.module_injector import ModuleInjector
 
 class ModuleFactory:
@@ -13,8 +10,7 @@ class ModuleFactory:
         # Concatenation of registered and injected modules
         self.all_available_module_classes = {} 
 
-        self.register_module(AccelerationView)
-        self.register_module(GyroscopeView)
+        
 
         self.__module_injector = ModuleInjector()
 
@@ -85,6 +81,13 @@ class ModuleFactory:
     def get_registered_module_classes(self):
         Logger.log_info("Available instances " + str(self.all_available_module_classes))
         return list(self.all_available_module_classes.keys())
+
+    def register_default_modules(self):
+
+        from data_collection.plot.acceleration_view import AccelerationView
+        from data_collection.plot.gyroscope_view import GyroscopeView
+        self.register_module(AccelerationView)
+        self.register_module(GyroscopeView)
     
     def print_registered_modules(self):
         Logger.log_info("Registered Module classes: ")

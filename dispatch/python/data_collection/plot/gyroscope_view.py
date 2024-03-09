@@ -4,7 +4,7 @@ from datetime import datetime
 
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use('QtAgg')
+# matplotlib.use('QtAgg')
 from matplotlib.animation import FuncAnimation
 import numpy as np
 

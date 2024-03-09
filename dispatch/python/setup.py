@@ -6,7 +6,7 @@ long_description = (this_directory / "README.md").read_text()
 setup(
     name='claid',
     version='0.0.4',    
-    description='CLAID Pyathon package (PyCLAID)',
+    description='CLAID Python package (PyCLAID)',
     url='https://claid.ch',
     author='Patrick Langer',
     author_email='planger@ethz.ch',
@@ -18,9 +18,6 @@ setup(
     install_requires=['protobuf==4.25.3',
                       'grpcio==1.62.0',
                       'numpy',      
-                      'matplotlib',      
-                      'opencv-python',
-                      'pyqt5==5.15.10'    
                       ],
 
     classifiers=[

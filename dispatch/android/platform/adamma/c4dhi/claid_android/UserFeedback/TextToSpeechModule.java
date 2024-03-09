@@ -28,7 +28,7 @@ public class TextToSpeechModule extends Module implements TextToSpeech.OnInitLis
 
 
         annotator.describeProperty("speechLanguage", "Language used by the Speech engine. Defines intonation and pronounciation of individual words.",
-                annotator.makeEnumProperty(new String[]{"US",  "CANADA", "CANADA_FRENCH","GERMANY", "ITALY", "JAPAN", "CHINA"}));
+                annotator.makeEnumProperty(new String[]{"US",  "CANADA", "CANADA_FRENCH", "ITALY", "JAPAN", "CHINA"}));
 
         annotator.describeSubscribeChannel("TextToSpeak", String.class, "Channel with incoming text to be spoken by the Text to Speak engine.");
     }
@@ -79,7 +79,7 @@ public class TextToSpeechModule extends Module implements TextToSpeech.OnInitLis
         else
         {
             moduleError("Invalid property \"speechLanguage\". Language \"" + this.speechLanguage + "\"" +
-                    " is not supported. Expected one of [\"US\",  \"CANADA\", \"CANADA_FRENCH\",\"GERMANY\", \"ITALY\", \"JAPAN\", \"CHINA\"].");
+                    " is not supported. Expected one of [\"US\",  \"CANADA\", \"CANADA_FRENCH\", \"ITALY\", \"JAPAN\", \"CHINA\"].");
             return null;
         }
     }
