@@ -14,7 +14,6 @@ class ThreadSafeChannel():
         with self.lock:
             self.closed = True
             self.condition.notify_all()
-            print("closed queue")
 
     def is_closed(self):
         with self.lock:

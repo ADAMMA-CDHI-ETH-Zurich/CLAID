@@ -33,4 +33,12 @@ public class CLAID extends JavaCLAIDBase
     {
         return factory;
     }
+
+    // In plain Java, we simply stop the Middleware.
+    // In Android, we also might have to stop the services, so this might be implemented differently
+    public static void shutdown()
+    {
+        shutdownInternal();   
+    }
+
 }

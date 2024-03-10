@@ -71,6 +71,7 @@ import android.Manifest;
 import androidx.core.app.ActivityCompat;
 
 import adamma.c4dhi.claid_android.collectors.battery.BatteryCollector;
+import adamma.c4dhi.claid_android.collectors.heartrate.HeartRateCollector;
 import adamma.c4dhi.claid_android.collectors.motion.AccelerometerCollector;
 import adamma.c4dhi.claid_android.collectors.motion.GyroscopeCollector;
 
@@ -242,6 +243,7 @@ public class CLAID extends JavaCLAIDBase
         factory.registerModule(GyroscopeCollector.class);
         factory.registerModule(NotificationModule.class);
         factory.registerModule(TextToSpeechModule.class);
+        factory.registerModule(HeartRateCollector.class);
 
         return factory;
     }
@@ -348,6 +350,18 @@ public class CLAID extends JavaCLAIDBase
             System.exit(0);
         }
     }
+
+    // In plain Java, we simply stop the Middleware.
+    // In Android, we also might have to stop the services, so this might be implemented differently
+    public static void shutdown()
+    {
+        shutdownInternal();   
+        if(ServiceManager.isServiceRunning())
+        {
+            ServiceManager.stopService(CLAID.getContext());
+        }
+    }
+
 
     private static boolean grantSpecialPermissions(Context context, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
     {

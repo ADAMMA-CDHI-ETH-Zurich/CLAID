@@ -77,16 +77,17 @@ enum CtrlType {
   CTRL_DISCONNECTED_FROM_REMOTE_SERVER  = 10;
   CTRL_UNLOAD_MODULES                   = 11;
   CTRL_UNLOAD_MODULES_DONE              = 12;
-  CTRL_RESTART_RUNTIME                  = 13;
+  CTRL_RESTART_RUNTIME                  = 13; 
   CTRL_RESTART_RUNTIME_DONE             = 14;
-  CTRL_REQUEST_MODULE_ANNOTATIONS       = 15;
-  CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE            = 16;
-  CTRL_UPLOAD_CONFIG_AND_DATA                         = 17; // Will be received by the middleware (not forwarded to the Runtimes). Can be used to load a new config into a host alongside with additional data (model files, python code to inject etc.). Requires designer_mode in CLAIDConfig to be true.
-  CTRL_ON_NEW_CONFIG_PAYLOAD_DATA                     = 18; // Will be sent by the middleware to all local Runtimes after the Middleware received a package of type CTRL_UPLOAD_CONFIG_AND_DATA. Informs the Runtimes that new payloads are available.
-  CTRL_LOCAL_LOG_MESSAGE                              = 19; // Can be used by the individual runtimes connected to the middleware to forward log messages to the middleware, which might forward it to the log sink host.
-  CTRL_LOG_SINK_LOG_MESSAGE_STREAM                    = 20; // Can be used by CLAID instances to stream log messages to the log sink host. Might be send out by the middleware when a CTRL_LOCAL_LOG_MESSAGE was received by any local runtime.
-  CTRL_SUBSCRIBE_TO_LOG_SINK_LOG_MESSAGE_STREAM       = 21; // Can be used by local Runtimes to subscribe to the log sink log messages stream. Only works if the current host is the log sink host.
-  CTRL_UNSUBSCRIBE_FROM_LOG_SINK_LOG_MESSAGE_STREAM   = 22; // Can be used by local Runtimes to unsubscribe from the log sink log messages stream. 
+  CTRL_STOP_RUNTIME                     = 15; // Stops a runtime.
+  CTRL_REQUEST_MODULE_ANNOTATIONS       = 16;
+  CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE            = 17;
+  CTRL_UPLOAD_CONFIG_AND_DATA                         = 18; // Will be received by the middleware (not forwarded to the Runtimes). Can be used to load a new config into a host alongside with additional data (model files, python code to inject etc.). Requires designer_mode in CLAIDConfig to be true.
+  CTRL_ON_NEW_CONFIG_PAYLOAD_DATA                     = 19; // Will be sent by the middleware to all local Runtimes after the Middleware received a package of type CTRL_UPLOAD_CONFIG_AND_DATA. Informs the Runtimes that new payloads are available.
+  CTRL_LOCAL_LOG_MESSAGE                              = 20; // Can be used by the individual runtimes connected to the middleware to forward log messages to the middleware, which might forward it to the log sink host.
+  CTRL_LOG_SINK_LOG_MESSAGE_STREAM                    = 21; // Can be used by CLAID instances to stream log messages to the log sink host. Might be send out by the middleware when a CTRL_LOCAL_LOG_MESSAGE was received by any local runtime.
+  CTRL_SUBSCRIBE_TO_LOG_SINK_LOG_MESSAGE_STREAM       = 22; // Can be used by local Runtimes to subscribe to the log sink log messages stream. Only works if the current host is the log sink host.
+  CTRL_UNSUBSCRIBE_FROM_LOG_SINK_LOG_MESSAGE_STREAM   = 23; // Can be used by local Runtimes to unsubscribe from the log sink log messages stream. 
   //CTRL_ADD_MODULE                         = 11; // Can be used to add a new Module at runtime (requires Module name, properties, channels). This package will be forwarded by the LocalRouter to the Middleware that can handle this Module.
   //CTRL_REMOVE_MODULE                      = 12; // Can be used to remove a Module at runtime.
   //CTRL_ADD_MODULE_SUCCESS                 = 13; // Sent as response to CTRL_ADD_MODULE the Module was added successfully.
@@ -199,6 +200,7 @@ message ModuleListResponse {
   }
 
   repeated ModuleDescriptor descriptors = 1;
+  LogMessageSeverityLevel log_severity_level_for_host = 2;
 }
 
 // Sent by the client after the modules have been instantiated

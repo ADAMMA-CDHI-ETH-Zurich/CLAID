@@ -104,6 +104,7 @@ class ModuleTable {
 
     bool lookupOutputConnectionForChannelOfModule(const std::string& sourceModule, const std::string& channelName, std::string& connectionName) const;
 
+
   private:
     void augmentFieldValues(claidservice::DataPackage& pkt) const;
     ChannelEntry* findChannel(const std::string& channelId);

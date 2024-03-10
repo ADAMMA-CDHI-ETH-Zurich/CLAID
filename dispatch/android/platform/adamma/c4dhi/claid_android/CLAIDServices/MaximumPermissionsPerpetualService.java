@@ -50,7 +50,7 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
     private static final String CLASS_TAG = MaximumPermissionsPerpetualService.class.getName();
     public static boolean isRunning = false;
     public static final String CHANNEL_ID = "MaximumPermissionsPerpetualServiceChannel";
-
+    public static final String ACTION_STOP_SERVICE = "adamma.c4dhi.org.claid.STOP_SERVICE";
 
     @Override
     public void onCreate()
@@ -264,4 +264,6 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
         
         return true;
     }
+
+   
 }

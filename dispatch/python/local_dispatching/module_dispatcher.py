@@ -61,7 +61,6 @@ class ModuleDispatcher:
     def init_runtime(self, channel_example_packages):
         init_runtime_request = InitRuntimeRequest()
 
-        print("example packages")
         print(channel_example_packages)
         for module_id in channel_example_packages:
             channel_packages = channel_example_packages[module_id]
@@ -99,7 +98,6 @@ class ModuleDispatcher:
 
         while self.__running:
             data = self.__to_middleware_queue.get()
-            print("Python to middleware queue got: " + str(data))
             if not data is None:
                 yield data
             elif not self.__running:
@@ -109,10 +107,8 @@ class ModuleDispatcher:
     def send_receive_packages(self):
 
         self.__running = True
-        print("Send receive packages")
         self.__from_middleware_queue = self.stub.SendReceivePackages(self.to_middleware_queue_get())
 
-        print("")
         if self.__to_middleware_queue is None:
             Logger.log_error("Failed to initialize streaming to/from middleware: stub.sendReceivePackages return value is None.")
             return False

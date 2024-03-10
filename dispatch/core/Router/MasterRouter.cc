@@ -123,7 +123,7 @@ namespace claid
                 std::stringstream ss;
                 ss << status;
                 this->lastError = status;
-                Logger::logWarning("MasterRouter: Failed to route on channel \"%s\" package, got error: %s", package->channel().c_str(), ss.str().c_str());
+                Logger::logInfo("MasterRouter: Failed to route on channel \"%s\" package, got error: %s", package->channel().c_str(), ss.str().c_str());
                 continue;
             }
         }

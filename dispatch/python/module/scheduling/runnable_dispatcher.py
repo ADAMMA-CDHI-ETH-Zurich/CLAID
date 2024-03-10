@@ -55,7 +55,7 @@ class RunnableDispatcher:
             if scheduled_runnable.runnable.stop_dispatcher_after_this_runnable:
                 # No more runnables will be executed after this one!
                 self.stop()
-                print("STOPPED DISPATCHER!")
+                Logger.log_info("STOPPED DISPATCHER!")
                 return
 
             if scheduled_runnable.schedule.does_runnable_have_to_be_repeated():

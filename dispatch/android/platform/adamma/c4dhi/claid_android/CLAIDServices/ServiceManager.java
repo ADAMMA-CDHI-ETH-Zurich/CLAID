@@ -15,6 +15,7 @@ import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 public class ServiceManager
@@ -135,6 +136,16 @@ public class ServiceManager
         return description;
     }
 
+    public static void deleteServiceRestartDescription(Context context)
+    {
+        final String restartDescriptionPath = CLAID.getAppDataDirectory(context) + "/" + "claid_service_restart_description.dat";
+        File description = new File(restartDescriptionPath);
+        if(description.exists() && description.isFile())
+        {
+            description.delete();
+        }
+    }
+
     public static boolean shouldStartMaximumPermissionsPerpetualServiceOnBoot(Context context)
     {
         ServiceRestartDescription restartDescription = getServiceRestartDescription(context);
@@ -160,6 +171,19 @@ public class ServiceManager
     public static boolean isServiceRunning()
     {
         return MaximumPermissionsPerpetualService.isRunning;
+    }
+
+    public static void stopService(Context context)
+    {
+        if(!isServiceRunning())
+        {
+            return;
+        }
+
+        Intent stopServiceIntent = new Intent(context, MaximumPermissionsPerpetualService.class);
+
+        context.stopService(stopServiceIntent);
+        deleteServiceRestartDescription(context);
     }
 }
 

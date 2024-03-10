@@ -153,13 +153,13 @@ class CLAID():
         # then it would block during module.start(), as the Modules inject a runnable with their initialize function to the main thread queue -> deadlock.
         self.__module_manager_thread = threading.Thread(target=self.__module_manager.start)
         self.__module_manager_thread.start()
-        print("Started ModuleManager thread")
+        Logger.log_info("Started ModuleManager thread")
         self.__module_factory = module_factory
         self.__started = True
         self.process_runnables_blocking()
 
     def load_new_config_test(self, config_path):
-        print("Load new config 1 ", config_path)
+        Logger.log_info("Load new config 1 ", config_path)
         config_path_c = string_to_c_string(config_path)
         print("Load new config 3", self.__handle, config_path)
         res = CLAID.claid_c_lib.load_new_config(self.__handle, config_path_c)

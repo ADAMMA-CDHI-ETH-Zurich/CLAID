@@ -57,9 +57,15 @@ namespace claid
         // Hence, we have to forcefully end all client's RPC calls registered in the RemoteService.
         this->remoteServiceImpl.shutdown();
         // Now we can safely call server->Shutdown();
-        server->Shutdown();
+
+        // Without deadline, server->Shutdown() will wait indefinitely for all rpc calls to finish.
+        // We would then need to let all clients know that they shall disconnect.
+        // Alternatively, if we specify a deadline, all ongoing RPC calls are cancelled.
+        const std::chrono::milliseconds waitDuration = std::chrono::milliseconds(500);
+        const std::chrono::time_point<std::chrono::system_clock> deadline = std::chrono::system_clock::now() + waitDuration;
+
+        server->Shutdown(deadline);
         std::cout << "RemoteDispatcherServer shutdown 2\n";
-        server->Wait();
         std::cout << "RemoteDispatcherServer shutdown 3\n";
 
         this->running = false;

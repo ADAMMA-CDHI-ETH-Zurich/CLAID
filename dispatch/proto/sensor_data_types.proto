@@ -96,10 +96,11 @@ message GyroscopeData
 
 message HeartRateSample
 {
-    int32 hr = 1;
+    double hr = 1;
     int32 hrInterBeatInterval = 2;
-    int32 status = 3;
+    HeartRateStatus status = 3;
     uint64 unix_timestamp_in_ms = 4;
+    string effective_time_frame = 5;
 }
 
 message HeartRateData
@@ -107,6 +108,16 @@ message HeartRateData
     repeated HeartRateSample samples = 1;
 }
 
+enum HeartRateStatus
+{
+    OK = 0;
+    PAUSED_DUE_TO_OTHER_PPG_SENSOR_RUNNING = 1; // If a higher priority sensor is running (e.g., Bioelectrical impedance analysis (BIA))
+    NO_DATA = 2; 
+    PPG_SIGNAL_TOO_WEAK = 3;
+    MEASUREMENT_UNRELIABLE_DUE_TO_MOVEMENT_OR_WRONG_ATTACHMENT_PPG_WEAK = 4;
+    OFF_BODY = 5;
+    INITIALIZING = 6;
+}
 
 enum BatteryState 
 {

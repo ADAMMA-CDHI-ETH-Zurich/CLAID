@@ -862,6 +862,9 @@ absl::Status MiddleWare::loadNewConfig(const Configuration& config)
     // 3. Afterward, all Runtimes will restart and automatically receive the new configuration from the Middleware.
     // Loading a new config means all Modules will be stopped and deleted! It is not possible for information to persist 
     // between two configs (i.e., if there are two Modules with the same id before and after, they will still be completely restarted).
+   
+    this->setupLogSink();
+
     absl::Status status;
     status = this->unloadAllModulesInAllLocalRuntimes();
     if(!status.ok())
@@ -885,7 +888,6 @@ absl::Status MiddleWare::loadNewConfig(const Configuration& config)
     }
 
 
-    this->setupLogSink();
         
 
 

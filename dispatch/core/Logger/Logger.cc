@@ -338,6 +338,12 @@ void claid::Logger::setMinimumSeverityLevelToPrint(const LogMessageSeverityLevel
     claid::Logger::minSeverityLevelToPrintAndStore = minSeverityLevel;
 }
 
+LogMessageSeverityLevel claid::Logger::getMinimumSeverityLevelToPrint()
+{
+    std::unique_lock<std::mutex> lock(loggerMutex);
+    auto copy = claid::Logger::minSeverityLevelToPrintAndStore;
+    return copy;
+}
 
 // void claid::Logger::enableLogSinkTransferModeStoreAndUpload(const std::string& storagePath, LogMessageSeverityLevel minSeverityLevel)
 // {

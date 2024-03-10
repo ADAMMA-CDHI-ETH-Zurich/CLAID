@@ -55,7 +55,7 @@ public class AccelerometerCollector extends Module implements SensorEventListene
     {
         annotator.setModuleCategory("DataCollection");
         annotator.setModuleDescription("The AccelerometerCollector allows to record acceleration data using the devices built-in accelerometer."
-        + "The sampling frequency can be freely configured, however is subject to the limitations of the device (i.e., built-in sensor speicifcations)."
+        + "The sampling frequency can be freely configured, however is subject to the limitations of the device (i.e., built-in sensor specifications)."
         + "The AccelerometerCollector features two recording modes: \"Batched\" and \"Streaming\"\n");
 
         annotator.describeProperty("samplingFrequency", "Frequency in Hz with which to record acceleration data. Only decimal values allowed." + 

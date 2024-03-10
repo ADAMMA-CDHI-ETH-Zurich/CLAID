@@ -86,8 +86,10 @@ class ModuleFactory:
 
         from data_collection.plot.acceleration_view import AccelerationView
         from data_collection.plot.gyroscope_view import GyroscopeView
+        from data_collection.plot.heartrate_view import HeartRateView
         self.register_module(AccelerationView)
         self.register_module(GyroscopeView)
+        self.register_module(HeartRateView)
     
     def print_registered_modules(self):
         Logger.log_info("Registered Module classes: ")

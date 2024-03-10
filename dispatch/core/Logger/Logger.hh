@@ -78,7 +78,7 @@ namespace claid
 			// All log messages are forward to the middleware, which can then process them separately.
 			// Useful to send messages to the log_sink host or to allow individual runtimes to receive all log messages.
 			static void setMinimumSeverityLevelToPrint(const LogMessageSeverityLevel minSeverityLevel);
-
+			static LogMessageSeverityLevel getMinimumSeverityLevelToPrint();
 			static void setLogSinkConfiguration(const LogSinkConfiguration& logSinkConfiguration);
 
 			// void enableLogSinkTransferModeStoreAndUpload(const std::string& storagePath, LogMessageSeverityLevel minSeverityLevel);

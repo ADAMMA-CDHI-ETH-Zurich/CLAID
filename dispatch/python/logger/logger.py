@@ -11,14 +11,24 @@ class Logger:
     # For the future, the Logging class needs a redesign.
     claid_instance = None
 
+    log_severity_level_to_print = LogMessageSeverityLevel.INFO
+
     @staticmethod
     def log(level, message, log_message_entity_type = LogMessageEntityType.MIDDLEWARE, log_message_entity = "PYTHON_RUNTIME"):
         output = f"[{Logger.get_time_string()} | CLAID - {LogMessageSeverityLevel.Name(level)}] {message}\n"
 
-        if level in {LogMessageSeverityLevel.ERROR, LogMessageSeverityLevel.FATAL}:
-            print(output, file=sys.stderr)
-        else:
-            print(output)
+        if not isinstance(message, str):
+            try:
+                message = str(message)
+            except:
+                return
+
+        if level >= Logger.log_severity_level_to_print:
+
+            if level in {LogMessageSeverityLevel.ERROR, LogMessageSeverityLevel.FATAL}:
+                print(output, file=sys.stderr)
+            else:
+                print(output)
 
 
         if Logger.claid_instance != None:

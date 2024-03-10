@@ -4,7 +4,7 @@ from module.channel_subscriber_publisher import ChannelSubscriberPublisher
 from module.module_annotator import ModuleAnnotator
 from module.thread_safe_channel import ThreadSafeChannel
 from dispatch.proto.claidservice_pb2 import *
-
+import traceback
 from threading import Thread
 import time
 
@@ -49,11 +49,10 @@ class ModuleManager():
         Logger.log_info(f"Loaded Module id \"{module_id}\" (class: \"{module_class}\").")
         module = self.__module_factory.get_instance(module_class, module_id)
         self.__running_modules[module_id] = module
-        print(self.__running_modules)
+        Logger.log_info(str(self.__running_modules))
         return True
 
     def instantiate_modules(self, module_list):
-        print("bla ", module_list.descriptors)
         for descriptor in module_list.descriptors:
             module_id = descriptor.module_id
             module_class = descriptor.module_class
@@ -91,13 +90,10 @@ class ModuleManager():
         return module_channels
 
     def start(self):
-        print("ModuleManager1")
-        print(self.__module_factory.get_registered_module_classes())
-        print("ModuleManager2")
+        Logger.log_info(str(self.__module_factory.get_registered_module_classes()))
 
         registered_module_classes = self.__module_factory.get_registered_module_classes()
         module_annotations = dict()
-        print("ModuleManager3")
 
         for registered_module_class in registered_module_classes:
 
@@ -107,20 +103,19 @@ class ModuleManager():
 
             if(has_annotate_module_function):
                 module_annotations[registered_module_class] = module_annotator.get_annotations()
-        print("ModuleManager4")
 
         module_list =  self.__module_dispatcher.get_module_list(registered_module_classes, module_annotations)
+        Logger.log_info("Setting log severity level " + str(module_list.log_severity_level_for_host))
+        Logger.log_severity_level_to_print = module_list.log_severity_level_for_host
         Logger.log_info(f"Received ModuleListResponse: {module_list}")
         if not self.instantiate_modules(module_list):
             Logger.log_fatal("ModuleDispatcher: Failed to instantiate Modules.")
             return False
 
-        print("ModuleManager5")
 
         if not self.initialize_modules(module_list, self.__channel_subscriber_publisher):
             Logger.log_fatal("Failed to initialize Modules.")
             return False
-        print("ModuleManager6")
 
         example_packages_of_modules = self.get_template_packages_of_modules()
         if not  self.__module_dispatcher.init_runtime(example_packages_of_modules):
@@ -142,9 +137,9 @@ class ModuleManager():
     
     def shutdown_modules(self):
         for module_name, module in self.__running_modules.items():
-            print("Shutting down ", module_name)
+            Logger.log_info("Shutting down " + module_name)
             module.shutdown()
-            print("Module has shutdown")
+            Logger.log_info("Module has shutdown")
         
         self.__running_modules.clear()
 
@@ -258,7 +253,7 @@ class ModuleManager():
 
     def read_from_module_dispatcher(self):
         while self.running:
-            print("on read from module dispatcher")
+            Logger.log_info("on read from module dispatcher")
             try:
                 for data_package in self.__from_module_dispatcher_queue:
                     if data_package is not None:
@@ -266,7 +261,9 @@ class ModuleManager():
                     else:
                         pass
             except Exception as e:
-                print(e)
+                Logger.log_error("RUNTIME_PYTHON got error during read from module_dispatcher. Terminating:" + str(e) + str(e.__traceback__))
+                traceback.print_exc() 
+                break
         
         self.__from_module_dispatcher_queue_closed = True
 
@@ -279,9 +276,9 @@ class ModuleManager():
         Logger.log_info("Stopping ModuleDispatcher")
         self.__module_dispatcher.shutdown()
 
-        print("Waiting42")
+        Logger.log_info("Waiting42")
         while not self.__from_module_dispatcher_queue_closed:
-            print("Waiting")
+            Logger.log_info("Waiting")
         time.sleep(2)
         Logger.log_info("Restarting ModuleManager and ModuleDispatcher")
         self.start()
@@ -328,27 +325,27 @@ class ModuleManager():
                 return False
             
        
-        self.__module_factory.print_registered_modules()
+        self.__module_factory.Logger.log_info_registered_modules()
 
         return True
 
 
     def inject_modules_from_config_upload_payload(self, payload):
 
-        print("Injecting modules from payload: ", payload.modules_to_inject)
+        Logger.log_info("Injecting modules from payload: " + str(payload.modules_to_inject))
         module_injections = dict()
 
         for module_injection in payload.modules_to_inject:
             if module_injection.runtime != Runtime.RUNTIME_PYTHON:
                 continue
 
-            print("Checking for module injections")
+            Logger.log_info("Checking for module injections")
             if module_injection.module_file not in module_injections:
                 module_injections[module_injection.module_file] = list()
 
             module_injections[module_injection.module_file].append(module_injection.module_name)
 
-        print("Module injections: " + str(module_injections))
+        Logger.log_info("Module injections: " + str(module_injections))
         for entry in module_injections:
             if not self.__module_factory.inject_claid_modules_from_python_file(payload.payload_data_path, entry, module_injections[entry]):
                 Logger.log_error("Failed to inject modules {}".format(module_injections[entry]))

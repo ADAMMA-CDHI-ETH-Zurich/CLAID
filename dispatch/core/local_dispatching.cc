@@ -232,6 +232,7 @@ Status ServiceImpl::GetModuleList(ServerContext* context,
                 moduleTable.moduleProperties[it.first].end());
         }
     }
+    resp->set_log_severity_level_for_host(Logger::getMinimumSeverityLevelToPrint());
     return Status::OK;
 }
 
@@ -424,7 +425,13 @@ void DispatcherServer::shutdown() {
     });
 
     Logger::logInfo("DispatcherServer: Shutting down server.");
-    server->Shutdown();
+    // Without deadline, server->Shutdown() will wait indefinitely for all rpc calls to finish.
+    // We would then need to let all clients know that they shall disconnect.
+    // Alternatively, if we specify a deadline, all ongoing RPC calls are cancelled.
+    const std::chrono::milliseconds WaitDuration = std::chrono::milliseconds(500);
+    const std::chrono::time_point<std::chrono::system_clock> Deadline = std::chrono::system_clock::now() + WaitDuration;
+
+    server->Shutdown(Deadline);
     Logger::logInfo("DispatcherServer: DispatcherServer joining helper thread;");
     helperThread->join();
     Logger::logInfo("DispatcherServer: Releasing resources.");

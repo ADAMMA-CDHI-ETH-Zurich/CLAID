@@ -86,7 +86,7 @@ public abstract class JavaCLAIDBase
         return true;
     }
 
-    protected static void shutdown()
+    protected static void shutdownInternal()
     {
         if(handle == 0)
         {

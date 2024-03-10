@@ -9,6 +9,7 @@ from matplotlib.animation import FuncAnimation
 import numpy as np
 
 import cv2
+from logger.logger import Logger
 
 class AccelerationView(Module):
     def __init__(self):
@@ -28,13 +29,13 @@ class AccelerationView(Module):
             frame_number += 1
 
     def initialize(self, properties):
-        self.xs = []
-        self.ys = []
-        self.zs = []
-        self.times = []
+        self.max_points = 100
+        self.xs = [0 for i in range(self.max_points)]
+        self.ys = [0 for i in range(self.max_points)]
+        self.zs = [0 for i in range(self.max_points)]
+        self.times = [0 for i in range(self.max_points)]
 
         self.fig, self.axs = plt.subplots(3)
-        self.max_points = 100
         
         self.window_name = "AccelerationView"
 
@@ -89,7 +90,7 @@ class AccelerationView(Module):
             cv2.waitKey(1)
 
     def terminate(self):
-        print("AccelerationView is shutting down")
+        Logger.log_info("AccelerationView is shutting down")
         cv2.destroyWindow(self.window_name)
 
         # if self.ctr == None:
