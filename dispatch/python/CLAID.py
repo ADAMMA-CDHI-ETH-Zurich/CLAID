@@ -90,6 +90,9 @@ class CLAID():
         current_os = platform.system()
         architecture = platform.machine()
 
+        if architecture == "aarch64":
+            architecture = "arm64"
+
         current_file_path = os.path.abspath(__file__)
 
         # Get the directory containing the currently executed Python file
@@ -99,11 +102,14 @@ class CLAID():
         # Check the operating system
         if current_os == "Linux":
             platform_library_extension = ".so"
+
+            if architecture == "x86":
+                raise ValueError("MacOS 32-bit (x86) not supported with CLAID on Linux.")
         elif current_os == "Darwin":
             platform_library_extension = ".dylib"
 
             if architecture == "x86":
-                raise ValueError("MacOS 32-bit (x86) not supported with CLAID.")
+                raise ValueError("MacOS 32-bit (x86) not supported with CLAID on macOS.")
         elif current_os == "Windows":
             raise ValueError("Windows currently not supported.")
             platform_library_extension = ".dll"
