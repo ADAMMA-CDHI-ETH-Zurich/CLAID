@@ -8,6 +8,12 @@ pip_package:
 	rm -fr pip_package/claid/dispatch/python
 	rm -fr pip_package/claid/external
 	mv pip_package/claid/setup.py pip_package/setup.py
+	mkdir -p pip_package/claid/dispatch/core/Darwin/x86_64
+	mkdir -p pip_package/claid/dispatch/core/Darwin/arm64
+	mkdir -p pip_package/claid/dispatch/core/Linux/x86_64
+	mkdir -p pip_package/claid/dispatch/core/Linux/x86
+	mkdir -p pip_package/claid/dispatch/core/Linux/arm64
+
 	cp MANIFEST.in pip_package/MANIFEST.in
 	cp README.md pip_package/README.md
 	cp LICENSE.txt pip_package/LICENSE.txt
