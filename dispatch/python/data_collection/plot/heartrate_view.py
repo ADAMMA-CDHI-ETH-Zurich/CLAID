@@ -1,5 +1,5 @@
 from claid.module import Module
-from claid.dispatch.proto.sensor_data_types_pb2 import HeartRateData
+from claid.dispatch.proto.sensor_data_types_pb2 import HeartRateData, HeartRateStatus
 from datetime import datetime
 
 import matplotlib.pyplot as plt
@@ -67,6 +67,23 @@ class HeartRateView(Module):
 
             self.fig.canvas.draw()
             img_plot = np.array(self.fig.canvas.renderer.buffer_rgba())
+
+            text = "Hr status: " + str(HeartRateStatus.Name(data.samples[-1].status))
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            font_scale = 1
+            font_thickness = 2
+
+            # Get the size of the text
+            text_size = cv2.getTextSize(text, font, font_scale, font_thickness)[0]
+
+            # Calculate the position to place the text in the top middle
+            text_x = (img_plot.shape[1] - text_size[0]) // 2
+            text_y = text_size[1] + 10  # Add a margin from the top
+            print("Text ", text)
+            # Put the text on the image
+            img_plot = cv2.putText(img_plot, text, (text_x, text_y), font, font_scale, (0, 0, 0), font_thickness)
+
+            # Display the
 
             cv2.imshow(self.window_name, cv2.cvtColor(img_plot, cv2.COLOR_RGBA2BGR))
 

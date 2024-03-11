@@ -99,9 +99,23 @@ void claid::Logger::log(const LogMessageSeverityLevel severityLevel,
             // Can lead to segfaults (on WearOS only ?) if log message is too long
             // Todo: Investigate this
             //     LOGCAT(ss.str().c_str(), __LINE__);
-            __android_log_print(ANDROID_LOG_INFO,claid::Logger::logTag.c_str(),"%s", ss.str().c_str());
+                if(severityLevel >= LogMessageSeverityLevel::ERROR)
+                {
+                    __android_log_print(ANDROID_LOG_ERROR,claid::Logger::logTag.c_str(),"%s", ss.str().c_str());
+                }
+                else
+                {
+                    __android_log_print(ANDROID_LOG_INFO,claid::Logger::logTag.c_str(),"%s", ss.str().c_str());
+                }
             #else
-                std::cout << ss.str().c_str() << "\n" << std::flush;
+                if(severityLevel >= LogMessageSeverityLevel::ERROR)
+                {   
+                    std::cerr << ss.str().c_str() << "\n" << std::flush;
+                }
+                else
+                {
+                    std::cout << ss.str().c_str() << "\n" << std::flush;
+                }
             #endif
         }
     // }
