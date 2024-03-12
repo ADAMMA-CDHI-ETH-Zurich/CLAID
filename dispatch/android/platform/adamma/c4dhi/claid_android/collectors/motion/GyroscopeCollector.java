@@ -52,7 +52,7 @@ public class GyroscopeCollector extends Module implements SensorEventListener
     public static void annotateModule(ModuleAnnotator annotator)
     {
         annotator.setModuleCategory("DataCollection");
-        annotator.setModuleDescription("The GyroscopeCollector allows to record gyrpscpüe data using the devices built-in gyroscope of the device."
+        annotator.setModuleDescription("The GyroscopeCollector allows to record gyroscope data using the devices built-in gyroscope of the device."
         + "The sampling frequency can be freely configured, however is subject to the limitations of the device (i.e., built-in sensor speicifications)."
         + "The GyroscopeCollector features two recording modes: \"Batched\" and \"Streaming\"\n");
 
