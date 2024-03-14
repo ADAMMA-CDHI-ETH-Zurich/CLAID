@@ -118,9 +118,9 @@ extern "C"
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) 
     {
         void* nativeHandle = reinterpret_cast<void*>(handle);
-        const char* socketPath = get_socket_path(nativeHandle);
+        const char* path = get_payload_data_path(nativeHandle);
 
-        return stdStringToJString(env, socketPath);
+        return stdStringToJString(env, path);
     }
 
     JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeEnableDesignerMode

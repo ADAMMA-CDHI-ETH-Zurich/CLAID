@@ -37,7 +37,7 @@ class ModuleFactory:
         Logger.log_info("Available instances from path " + str(self.all_available_module_classes))
 
         
-    def inject_modules_from_python_file(self, base_path: str, python_module_name: str, claid_module_names : list):
+    def inject_claid_modules_from_python_file(self, base_path: str, python_module_name: str, claid_module_names : list):
         self.__module_injector.inject_claid_modules_from_python_file(base_path, python_module_name, claid_module_names)
 
         self.all_available_module_classes.clear()
