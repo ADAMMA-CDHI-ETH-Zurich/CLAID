@@ -38,6 +38,7 @@ class GyroscopeView(Module):
         self.fig, self.axs = plt.subplots(3)
 
         self.window_name = "GyroscopeView"
+        self.window_closed = False
 
 
         self.lines = list()
@@ -60,6 +61,9 @@ class GyroscopeView(Module):
         return self.xs, self.ys, self.zs
 
     def onData(self, channel_data):
+        if self.window_closed:
+            return
+        
         data = channel_data.get_data()
 
         for sample in data.samples:
@@ -87,11 +91,14 @@ class GyroscopeView(Module):
 
             cv2.imshow(self.window_name, cv2.cvtColor(img_plot, cv2.COLOR_RGBA2BGR))
 
-            cv2.waitKey(1)
+        if cv2.waitKey(1) == 27:
+            self.window_closed = True
+            cv2.destroyWindow(self.window_name)
 
     def terminate(self):
         Logger.log_info("GyroscopeView is shutting down")
-        cv2.destroyWindow(self.window_name)
+        if not self.window_closed:
+            cv2.destroyWindow(self.window_name)
         # if self.ctr == None:
         #     self.ctr = 0
         # self.ctr += 1

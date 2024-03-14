@@ -38,7 +38,7 @@ class AccelerationView(Module):
         self.fig, self.axs = plt.subplots(3)
         
         self.window_name = "AccelerationView"
-
+        self.window_closed = False
         self.lines = list()
         for ax in self.axs:
             ax.set_ylim(-2*9.80655,2*9.80655)
@@ -51,7 +51,6 @@ class AccelerationView(Module):
         self.input_channel = self.subscribe("InputData", AccelerationData(), self.onData)
         cv2.namedWindow(self.window_name, cv2.WINDOW_AUTOSIZE) 
         cv2.imshow(self.window_name, np.zeros((200,200,3)))
-        cv2.waitKey(1)
 
         
 
@@ -60,6 +59,10 @@ class AccelerationView(Module):
         return self.xs, self.ys, self.zs
 
     def onData(self, channel_data):
+
+        if self.window_closed:
+            return
+        
         data = channel_data.get_data()
 
         for sample in data.samples:
@@ -87,11 +90,16 @@ class AccelerationView(Module):
 
             cv2.imshow(self.window_name, cv2.cvtColor(img_plot, cv2.COLOR_RGBA2BGR))
 
-            cv2.waitKey(1)
+        if cv2.waitKey(1) == 27:
+            self.window_closed = True
+            cv2.destroyWindow(self.window_name)
 
+ 
     def terminate(self):
         Logger.log_info("AccelerationView is shutting down")
-        cv2.destroyWindow(self.window_name)
+
+        if not self.window_closed:
+            cv2.destroyWindow(self.window_name)
 
         # if self.ctr == None:
         #     self.ctr = 0
