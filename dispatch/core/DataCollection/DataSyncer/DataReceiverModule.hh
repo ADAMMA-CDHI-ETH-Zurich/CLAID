@@ -26,12 +26,12 @@
 #include "dispatch/proto/sensor_data_types.grpc.pb.h"
 #include "dispatch/proto/claidservice.grpc.pb.h"
 
-#ifdef __APPLE__
-    #include "TargetConditionals.h"
-    #if TARGET_OS_IPHONE
-    #include "CollectorAPI/iOSHelper/iOSApplicationPathHelper.hpp"
-    #endif
-#endif
+// #ifdef __APPLE__
+//     #include "TargetConditionals.h"
+//     #if TARGET_OS_IPHONE
+//     #include "CollectorAPI/iOSHelper/iOSApplicationPathHelper.hpp"
+//     #endif
+// #endif
 
 #include "absl/strings/str_split.h"
 #include "absl/status/status.h"
@@ -236,11 +236,11 @@ namespace claid
 
             bool setupStorageFolder()
             {
-                #ifdef __APPLE__
-                    #if TARGET_OS_IPHONE
-                        this->filePath = iOSApplicationPathHelper::getAppDocumentsPath() + std::string("/") + this->filePath;
-                    #endif
-                #endif
+                // #ifdef __APPLE__
+                //     #if TARGET_OS_IPHONE
+                //         this->filePath = iOSApplicationPathHelper::getAppDocumentsPath() + std::string("/") + this->filePath;
+                //     #endif
+                // #endif
                 
                 std::string savePath = this->filePath;
 

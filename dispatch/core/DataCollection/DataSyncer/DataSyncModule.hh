@@ -25,12 +25,12 @@
 #include "dispatch/core/Utilities/StringUtils.hh"
 #include "dispatch/proto/sensor_data_types.grpc.pb.h"
 #include "dispatch/proto/claidservice.grpc.pb.h"
-#ifdef __APPLE__
-    #include "TargetConditionals.h"
-    #if TARGET_OS_IPHONE
-    #include "CollectorAPI/iOSHelper/iOSApplicationPathHelper.hpp"
-    #endif
-#endif
+// #ifdef __APPLE__
+//     #include "TargetConditionals.h"
+//     #if TARGET_OS_IPHONE
+//     #include "CollectorAPI/iOSHelper/iOSApplicationPathHelper.hpp"
+//     #endif
+// #endif
 
 #include "absl/strings/str_split.h"
 #include "absl/status/status.h"
@@ -256,11 +256,11 @@ namespace claid
                 this->dataFileChannelName = "FileSyncer/DataFiles";
                 this->receivedFilesAcknowledgementChannelName = "FileSyncer/ReceivedFilesAcknowledgement";
 
-                #ifdef __APPLE__
-                    #if TARGET_OS_IPHONE
-                        this->filePath = iOSApplicationPathHelper::getAppDocumentsPath() + std::string("/") + this->filePath;
-                    #endif
-                #endif
+                // #ifdef __APPLE__
+                //     #if TARGET_OS_IPHONE
+                //         this->filePath = iOSApplicationPathHelper::getAppDocumentsPath() + std::string("/") + this->filePath;
+                //     #endif
+                // #endif
 
                 this->completeFileListChannel = this->publish<std::vector<std::string>>(this->completeFileListChannelName);
                 this->requestedFileChannel = this->subscribe<std::string>(this->requestedFileChannelName, &DataSyncModule::onFileRequested, this);
