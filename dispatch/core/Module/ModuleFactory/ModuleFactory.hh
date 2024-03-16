@@ -47,6 +47,7 @@ namespace claid
 
 			void registerFactory(const std::string& className, ModuleFactoryBase* moduleFactory)
 			{
+				Logger::logInfo("Registering factory %s", className.c_str());
 				auto it = moduleFactories.find(className);
 
 				if (it != moduleFactories.end())

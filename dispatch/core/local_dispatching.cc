@@ -205,14 +205,15 @@ Status ServiceImpl::GetModuleList(ServerContext* context,
     for(auto& it : req->supported_module_classes()) {
         // Look up the module class
         auto rt = moduleTable.moduleClassRuntimeMap[it];
-        Logger::logInfo("CLAID local dispatcher get module list %s", it.c_str());
 
         // The module class was already registered for this runtime
         // This is a no-op.
+        Logger::logInfo("CLAID local dispatcher checking %s", it.c_str());
         if (rt != Runtime::RUNTIME_UNSPECIFIED && rt != req->runtime()) {
             return Status(grpc::INVALID_ARGUMENT, "Attempted redefiniton of the runtime for a module class");
         }
-        
+        Logger::logInfo("CLAID local dispatcher inserted %s", it.c_str());
+
         moduleTable.moduleClassRuntimeMap[it] = req->runtime();
         supportedModClasses.insert(it);
     }
@@ -232,6 +233,7 @@ Status ServiceImpl::GetModuleList(ServerContext* context,
                 moduleTable.moduleProperties[it.first].end());
         }
     }
+    Logger::logInfo("ModuleList response %s", messageToString(*resp).c_str());
     resp->set_log_severity_level_for_host(Logger::getMinimumSeverityLevelToPrint());
     return Status::OK;
 }
@@ -509,6 +511,13 @@ unique_ptr<ModuleListResponse> DispatcherClient::getModuleList() {
 
     unique_ptr<ModuleListResponse> resp = make_unique<ModuleListResponse>();
     Status status = stub->GetModuleList(&context, req, resp.get());
+
+    if(!status.ok())
+    {
+        Logger::logError("Error %s", status.error_message().c_str());
+        return unique_ptr<ModuleListResponse>(nullptr);
+    }
+    Logger::logInfo("response  %s %s", messageToString(*resp.get()).c_str(), status.error_message().c_str());
 
     return (status.ok()) ? (std::move(resp)) : (unique_ptr<ModuleListResponse>(nullptr));
 }

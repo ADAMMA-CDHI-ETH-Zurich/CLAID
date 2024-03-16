@@ -11,21 +11,25 @@ objc_library(
          "BazelHelloworldObjC/SceneDelegate.m",
          "BazelHelloworldObjC/ViewController.m",
          "BazelHelloworldObjC/main.mm",
-         "BazelHelloworldObjC/test.cpp"
+         "BazelHelloworldObjC/CLAIDWrapper.cpp",
+         "BazelHelloworldObjC/TestSenderModule.cpp",
+         "BazelHelloworldObjC/TestReceiverModule.cpp"
          
     ],
     hdrs = glob(["BazelHelloworldObjC/*.h", "BazelHelloworldObjC/*.hpp"]),
     data = [
     		"BazelHelloworldObjC/Base.lproj/Main.storyboard",
     		"BazelHelloworldObjC/Base.lproj/LaunchScreen.storyboard",
+            "claid_config.json",
     ],
     deps=["//dispatch/core:capi"],
+    alwayslink = True,
     # copts=["-std=c++14"]
 )
 
 # Use ios application rule
 ios_application(
-    name = "BazelHelloworldObjCApp",
+    name = "App",
     bundle_id = "com.domain.appBundleID",
     families = [
         "iphone",

@@ -47,10 +47,16 @@ absl::Status ModuleManager::instantiateModule(const std::string& moduleId, const
 
 absl::Status ModuleManager::instantiateModules(const ModuleListResponse& moduleList)
 {
+        Logger::logInfo("CLAID C++ ModuleManager start called 4.1");
+        Logger::logInfo("%s", messageToString(moduleList).c_str());
+
     for(ModuleListResponse_ModuleDescriptor descriptor : moduleList.descriptors())
     {
+            Logger::logInfo("CLAID C++ ModuleManager start called 4.2");
+
         const std::string& moduleId = descriptor.module_id();
         const std::string& moduleClass = descriptor.module_class();
+    Logger::logInfo("CLAID C++ ModuleManager start called 4.3");
 
         absl::Status status = this->instantiateModule(moduleId, moduleClass);
         if(!status.ok())
@@ -58,6 +64,8 @@ absl::Status ModuleManager::instantiateModules(const ModuleListResponse& moduleL
             return status;
         }
     }
+        Logger::logInfo("CLAID C++ ModuleManager start called 4.4");
+
     return absl::OkStatus();
 }
 
@@ -147,23 +155,32 @@ InitRuntimeRequest ModuleManager::makeInitRuntimeRequest()
 
 absl::Status ModuleManager::start()
 {
-    Logger::logInfo("CLAID C++ runtime start called");
+    Logger::logInfo("CLAID C++ ModuleManager start called");
     if(this->running)
     {
         return absl::AlreadyExistsError("Cannot start C++ Module manager. Start has been called twice.");
     }
 
+    Logger::logInfo("CLAID C++ ModuleManager start called 2");
 
 //    this->dispatcher = std::make_unique<DispatcherClient>(socketPath, fromModuleDispatcherQueue, toModuleDispatcherQueue, );
     std::unique_ptr<ModuleListResponse> moduleList = this->dispatcher.getModuleList();
-    
+    if(moduleList == nullptr)
+    {
+        return absl::AbortedError("Failed to receive ModuleListResponse from middleware.");
+    }
+        Logger::logInfo("CLAID C++ ModuleManager start called 3");
+        Logger::logInfo("%s", messageToString(*moduleList).c_str());
+
     absl::Status status;
+    Logger::logInfo("CLAID C++ ModuleManager start called 4");
 
     status = instantiateModules(*moduleList);
     if(!status.ok())
     {
         return status;
     }
+    Logger::logInfo("CLAID C++ ModuleManager start called 5");
 
 
     status = initializeModules(*moduleList, subscriberPublisher);

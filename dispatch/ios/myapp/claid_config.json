@@ -1,0 +1,27 @@
+{
+    "hosts": [
+        {
+            "hostname": "test_client",
+			"type": "unix",
+			"is_server": false,
+			"connect_to": "",
+            "min_log_severity_level": "INFO",
+            "modules": [
+                {
+                    "type": "TestSenderModule",
+                    "id" : "TestSenderModule",
+                    "output_channels" : {
+                        "DataChannel": "DataChannel"
+                    }
+                },
+                {
+                    "type": "TestReceiverModule",
+                    "id" : "TestReceiverModule",
+                    "input_channels" : {
+                        "DataChannel": "DataChannel"
+                    }
+                }
+            ]
+        }
+    ]
+}
