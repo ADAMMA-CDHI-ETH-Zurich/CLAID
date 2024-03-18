@@ -13,7 +13,8 @@
 		2C84E114287EB33000F8BC37 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C84E112287EB33000F8BC37 /* Main.storyboard */; };
 		2C84E116287EB33300F8BC37 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C84E115287EB33300F8BC37 /* Assets.xcassets */; };
 		2C84E119287EB33300F8BC37 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C84E117287EB33300F8BC37 /* LaunchScreen.storyboard */; };
-		2C84E11C287EB33300F8BC37 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C84E11B287EB33300F8BC37 /* main.m */; };
+		2C84E11C287EB33300F8BC37 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C84E11B287EB33300F8BC37 /* main.mm */; };
+		C465A0C12BA863D900FA87B5 /* CLAIDWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C465A0C02BA863D900FA87B5 /* CLAIDWrapper.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,7 +29,8 @@
 		2C84E115287EB33300F8BC37 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2C84E118287EB33300F8BC37 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2C84E11A287EB33300F8BC37 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2C84E11B287EB33300F8BC37 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		2C84E11B287EB33300F8BC37 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		C465A0C02BA863D900FA87B5 /* CLAIDWrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CLAIDWrapper.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +66,7 @@
 				2C84E109287EB33000F8BC37 /* AppDelegate.h */,
 				2C84E10A287EB33000F8BC37 /* AppDelegate.m */,
 				2C84E10C287EB33000F8BC37 /* SceneDelegate.h */,
+				C465A0C02BA863D900FA87B5 /* CLAIDWrapper.cpp */,
 				2C84E10D287EB33000F8BC37 /* SceneDelegate.m */,
 				2C84E10F287EB33000F8BC37 /* ViewController.h */,
 				2C84E110287EB33000F8BC37 /* ViewController.m */,
@@ -71,7 +74,7 @@
 				2C84E115287EB33300F8BC37 /* Assets.xcassets */,
 				2C84E117287EB33300F8BC37 /* LaunchScreen.storyboard */,
 				2C84E11A287EB33300F8BC37 /* Info.plist */,
-				2C84E11B287EB33300F8BC37 /* main.m */,
+				2C84E11B287EB33300F8BC37 /* main.mm */,
 			);
 			path = BazelHelloworldObjC;
 			sourceTree = "<group>";
@@ -148,7 +151,8 @@
 			files = (
 				2C84E111287EB33000F8BC37 /* ViewController.m in Sources */,
 				2C84E10B287EB33000F8BC37 /* AppDelegate.m in Sources */,
-				2C84E11C287EB33300F8BC37 /* main.m in Sources */,
+				C465A0C12BA863D900FA87B5 /* CLAIDWrapper.cpp in Sources */,
+				2C84E11C287EB33300F8BC37 /* main.mm in Sources */,
 				2C84E10E287EB33000F8BC37 /* SceneDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -292,7 +296,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = Y3DV63TC83;
+				DEVELOPMENT_TEAM = 5Y5CJG253R;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BazelHelloworldObjC/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -319,7 +323,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = Y3DV63TC83;
+				DEVELOPMENT_TEAM = 5Y5CJG253R;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BazelHelloworldObjC/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

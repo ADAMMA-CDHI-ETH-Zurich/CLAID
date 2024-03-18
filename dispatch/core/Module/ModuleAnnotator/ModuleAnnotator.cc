@@ -36,6 +36,16 @@ namespace claid {
         return propertyHint;
     }
 
+    PropertyHint ModuleAnnotator::makeIntegerProperty(int64_t min, int64_t max)
+    {
+        PropertyHint propertyHint;
+        propertyHint.set_property_type(PropertyType::PROPERTY_TYPE_INT);
+
+        propertyHint.set_property_type_int_min(min);
+        propertyHint.set_property_type_int_max(max);
+        return propertyHint;
+    }
+
     PropertyHint ModuleAnnotator::makePathProperty()
     {
         PropertyHint propertyHint;

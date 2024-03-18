@@ -17,6 +17,8 @@ namespace claid
         std::unique_ptr<DispatcherClient> moduleDispatcher;
         std::unique_ptr<ModuleManager> moduleManager;
 
+        std::shared_ptr<EventTracker> eventTracker;
+
         SharedQueue<DataPackage> fromModuleDispatcherQueue;
         SharedQueue<DataPackage> toModuleDispatcherQueue;
 
@@ -26,6 +28,7 @@ namespace claid
         absl::Status startStatus;
 
     public:
+
 
         // Starts the middleware and attaches to it.
         bool start(const std::string& socketPath, const std::string& configFilePath, const std::string& hostId, const std::string& userId, const std::string& deviceId);

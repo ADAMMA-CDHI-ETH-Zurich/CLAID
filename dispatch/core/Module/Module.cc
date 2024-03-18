@@ -125,19 +125,28 @@ namespace claid
     {
         this->initialize(properties);
         this->isInitialized = true;
+        if(this->eventTracker != nullptr) 
+            this->eventTracker->onModuleStarted(this->id, this->type);
     }
 
-    void Module::initialize(const std::map<std::string, std::string>& properties)
+    void Module::setId(const std::string& id) 
     {
-    }
-
-    void Module::setId(const std::string& id) {
         this->id = id;
     }
 
     std::string Module::getId() const
     {
         return id;
+    }
+
+    void Module::setType(const std::string& type)
+    {
+        this->type = type;
+    }
+
+    std::string Module::getType() const
+    {
+        return this->type;
     }
 
     void Module::enqueueRunnable(const ScheduledRunnable& runnable) 
@@ -247,7 +256,8 @@ namespace claid
         this->unregisterAllPeriodicFunctions();
         this->terminate();
         this->isTerminating = false;
-
+        if(this->eventTracker != nullptr) 
+            this->eventTracker->onModuleStopped(this->id, this->type);
     }
 
     void Module::terminate()
@@ -284,5 +294,86 @@ namespace claid
                 std::static_pointer_cast<Runnable>(functionRunnable), 
                 ScheduleOnce(Time::now())));
     }
+
+    void Module::pauseModule()
+    {
+        if(!this->isPaused)
+        {
+            moduleWarning("Failed to pause Module. Module is already paused.");
+            return;
+        }
+        moduleInfo("Pausing Module");
+        std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>([this] { pauseInternal(); }));
+
+        this->runnableDispatcher.addRunnable(
+            ScheduledRunnable(
+                std::static_pointer_cast<Runnable>(functionRunnable), 
+                ScheduleOnce(Time::now())));
+
+        while(!this->isPaused)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
+        this->runnableDispatcher.stop();
+    }
+
+    void Module::resumeModule()
+    {
+        moduleInfo("Resuming Module");
+        this->isPaused = false;
+        this->runnableDispatcher.start();
+        std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>([this] { resumeInternal(); }));
+
+        this->runnableDispatcher.addRunnable(
+            ScheduledRunnable(
+                std::static_pointer_cast<Runnable>(functionRunnable), 
+                ScheduleOnce(Time::now())));
+    }
+
+    void Module::pauseInternal()
+    {
+        moduleWarning("Paused");
+        this->onPause();
+        this->isPaused = true;
+        if(this->eventTracker != nullptr) 
+            this->eventTracker->onModulePaused(this->id, this->type);
+    }
+    
+    void Module::resumeInternal()
+    {
+        moduleWarning("Resumed");
+        this->onResume();
+        if(this->eventTracker != nullptr) 
+            this->eventTracker->onModuleResumed(this->id, this->type);
+    }
+
+    void Module::adjustPowerProfile(PowerProfile powerProfile)
+    {
+        moduleWarning("Applying PowerProfile");
+        std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>([this, powerProfile] { onPowerProfileChanged(powerProfile); }));
+
+        this->runnableDispatcher.addRunnable(
+            ScheduledRunnable(
+                std::static_pointer_cast<Runnable>(functionRunnable), 
+                ScheduleOnce(Time::now())));
+    }
+
+
+    void Module::onPause()
+    {
+
+    }
+
+    void Module::onResume()
+    {
+
+    }
+
+    void Module::onPowerProfileChanged(PowerProfile powerProfile)
+    {
+
+    }
+
+    
 }
 

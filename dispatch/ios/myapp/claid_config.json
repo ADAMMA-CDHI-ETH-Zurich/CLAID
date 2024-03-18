@@ -20,6 +20,16 @@
                     "input_channels" : {
                         "DataChannel": "DataChannel"
                     }
+                },
+                {
+                    "type": "AccelerometerCollector",
+                    "id": "Collector",
+                    "output_channels": {
+                        "AccelerationData" : "Data"
+                    },
+                    "properties": {
+                        "samplingFrequency": "20"
+                    }
                 }
             ]
         }

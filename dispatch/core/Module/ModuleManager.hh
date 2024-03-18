@@ -6,6 +6,7 @@
 #include "dispatch/core/Module/Module.hh"
 #include "dispatch/core/Module/ModuleFactory/ModuleFactory.hh"
 #include "dispatch/core/proto_util.hh"
+#include "dispatch/core/EventTracker/EventTracker.hpp"
 
 using claidservice::DataPackage;
 using claidservice::ControlPackage;
@@ -26,6 +27,8 @@ namespace claid {
 
             SharedQueue<DataPackage>& fromModuleDispatcherQueue;
             SharedQueue<DataPackage>& toModuleDispatcherQueue;
+
+            std::shared_ptr<EventTracker> eventTracker;
 
             ChannelSubscriberPublisher subscriberPublisher;
 
@@ -61,7 +64,8 @@ namespace claid {
         public:
             ModuleManager(DispatcherClient& dispatcher,
                 SharedQueue<DataPackage>& fromModuleDispatcherQueue,
-                SharedQueue<DataPackage>& toModuleDispatcherQueue);
+                SharedQueue<DataPackage>& toModuleDispatcherQueue,
+                std::shared_ptr<EventTracker> eventTracker);
 
             ~ModuleManager();
             

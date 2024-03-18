@@ -5,10 +5,12 @@ namespace claid {
 
 ModuleManager::ModuleManager(DispatcherClient& dispatcher,
     SharedQueue<DataPackage>& fromModuleDispatcherQueue,
-    SharedQueue<DataPackage>& toModuleDispatcherQueue) : dispatcher(dispatcher), 
-                                                        fromModuleDispatcherQueue(fromModuleDispatcherQueue), 
-                                                        toModuleDispatcherQueue(toModuleDispatcherQueue),
-                                                        subscriberPublisher(toModuleDispatcherQueue)
+    SharedQueue<DataPackage>& toModuleDispatcherQueue,
+    std::shared_ptr<EventTracker> eventTracker) :   dispatcher(dispatcher), 
+                                                    fromModuleDispatcherQueue(fromModuleDispatcherQueue), 
+                                                    toModuleDispatcherQueue(toModuleDispatcherQueue),
+                                                    subscriberPublisher(toModuleDispatcherQueue),
+                                                    eventTracker(eventTracker)
 {
 
 }
@@ -41,22 +43,18 @@ absl::Status ModuleManager::instantiateModule(const std::string& moduleId, const
     std::unique_ptr<Module> moduleInstance(moduleFactory.getInstanceUntyped(moduleClass));
 
     moduleInstance->setId(moduleId);
+    moduleInstance->setType(moduleClass);
+    moduleInstance->setEventTracker(this->eventTracker);
     this->runningModules.insert(make_pair(moduleId, std::move(moduleInstance)));
     return absl::OkStatus();
 }
 
 absl::Status ModuleManager::instantiateModules(const ModuleListResponse& moduleList)
 {
-        Logger::logInfo("CLAID C++ ModuleManager start called 4.1");
-        Logger::logInfo("%s", messageToString(moduleList).c_str());
-
     for(ModuleListResponse_ModuleDescriptor descriptor : moduleList.descriptors())
     {
-            Logger::logInfo("CLAID C++ ModuleManager start called 4.2");
-
         const std::string& moduleId = descriptor.module_id();
         const std::string& moduleClass = descriptor.module_class();
-    Logger::logInfo("CLAID C++ ModuleManager start called 4.3");
 
         absl::Status status = this->instantiateModule(moduleId, moduleClass);
         if(!status.ok())
@@ -64,7 +62,6 @@ absl::Status ModuleManager::instantiateModules(const ModuleListResponse& moduleL
             return status;
         }
     }
-        Logger::logInfo("CLAID C++ ModuleManager start called 4.4");
 
     return absl::OkStatus();
 }
@@ -361,6 +358,45 @@ void ModuleManager::handlePackageWithControlVal(std::shared_ptr<DataPackage> pac
             restartControlPackage = *package.get();
             
             
+            break;
+        }
+        case CtrlType::CTRL_PAUSE_MODULE:
+        {
+            const std::string& targetModule = package->target_module();
+
+            auto it = this->runningModules.find(targetModule);
+            if(it == this->runningModules.end())
+            {
+                Logger::logError("Got request to pause Module \"%s\", but Module with that id could not be found. Is it running?");
+                return;
+            }
+            it->second->pauseModule();
+            break;
+        }
+        case CtrlType::CTRL_UNPAUSE_MODULE:
+        {
+            const std::string& targetModule = package->target_module();
+
+            auto it = this->runningModules.find(targetModule);
+            if(it == this->runningModules.end())
+            {
+                Logger::logError("Got request to pause Module \"%s\", but Module with that id could not be found. Is it running?");
+                return;
+            }
+            it->second->resumeModule();
+            break;
+        }
+        case CtrlType::CTRL_ADJUST_POWER_PROFILE:
+        {
+            const std::string& targetModule = package->target_module();
+
+            auto it = this->runningModules.find(targetModule);
+            if(it == this->runningModules.end())
+            {
+                Logger::logError("Got request to pause Module \"%s\", but Module with that id could not be found. Is it running?");
+                return;
+            }
+            it->second->adjustPowerProfile(package->control_val().power_profile());
             break;
         }
         default:

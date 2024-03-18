@@ -88,6 +88,9 @@ enum CtrlType {
   CTRL_LOG_SINK_LOG_MESSAGE_STREAM                    = 21; // Can be used by CLAID instances to stream log messages to the log sink host. Might be send out by the middleware when a CTRL_LOCAL_LOG_MESSAGE was received by any local runtime.
   CTRL_SUBSCRIBE_TO_LOG_SINK_LOG_MESSAGE_STREAM       = 22; // Can be used by local Runtimes to subscribe to the log sink log messages stream. Only works if the current host is the log sink host.
   CTRL_UNSUBSCRIBE_FROM_LOG_SINK_LOG_MESSAGE_STREAM   = 23; // Can be used by local Runtimes to unsubscribe from the log sink log messages stream. 
+  CTRL_PAUSE_MODULE                                   = 24; // Can be used by local Runtimes to pause Modules running on the same host.
+  CTRL_UNPAUSE_MODULE                                 = 25; // Can be used by local Runtimes to unpause Modules running on the same host.
+  CTRL_ADJUST_POWER_PROFILE                           = 26; // Can be used by local Runtimes to change the PowerProfile of Modules running on the same host. Only works if a Module supports power profiles.
   //CTRL_ADD_MODULE                         = 11; // Can be used to add a new Module at runtime (requires Module name, properties, channels). This package will be forwarded by the LocalRouter to the Middleware that can handle this Module.
   //CTRL_REMOVE_MODULE                      = 12; // Can be used to remove a Module at runtime.
   //CTRL_ADD_MODULE_SUCCESS                 = 13; // Sent as response to CTRL_ADD_MODULE the Module was added successfully.
@@ -112,6 +115,7 @@ message ControlPackage {
   map<string, ModuleAnnotation> module_annotations = 7; // CTRL_REQUEST_MODULE_ANNOTATIONS_RESPONSE
   ConfigUploadPayload config_upload_payload        = 8; // CTRL_UPLOAD_CONFIG_AND_DATA and CTRL_ON_NEW_CONFIG_PAYLOAD_DATA
   LogMessage log_message                           = 9; // CTRL_LOCAL_LOG_MESSAGE and CTRL_LOG_MESSAGE_STREAM_TO_LOG_SINK
+  PowerProfile power_profile                       = 10; // CTRL_ADJUST_POWER_PROFILE, can be used to tell Modules to enter power saving mode.
 }
 
 message AccumulatedStatus {
@@ -393,4 +397,26 @@ message ConfigUploadPayload
   // Contains names of Modules which were sent as payload and can be injected by the corresponding Runtimes.
   repeated ModuleInjectionDescription modules_to_inject = 3; 
   string payload_data_path = 4; // Current payloadDataPath (path where the middleware stores payloads).
+}
+
+// Can be used by Modules to support different Power Profiles. For example, the AccelerometerCollector might support sampling at lower frequencies to reduce battery consumption
+message PowerProfile
+{
+  PowerProfileType power_profile_type = 1;
+  double frequency = 2; // For Modules that collect data at a certain rate (e.g., AccelerometerCollector). Allows to specify an alternative threshold for when the battery is low. 
+  map<string, string> additional_information = 3;
+}
+
+enum PowerProfileType
+{
+  UNRESTRICTED = 0; // Default profile
+  POWER_SAVING_MODE = 1; // Power saving profile
+}
+
+message PowerSavingStrategy
+{
+  float battery_threshold = 1;
+  repeated string pause_modules = 2;
+  map<string, PowerProfile> power_profile_changes = 3;
+
 }

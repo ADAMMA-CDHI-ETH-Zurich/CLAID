@@ -164,4 +164,9 @@ public class ChannelSubscriberPublisher
         moduleChannelsSubscriberMap.clear();
     }
 
+    public void getToModuleManagerQueue()
+    {
+        return this.toModuleManagerQueue;
+    }
+
 }

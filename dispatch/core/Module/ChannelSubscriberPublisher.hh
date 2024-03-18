@@ -34,11 +34,11 @@ private:
     typedef std::pair<std::string, std::string> ChannelModulePair;
     std::map<ChannelModulePair, std::vector<std::shared_ptr<AbstractSubscriber>>> moduleChannelsSubscriberMap;
 
-    SharedQueue<DataPackage>& toModuleManagerQueue;
+    SharedQueue<DataPackage>& toModuleDispatcherQueue;
 
 public:
-    ChannelSubscriberPublisher(SharedQueue<DataPackage>& toModuleManagerQueue)
-        : toModuleManagerQueue(toModuleManagerQueue) 
+    ChannelSubscriberPublisher(SharedQueue<DataPackage>& toModuleDispatcherQueue)
+        : toModuleDispatcherQueue(toModuleDispatcherQueue) 
     {
 
     }
@@ -78,7 +78,7 @@ public:
         Logger::logInfo("Inserting package for Module %s", moduleId.c_str());
         this->examplePackagesForEachModule[moduleId].push_back(examplePackage);
 
-        std::shared_ptr<Publisher<T>> publisher = std::make_shared<Publisher<T>>(moduleId, channelName, this->toModuleManagerQueue);
+        std::shared_ptr<Publisher<T>> publisher = std::make_shared<Publisher<T>>(moduleId, channelName, this->toModuleDispatcherQueue);
         return Channel<T>(module, channelName, publisher);
     }
 
@@ -179,6 +179,11 @@ public:
     {
         examplePackagesForEachModule.clear();
         moduleChannelsSubscriberMap.clear();
+    }
+
+    SharedQueue<DataPackage>& getToModuleDispatcherQueue()
+    {
+        return toModuleDispatcherQueue;
     }
 };
 

@@ -21,6 +21,8 @@
 			</array>
 		</dict>
 	</dict>
+	<key>CFBundleName</key>
+	<string>com.domain.appBundleID</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>CFBundleShortVersionString</key>

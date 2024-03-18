@@ -16,6 +16,7 @@ MiddleWare::MiddleWare(const string& socketPath, const string& configurationPath
     {
         moduleTable.setProperties(ModuleTableProperties{userId, deviceId});
         this->logMessagesQueue = std::make_shared<SharedQueue<LogMessage>>();
+        this->eventTracker = std::make_shared<EventTracker>();
     }
 
 MiddleWare::~MiddleWare() {
@@ -120,7 +121,7 @@ absl::Status MiddleWare::start() {
     this->currentConfiguration = config;
     this->setupLogSink();
 
-
+    this->eventTracker->onCLAIDStarted();
     return absl::OkStatus();
 }
 
@@ -363,6 +364,7 @@ absl::Status MiddleWare::shutdown()
 
     
     Logger::logInfo("Middleware successfully shut down.");
+    this->eventTracker->onCLAIDStopped();
     return absl::OkStatus();
 }
 
@@ -558,6 +560,10 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
                     this->handleUploadConfigAndPayloadMessage();
             });
             break;  
+        }
+        case CtrlType::CTRL_PAUSE_MODULE:
+        {
+            break;
         }
         /*case CtrlType::CTRL_LOCAL_LOG_MESSAGE:
         {
@@ -1078,3 +1084,8 @@ int MiddleWare::getLogSinkSeverityLevel() const
     return static_cast<int>(this->logSinkConfiguration.logSinkSeverityLevel);
 }
 
+
+std::shared_ptr<EventTracker> MiddleWare::getEventTracker()
+{
+    return this->eventTracker;
+}

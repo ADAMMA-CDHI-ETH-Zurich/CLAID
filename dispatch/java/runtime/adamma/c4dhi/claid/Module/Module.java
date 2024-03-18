@@ -33,6 +33,7 @@ public abstract class Module
     private boolean isInitializing = false;
     private boolean isInitialized = false;
     private boolean isTerminating = false;
+    private boolean isTerminated = false;
 
     Map<String, ScheduledRunnable> timers = new HashMap<>();
 
@@ -568,6 +569,60 @@ public abstract class Module
         this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> onDisconnectedFromRemoteServer()));
     }
 
+    public void pauseModule() {
+        if (isPaused) {
+            moduleWarning("Failed to pause Module. Module is already paused.");
+            return;
+        }
+        moduleInfo("Pausing Module");
+        this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> pauseInternal()));
+
+
+        while (!isPaused) {
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        runnableDispatcher.stop();
+    }
+
+    public void resumeModule() {
+        moduleInfo("Resuming Module");
+        isPaused = false;
+        runnableDispatcher.start();
+        this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> resumeInternal()));
+    }
+
+    protected void pauseInternal() {
+        moduleWarning("Paused.");
+        onPause();
+        isPaused = true;
+    }
+
+    protected void resumeInternal() {
+        moduleWarning("Resumed.");
+        onResume();
+    }
+
+    public void adjustPowerProfile(PowerProfile powerProfile) 
+    {
+        ConsumerRunnable<PowerProfile> consumerRunnable = new ConsumerRunnable<PowerProfile>(data, (profile) -> onPowerProfileChanged(profile), ScheduleOnce.now());
+        ScheduledRunnable runnable = (ScheduledRunnable) consumerRunnable;
+
+        this.callbackDispatcher.addRunnable(runnable);
+    }
+
+
+    protected void onPause() {
+    }
+
+    protected void onResume() {
+    }
+
+    protected void onPowerProfileChanged(PowerProfile powerProfile) {
+    }
 
 //         String name, Duration period, RegisteredCallback callback) =>
 //     _scheduler.registerPeriodicFunction(_modId, name, period, callback);

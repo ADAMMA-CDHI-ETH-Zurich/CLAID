@@ -94,6 +94,14 @@ class PropertyHelper
             }
         }
 
+        std::string getMissingPropertiesErrorString()
+        {
+            std::string unknownProperties;
+            unknownPropertiesToString(unknownProperties);
+            return "Missing properties: [" + unknownProperties +  "]. Please sepcify the properties in the configuration file.";
+        }
+
+
     private:
         const std::map<std::string, std::string>& properties;
         std::vector<std::string> unknownProperties;

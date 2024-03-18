@@ -70,6 +70,11 @@ namespace claid
                 return Path(path1 + "/" + path2);
             }
 
+            static Path join(const std::string& path1, const std::string& path2, const std::string& path3)
+            {
+                return Path(path1 + "/" + path2 + "/" + path3);
+            }
+
             std::string getFolderPath() const
             {
                 size_t index = this->getIndexOfRightMostPathSeparator();

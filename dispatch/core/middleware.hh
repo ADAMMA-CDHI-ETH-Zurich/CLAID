@@ -21,6 +21,7 @@
 #include "dispatch/core/Router/RoutingQueueMerger.hh"
 #include "dispatch/core/Router/RoutingQueueMergerGeneric.hh"
 
+#include "dispatch/core/EventTracker.hpp"
 #include "dispatch/core/Logger/LogSinkConfiguration.hh"
 
 using claidservice::ConfigUploadPayload;
@@ -132,7 +133,7 @@ namespace claid
             bool uploadingConfigFinished = false;
             DataPackage configUploadPackage;
 
-
+            std::shared_ptr<EventTracker> eventTracker;
 
             absl::Status getHostModuleAndChannelDescriptions(const std::string& hostId, const Configuration& config,
                 HostDescriptionMap& hostDescriptions, ModuleDescriptionMap& allModuleDescriptions,
@@ -169,6 +170,8 @@ namespace claid
             void handleUploadConfigAndPayloadMessage();
             bool storePayload(const ConfigUploadPayload& payload);
             void notifyAllRuntimesAboutNewPayload(const ConfigUploadPayload& payload);
+
+            std::shared_ptr<EventTracker> getEventTracker();
     };
 }
 

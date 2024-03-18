@@ -178,7 +178,10 @@ public class ModuleManager
             return false;
         }
 
-        this.subscriberPublisher = new ChannelSubscriberPublisher(this.fromModulesChannel);
+        if(this.subscriberPublisher == null)
+        {
+            this.subscriberPublisher = new ChannelSubscriberPublisher(this.fromModulesChannel);
+        }
 
         if(!initializeModules(moduleList, subscriberPublisher))
         {
@@ -192,7 +195,6 @@ public class ModuleManager
             Logger.logFatal("Failed to initialize runtime.");
             return false;
         }
-
 
                 
         if(!this.dispatcher.sendReceivePackages(receivedPackage -> onDataPackageReceived(receivedPackage)))

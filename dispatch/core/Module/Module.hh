@@ -29,7 +29,7 @@
 #include "dispatch/core/Module/Publisher.hh"
 #include "dispatch/core/Module/Subscriber.hh"
 #include "dispatch/core/Module/PropertyHelper.hh"
-
+#include "dispatch/core/EventTracker/EventTracker.hpp"
 namespace claid
 {
     class Module;
@@ -37,6 +37,7 @@ namespace claid
 
 #include "dispatch/core/Module/ChannelSubscriberPublisher.hh"
 
+using claidservice::PowerProfile;
 
 namespace claid 
 {
@@ -44,18 +45,22 @@ namespace claid
     {
     protected:
         std::string id = "unknown";
+        std::string type = "unknown";
 
         RunnableDispatcher runnableDispatcher;
         bool isInitializing = false;
         bool isInitialized = false;
         bool isTerminating = false;
 
+        bool isPaused = false;
+
         std::map<std::string, ScheduledRunnable> timers;
 
         ChannelSubscriberPublisher* subscriberPublisher;
 
-        void enqueueRunnable(const ScheduledRunnable& runnable);
+        std::shared_ptr<EventTracker> eventTracker;
 
+        void enqueueRunnable(const ScheduledRunnable& runnable);
 
     public:
         Module();
@@ -75,17 +80,28 @@ namespace claid
         void setId(const std::string& id);
         std::string getId() const;
 
-        bool start(ChannelSubscriberPublisher* subscriberPublisher, const std::map<std::string, std::string>& properties);
+        void setType(const std::string& type);
+        std::string getType() const;
+
+        void setEventTracker(std::shared_ptr<EventTracker> eventTracker);
+
         void shutdown();
 
         void notifyConnectedToRemoteServer();
         void notifyDisconnectedFromRemoteServer();
 
+        void pauseModule();
+        void resumeModule();
+        void adjustPowerProfile(PowerProfile powerProfile);
+
+        virtual bool start(ChannelSubscriberPublisher* subscriberPublisher, const std::map<std::string, std::string>& properties);
+
+
     protected:
 
 
         void initializeInternal(const std::map<std::string, std::string>& properties);
-        virtual void initialize(const std::map<std::string, std::string>& properties);
+        virtual void initialize(const std::map<std::string, std::string>& properties) = 0;
 
         void terminateInternal();
         virtual void terminate();
@@ -144,6 +160,14 @@ namespace claid
             std::function<void()> function = std::bind(f, obj);
             this->registerPeriodicFunction(name, function, interval, startTime);
         }
+
+
+        void pauseInternal();
+        void resumeInternal();
+
+        virtual void onPause();
+        virtual void onResume();
+        virtual void onPowerProfileChanged(PowerProfile powerProfile);
 
         
     };

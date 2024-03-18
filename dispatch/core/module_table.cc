@@ -434,3 +434,15 @@ bool ModuleTable::lookupOutputConnectionForChannelOfModule(const std::string& so
     return true;
 }
 
+bool ModuleTable::getTypeOfModuleWithId(const std::string& moduleId, std::string& moduleType)
+{
+    auto it = moduleToClassMap.find(moduleId);
+    if(it == moduleToClassMap.end())
+    {
+        return false;
+    }
+
+    moduleType = it->second;
+    return true;
+}
+
