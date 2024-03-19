@@ -973,6 +973,20 @@ const std::string& MiddleWare::getPayloadDataPath() const
     return this->payloadDataPath;
 }
 
+void MiddleWare::setCommonDataPath(const std::string& path)
+{  
+    this->commonDataPath = path;
+    if(this->eventTracker != nullptr)
+    {
+        this->eventTracker->setStorageFolderPath(path);
+    }
+}
+
+const std::string& MiddleWare::getCommonDataPath() const
+{
+    return this->commonDataPath;
+}
+
 void MiddleWare::enableDesignerMode()
 {
     Logger::logInfo("Middleware enabled designer mdoe");

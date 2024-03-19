@@ -122,6 +122,23 @@ extern "C"
         return stdStringToJString(env, path);
     }
 
+    JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeSetCommonDataPath
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle, jstring path) 
+    {
+        void* nativeHandle = reinterpret_cast<void*>(handle);
+
+        std::string stdCommonDataPath = jniStringToStdString(env, path);
+        set_common_data_path(nativeHandle, stdCommonDataPath.c_str());
+    }
+
+    JNIEXPORT jstring JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeGetCommonDataPath
+    (JNIEnv *env, jobject CLAIDOBJ, jlong handle) 
+    {
+        void* nativeHandle = reinterpret_cast<void*>(handle);
+        const char* path = get_common_data_path(nativeHandle);
+
+        return stdStringToJString(env, path);
+    }
 
     JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeEnableDesignerMode
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) 

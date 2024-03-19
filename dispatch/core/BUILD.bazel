@@ -25,11 +25,13 @@ cc_library(
         "capi.cc",
         "middleware.cc",
         "DataCollection/**/*.cc",
+        "EventTracker/**/*.cc",
         "CLAID.cc"]),
     hdrs = glob([
         "capi.h",
         "middleware.hh",
         "DataCollection/**/*.hh",
+        "EventTracker/**/*.hh",
         "CLAID.hh"]),
     deps = [
         ":CLAID",
@@ -88,6 +90,7 @@ cc_library(
         "Traits/*.cc",
         "Utilities/**/*.cc",
         "Exception/**/*.cc",
+        "EventTracker/**/*.cc",
     ]),
     hdrs = glob([
         "Module/**/*.hh",
@@ -96,6 +99,7 @@ cc_library(
         "shared_queue.hh",
         "module_table.hh",
         "Exception/**/*.hh",
+        "EventTracker/**/*.hh"
     ]),
     deps = [
         ":proto_util",

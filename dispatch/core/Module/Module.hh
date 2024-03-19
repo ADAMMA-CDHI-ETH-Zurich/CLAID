@@ -29,7 +29,7 @@
 #include "dispatch/core/Module/Publisher.hh"
 #include "dispatch/core/Module/Subscriber.hh"
 #include "dispatch/core/Module/PropertyHelper.hh"
-#include "dispatch/core/EventTracker/EventTracker.hpp"
+#include "dispatch/core/EventTracker/EventTracker.hh"
 namespace claid
 {
     class Module;

@@ -342,15 +342,18 @@ namespace claid
     void Module::resumeInternal()
     {
         moduleWarning("Resumed");
-        this->onResume();
         if(this->eventTracker != nullptr) 
             this->eventTracker->onModuleResumed(this->id, this->type);
+        this->onResume();
     }
 
     void Module::adjustPowerProfile(PowerProfile powerProfile)
     {
         moduleWarning("Applying PowerProfile");
         std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>([this, powerProfile] { onPowerProfileChanged(powerProfile); }));
+
+        if(this->eventTracker != nullptr) 
+            this->eventTracker->onModulePowerProfileApplied(this->id, this->type, powerProfile);
 
         this->runnableDispatcher.addRunnable(
             ScheduledRunnable(

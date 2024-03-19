@@ -6,7 +6,7 @@
 #include "dispatch/core/Module/Module.hh"
 #include "dispatch/core/Module/ModuleFactory/ModuleFactory.hh"
 #include "dispatch/core/proto_util.hh"
-#include "dispatch/core/EventTracker/EventTracker.hpp"
+#include "dispatch/core/EventTracker/EventTracker.hh"
 
 using claidservice::DataPackage;
 using claidservice::ControlPackage;

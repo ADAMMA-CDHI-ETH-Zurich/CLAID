@@ -35,6 +35,9 @@ public abstract class JavaCLAIDBase
 
     private static native void nativeSetPayloadDataPath(long handle, String path);
     private static native String nativeGetPayloadDataPath(long handle);
+
+    private static native void nativeSetCommonDataPath(long handle, String path);
+    private static native String nativeGetCommonDataPath(long handle);
     
     private static native void nativeEnableDesignerMode(long handle);
     private static native void nativeDisableDesignerMode(long handle); 
@@ -79,7 +82,6 @@ public abstract class JavaCLAIDBase
             return false;
         }
 
-        
 
         started = true;
 
@@ -144,7 +146,6 @@ public abstract class JavaCLAIDBase
         return nativeGetDeviceId(handle);
     }
 
-
     public static void setPayloadDataPath(String path)
     {
         nativeSetPayloadDataPath(handle, path);
@@ -153,6 +154,16 @@ public abstract class JavaCLAIDBase
     public static String getPayloadDataPath()
     {
         return nativeGetPayloadDataPath(handle);
+    }
+
+    public static void setCommonDataPath(String path)
+    {
+        nativeSetCommonDataPath(handle, path);
+    }
+
+    public static String getCommonDataPath()
+    {
+        return nativeGetCommonDataPath(handle);
     }
     
     public static void enableDesignerMode()

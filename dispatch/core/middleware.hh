@@ -21,7 +21,7 @@
 #include "dispatch/core/Router/RoutingQueueMerger.hh"
 #include "dispatch/core/Router/RoutingQueueMergerGeneric.hh"
 
-#include "dispatch/core/EventTracker.hpp"
+#include "dispatch/core/EventTracker/EventTracker.hh"
 #include "dispatch/core/Logger/LogSinkConfiguration.hh"
 
 using claidservice::ConfigUploadPayload;
@@ -58,8 +58,14 @@ namespace claid
 
             void setPayloadDataPath(const std::string& path);
             const std::string& getPayloadDataPath() const;
+
+            void setCommonDataPath(const std::string& path);
+            const std::string& getCommonDataPath() const;
+
             void enableDesignerMode();
             void disableDesignerMode();
+
+            std::shared_ptr<EventTracker> getEventTracker();
 
             virtual ~MiddleWare();
 
@@ -79,6 +85,9 @@ namespace claid
             // of type UPLOAD_CONFIG_AND_DATA is received. Requires designerMode to be activated in the configuration file.
             std::string payloadDataPath = "";
             bool designerModeActive = false;
+
+            // Public path for CLAID to store data, like event logs.
+            std::string commonDataPath = "";
 
             // TODO: Incorporate all variables into the code if necessary.
             std::string socketPath;
@@ -171,7 +180,6 @@ namespace claid
             bool storePayload(const ConfigUploadPayload& payload);
             void notifyAllRuntimesAboutNewPayload(const ConfigUploadPayload& payload);
 
-            std::shared_ptr<EventTracker> getEventTracker();
     };
 }
 

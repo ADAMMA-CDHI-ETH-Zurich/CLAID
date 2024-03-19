@@ -25,6 +25,8 @@ import java.time.LocalDateTime;
 public abstract class Module
 {
     protected String id = "unknown";
+    protected String type = "unknown";
+    protected EventTracker eventTracker;
 
     private ChannelSubscriberPublisher subscriberPublisher;
     
@@ -154,6 +156,11 @@ public abstract class Module
     {
         this.initialize(properties);
         this.isInitialized = true;
+
+        if(this.eventTracker != null)
+        {
+            this.eventTracker.onModuleStarted(this.id, this.type);
+        }
     }
 
     protected abstract void initialize(Map<String, String> properties);
@@ -163,6 +170,10 @@ public abstract class Module
         this.unregisterAllPeriodicFunctions();
         this.terminate();
         this.isTerminating = false;
+        if(this.eventTracker != null)
+        {
+            this.eventTracker.onModuleStopped(this.id, this.type);
+        }
     }
 
     protected void terminate()
@@ -178,6 +189,21 @@ public abstract class Module
     public String getId()
     {
         return this.id;
+    }
+
+    public void setType(String type)
+    {
+        this.type = type;
+    }
+
+    public String getType()
+    {
+        return this.type;
+    }
+
+    public void setEventTracker(EventTracker tracker)
+    {
+        this.eventTracker = tracker;
     }
 
     private void enqueueRunnable(ScheduledRunnable runnable)
@@ -599,10 +625,20 @@ public abstract class Module
         moduleWarning("Paused.");
         onPause();
         isPaused = true;
+        if(this.eventTracker != null)
+        {
+            this.eventTracker.onModulePaused(this.id, this.type);
+        }
     }
 
-    protected void resumeInternal() {
+    protected void resumeInternal() 
+    {
         moduleWarning("Resumed.");
+        if(this.eventTracker != null)
+        {
+            this.eventTracker.onModuleResumed(this.id, this.type);
+        }
+
         onResume();
     }
 

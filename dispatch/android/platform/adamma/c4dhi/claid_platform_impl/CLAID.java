@@ -108,14 +108,15 @@ public class CLAID extends JavaCLAIDBase
         final String deviceId, ModuleFactory moduleFactory, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
     {
         CLAID.context = context;
-    
+        CLAID.setCommonDataPath(CLAID.getMediaDirPath(context));
+        
         String adjustedConfigPath = configFilePath;
 
         if(specialPermissionsConfig != null)
         {
             if(!CLAID.grantSpecialPermissions(context, specialPermissionsConfig))
             {
-                Logger.logWarning("CLAID.start() failed: CLAID.grantSpecialPermissions() not successfull.");
+                Logger.logError("CLAID.start() failed: CLAID.grantSpecialPermissions() not successfull.");
                 return false;
             }
         }

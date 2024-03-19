@@ -122,6 +122,33 @@ const char* get_payload_data_path(void* handle)
 }
 
 __attribute__((visibility("default"))) __attribute__((used))
+void set_common_data_path(void* handle, const char* path)
+{
+    if(!handle)
+    {
+        claid::Logger::logError("Cannot set common data path, handle is null.");
+        return;
+    }
+    std::string commonDataPath(path);
+
+    auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
+    middleWare->setCommonDataPath(commonDataPath);
+}
+
+__attribute__((visibility("default"))) __attribute__((used))
+const char* get_common_data_path(void* handle)
+{
+    if(!handle)
+    {
+        claid::Logger::logError("Cannot get common data path, handle is null.");
+        return "";
+    }
+
+    auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
+    return middleWare->getCommonDataPath().c_str();
+}
+
+__attribute__((visibility("default"))) __attribute__((used))
 const char* get_socket_path(void* handle) {
     if (handle) {
         auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);

@@ -8,6 +8,7 @@ import adamma.c4dhi.claid.Module.ThreadSafeChannel;
 import adamma.c4dhi.claid.LocalDispatching.ModuleInstanceKey;
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.LogMessageSeverityLevel;
+import adamma.c4dhi.claid.EventTracker.EventTracker;
 
 import adamma.c4dhi.claid.ModuleAnnotation;
 
@@ -15,6 +16,7 @@ import adamma.c4dhi.claid.ModuleAnnotation;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.w3c.dom.events.Event;
 
 import java.util.HashMap;
 import java.util.List;
@@ -61,6 +63,8 @@ public class ModuleManager
 
     ChannelSubscriberPublisher subscriberPublisher;
 
+    EventTracker eventTracker = new EventTracker();
+
     
 
     ThreadSafeChannel<DataPackage> fromModulesChannel = new ThreadSafeChannel<>();
@@ -85,6 +89,7 @@ public class ModuleManager
 
         Logger.logInfo("Loaded Module id \"" + moduleId + "\" (class: \"" + moduleClass + "\").");
         Module module = this.moduleFactory.getInstance(moduleClass, moduleId);
+        module.setEventTracker(this.eventTracker);
         this.runningModules.put(moduleId, module);
         return true;
     }

@@ -41,6 +41,7 @@ public class ModuleFactory
             {
                 Module module = this.registeredModuleClasses.get(className).getDeclaredConstructor().newInstance();
                 module.setId(moduleId);
+                module.setType(className);
                 return module;
             }
             catch(NoSuchMethodException e)

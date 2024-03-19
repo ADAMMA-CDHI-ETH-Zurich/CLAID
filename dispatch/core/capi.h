@@ -17,6 +17,9 @@ extern "C"
     void set_payload_data_path(void* handle, const char* path);
     const char* get_payload_data_path(void* handle);
     
+    void set_common_data_path(void* handle, const char* path);
+    const char* get_common_data_path(void* handle);
+
     const char* get_socket_path(void* handle);
     const char* get_host_id(void* handle);
     const char* get_user_id(void* handle);
