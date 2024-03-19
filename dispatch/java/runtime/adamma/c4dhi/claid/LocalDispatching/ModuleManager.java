@@ -16,7 +16,6 @@ import adamma.c4dhi.claid.ModuleAnnotation;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.w3c.dom.events.Event;
 
 import java.util.HashMap;
 import java.util.List;

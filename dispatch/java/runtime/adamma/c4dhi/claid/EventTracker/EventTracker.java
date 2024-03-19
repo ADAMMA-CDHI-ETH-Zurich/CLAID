@@ -7,11 +7,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import adamma.c4dhi.claid_platform_impl.CLAID;
-
+import adamma.c4dhi.claid.PowerProfile;
+import adamma.c4dhi.claid.Logger.Logger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
-
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 // Pendant to the C++ EventTracker of CLAID.
 // Manages events from the Java side.
 // Gets the path to the storage folder (common data path) directly from the Middleware.
@@ -40,13 +43,19 @@ public class EventTracker
             return;
         }
 
+        LocalDateTime time = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm:ss");
+        String timeString = time.format(formatter);
+        long milliseconds = time.toInstant(ZoneOffset.UTC).toEpochMilli();
+
+
         Path path = Paths.get(storageFolderPath, moduleId, "_events.txt");
         try (FileWriter file = new FileWriter(path.toString(), true)) 
         {
             if (!extra.isEmpty()) {
-                file.write(timeString + ", " + System.currentTimeMillis() + ", " + event + ", " + moduleId + ", " + moduleType + ", " + extra + "\n");
+                file.write(timeString + ", " + milliseconds + ", " + event + ", " + moduleId + ", " + moduleType + ", " + extra + "\n");
             } else {
-                file.write(timeString + ", " + System.currentTimeMillis() + ", " + event + ", " + moduleId + ", " + moduleType + "\n");
+                file.write(timeString + ", " + milliseconds + ", " + event + ", " + moduleId + ", " + moduleType + "\n");
             }
         } 
         catch (IOException e) 

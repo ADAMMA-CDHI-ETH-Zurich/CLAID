@@ -57,8 +57,9 @@ namespace claid
 
     bool ManagerModule::start(ChannelSubscriberPublisher* subscriberPublisher, const std::map<std::string, std::string>& properties) 
     {
-        Module::start(subscriberPublisher, properties);
+        bool result = Module::start(subscriberPublisher, properties);
         this->subscriberPublisher = subscriberPublisher;   
+        return result;
     }
 
 }

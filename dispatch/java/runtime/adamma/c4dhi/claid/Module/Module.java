@@ -7,10 +7,13 @@ import adamma.c4dhi.claid.Module.Scheduling.RunnableDispatcher;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduleOnce;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduleRepeatedIntervall;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduledRunnable;
+import adamma.c4dhi.claid.EventTracker.EventTracker;
+
 import adamma.c4dhi.claid.TypeMapping.DataType;
 import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.LogMessageSeverityLevel;
 import adamma.c4dhi.claid.LogMessageEntityType;
+import adamma.c4dhi.claid.PowerProfile;
 
 
 import java.util.ArrayList;
@@ -22,13 +25,18 @@ import java.util.function.Consumer;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import adamma.c4dhi.claid.Module.Scheduling.ConsumerRunnable;
+import adamma.c4dhi.claid.Module.Scheduling.RunnableDispatcher;
+import adamma.c4dhi.claid.Module.Scheduling.ScheduleOnce;
+import adamma.c4dhi.claid.Module.Scheduling.ScheduledRunnable;
+
 public abstract class Module
 {
     protected String id = "unknown";
     protected String type = "unknown";
     protected EventTracker eventTracker;
 
-    private ChannelSubscriberPublisher subscriberPublisher;
+    protected ChannelSubscriberPublisher subscriberPublisher;
     
     private RunnableDispatcher runnableDispatcher = new RunnableDispatcher();
 
@@ -36,6 +44,7 @@ public abstract class Module
     private boolean isInitialized = false;
     private boolean isTerminating = false;
     private boolean isTerminated = false;
+    private boolean isPaused = false;
 
     Map<String, ScheduledRunnable> timers = new HashMap<>();
 
@@ -644,10 +653,10 @@ public abstract class Module
 
     public void adjustPowerProfile(PowerProfile powerProfile) 
     {
-        ConsumerRunnable<PowerProfile> consumerRunnable = new ConsumerRunnable<PowerProfile>(data, (profile) -> onPowerProfileChanged(profile), ScheduleOnce.now());
+        ConsumerRunnable<PowerProfile> consumerRunnable = new ConsumerRunnable<PowerProfile>(powerProfile, (profile) -> onPowerProfileChanged(profile), ScheduleOnce.now());
         ScheduledRunnable runnable = (ScheduledRunnable) consumerRunnable;
 
-        this.callbackDispatcher.addRunnable(runnable);
+        this.runnableDispatcher.addRunnable(runnable);
     }
 
 

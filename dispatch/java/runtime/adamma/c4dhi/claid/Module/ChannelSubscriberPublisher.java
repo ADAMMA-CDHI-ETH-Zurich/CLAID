@@ -164,7 +164,7 @@ public class ChannelSubscriberPublisher
         moduleChannelsSubscriberMap.clear();
     }
 
-    public void getToModuleManagerQueue()
+    public ThreadSafeChannel<DataPackage> getToModuleManagerQueue()
     {
         return this.toModuleManagerQueue;
     }

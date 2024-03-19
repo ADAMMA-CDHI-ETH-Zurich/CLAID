@@ -108,7 +108,7 @@ public class CLAID extends JavaCLAIDBase
         final String deviceId, ModuleFactory moduleFactory, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
     {
         CLAID.context = context;
-        CLAID.setCommonDataPath(CLAID.getMediaDirPath(context));
+        CLAID.setCommonDataPath(CLAID.getMediaDirPath(context).toString());
         
         String adjustedConfigPath = configFilePath;
 

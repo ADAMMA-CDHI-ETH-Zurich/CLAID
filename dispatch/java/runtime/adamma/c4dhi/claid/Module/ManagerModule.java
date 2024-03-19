@@ -1,4 +1,18 @@
-public class ManagerModule extends Module 
+package adamma.c4dhi.claid.Module;
+
+import adamma.c4dhi.claid.Logger.Logger;
+import adamma.c4dhi.claid.Module.Module;
+import adamma.c4dhi.claid.EventTracker.EventTracker;
+import adamma.c4dhi.claid.DataPackage;
+import adamma.c4dhi.claid.ControlPackage;
+import adamma.c4dhi.claid.CtrlType;
+import adamma.c4dhi.claid.Runtime;
+
+import adamma.c4dhi.claid.PowerProfile;
+
+import java.util.Map;
+
+public abstract class ManagerModule extends Module 
 {
 
     public void pauseModuleById(String moduleId) 
@@ -16,7 +30,7 @@ public class ManagerModule extends Module
         // Source host and target host will be set to current host 
         // automatically by Router (since this package is a control package).
     
-        this.subscriberPublisher.getToModuleDispatcherQueue().add(packageBuilder.build());
+        this.subscriberPublisher.getToModuleManagerQueue().add(packageBuilder.build());
     }
 
     public void resumeModuleById(String moduleId) {
@@ -33,10 +47,11 @@ public class ManagerModule extends Module
         // Source host and target host will be set to current host 
         // automatically by Router (since this package is a control package).
     
-        this.subscriberPublisher.getToModuleDispatcherQueue().add(packageBuilder.build());
+        this.subscriberPublisher.getToModuleManagerQueue().add(packageBuilder.build());
     }
 
-    public void adjustPowerProfileOnModuleById(String moduleId, PowerProfile powerProfile) {
+    public void adjustPowerProfileOnModuleById(String moduleId, PowerProfile powerProfile) 
+    {
         DataPackage.Builder packageBuilder = DataPackage.newBuilder();
         ControlPackage.Builder ctrlPackageBuilder = ControlPackage.newBuilder();
         
@@ -52,7 +67,7 @@ public class ManagerModule extends Module
         // Source host and target host will be set to current host 
         // automatically by Router (since this package is a control package).
     
-        this.subscriberPublisher.getToModuleDispatcherQueue().add(packageBuilder.build());
+        this.subscriberPublisher.getToModuleManagerQueue().add(packageBuilder.build());
     }
 
     public boolean start(ChannelSubscriberPublisher subscriberPublisher, Map<String, String> properties) 
