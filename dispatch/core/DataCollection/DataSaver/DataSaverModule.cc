@@ -23,9 +23,8 @@ namespace claid
 {
     
     
-    void DataSaverModule::initialize(const std::map<std::string, std::string>& propertiesMap)
+    void DataSaverModule::initialize(Properties properties)
     {
-        PropertyHelper properties(propertiesMap);
 
         std::string storagePath;
         std::string fileNameFormat;
@@ -33,10 +32,10 @@ namespace claid
         bool overrideExistingFiles;
 
 
-        properties.getProperty("storagePath", storagePath);
-        properties.getProperty("fileNameFormat", fileNameFormat);
-        properties.getProperty("fileType", fileType);
-        properties.getOptionalProperty("overrideExistingFiles", overrideExistingFiles, false);
+        properties.getStringProperty("storagePath", storagePath);
+        properties.getStringProperty("fileNameFormat", fileNameFormat);
+        properties.getStringProperty("fileType", fileType);
+        properties.getBoolProperty("overrideExistingFiles", overrideExistingFiles, false);
 
         Logger::logInfo("DataSaver override existing files: %d", overrideExistingFiles);
 

@@ -59,7 +59,7 @@ void ModuleTable::setProperties(const ModuleTableProperties& props) {
 }
 
 void ModuleTable::setNeededModule(const string& moduleId, const string& moduleClass,
-        const map<string, string>& properties) {
+        const google::protobuf::Struct& properties) {
     // TODO: verify no module is registered incorreclty multiple times
     moduleToClassMap[moduleId] = moduleClass;
     moduleProperties[moduleId] = properties;
@@ -290,9 +290,9 @@ const string ModuleTable::toString() const {
         out << "        Properties: " << endl;
         auto props = moduleProperties.find(it.first);
         if (props != moduleProperties.end()) {
-            for(auto& propIt : props->second) {
-                out << "            " << propIt.first << "=" << propIt.second << endl;
-            }
+            
+            out << "            " <<  messageToString(props->second) << endl;
+            
         }
     }
     out << "Channels:" << endl;

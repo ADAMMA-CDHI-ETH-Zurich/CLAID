@@ -197,7 +197,7 @@ message ModuleListResponse {
   message ModuleDescriptor {
     string module_id = 1;
     string module_class = 2;
-    map<string, string> properties = 3;
+    google.protobuf.Struct properties = 3;
     // repeated DataPackage channels = 4;
   }
 
@@ -361,7 +361,7 @@ message ModuleConfig
   string type = 2;
   map<string, string> input_channels = 3; // Maps input channels to connections, e.g. "InputAudioDataChannel" : "AudioDataConnection"
   map<string, string> output_channels = 4; // Maps output channels to connections, e.g. "AudioDataToProcess" : "AudioDataConnection"
-  google.protobuf.Value properties = 5;
+  google.protobuf.Struct properties = 5;
 }
 
 message DataFile

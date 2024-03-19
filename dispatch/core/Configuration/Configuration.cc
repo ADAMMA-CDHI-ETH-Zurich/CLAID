@@ -118,10 +118,8 @@ namespace claid
                 moduleDescription.moduleClass = moduleConfig.type();
                 moduleDescription.host = host.hostname();
 
-                for(auto entry : moduleConfig.properties())
-                {
-                    moduleDescription.properties.insert(make_pair(entry.first, entry.second));
-                }
+                moduleDescription.properties = moduleConfig.properties();
+      
 
                 for(auto entry : moduleConfig.input_channels())
                 {

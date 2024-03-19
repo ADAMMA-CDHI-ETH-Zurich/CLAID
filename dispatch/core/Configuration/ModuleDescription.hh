@@ -16,7 +16,7 @@ namespace claid
         std::string host;
         std::map<std::string, std::string> inputChannels;
         std::map<std::string, std::string> outputChannels;
-        std::map<std::string, std::string> properties;
+        google::protobuf::Struct properties;
 
         ModuleDescription()
         {
@@ -26,7 +26,7 @@ namespace claid
         ModuleDescription(const std::string& id, 
             const std::string& moduleClass, 
             const std::string& host, 
-            const std::map<std::string, std::string> properties) : id(id), moduleClass(moduleClass), host(host), properties(properties)
+            const google::protobuf::Struct properties) : id(id), moduleClass(moduleClass), host(host), properties(properties)
         {
 
         }

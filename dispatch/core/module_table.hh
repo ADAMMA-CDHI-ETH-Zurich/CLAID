@@ -53,7 +53,7 @@ class ModuleTable {
     // one of the connecting runtimes. This happens before any runtime connects.
     void setNeededModule(const std::string& moduleId,
         const std::string& moduleClass,
-        const std::map<std::string, std::string>& properties);
+        const google::protobuf::Struct& properties);
 
     void setModuleChannelToConnectionMappings(const std::string& moduleId,
       const std::map<std::string, std::string>& inputChannelToConnectionMappping,
@@ -131,7 +131,7 @@ class ModuleTable {
 
     // Keeps track of the properties of each module.
     // map<module_id, Map<property_key, property_value>>
-    std::map<std::string, std::map<std::string, std::string>> moduleProperties;  // properties for each module
+    std::map<std::string, google::protobuf::Struct> moduleProperties;  // properties for each module
 
     // Populated during GetModuleList. Captures which module classes are provided by what runtime.
     std::map<std::string, claidservice::Runtime> moduleClassRuntimeMap; // maps moduleClasses to the runtime that provides the implementation

@@ -255,12 +255,11 @@ namespace claid
                 return true;
             }
 
-            void initialize(const std::map<std::string, std::string>& propertiesMap)
+            void initialize(Properties properties)
             {
                 Logger::logInfo("DataReceiverModule initialize");
-                PropertyHelper properties(propertiesMap);
 
-                properties.getProperty("filePath", this->filePath);
+                properties.getStringProperty("filePath", this->filePath);
 
                 completeFileListChannelName = "FileSyncer/CompleteFileList";
                 requestedFileChannelName = "FileSyncer/RequestedFileList";

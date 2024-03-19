@@ -225,10 +225,9 @@ namespace claid
         public:
       
       
-            void initialize(const std::map<std::string, std::string>& propertiesMap)
+            void initialize(Properties properties)
             {
                 Logger::logInfo("DataSyncModule initialize");
-                PropertyHelper properties(propertiesMap);
 
                 std::string what;
                 std::string storagePath;
@@ -236,9 +235,9 @@ namespace claid
                 std::string fileType;
 
 
-                properties.getProperty("filePath", this->filePath);
-                properties.getProperty("syncingPeriodInMs", this->syncingPeriodInMs);
-                properties.getProperty("deleteFileAfterSync", this->deleteFileAfterSync);
+                properties.getStringProperty("filePath", this->filePath);
+                properties.getIntegerProperty("syncingPeriodInMs", this->syncingPeriodInMs);
+                properties.getBoolProperty("deleteFileAfterSync", this->deleteFileAfterSync, false);
 
                 if(properties.wasAnyPropertyUnknown())
                 {

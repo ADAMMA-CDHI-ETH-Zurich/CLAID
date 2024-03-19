@@ -52,7 +52,7 @@ namespace claid
             FileSaver fileSaver;
             Channel<AnyProtoType> dataChannel;
 
-            void initialize(const std::map<std::string, std::string>& properties);
+            void initialize(Properties properties);
             void terminate();
 
             void onData(ChannelData<AnyProtoType> data);

@@ -28,7 +28,7 @@
 #include "dispatch/core/Module/ModuleRef.hh"
 #include "dispatch/core/Module/Publisher.hh"
 #include "dispatch/core/Module/Subscriber.hh"
-#include "dispatch/core/Module/PropertyHelper.hh"
+#include "dispatch/core/Module/Properties.hh"
 #include "dispatch/core/EventTracker/EventTracker.hh"
 namespace claid
 {
@@ -94,14 +94,14 @@ namespace claid
         void resumeModule();
         void adjustPowerProfile(PowerProfile powerProfile);
 
-        virtual bool start(ChannelSubscriberPublisher* subscriberPublisher, const std::map<std::string, std::string>& properties);
+        virtual bool start(ChannelSubscriberPublisher* subscriberPublisher, Properties properties);
 
 
     protected:
 
 
-        void initializeInternal(const std::map<std::string, std::string>& properties);
-        virtual void initialize(const std::map<std::string, std::string>& properties) = 0;
+        void initializeInternal(Properties properties);
+        virtual void initialize(Properties properties) = 0;
 
         void terminateInternal();
         virtual void terminate();

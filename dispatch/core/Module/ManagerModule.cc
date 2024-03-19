@@ -55,7 +55,7 @@ namespace claid
         this->subscriberPublisher->getToModuleDispatcherQueue().push_back(package);
     }
 
-    bool ManagerModule::start(ChannelSubscriberPublisher* subscriberPublisher, const std::map<std::string, std::string>& properties) 
+    bool ManagerModule::start(ChannelSubscriberPublisher* subscriberPublisher, Properties properties) 
     {
         bool result = Module::start(subscriberPublisher, properties);
         this->subscriberPublisher = subscriberPublisher;   

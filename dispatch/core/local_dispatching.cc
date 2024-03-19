@@ -228,9 +228,7 @@ Status ServiceImpl::GetModuleList(ServerContext* context,
             auto desc = resp->add_descriptors();
             desc->set_module_id(it.first);
             desc->set_module_class(it.second);
-            desc->mutable_properties()->insert(
-                moduleTable.moduleProperties[it.first].begin(),
-                moduleTable.moduleProperties[it.first].end());
+            *desc->mutable_properties() = moduleTable.moduleProperties[it.first];
         }
     }
     Logger::logInfo("ModuleList response %s", messageToString(*resp).c_str());

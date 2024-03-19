@@ -31,6 +31,18 @@ cc_test(
   ]
 )
 
+
+cc_test(
+  name = "properties_test",
+  size = "small",
+  srcs = ["properties_test.cc"],
+  deps = [
+    "//dispatch/proto:claidservice_cc_proto",
+    "//dispatch/core:capi"
+  ] + FRAMEWORK_DEPS,
+)
+
+
 cc_test(
   name = "module_annotator_test",
   size = "small",

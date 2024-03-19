@@ -86,7 +86,7 @@ namespace claid
         this->moduleWarning(warningStr);
     }
 
-    bool Module::start(ChannelSubscriberPublisher* subscriberPublisher, const std::map<std::string, std::string>& properties) 
+    bool Module::start(ChannelSubscriberPublisher* subscriberPublisher, Properties properties) 
     {
         if (this->isInitialized) 
         {
@@ -121,7 +121,7 @@ namespace claid
         return true;
     }
 
-    void Module::initializeInternal(const std::map<std::string, std::string>& properties)
+    void Module::initializeInternal(Properties properties)
     {
         this->initialize(properties);
         this->isInitialized = true;

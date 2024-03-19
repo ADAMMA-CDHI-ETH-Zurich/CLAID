@@ -13,7 +13,7 @@ namespace claid
             void resumeModuleById(const std::string& moduleId);
             void adjustPowerProfileOnModuleById(const std::string& moduleId, PowerProfile powerProfile);
 
-            bool start(ChannelSubscriberPublisher* subscriberPublisher, const std::map<std::string, std::string>& properties) override final;
+            bool start(ChannelSubscriberPublisher* subscriberPublisher, Properties properties) override final;
 
     };
 }

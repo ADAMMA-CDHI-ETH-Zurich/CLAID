@@ -94,9 +94,8 @@ absl::Status ModuleManager::initializeModules(const ModuleListResponse& moduleLi
         // In the initialize function (and ONLY there), Modules can publish or subscribe Channels.
         // Hence, once all Modules have been initialized, we know the available Channels.
         Logger::logInfo("Calling module.start() for Module \"%s\".", moduleId.c_str());
-        std::map<std::string, std::string> properties;
-
-        properties.insert(descriptor.properties().begin(), descriptor.properties().end());
+        
+        Properties properties = descriptor.properties();
 
         if(!module->start(&subscriberPublisher, properties))
         {
@@ -415,7 +414,12 @@ void ModuleManager::restart()
     Logger::logInfo("ModuleManager stopping dispatcher");
     this->dispatcher.shutdown();
     Logger::logInfo("ModuleManager restarting");
-    this->start();
+    absl::Status status = this->start();
+    if(!status.ok())
+    {
+        Logger::logError("Failed to restart: %s", status.ToString().c_str());
+        return;
+    }
     Logger::logInfo("...aaaaaandddd done!");
 
     std::shared_ptr<DataPackage> response = std::make_shared<DataPackage>();
