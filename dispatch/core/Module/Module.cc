@@ -149,6 +149,11 @@ namespace claid
         return this->type;
     }
 
+    void Module::setEventTracker(std::shared_ptr<EventTracker> eventTracker)
+    {
+        this->eventTracker = eventTracker;
+    }
+
     void Module::enqueueRunnable(const ScheduledRunnable& runnable) 
     {
         runnableDispatcher.addRunnable(runnable);
@@ -299,7 +304,7 @@ namespace claid
     {
         if(!this->isPaused)
         {
-            moduleWarning("Failed to pause Module. Module is already paused.");
+            // moduleWarning("Failed to pause Module. Module is already paused.");
             return;
         }
         moduleInfo("Pausing Module");

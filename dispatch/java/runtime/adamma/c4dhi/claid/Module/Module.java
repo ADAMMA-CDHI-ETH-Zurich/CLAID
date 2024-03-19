@@ -606,7 +606,7 @@ public abstract class Module
 
     public void pauseModule() {
         if (isPaused) {
-            moduleWarning("Failed to pause Module. Module is already paused.");
+            // moduleWarning("Failed to pause Module. Module is already paused.");
             return;
         }
         moduleInfo("Pausing Module");

@@ -416,7 +416,12 @@ enum PowerProfileType
 message PowerSavingStrategy
 {
   float battery_threshold = 1;
-  repeated string pause_modules = 2;
-  map<string, PowerProfile> power_profile_changes = 3;
+  repeated string active_modules = 2;
+  repeated string paused_modules = 3;
+  map<string, PowerProfile> power_profiles = 4;
+}
 
+message PowerSavingStrategyList
+{
+    repeated PowerSavingStrategy strategies = 1;
 }
