@@ -1,16 +1,26 @@
+package adamma.c4dhi.claid_android.BatteryManagement;
+
+import adamma.c4dhi.claid.Module.ManagerModule;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Map;
 
-import javax.naming.Context;
-
+import android.os.BatteryManager;
 import adamma.c4dhi.claid.Module.Channel;
 import adamma.c4dhi.claid.Module.ChannelData;
 import adamma.c4dhi.claid.Module.Module;
 import adamma.c4dhi.claid_android.collectors.battery.BatteryIntentHelper;
 import adamma.c4dhi.claid_platform_impl.CLAID;
+import adamma.c4dhi.claid.PowerSavingStrategy;
+import adamma.c4dhi.claid.PowerSavingStrategyList;
+import adamma.c4dhi.claid.PowerProfile;
+import adamma.c4dhi.claid.*;
+import adamma.c4dhi.claid.Logger.Logger;
+
 import android.content.Context;
-
-
+import android.content.Intent;
+import android.content.IntentFilter;
+import java.util.Map;
 
 
 public class BatterySaverModule extends ManagerModule
@@ -19,6 +29,8 @@ public class BatterySaverModule extends ManagerModule
     private float lastBatteryLevel = -1;
     int currentlyActiveStrategy = -1;
 
+    ArrayList<PowerSavingStrategy> powerSavingStrategies = new ArrayList<>();
+
     @Override
     public void initialize(Map<String, String> properties)
     {
@@ -26,7 +38,7 @@ public class BatterySaverModule extends ManagerModule
         
     }
 
-    public void getCurrentBatteryLevel(Context context) 
+    public void getCurrentBatteryLevel() 
     {
         IntentFilter intentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         Context context = CLAID.getContext();
@@ -85,17 +97,17 @@ public class BatterySaverModule extends ManagerModule
         Logger.logWarning(String.format("Battery level %.2f is below threshold %.2f, executing battery preservation strategy.",
                 lastBatteryLevel, strategy.getBatteryThreshold()));
 
-        for (String activeModule : strategy.getActiveModules()) 
+        for (String activeModule : strategy.getActiveModulesList()) 
         {
             resumeModuleById(activeModule);
         }
 
-        for (String pausedModule : strategy.getPausedModules()) 
+        for (String pausedModule : strategy.getPausedModulesList()) 
         {
             pauseModuleById(pausedModule);
         }
 
-        for (Map.Entry<String, String> entry : strategy.getPowerProfiles().entrySet()) 
+        for (Map.Entry<String, PowerProfile> entry : strategy.getPowerProfiles().entrySet()) 
         {
             adjustPowerProfileOnModuleById(entry.getKey(), entry.getValue());
         }

@@ -11,7 +11,7 @@ option java_multiple_files = true;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
-
+import "google/protobuf/struct.proto";
 
 // Service for modules to talk to the CLAID middleware.
 service ClaidService {
@@ -192,8 +192,6 @@ message ModuleListRequest {
   map<string, ModuleAnnotation> module_annotations = 3;
 }
 
-
-
 // List of modules that the runtime client is expected to instantiate.
 message ModuleListResponse {
   message ModuleDescriptor {
@@ -224,16 +222,6 @@ message RemoteClientInfo
   string host = 1;
   string user_token = 2;
   string device_id = 3;
-}
-
-// Used by CTRL_ADD_MODULE to add a Module at Runtime.
-// Requires a full definition of the Module: Name, class, properties, channels
-message AddModuleRequest 
-{
-  string module_id = 1;
-  string module_class = 2;
-  map<string, string> properties = 3;
-  repeated DataPackage channel_packets = 4;
 }
 
 // Used by CTRL_REMOVE_MODULE to remove a Module at Runtime.
@@ -373,7 +361,7 @@ message ModuleConfig
   string type = 2;
   map<string, string> input_channels = 3; // Maps input channels to connections, e.g. "InputAudioDataChannel" : "AudioDataConnection"
   map<string, string> output_channels = 4; // Maps output channels to connections, e.g. "AudioDataToProcess" : "AudioDataConnection"
-  map<string, string> properties = 5;
+  google.protobuf.Value properties = 5;
 }
 
 message DataFile
