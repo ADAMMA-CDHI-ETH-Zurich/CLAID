@@ -17,6 +17,14 @@ filegroup(
     ],
 )
 
+
+filegroup(
+    name = "test_data",
+    srcs = [
+        "properties_test.json"
+    ],
+)
+
 cc_test(
   name = "config_reload_test",
   size = "small",
@@ -40,6 +48,9 @@ cc_test(
     "//dispatch/proto:claidservice_cc_proto",
     "//dispatch/core:capi"
   ] + FRAMEWORK_DEPS,
+  data = [
+    ":test_data"
+  ]
 )
 
 

@@ -236,7 +236,7 @@ namespace claid
 
 
                 properties.getStringProperty("filePath", this->filePath);
-                properties.getIntegerProperty("syncingPeriodInMs", this->syncingPeriodInMs);
+                properties.getNumberProperty("syncingPeriodInMs", this->syncingPeriodInMs);
                 properties.getBoolProperty("deleteFileAfterSync", this->deleteFileAfterSync, false);
 
                 if(properties.wasAnyPropertyUnknown())

@@ -1,0 +1,23 @@
+{
+    "myInt" : 42,
+    "myDouble" : 13.37,
+    "myIntAsString" : "420",
+    "myString" : "This is a test.",
+    "myBool" : true,
+    "myBoolAsString" : "true",
+    "myPowerSavingStrategy" : {
+        "strategies": [
+        {
+            "battery_threshold" : 70.0,
+            "active_modules": ["Accelerometer", "Gyroscope"],
+            "paused_modules": ["AudioRecorder"],
+            "power_profiles" : {
+                "Accelerometer" : {
+                    "power_profile_type": "POWER_SAVING_MODE",
+                    "frequency": "5"
+                }
+            }
+        }
+    ]
+}
+}
