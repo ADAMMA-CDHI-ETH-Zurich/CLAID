@@ -21,6 +21,8 @@ public abstract class JavaCLAIDBase
     // Starts the middleware.
     private static native long startCore(final String socketPath, 
         final String configFilePath, final String hostId, final String userId, final String deviceId);
+    private static native long startCoreWithEventTracker(final String socketPath, 
+        final String configFilePath, final String hostId, final String userId, final String deviceId, final String commonDataPath);
     private static native void shutdownCore(long handle);
 
     // Attaches C++ runtime to the middleware and returns a handle to the C++ runtime.
@@ -54,7 +56,14 @@ public abstract class JavaCLAIDBase
     
 
     // Starts the middleware and attaches to it.
-    protected static boolean startInternal(final String socketPath, final String configFilePath, final String hostId, final String userId, final String deviceId, ModuleFactory moduleFactory)
+    protected static boolean startInternal(final String socketPath, final String configFilePath, 
+    final String hostId, final String userId, final String deviceId, ModuleFactory moduleFactory)
+    {
+        return startInternalWithEventTracker(socketPath, configFilePath, hostId, userId, deviceId, moduleFactory, new String(""));
+    }
+
+    protected static boolean startInternalWithEventTracker(final String socketPath, final String configFilePath, 
+    final String hostId, final String userId, final String deviceId, ModuleFactory moduleFactory, final String commonDataPath)
     {
         if(started)
         {
@@ -62,7 +71,7 @@ public abstract class JavaCLAIDBase
             return false;
         }
         
-        handle = startCore(socketPath, configFilePath, hostId, userId, deviceId);
+        handle = startCoreWithEventTracker(socketPath, configFilePath, hostId, userId, deviceId, commonDataPath);
         
         if(handle == 0)
         {

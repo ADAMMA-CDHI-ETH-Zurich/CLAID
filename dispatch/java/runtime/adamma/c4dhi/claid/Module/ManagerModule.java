@@ -2,6 +2,7 @@ package adamma.c4dhi.claid.Module;
 
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.Module.Module;
+import adamma.c4dhi.claid.Module.Properties;
 import adamma.c4dhi.claid.EventTracker.EventTracker;
 import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.ControlPackage;
@@ -70,7 +71,8 @@ public abstract class ManagerModule extends Module
         this.subscriberPublisher.getToModuleManagerQueue().add(packageBuilder.build());
     }
 
-    public boolean start(ChannelSubscriberPublisher subscriberPublisher, Map<String, String> properties) 
+    @Override
+    public boolean start(ChannelSubscriberPublisher subscriberPublisher, Properties properties) 
     {
         super.start(subscriberPublisher, properties);
         this.subscriberPublisher = subscriberPublisher;

@@ -17,7 +17,6 @@ namespace claid
         std::unique_ptr<DispatcherClient> moduleDispatcher;
         std::unique_ptr<ModuleManager> moduleManager;
 
-        std::shared_ptr<EventTracker> eventTracker;
 
         SharedQueue<DataPackage> fromModuleDispatcherQueue;
         SharedQueue<DataPackage> toModuleDispatcherQueue;

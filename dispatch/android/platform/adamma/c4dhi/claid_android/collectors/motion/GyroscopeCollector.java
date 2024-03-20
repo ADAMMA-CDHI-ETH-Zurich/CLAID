@@ -24,7 +24,7 @@ import adamma.c4dhi.claid_sensor_data.GyroscopeData;
 import adamma.c4dhi.claid_platform_impl.CLAID;
 
 import adamma.c4dhi.claid.Module.ModuleAnnotator;
-import adamma.c4dhi.claid.Module.PropertyHelper.PropertyHelper;
+import adamma.c4dhi.claid.Module.Properties;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -69,16 +69,14 @@ public class GyroscopeCollector extends Module implements SensorEventListener
     }
 
 
-    public void initialize(Map<String, String> propertiesMap)
+    public void initialize(Properties properties)
     {
+        this.samplingFrequency = properties.getNumberProperty("samplingFrequency", Integer.class);
+        this.outputMode = properties.getStringProperty("outputMode");
 
-        PropertyHelper propertyHelper = new PropertyHelper(propertiesMap);
-        this.samplingFrequency = propertyHelper.getProperty("samplingFrequency", Integer.class);
-        this.outputMode = propertyHelper.getProperty("outputMode", String.class);
-
-        if(propertyHelper.wasAnyPropertyUnknown())
+        if(properties.wasAnyPropertyUnknown())
         {
-            this.moduleFatal(propertyHelper.getMissingPropertiesErrorString());
+            this.moduleFatal(properties.getMissingPropertiesErrorString());
             return;
         }
 

@@ -25,6 +25,7 @@ import android.os.Handler;
 import adamma.c4dhi.claid.Module.Channel;
 import adamma.c4dhi.claid.Module.ChannelData;
 import adamma.c4dhi.claid.Module.Module;
+import adamma.c4dhi.claid.Module.Properties;
 import adamma.c4dhi.claid_android.collectors.audio.AudioDataHelper;
 import adamma.c4dhi.claid_android.collectors.audio.AudioRecorder;
 import adamma.c4dhi.claid_sensor_data.AudioData;
@@ -65,7 +66,7 @@ public class MicrophoneCollector extends Module
     private final String DATA_IDENTIFIER = "MicrophoneAudioData";
 
 
-    public void initialize(Map<String, String> properties)
+    public void initialize(Properties properties)
     {
         System.out.println("Calling init of MicrophoneCollector");
         //new MicrophonePermission().blockingRequest();

@@ -48,8 +48,12 @@ namespace claid
             return;
         }
 
-
-        absl::Status status = this->fileSaver.initialize("DataChannel", storagePath, fileNameFormat, fileType, overrideExistingFiles);
+        // Set default media dir to getCommonDataPath().
+        // Defaults to /sdcard/Android/media/app.package.name/ on Android
+        // and to App Documents on iOS.
+        // Same location where EventTracker stores event logs.
+        absl::Status status = this->fileSaver.initialize("DataChannel", storagePath, fileNameFormat, fileType, overrideExistingFiles, this->getCommonDataPath());
+        
         if(!status.ok())
         {
             this->moduleFatal(status);

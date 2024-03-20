@@ -12,7 +12,7 @@ ModuleManager::ModuleManager(DispatcherClient& dispatcher,
                                                     subscriberPublisher(toModuleDispatcherQueue),
                                                     eventTracker(eventTracker)
 {
-
+    Logger::logInfo("ModuleManager constructor event tracker %lu", eventTracker.get());
 }
 
 ModuleManager::~ModuleManager()
@@ -366,7 +366,7 @@ void ModuleManager::handlePackageWithControlVal(std::shared_ptr<DataPackage> pac
             auto it = this->runningModules.find(targetModule);
             if(it == this->runningModules.end())
             {
-                Logger::logError("Got request to pause Module \"%s\", but Module with that id could not be found. Is it running?");
+                // Logger::logError("Got request to pause Module \"%s\", but Module with that id could not be found. Is it running?");
                 return;
             }
             it->second->pauseModule();
@@ -379,7 +379,7 @@ void ModuleManager::handlePackageWithControlVal(std::shared_ptr<DataPackage> pac
             auto it = this->runningModules.find(targetModule);
             if(it == this->runningModules.end())
             {
-                Logger::logError("Got request to pause Module \"%s\", but Module with that id could not be found. Is it running?");
+                // Logger::logError("Got request to pause Module \"%s\", but Module with that id could not be found. Is it running?");
                 return;
             }
             it->second->resumeModule();
@@ -392,7 +392,7 @@ void ModuleManager::handlePackageWithControlVal(std::shared_ptr<DataPackage> pac
             auto it = this->runningModules.find(targetModule);
             if(it == this->runningModules.end())
             {
-                Logger::logError("Got request to pause Module \"%s\", but Module with that id could not be found. Is it running?");
+                // Logger::logError("Got request to pause Module \"%s\", but Module with that id could not be found. Is it running?");
                 return;
             }
             it->second->adjustPowerProfile(package->control_val().power_profile());

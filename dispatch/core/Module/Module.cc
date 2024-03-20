@@ -151,6 +151,7 @@ namespace claid
 
     void Module::setEventTracker(std::shared_ptr<EventTracker> eventTracker)
     {
+        Logger::logInfo("Set event tracker called %lu", eventTracker.get());
         this->eventTracker = eventTracker;
     }
 
@@ -382,6 +383,14 @@ namespace claid
 
     }
 
-    
+    std::string Module::getCommonDataPath() const
+    {
+        if(this->eventTracker == nullptr)
+        {
+            return "";
+        }
+        return this->eventTracker->getStorageFolderPath();
+    }
+
 }
 

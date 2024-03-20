@@ -87,7 +87,7 @@ public abstract class Module
         Logger.log(LogMessageSeverityLevel.WARNING, debugMsg, LogMessageEntityType.MODULE, this.id);
     }
 
-    public boolean start(ChannelSubscriberPublisher subscriberPublisher, Map<String, String> properties)
+    public boolean start(ChannelSubscriberPublisher subscriberPublisher, Properties properties)
     {
         if(this.isInitialized)
         {
@@ -161,7 +161,7 @@ public abstract class Module
     }
 
   
-    private void initializeInternal(Map<String, String> properties)
+    private void initializeInternal(Properties properties)
     {
         this.initialize(properties);
         this.isInitialized = true;
@@ -172,7 +172,7 @@ public abstract class Module
         }
     }
 
-    protected abstract void initialize(Map<String, String> properties);
+    protected abstract void initialize(Properties properties);
 
     private void terminateInternal()
     {
@@ -624,7 +624,12 @@ public abstract class Module
     }
 
     public void resumeModule() {
+        if(!isPaused)
+        {
+            return;
+        }
         moduleInfo("Resuming Module");
+
         isPaused = false;
         runnableDispatcher.start();
         this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> resumeInternal()));
@@ -657,6 +662,7 @@ public abstract class Module
         ScheduledRunnable runnable = (ScheduledRunnable) consumerRunnable;
 
         this.runnableDispatcher.addRunnable(runnable);
+        eventTracker.onModulePowerProfileApplied(this.id, this.type, powerProfile);
     }
 
 

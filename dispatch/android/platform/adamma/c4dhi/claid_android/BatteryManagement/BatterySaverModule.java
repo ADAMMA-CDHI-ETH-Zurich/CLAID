@@ -8,6 +8,7 @@ import java.util.Map;
 import android.os.BatteryManager;
 import adamma.c4dhi.claid.Module.Channel;
 import adamma.c4dhi.claid.Module.ChannelData;
+import adamma.c4dhi.claid.Module.Properties;
 import adamma.c4dhi.claid.Module.Module;
 import adamma.c4dhi.claid_android.collectors.battery.BatteryIntentHelper;
 import adamma.c4dhi.claid_platform_impl.CLAID;
@@ -21,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import java.util.Map;
+import java.util.List;
 
 
 public class BatterySaverModule extends ManagerModule
@@ -29,13 +31,23 @@ public class BatterySaverModule extends ManagerModule
     private float lastBatteryLevel = -1;
     int currentlyActiveStrategy = -1;
 
-    ArrayList<PowerSavingStrategy> powerSavingStrategies = new ArrayList<>();
+    List<PowerSavingStrategy> powerSavingStrategies;
 
     @Override
-    public void initialize(Map<String, String> properties)
+    public void initialize(Properties properties)
     {
-        registerPeriodicFunction("BatteryLevelMonitoring", () -> getCurrentBatteryLevel(), Duration.ofSeconds(60));
-        
+        PowerSavingStrategyList strategies = properties.getObjectProperty("powerSavingStrategies", PowerSavingStrategyList.class);
+
+        if(properties.wasAnyPropertyUnknown())
+        {
+            this.moduleFatal(properties.getMissingPropertiesErrorString());
+            return;
+        }
+        Logger.logInfo("Strategies: " + strategies.getStrategiesList().toString());
+        this.powerSavingStrategies = strategies.getStrategiesList();
+
+
+        registerPeriodicFunction("BatteryLevelMonitoring", () -> getCurrentBatteryLevel(), Duration.ofSeconds(10));
     }
 
     public void getCurrentBatteryLevel() 
@@ -63,6 +75,8 @@ public class BatterySaverModule extends ManagerModule
 
     public void onBatteryLevelChanged(float level) 
     {
+        Logger.logInfo("Battery level changed: " + level);
+        Logger.logInfo("Battery level num strategies: " + powerSavingStrategies.size());
         if (powerSavingStrategies.size() == 1) 
         {
             if (level <= powerSavingStrategies.get(0).getBatteryThreshold()) 
@@ -74,12 +88,19 @@ public class BatterySaverModule extends ManagerModule
 
         for (int i = 0; i < powerSavingStrategies.size() - 1; i++) 
         {
+            Logger.logInfo("Battery level checking: " + level + powerSavingStrategies.get(i).getBatteryThreshold() + " " + powerSavingStrategies.get(i + 1).getBatteryThreshold());
+
             if (level <= powerSavingStrategies.get(i).getBatteryThreshold() &&
                 level >= powerSavingStrategies.get(i + 1).getBatteryThreshold()) 
             {
                 executeStrategy(i);
                 return;
             }
+        }
+
+        if(level <= powerSavingStrategies.get(powerSavingStrategies.size() - 1).getBatteryThreshold())
+        {
+            executeStrategy(powerSavingStrategies.size() - 1);
         }
     }
 

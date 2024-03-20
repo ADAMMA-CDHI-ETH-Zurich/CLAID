@@ -146,3 +146,22 @@ message BatteryData
     repeated BatterySample samples = 1;
 }
 
+message LocationSample
+{
+    string provider = 1;
+    int32 floor = 2;                  // Floor of eventual building
+    int64 timestamp = 3;
+    double hAccuracy = 4;
+    double vAccuracy = 5;
+    double speed = 6;
+    double altitude = 7;
+    double latitude = 8;
+    double longitude = 9;
+    double elapsedRealtimeSeconds = 10;  // Elapsed time since system boot
+    double bearing = 11;  
+}
+
+message LocationData
+{
+    repeated LocationSample samples = 1;
+}

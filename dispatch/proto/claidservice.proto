@@ -391,14 +391,17 @@ message ConfigUploadPayload
 message PowerProfile
 {
   PowerProfileType power_profile_type = 1;
+
+  // FREQUENCY AND PERIOD ARE EXCLUSIVE, USE EITHER ONE OR THE OTHER! IT WILL NOT BE VALIDATED WHETHERE period == 1/frequency !!
   double frequency = 2; // For Modules that collect data at a certain rate (e.g., AccelerometerCollector). Allows to specify an alternative threshold for when the battery is low. 
-  map<string, string> additional_information = 3;
+  double period = 3; // For Modules that collect data in a certain intervall. 
+  map<string, string> additional_information = 4;
 }
 
 enum PowerProfileType
 {
   UNRESTRICTED = 0; // Default profile
-  POWER_SAVING_MODE = 1; // Power saving profile
+  POWER_SAVING_MODE = 2; // Power saving profile
 }
 
 message PowerSavingStrategy

@@ -40,7 +40,6 @@ namespace claid {
         }
 
         MiddleWare* middleware = static_cast<MiddleWare*>(handle);
-        this->eventTracker = middleware->getEventTracker();
 
         if(!attachCppRuntime(handle))
         {
@@ -90,7 +89,7 @@ namespace claid {
         Logger::logInfo("Attach cpp runtime 3");
 
         moduleDispatcher = make_unique<DispatcherClient>(socketPath, fromModuleDispatcherQueue, toModuleDispatcherQueue, registeredModuleClasses, moduleAnnotations);
-        moduleManager = make_unique<ModuleManager>(*moduleDispatcher, fromModuleDispatcherQueue, toModuleDispatcherQueue, this->eventTracker);
+        moduleManager = make_unique<ModuleManager>(*moduleDispatcher, fromModuleDispatcherQueue, toModuleDispatcherQueue, middleware->getEventTracker());
         Logger::logInfo("Attach cpp runtime 4");
 
         absl::Status status = moduleManager->start();

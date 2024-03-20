@@ -49,7 +49,7 @@ public class EventTracker
         long milliseconds = time.toInstant(ZoneOffset.UTC).toEpochMilli();
 
 
-        Path path = Paths.get(storageFolderPath, moduleId, "_events.txt");
+        Path path = Paths.get(storageFolderPath, moduleId + "_events.txt");
         try (FileWriter file = new FileWriter(path.toString(), true)) 
         {
             if (!extra.isEmpty()) {

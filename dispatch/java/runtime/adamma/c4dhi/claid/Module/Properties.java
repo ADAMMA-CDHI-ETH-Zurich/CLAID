@@ -1,4 +1,4 @@
-package adamma.c4dhi.claid.Module.PropertyHelper;
+package adamma.c4dhi.claid.Module;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,13 +8,21 @@ import adamma.c4dhi.claid.Logger.Logger;
 
 import java.util.List;
 import java.util.StringTokenizer;
+import java.lang.reflect.Method;
 
-public class PropertyHelper 
+import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
+import com.google.protobuf.Message;
+import com.google.protobuf.MessageOrBuilder;
+import com.google.protobuf.util.JsonFormat;
+import com.google.protobuf.GeneratedMessageV3;
+
+public class Properties 
 {
-    private final Map<String, String> properties;
+    private final Struct properties;
     private final List<String> unknownProperties;
 
-    public PropertyHelper(final Map<String, String> properties) 
+    public Properties(Struct properties) 
     {
         this.properties = properties;
         this.unknownProperties = new Vector<>();
@@ -22,11 +30,28 @@ public class PropertyHelper
 
   
 
-    public <T> T getProperty(final String key, Class<T> dataType) {
+    public <T> T getNumberProperty(String key, Class<T> dataType) 
+    {
         Logger.logInfo("getProperty " + properties);
-        if (properties.containsKey(key)) {
+        Value property = lookupProperty(key);
+
+        boolean correctCase = false;
+        String propertyValue = "";
+
+        if (property.getKindCase() == Value.KindCase.NUMBER_VALUE) 
+        {
+            correctCase = true;
+            propertyValue = String.valueOf(property.getNumberValue());
+        } 
+        else if (property.getKindCase() == Value.KindCase.STRING_VALUE) 
+        {
+            correctCase = true;
+            propertyValue = property.getStringValue();
+        } 
+    
+        if (property != null && correctCase) 
+        {
             Logger.logInfo("Get property 1");
-            String propertyValue = properties.get(key);
             Logger.logInfo("Get property 2");
 
             T value;
@@ -57,18 +82,8 @@ public class PropertyHelper
                 {
                     value = (T) Byte.valueOf(propertyValue);
                 } 
-                else if(dataType.equals(Boolean.class))
-                {
-                    Logger.logInfo("Get property 3");
-
-                    value = (T) Boolean.valueOf(propertyValue);
-                    Logger.logInfo("Get property 4");
-
-                }
-                else if (dataType.equals(String.class)) 
-                {
-                    value = (T) propertyValue;
-                } 
+                
+                
                 else 
                 {
                     this.unknownProperties.add(key);
@@ -108,15 +123,6 @@ public class PropertyHelper
             {
                 return (T) Byte.valueOf((byte) 0);
             } 
-            else if(dataType.equals(Boolean.class))
-            {
-                return (T) Boolean.valueOf(false);
-
-            }
-            else if (dataType.equals(String.class)) 
-            {
-                return (T) "";
-            } 
             else
             {
                 return null;
@@ -124,12 +130,111 @@ public class PropertyHelper
         }
     }
 
-    public boolean wasAnyPropertyUnknown() {
+    public String getStringProperty(String key) 
+    {
+        Value property;
+        property = lookupProperty(key);
+        if (property != null && property.getKindCase() == Value.KindCase.STRING_VALUE) 
+        {
+            return property.getStringValue();
+        } 
+        else 
+        {
+            unknownProperties.add(key);
+            return "";
+        }
+    }
+
+    public boolean getBoolProperty(String key) 
+    {
+        Value property;
+        property = lookupProperty(key);
+        if (property != null && property.getKindCase() == Value.KindCase.BOOL_VALUE) 
+        {
+            return property.getBoolValue();
+        } 
+        else 
+        {
+            unknownProperties.add(key);
+            return false;
+        }
+    }
+
+    public <T extends Message> T getObjectProperty(String key, Class<T> dataType)
+    {
+        Value property;
+        property = lookupProperty(key);
+        if(property == null)
+        {
+            unknownProperties.add(key);
+            return null;
+        }
+        
+        String jsonString;
+        try
+        {
+            jsonString = JsonFormat.printer().print(property);
+        }
+        catch(Exception e)
+        {
+            Logger.logError("Properties getObjectProperty() failed, unable to serialize property object to json " + e.getMessage() + " " + e.getCause());
+            return null;
+        }
+
+        GeneratedMessageV3.Builder builder = Properties.getProtoMessageBuilder(dataType);
+        if(builder == null)
+        {
+            Logger.logError("Failed to create builder for proto type " + dataType.getName());
+            return null;
+        }
+
+        try
+        {
+            JsonFormat.parser().ignoringUnknownFields().merge(jsonString, builder);
+        }
+        catch(Exception e)
+        {
+            Logger.logError("Properties getObjectProperty() failed, unable to deserialize json into type \"" + dataType.getName() + ": " + e.getMessage() + " " + e.getCause());
+            return null;
+        }
+        
+        return (T) builder.build();
+    }
+
+    private static <T> GeneratedMessageV3.Builder getProtoMessageBuilder(Class<T> dataType)
+    {
+        try 
+        {
+            Method newBuilderMethod = dataType.getMethod("newBuilder");
+            if (newBuilderMethod != null) 
+            {
+                Object untypedBuilder = newBuilderMethod.invoke(null);
+                if (untypedBuilder instanceof GeneratedMessageV3.Builder) 
+                {
+                    GeneratedMessageV3.Builder builder = (GeneratedMessageV3.Builder) untypedBuilder;
+                    return builder;
+                }
+            }
+        }
+        catch (Exception e) 
+        {
+            Logger.logError("Properties error: " + e.getMessage()); // Handle the exception appropriately
+        }
+        return null;
+    }
+
+    public boolean wasAnyPropertyUnknown() 
+    {
         return !this.unknownProperties.isEmpty();
     }
 
     public List<String> getUnknownProperties() {
         return this.unknownProperties;
+    }
+
+    public boolean hasProperty(String key)
+    {
+        return this.properties.getFieldsMap().containsKey(key);
     }
 
     public String getMissingPropertiesErrorString()
@@ -148,6 +253,19 @@ public class PropertyHelper
             }
         }
         return returnValue;
+    }
+
+    private Value lookupProperty(String key) 
+    {
+        if (properties.getFieldsMap().containsKey(key)) 
+        {
+            Value property = properties.getFieldsMap().get(key);
+            return property;
+        } 
+        else 
+        {
+            return null;
+        }
     }
 }
 

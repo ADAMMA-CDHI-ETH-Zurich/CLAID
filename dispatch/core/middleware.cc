@@ -476,6 +476,9 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
         case CtrlType::CTRL_CONNECTED_TO_REMOTE_SERVER:
         case CtrlType::CTRL_DISCONNECTED_FROM_REMOTE_SERVER:
         case CtrlType::CTRL_UNLOAD_MODULES:
+        case CtrlType::CTRL_PAUSE_MODULE:
+        case CtrlType::CTRL_UNPAUSE_MODULE:
+        case CtrlType::CTRL_ADJUST_POWER_PROFILE:
         {
             this->forwardControlPackageToAllRuntimes(controlPackage);
             break;
@@ -561,10 +564,7 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
             });
             break;  
         }
-        case CtrlType::CTRL_PAUSE_MODULE:
-        {
-            break;
-        }
+        
         /*case CtrlType::CTRL_LOCAL_LOG_MESSAGE:
         {
             std::shared_ptr<LogMessage> logMessage(new LogMessage(controlPackage->control_val().log_message()));
@@ -975,6 +975,7 @@ const std::string& MiddleWare::getPayloadDataPath() const
 
 void MiddleWare::setCommonDataPath(const std::string& path)
 {  
+    Logger::logInfo("Setting common data path to %s, %lu", path.c_str(), this->eventTracker.get());
     this->commonDataPath = path;
     if(this->eventTracker != nullptr)
     {

@@ -9,7 +9,7 @@ import adamma.c4dhi.claid.Module.Channel;
 import adamma.c4dhi.claid.Module.ChannelData;
 import adamma.c4dhi.claid.Module.Module;
 import adamma.c4dhi.claid.Module.ModuleAnnotator;
-import adamma.c4dhi.claid.Module.PropertyHelper.PropertyHelper;
+import adamma.c4dhi.claid.Module.Properties;
 import adamma.c4dhi.claid_platform_impl.CLAID;
 
 public class TextToSpeechModule extends Module implements TextToSpeech.OnInitListener
@@ -34,15 +34,15 @@ public class TextToSpeechModule extends Module implements TextToSpeech.OnInitLis
     }
 
 
-    public void initialize(Map<String, String> propertiesMap)
+    public void initialize(Properties properties)
     {
         moduleInfo("TextToSpeechModule initilized");
-        PropertyHelper propertyHelper = new PropertyHelper(propertiesMap);
-        this.speechLanguage = propertyHelper.getProperty("speechLanguage", String.class);
+       
+        this.speechLanguage = properties.getStringProperty("speechLanguage");
 
-        if(propertyHelper.wasAnyPropertyUnknown())
+        if(properties.wasAnyPropertyUnknown())
         {
-            this.moduleFatal(propertyHelper.getMissingPropertiesErrorString());
+            this.moduleFatal(properties.getMissingPropertiesErrorString());
             return;
         }
 

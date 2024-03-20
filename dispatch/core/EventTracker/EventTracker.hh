@@ -27,6 +27,7 @@ namespace claid
             void onCLAIDStopped();
 
             void setStorageFolderPath(const std::string& path);
+            std::string getStorageFolderPath() const;
 
     };
 }

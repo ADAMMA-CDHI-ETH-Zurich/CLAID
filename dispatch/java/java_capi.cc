@@ -50,6 +50,20 @@ extern "C"
         return reinterpret_cast<jlong>(handle);
     }
 
+    JNIEXPORT jlong JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_startCoreWithEventTracker
+    (JNIEnv *env, jobject CLAIDOBJ, jstring jsocketPath, jstring jconfigFile, jstring jhostId, jstring juserId, jstring jdeviceId, jstring jcommonDataPath) {
+        std::string socketPath = jniStringToStdString(env, jsocketPath);
+        std::string configFile = jniStringToStdString(env, jconfigFile);
+        std::string hostId = jniStringToStdString(env, jhostId);
+        std::string userId = jniStringToStdString(env, juserId);
+        std::string deviceId = jniStringToStdString(env, jdeviceId);
+        std::string commonDataPath = jniStringToStdString(env, jcommonDataPath);
+
+        // Call start_core with the C++ std::strings
+        void* handle = start_core_with_event_tracker(socketPath.c_str(), configFile.c_str(), hostId.c_str(), userId.c_str(), deviceId.c_str(), commonDataPath.c_str());
+        return reinterpret_cast<jlong>(handle);
+    }
+
     JNIEXPORT void JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_shutdownCore
     (JNIEnv *env, jobject CLAIDOBJ, jlong handle) {
         void* nativeHandle = reinterpret_cast<void*>(handle);

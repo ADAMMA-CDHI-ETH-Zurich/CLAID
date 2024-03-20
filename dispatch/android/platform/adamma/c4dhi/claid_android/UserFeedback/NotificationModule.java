@@ -16,7 +16,7 @@ import adamma.c4dhi.claid.Module.Module;
 import adamma.c4dhi.claid_platform_impl.CLAID;
 
 import adamma.c4dhi.claid.Module.ModuleAnnotator;
-import adamma.c4dhi.claid.Module.PropertyHelper.PropertyHelper;
+import adamma.c4dhi.claid.Module.Properties;
 
 import java.util.Map;
 
@@ -40,7 +40,7 @@ public class NotificationModule extends Module
     }
 
 
-    public void initialize(Map<String, String> initialize)
+    public void initialize(Properties properties)
     {
         moduleInfo("NotificationModule Initialize");
       

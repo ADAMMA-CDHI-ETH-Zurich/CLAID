@@ -26,6 +26,7 @@ import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid_android.CLAIDServices.ServiceManager;
 import adamma.c4dhi.claid_android.Configuration.CLAIDPersistanceConfig;
 import adamma.c4dhi.claid_android.Configuration.CLAIDSpecialPermissionsConfig;
+import adamma.c4dhi.claid_android.BatteryManagement.BatterySaverModule;
 import adamma.c4dhi.claid_android.CLAIDServices.CLAIDService;
 import adamma.c4dhi.claid_android.Permissions.*;
 import adamma.c4dhi.claid_android.Receivers.DeviceOwnerReceiver;
@@ -74,9 +75,11 @@ import adamma.c4dhi.claid_android.collectors.battery.BatteryCollector;
 import adamma.c4dhi.claid_android.collectors.heartrate.HeartRateCollector;
 import adamma.c4dhi.claid_android.collectors.motion.AccelerometerCollector;
 import adamma.c4dhi.claid_android.collectors.motion.GyroscopeCollector;
+import adamma.c4dhi.claid_android.collectors.location.LocationCollector;
 
 import adamma.c4dhi.claid_android.UserFeedback.NotificationModule;
 import adamma.c4dhi.claid_android.UserFeedback.TextToSpeechModule;
+import adamma.c4dhi.claid_android.BatteryManagement.BatterySaverModule;
 
 
 public class CLAID extends JavaCLAIDBase
@@ -108,7 +111,6 @@ public class CLAID extends JavaCLAIDBase
         final String deviceId, ModuleFactory moduleFactory, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
     {
         CLAID.context = context;
-        CLAID.setCommonDataPath(CLAID.getMediaDirPath(context).toString());
         
         String adjustedConfigPath = configFilePath;
 
@@ -136,7 +138,8 @@ public class CLAID extends JavaCLAIDBase
             adjustedConfigPath = tmpConfigPath;
         }
 
-        boolean result = startInternal(socketPath, adjustedConfigPath, hostId, userId, deviceId, moduleFactory);
+        boolean result = startInternalWithEventTracker(socketPath, adjustedConfigPath, 
+            hostId, userId, deviceId, moduleFactory, CLAID.getMediaDirPath(context).toString());
 
         if(result) 
         {
@@ -245,6 +248,8 @@ public class CLAID extends JavaCLAIDBase
         factory.registerModule(NotificationModule.class);
         factory.registerModule(TextToSpeechModule.class);
         factory.registerModule(HeartRateCollector.class);
+        factory.registerModule(BatterySaverModule.class);
+        factory.registerModule(LocationCollector.class);
 
         return factory;
     }

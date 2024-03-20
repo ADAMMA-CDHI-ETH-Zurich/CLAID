@@ -30,7 +30,8 @@ namespace claid
     }
 
     absl::Status FileSaver::initialize(const std::string& what, const std::string& storagePath, 
-        const std::string& fileNameFomat, const std::string& fileType, bool overrideExistingFiles = false)
+        const std::string& fileNameFomat, const std::string& fileType, bool overrideExistingFiles = false,
+        std::string defaultMediaPath = "")
     {  
         if(this->initialized)
         {
@@ -42,12 +43,27 @@ namespace claid
         this->fileNameFormat = fileNameFomat;
         this->fileType = fileType;
         this->overrideExistingFiles = overrideExistingFiles;
+        this->defaultMediaPath = defaultMediaPath;
 
         if(this->storagePath.size() > 0 && this->storagePath[this->storagePath.size() - 1] != '/')
         {
             this->storagePath += "/";
         }
 
+        Logger::logInfo("media dir %s", this->defaultMediaPath.c_str());
+        if(this->defaultMediaPath != "")
+        {
+            claid::StringUtils::stringReplaceAll(this->storagePath, "\%media_dir", this->defaultMediaPath);
+        }
+        else
+        {
+            if(this->storagePath.find("\%media_dir") != std::string::npos)
+            {
+                return absl::NotFoundError("Failed to initialize FileSaver. Storage path \"%s\" contains literal \%media_dir, \n"
+                "however media dir was never set. Make sure claid.setCommonDataPath() is called and a valid path is provided.");
+            }
+        }
+       
         this->serializer = DataSerializerFactory::getInstance()->getSerializerForDataType(fileType);
         if(this->serializer == nullptr)
         {
@@ -91,6 +107,11 @@ namespace claid
        // claid::StringUtils::stringReplaceAll(pathStr, "\%sequence_id", std::to_string(data.getSequenceID()));
         claid::StringUtils::stringReplaceAll(pathStr, "\%timestamp", std::to_string(timestamp.toUnixTimestampMilliseconds()));
        
+        if(this->defaultMediaPath != "")
+        {
+            claid::StringUtils::stringReplaceAll(pathStr, "\%media_dir", this->defaultMediaPath);
+        }
+
         pathStr = timestamp.strftime(pathStr.c_str());
 
         Path path(pathStr);
@@ -260,4 +281,6 @@ namespace claid
 
         return absl::OkStatus();
     }
+
+   
 }

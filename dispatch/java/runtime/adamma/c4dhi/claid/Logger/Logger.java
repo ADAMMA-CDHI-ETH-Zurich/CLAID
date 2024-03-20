@@ -18,7 +18,7 @@ public class Logger {
 
     public static void log(LogMessageSeverityLevel level, final String message, LogMessageEntityType entityType, String entityName)
     {
-        String output = "[" + getTimeString() + " | CLAID - " + level.toString() + "] " + message + "\n";
+        String output = "[" + getTimeString() + " | CLAID Java - " + level.toString() + "] " + message + "\n";
 
         if(level == LogMessageSeverityLevel.ERROR || level == LogMessageSeverityLevel.FATAL)
         {

@@ -161,7 +161,6 @@ namespace claid
             this->registerPeriodicFunction(name, function, interval, startTime);
         }
 
-
         void pauseInternal();
         void resumeInternal();
 
@@ -169,7 +168,7 @@ namespace claid
         virtual void onResume();
         virtual void onPowerProfileChanged(PowerProfile powerProfile);
 
-        
+        std::string getCommonDataPath() const;
     };
 
 }

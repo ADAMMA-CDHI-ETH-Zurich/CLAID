@@ -43,6 +43,8 @@ namespace claid
             std::string tmpStoragePath;
             std::string currentFilePath;
 
+            std::string defaultMediaPath = "";
+
 
             Path currentPath;
 
@@ -75,11 +77,14 @@ namespace claid
 
             FileSaver();
 
-            absl::Status initialize(const std::string& what, const std::string& storagePath, const std::string& fileNameFomat, const std::string& fileType, bool overrideExistingFiles);
+            absl::Status initialize(const std::string& what, const std::string& storagePath, 
+                const std::string& fileNameFomat, const std::string& fileType, bool overrideExistingFiles,
+                std::string defaultMediaPath);
             absl::Status onNewData(ChannelData<google::protobuf::Message>& data);
             absl::Status onNewData(std::shared_ptr<const google::protobuf::Message> data, const Time& timestamp);
 
             absl::Status endFileSaving();
+
 
             // void storeDataHeader(const Path& path);
                 

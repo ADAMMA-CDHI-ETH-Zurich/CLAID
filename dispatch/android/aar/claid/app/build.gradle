@@ -95,6 +95,8 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
+    api "com.google.protobuf:protobuf-java:3.24.0"
+    api "com.google.protobuf:protobuf-java-util:3.24.0"
     api 'io.grpc:grpc-protobuf:1.59.0' // CURRENT_GRPC_VERSION
     api 'io.grpc:grpc-stub:1.59.0' // CURRENT_GRPC_VERSION
     api 'io.grpc:grpc-android:1.59.0' // CURRENT_GRPC_VERSION

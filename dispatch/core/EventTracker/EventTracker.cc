@@ -21,7 +21,7 @@ namespace claid
         {
             return;
         }
-        Path path = Path::join(this->storageFolderPath, moduleId, "_events.txt");
+        Path path = Path::join(this->storageFolderPath, moduleId + "_events.txt");
         std::ofstream file(path.toString(), std::ios::app);
 
         if(!file.is_open())
@@ -45,6 +45,7 @@ namespace claid
 
     void EventTracker::logGeneralEvent(const std::string& event)
     {   
+        Logger::logInfo("Logging general event %s %d", storageFolderPath.c_str(), FileUtils::dirExists(storageFolderPath));
         if(storageFolderPath == "" || !FileUtils::dirExists(storageFolderPath))
         {
             return;
@@ -111,5 +112,11 @@ namespace claid
                 return;
             }
         }
+        this->storageFolderPath = path;
+    }
+
+    std::string EventTracker::getStorageFolderPath() const
+    {
+        return this->storageFolderPath;
     }
 }

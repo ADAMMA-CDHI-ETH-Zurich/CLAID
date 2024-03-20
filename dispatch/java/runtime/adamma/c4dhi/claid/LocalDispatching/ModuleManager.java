@@ -11,6 +11,7 @@ import adamma.c4dhi.claid.LogMessageSeverityLevel;
 import adamma.c4dhi.claid.EventTracker.EventTracker;
 
 import adamma.c4dhi.claid.ModuleAnnotation;
+import adamma.c4dhi.claid.Module.Properties;
 
 
 import java.util.Map;
@@ -135,7 +136,8 @@ public class ModuleManager
             // In the initialize function (and ONLY there), Modules can publish or subscribe Channels.
             // Hence, once all Modules have been initialized, we know the available Channels.
             Logger.logInfo("Calling module.start() for Module \"" + module.getId() + "\".");
-            module.start(subscriberPublisher, descriptor.getPropertiesMap());
+            Properties properties = new Properties(descriptor.getProperties());
+            module.start(subscriberPublisher, properties);
             Logger.logInfo("Module \"" + module.getId() + "\" has started.");
 
         }
@@ -387,6 +389,34 @@ public class ModuleManager
 
             this.restartControlPackage = packet;
         }
+        else if(packet.getControlVal().getCtrlType() == CtrlType.CTRL_PAUSE_MODULE)
+        {
+            String targetModule = packet.getTargetModule();
+
+            if(this.runningModules.containsKey(targetModule))
+            {
+                this.runningModules.get(targetModule).pauseModule();
+            }
+        }
+        else if(packet.getControlVal().getCtrlType() == CtrlType.CTRL_UNPAUSE_MODULE)
+        {
+            String targetModule = packet.getTargetModule();
+
+            if(this.runningModules.containsKey(targetModule))
+            {
+                this.runningModules.get(targetModule).resumeModule();
+            }
+        }
+        else if(packet.getControlVal().getCtrlType() == CtrlType.CTRL_ADJUST_POWER_PROFILE)
+        {
+            String targetModule = packet.getTargetModule();
+
+            if(this.runningModules.containsKey(targetModule))
+            {
+                this.runningModules.get(targetModule).adjustPowerProfile(packet.getControlVal().getPowerProfile());
+            }
+        }
+        
         else
         {
             Logger.logWarning("ModuleManager received package with unsupported control val " + packet.getControlVal().getCtrlType());
@@ -414,7 +444,6 @@ public class ModuleManager
     public void onDataPackageFromModule(DataPackage dataPackage)
     {
         Logger.logInfo("ModuleManager received local package from Module \"" + dataPackage.getSourceModule() + "\".");
-        Logger.logInfo(dataPackage + " ");
         this.dispatcher.postPackage(dataPackage);
     }
 

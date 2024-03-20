@@ -15,6 +15,12 @@ extern "C"
 
 __attribute__((visibility("default"))) __attribute__((used))
 void* start_core(const char* socket_path, const char* config_file, const char* host_id, const char* user_id, const char* device_id) {
+    
+    return start_core_with_event_tracker(socket_path, config_file, host_id, user_id, device_id, "");
+}
+
+__attribute__((visibility("default"))) __attribute__((used))
+void* start_core_with_event_tracker(const char* socket_path, const char* config_file, const char* host_id, const char* user_id, const char* device_id, const char* common_data_path) {
     auto socketPath = std::string(socket_path);
     if (socketPath.find("unix://") != 0 && socketPath.find("localhost:") != 0) 
     {
@@ -24,6 +30,13 @@ void* start_core(const char* socket_path, const char* config_file, const char* h
 
     auto middleWare = new claid::MiddleWare(socketPath, config_file,
         host_id, user_id, device_id);
+
+    // If the common data path is set, the middleware will start an EventTracker.
+    std::string commonDataPath = (common_data_path);
+    if(commonDataPath != "")
+    {
+        middleWare->setCommonDataPath(std::string(common_data_path));
+    }
 
     auto status = middleWare->start();
     if (!status.ok()) {

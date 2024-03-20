@@ -24,7 +24,8 @@ import adamma.c4dhi.claid_sensor_data.AccelerationData;
 import adamma.c4dhi.claid_platform_impl.CLAID;
 
 import adamma.c4dhi.claid.Module.ModuleAnnotator;
-import adamma.c4dhi.claid.Module.PropertyHelper.PropertyHelper;
+import adamma.c4dhi.claid.Module.Properties;
+import adamma.c4dhi.claid.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -51,6 +52,10 @@ public class AccelerometerCollector extends Module implements SensorEventListene
     private Integer samplingFrequency;
     private String outputMode;
 
+    PowerProfile currentPowerProfile = null;
+
+    private boolean samplingIsRunning = false;
+
     public static void annotateModule(ModuleAnnotator annotator)
     {
         annotator.setModuleCategory("DataCollection");
@@ -71,16 +76,14 @@ public class AccelerometerCollector extends Module implements SensorEventListene
     }
 
 
-    public void initialize(Map<String, String> propertiesMap)
+    public void initialize(Properties properties)
     {
+        this.samplingFrequency = properties.getNumberProperty("samplingFrequency", Integer.class);
+        this.outputMode = properties.getStringProperty("outputMode");
 
-        PropertyHelper propertyHelper = new PropertyHelper(propertiesMap);
-        this.samplingFrequency = propertyHelper.getProperty("samplingFrequency", Integer.class);
-        this.outputMode = propertyHelper.getProperty("outputMode", String.class);
-
-        if(propertyHelper.wasAnyPropertyUnknown())
+        if(properties.wasAnyPropertyUnknown())
         {
-            this.moduleFatal(propertyHelper.getMissingPropertiesErrorString());
+            this.moduleFatal(properties.getMissingPropertiesErrorString());
             return;
         }
 
@@ -95,13 +98,7 @@ public class AccelerometerCollector extends Module implements SensorEventListene
 
         this.accelerationDataChannel = this.publish("AccelerationData", AccelerationData.class);
 
-        sensorManager = (SensorManager) CLAID.getContext().getSystemService(Context.SENSOR_SERVICE); 
-        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER); 
-        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
-
-        int samplingPerioid = 1000/samplingFrequency;
-
-        registerPeriodicFunction("AccelerometerSampling", () -> sampleAccelerationData(), Duration.ofMillis(samplingPerioid));
+        startSampling();
     }
 
 
@@ -176,4 +173,93 @@ public class AccelerometerCollector extends Module implements SensorEventListene
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {}
+
+
+    public void startSampling()
+    {
+        if(samplingIsRunning)
+        {
+            return;
+        }
+        moduleInfo("Starting sampling");
+        sensorManager = (SensorManager) CLAID.getContext().getSystemService(Context.SENSOR_SERVICE); 
+
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER); 
+
+        boolean powerSavingMode = this.currentPowerProfile != null && this.currentPowerProfile.getPowerProfileType() == PowerProfileType.POWER_SAVING_MODE;
+        if(powerSavingMode)
+        {
+            moduleWarning("PowerSaving mode is active, throttling SensorManager");
+        }
+        sensorManager.registerListener(this, sensor, powerSavingMode ? SensorManager.SENSOR_DELAY_NORMAL : SensorManager.SENSOR_DELAY_FASTEST);
+
+        int samplingPerioid = 1000/this.samplingFrequency;
+
+        registerPeriodicFunction("AccelerometerSampling", () -> sampleAccelerationData(), Duration.ofMillis(samplingPerioid));
+        samplingIsRunning = true;
+    }
+
+    public void stopSampling()
+    {
+        if(!samplingIsRunning)
+        {
+            return;
+        }
+        moduleWarning("Stopping sampling");
+        sensorManager.unregisterListener(this, sensor);
+
+        this.unregisterPeriodicFunction("AccelerometerSampling");
+
+        sensorManager = null;
+        sensor = null;
+        samplingIsRunning = false;
+        this.collectedAccelerationSamples.clear();
+        samplingIsRunning = false;
+    }
+
+    public void restartSampling()
+    {
+        stopSampling();
+        startSampling();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        moduleWarning("onPause called, unregistering from SensorManager");
+        stopSampling();
+    }
+
+    @Override 
+    protected void onResume()
+    {
+        moduleWarning("onResume called, registering at SensorManager");
+        startSampling();
+    }
+
+    @Override
+    protected void onPowerProfileChanged(PowerProfile profile)
+    {
+        moduleWarning("onPowerProfileChanged called, using profile: " + profile.toString().replace("\n", ""));
+
+        if(this.currentPowerProfile == null)
+        {
+            this.currentPowerProfile = profile;
+            this.samplingFrequency = (int) (this.currentPowerProfile.getFrequency());
+            restartSampling();
+            return;
+        }
+        else
+        {
+            if(this.currentPowerProfile.getPowerProfileType() != profile.getPowerProfileType() ||
+                this.currentPowerProfile.getFrequency() != profile.getFrequency())
+            {
+                moduleInfo("PowerProfile has changed, restarting");
+                this.currentPowerProfile = profile;
+                this.samplingFrequency = (int) (this.currentPowerProfile.getFrequency());
+                restartSampling();
+            }
+        }  
+
+    }
 }

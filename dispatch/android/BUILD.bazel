@@ -50,3 +50,13 @@ android_binary(
     manifest = "aar/claid/app/src/main/AndroidManifest.xml",
     resource_files = glob(["aar/claid/app/src/main/res/**/*.xml"])
 )
+
+
+android_binary(
+    name = "android_demo",
+    deps = [":android_claid_cc"],
+    manifest = "aar/claid/app/src/main/AndroidManifest.xml",
+    resource_files = glob(["aar/claid/app/src/main/res/**/*.xml"])
+)
+
+

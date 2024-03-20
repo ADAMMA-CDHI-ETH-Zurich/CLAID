@@ -12,6 +12,7 @@ import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.Module.Channel;
 import adamma.c4dhi.claid.Module.ChannelData;
 import adamma.c4dhi.claid.Module.Module;
+import adamma.c4dhi.claid.Module.Properties;
 
 import adamma.c4dhi.claid_platform_impl.CLAID;
 
@@ -35,9 +36,9 @@ public class BatteryCollector extends Module
         // + "OnChange: The battery level and charging state will be extracted whenever there was a change to the battery state (e.g., battery level decreased or device was plugged / unplugged).");
     
         // annotator.describeProperty("monitoringMode", "String: Allows to specify how the battery information shall be monitored. Two options are available: \n"
-        //                                                 + "Periodically: The current battery level and charging state are extracted periodically. Period can be configured via the monitoringIntervall property.\n"
+        //                                                 + "Periodically: The current battery level and charging state are extracted periodically. Period can be configured via the samplingPeriod property.\n"
         //                                                 + "OnChange: Battery level and information will be extracted whenever an update occured (e.g., battery level changed or device was plugged / unplugged).");
-        annotator.describeProperty("monitoringIntervall", "Number: Period (in milliseconds) by which the battery level and information will be extracted (e.g. 200ms -> 5 times per second).");
+        annotator.describeProperty("samplingPeriod", "Number: Period (in milliseconds) by which the battery level and information will be extracted (e.g. 200ms -> 5 times per second).");
         annotator.describePublishChannel("BatteryData", BatteryData.class, "Channel to which the extracted BatteryInformation will be posted to. Data type is BatteryData.");
     }
 
@@ -45,19 +46,19 @@ public class BatteryCollector extends Module
     String outputChannel = "";
 
     @Override
-    public void initialize(Map<String, String> properties) 
+    public void initialize(Properties properties) 
     {
-        if(!properties.containsKey("monitoringIntervall"))
+        if(!properties.hasProperty("samplingPeriod"))
         {
-            this.moduleFatal("Property \"monitoringIntervall\" was not specified in the configuration file.");
+            this.moduleFatal("Property \"samplingPeriod\" was not specified in the configuration file.");
         }
 
-        Integer monitoringIntervall = Integer.parseInt(properties.get("monitoringIntervall"));
-        Logger.logInfo("BatteryCollector started, monitoringIntervall is: " + monitoringIntervall + "ms");
+        Integer samplingPeriod = properties.getNumberProperty("samplingPeriod", Integer.class);
+        Logger.logInfo("BatteryCollector started, samplingPeriod is: " + samplingPeriod + "ms");
 
         this.batteryDataChannel = this.publish("BatteryData", BatteryData.class);
 
-        this.registerPeriodicFunction("PeriodicBatteryMonitoring", () -> postBatteryData(), Duration.ofMillis(monitoringIntervall));
+        this.registerPeriodicFunction("PeriodicBatteryMonitoring", () -> postBatteryData(), Duration.ofMillis(samplingPeriod));
         System.out.println("BatteryCollector initialized");
     }
 
