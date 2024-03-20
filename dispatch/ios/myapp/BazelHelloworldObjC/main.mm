@@ -8,6 +8,7 @@
 #import "AppDelegate.h"
 #include "CLAIDWrapper.hpp"
 #include <string>
+#include "dispatch/core/Logger/Logger.hh"
 @interface FileLister : NSObject
 
 - (void)listFilesInMainBundle;
@@ -61,6 +62,8 @@ int main(int argc, char * argv[]) {
     NSLog(@"%@", filePath);
     std::string configPath = [filePath UTF8String];
     CLAIDWrapper* wrapper = new CLAIDWrapper();
+claid::Logger::logInfo("Calling start");
     wrapper->start(configPath.c_str(), "test_client", "test", "tst");
+    claid::Logger::logInfo("Wrapper started");
     return UIApplicationMain(argc, argv, nil, appDelegateClassName);
 }

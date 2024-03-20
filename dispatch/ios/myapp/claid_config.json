@@ -21,15 +21,10 @@
                         "DataChannel": "DataChannel"
                     }
                 },
+              
                 {
-                    "type": "AccelerometerCollector",
-                    "id": "Collector",
-                    "output_channels": {
-                        "AccelerationData" : "Data"
-                    },
-                    "properties": {
-                        "samplingFrequency": "20"
-                    }
+                    "type": "LocationCollector",
+                    "id": "LocationCollector"
                 }
             ]
         }

@@ -24,6 +24,7 @@ objc_library(
     ],
     deps=["//dispatch/core:capi"],
     linkopts = ["-Wl,-framework,CoreMotion"],
+    sdk_frameworks = ["CoreLocation"],
     alwayslink = True,
     # copts=["-std=c++14"]
 )

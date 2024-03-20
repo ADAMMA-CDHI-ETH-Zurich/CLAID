@@ -18,30 +18,28 @@
 * limitations under the License.
 ***************************************************************************/
 
+#pragma once
 #include "dispatch/core/CLAID.hh"
 #include "dispatch/proto/sensor_data_types.pb.h"
-
-// IMPORTAT: Test this only on real device, emulator produces wrong values
+#include "LocationTracker.hh"
+#include "../../Permissions/LocationPermission.hh"
 
 namespace claid
 {
-    class BatteryCollector : public claid::Module
+    class LocationCollector : public claid::Module
     {
-        
+
         private:
-            Channel<BatteryData> batteryDataChannel;
-
-            uint16_t samplingPeriod;
-
-            BatteryData batteryData;
-            void initialize(Properties properties);
-            void sampleBatteryData();
-            void postIfEnoughData();
+            LocationTracker* locationTracker;
+            LocationPermission* locationPermission;
+            claid::Channel<LocationData> locationDataChannel;
 
         public:
 
-            static void annotateModule(ModuleAnnotator& annotator);
-       
-          
+            void initialize(Properties properties);
+                
+            void postLocationData();
+
+
     };
 }

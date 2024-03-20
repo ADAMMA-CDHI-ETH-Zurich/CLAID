@@ -6,7 +6,7 @@ class TestSenderModule : public Module
         Channel<std::string> channel;
         int ctr;
     public:
-        void initialize(const std::map<std::string, std::string>& props)
+        void initialize(Properties properties)
         {
             Logger::logInfo("TestSenderModule init");
             channel = publish<std::string>("DataChannel");

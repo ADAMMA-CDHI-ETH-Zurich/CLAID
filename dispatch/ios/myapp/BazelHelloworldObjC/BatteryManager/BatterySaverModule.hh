@@ -30,7 +30,7 @@ namespace claid
 
 
         public:
-            void initialize(const std::map<std::string, std::string>& properties);
+            void initialize(Properties properties);
 
             BatterySaverModule();
             ~BatterySaverModule();

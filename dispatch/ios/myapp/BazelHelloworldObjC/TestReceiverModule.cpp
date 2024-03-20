@@ -6,7 +6,7 @@ class TestReceiverModule : public Module
         Channel<std::string> channel;
         int ctr;
     public:
-        void initialize(const std::map<std::string, std::string>& props)
+        void initialize(Properties properties)
         {
             Logger::logInfo("TestReceiverModule init");
             channel = subscribe<std::string>("DataChannel", &TestReceiverModule::onData, this);

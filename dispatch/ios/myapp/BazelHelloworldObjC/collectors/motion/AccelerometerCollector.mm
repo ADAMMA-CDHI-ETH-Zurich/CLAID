@@ -2,12 +2,12 @@
 
 namespace claid
 {
-    void AccelerometerCollector::initialize(const std::map<std::string, std::string>& propertiesMap)
+    void AccelerometerCollector::initialize(Properties properties)
     {
         Logger::logInfo("Initializing");
-        PropertyHelper properties(propertiesMap);
+        
 
-        properties.getProperty("samplingFrequency", this->samplingFrequency);
+        properties.getNumberProperty("samplingFrequency", this->samplingFrequency);
        
         if(properties.wasAnyPropertyUnknown())
         {

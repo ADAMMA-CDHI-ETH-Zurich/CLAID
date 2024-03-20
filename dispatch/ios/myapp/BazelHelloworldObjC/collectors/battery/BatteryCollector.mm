@@ -42,20 +42,17 @@ namespace claid
         annotator.describePublishChannel<BatteryData>("BatteryData", "Channel to which the extracted BatteryInformation will be posted to. Data type is BatteryData.");
     }
 
-    void BatteryCollector::initialize(const std::map<std::string, std::string>& propertiesMap)
+    void BatteryCollector::initialize(Properties properties)
     {
         Logger::logInfo("Initializing");
-        PropertyHelper properties(propertiesMap);
 
-        properties.getProperty("samplingFrequency", this->samplingFrequency);
+        properties.getNumberProperty("samplingPeriod", this->samplingPeriod);
        
         if(properties.wasAnyPropertyUnknown())
         {
             this->moduleFatal(properties.getMissingPropertiesErrorString());
             return;
         }
-
-        float samplingPeriod = 1000 / (1.0 * this->samplingFrequency);
 
         batteryDataChannel = publish<BatteryData>("BatteryData");
         registerPeriodicFunction("PostBatteryData", &BatteryCollector::sampleBatteryData, this, Duration::milliseconds(samplingPeriod));
@@ -93,11 +90,10 @@ namespace claid
 
     void BatteryCollector::postIfEnoughData()
     {
-        if(batteryData.samples().size() >= this->samplingFrequency)
-        {
-            batteryDataChannel.post(batteryData);
-            batteryData.Clear();
-        }
+   
+        batteryDataChannel.post(batteryData);
+        batteryData.Clear();
+       
     }
 }
 REGISTER_MODULE(BatteryCollector, claid::BatteryCollector);

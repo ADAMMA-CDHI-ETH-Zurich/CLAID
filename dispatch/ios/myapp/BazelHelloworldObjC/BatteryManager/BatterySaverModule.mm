@@ -15,7 +15,7 @@ namespace claid
    
     }
 
-    void BatterySaverModule::initialize(const std::map<std::string, std::string>& properties)
+    void BatterySaverModule::initialize(Properties properties)
     {
         registerPeriodicFunction("BatteryLevelMonitoring", &BatterySaverModule::getCurrentBatteryLevel, this, Duration::seconds(60));
     }

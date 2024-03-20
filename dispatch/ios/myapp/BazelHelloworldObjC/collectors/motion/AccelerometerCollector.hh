@@ -24,7 +24,7 @@ namespace claid
         
         public:
 
-            void initialize(const std::map<std::string, std::string>& propertiesMap);
+            void initialize(Properties properties);
             
 
 

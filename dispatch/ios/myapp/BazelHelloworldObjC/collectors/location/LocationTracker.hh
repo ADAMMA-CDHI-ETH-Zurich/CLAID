@@ -18,30 +18,17 @@
 * limitations under the License.
 ***************************************************************************/
 
-#include "dispatch/core/CLAID.hh"
+#pragma once
 #include "dispatch/proto/sensor_data_types.pb.h"
 
-// IMPORTAT: Test this only on real device, emulator produces wrong values
+using claid::LocationSample;
 
-namespace claid
-{
-    class BatteryCollector : public claid::Module
-    {
-        
-        private:
-            Channel<BatteryData> batteryDataChannel;
+#import <CoreLocation/CoreLocation.h>
 
-            uint16_t samplingPeriod;
+@interface LocationTracker: NSObject <CLLocationManagerDelegate>
 
-            BatteryData batteryData;
-            void initialize(Properties properties);
-            void sampleBatteryData();
-            void postIfEnoughData();
+@property (strong) CLLocationManager *locationManager;
 
-        public:
+-(LocationSample) getLastKnownLocation;
 
-            static void annotateModule(ModuleAnnotator& annotator);
-       
-          
-    };
-}
+@end

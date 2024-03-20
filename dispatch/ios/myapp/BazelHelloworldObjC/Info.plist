@@ -27,5 +27,36 @@
 	<string>1.0</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs microphone permissions</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs location permissions</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app needs location permissions </string>
+	<key>NSLocationUsageDescription</key>
+	<string>This app needs location permissions </string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs location permissions </string>
+	<key>NSMotionUsageDescription</key>
+	<string>This app needs motion permissions</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>fetch</string>
+		<string>location</string>
+		<string>processing</string>
+		<string>remote-notification</string>
+        	<string>bluetooth-central</string>
+	</array>
+  <key>NSBluetoothAlwaysUsageDescription</key>
+  <string>This app needs bluetooth permissions </string>
+  <key>NSBluetoothPeripheralUsageDescription</key>
+  <string>This app needs bluetooth permissions </string>
+  <key>UIFileSharingEnabled</key>
+      <true/>
+  <key>LSSupportsOpeningDocumentsInPlace</key>
+      <true/>
+  <key>NSLocalNetworkUsageDescription</key>
+  <string>Needed to connect to other instances of CLAID running in same network.</string>
 </dict>
 </plist>
