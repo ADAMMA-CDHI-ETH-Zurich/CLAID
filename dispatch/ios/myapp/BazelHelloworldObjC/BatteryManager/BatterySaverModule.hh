@@ -10,6 +10,7 @@ using claidservice::PowerSavingStrategy;
 using claidservice::PowerProfile;
 
 using namespace claid;
+using namespace claidservice;
 
 namespace claid
 {

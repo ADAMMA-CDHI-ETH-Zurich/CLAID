@@ -122,6 +122,7 @@ public class LocationCollector extends Module implements LocationListener
             return;
         }
 
+        locationManager.removeUpdates(this);
         isRunning = false;
         unregisterPeriodicFunction("SampleLocation");
     }

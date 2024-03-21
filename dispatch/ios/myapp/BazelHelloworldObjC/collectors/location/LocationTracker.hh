@@ -28,7 +28,13 @@ using claid::LocationSample;
 @interface LocationTracker: NSObject <CLLocationManagerDelegate>
 
 @property (strong) CLLocationManager *locationManager;
+@property (nonatomic, assign) BOOL isRunning;
+@property (nonatomic, assign) CLLocationDistance locationDistanceFilter;
+@property (nonatomic, assign) CLLocationAccuracy locationAccuracy;
 
 -(LocationSample) getLastKnownLocation;
-
+-(void) setLowPowerProfile;
+-(void) setUnrestrictedPowerProfile;
+-(void) startLocationListener;
+-(void) stopLocationListener;
 @end

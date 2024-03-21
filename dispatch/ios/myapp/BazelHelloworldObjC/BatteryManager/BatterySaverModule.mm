@@ -17,8 +17,24 @@ namespace claid
 
     void BatterySaverModule::initialize(Properties properties)
     {
+        PowerSavingStrategyList strategies;
+        properties.getObjectProperty("powerSavingStrategies", strategies);
+
+        if(properties.wasAnyPropertyUnknown())
+        {
+            moduleFatal(properties.getMissingPropertiesErrorString());
+            return;
+        }
+        Logger::logInfo("Strategies: %s", messageToString(strategies).c_str());
+        
+        for(const PowerSavingStrategy& strategy: strategies.strategies())
+        {
+            this->powerSavingStrategies.push_back(strategy);
+        }
+
         registerPeriodicFunction("BatteryLevelMonitoring", &BatterySaverModule::getCurrentBatteryLevel, this, Duration::seconds(60));
     }
+
 
     void BatterySaverModule::getCurrentBatteryLevel() 
     {
@@ -55,6 +71,11 @@ namespace claid
                 this->executeStrategy(i);
                 return;
             }
+        }
+
+        if(level <= powerSavingStrategies[powerSavingStrategies.size() - 1].battery_threshold())
+        {
+            executeStrategy(powerSavingStrategies.size() - 1);
         }
     }
 

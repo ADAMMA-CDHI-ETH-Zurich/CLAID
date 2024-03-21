@@ -19,7 +19,8 @@ namespace claid {
     
     
 
-    bool CLAID::start(const std::string& socketPath, const std::string& configFilePath, const std::string& hostId, const std::string& userId, const std::string& deviceId)
+    bool CLAID::start(const std::string& socketPath, const std::string& configFilePath, 
+        const std::string& hostId, const std::string& userId, const std::string& deviceId, std::string commonDataPath="")
     {
         Logger::logInfo("CLAID start");
 
@@ -30,7 +31,8 @@ namespace claid {
             return false;
         }
         
-        handle = start_core(socketPath.c_str(), configFilePath.c_str(), hostId.c_str(), userId.c_str(), deviceId.c_str());
+        handle = start_core_with_event_tracker(socketPath.c_str(), configFilePath.c_str(), 
+            hostId.c_str(), userId.c_str(), deviceId.c_str(), commonDataPath.c_str());
         
         if(handle == 0)
         {

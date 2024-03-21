@@ -11,12 +11,14 @@
         _locationManager = [CLLocationManager new];
         _locationManager.delegate = self;
         _locationManager.allowsBackgroundLocationUpdates = YES;
-        _userDialogTitle = @"This app needs location permissions to work";
-        _userDialogBody = @"You need to allow location permissions. If you don't see the alert, you need to allow them in: \nSettings->APP_NAME->Location->Always";
+        self.permissionTitle = @"This app needs location permissions to work";
+        self.permissionBody = @"You need to allow location permissions. If you don't see the alert, you need to allow them in: \nSettings->APP_NAME->Location->Always";
 
-        [self displayBlockingAlertDialog];
-
-        [self blockingRequest];
+        if(!self.isGranted)
+        {
+            [self displayBlockingAlertDialog];
+            [self blockingRequest];
+        }
     }
     return self;
 }
@@ -54,7 +56,7 @@
                 break;
             default:
                 [manager requestAlwaysAuthorization];
-                // [_userDialog show];
+                [self displayBlockingAlertDialog];
         }
     }
 }
@@ -76,7 +78,7 @@
             if (authStatus != kCLAuthorizationStatusAuthorizedAlways)
             {
                 [manager requestAlwaysAuthorization];
-                // [_userDialog show];
+                [self displayBlockingAlertDialog];
             }
     }
 }

@@ -63,7 +63,7 @@ int main(int argc, char * argv[]) {
     std::string configPath = [filePath UTF8String];
     CLAIDWrapper* wrapper = new CLAIDWrapper();
 claid::Logger::logInfo("Calling start");
-    wrapper->start(configPath.c_str(), "test_client", "test", "tst");
+    wrapper->start(configPath.c_str(), "Smartphone", "test", "tst");
     claid::Logger::logInfo("Wrapper started");
     return UIApplicationMain(argc, argv, nil, appDelegateClassName);
 }

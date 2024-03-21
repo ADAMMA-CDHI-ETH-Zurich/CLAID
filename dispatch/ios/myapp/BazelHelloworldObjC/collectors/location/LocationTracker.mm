@@ -29,12 +29,8 @@ LocationSample locationSample;
 {
     self = [super init];
     if (self) {
-        _locationManager = [CLLocationManager new];
-        _locationManager.delegate = self;
-        _locationManager.allowsBackgroundLocationUpdates = YES;
-        _locationManager.distanceFilter = kCLDistanceFilterNone;
-        _locationManager.desiredAccuracy = kCLLocationAccuracyBest;
-        [self startLocationListener];
+        self.locationDistanceFilter = kCLDistanceFilterNone;
+        self.locationAccuracy = kCLLocationAccuracyBest;
     }
     return self;
 }
@@ -98,19 +94,58 @@ LocationSample locationSample;
 
 
 - (void)startLocationListener {
-    [_locationManager startMonitoringSignificantLocationChanges];
-    [_locationManager startUpdatingLocation];
+
+    if(self.isRunning)
+    {
+        return;
+    }
+
+    dispatch_async(dispatch_get_main_queue(), ^(void){
+        _locationManager = [CLLocationManager new];
+        _locationManager.delegate = self;
+        _locationManager.allowsBackgroundLocationUpdates = YES;
+        _locationManager.distanceFilter = kCLDistanceFilterNone;
+        _locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+        [self startLocationListener];
+
+        [_locationManager startMonitoringSignificantLocationChanges];
+        [_locationManager startUpdatingLocation];
+    });
+
+    self.isRunning = YES;
+
+    
 }
 
 - (void)stopLocationListener {
+
+    if(!self.isRunning)
+    {
+        return;
+    }
+
     dispatch_async(dispatch_get_main_queue(), ^(void){
         [_locationManager stopMonitoringSignificantLocationChanges];
         [_locationManager stopUpdatingLocation];
     });
+
+    self.isRunning = NO;
+}
+
+- (void) setLowPowerProfile
+{
+    self.locationDistanceFilter = CLLocationDistanceMax;
+    self.locationAccuracy = kCLLocationAccuracyThreeKilometers;
+}
+
+- (void) setUnrestrictedPowerProfile
+{
+    self.locationDistanceFilter = kCLDistanceFilterNone;
+    self.locationAccuracy = kCLLocationAccuracyBest;
 }
 
 - (LocationSample)getLastKnownLocation {
-    [self stopLocationListener];
+
     return locationSample;
 }
 
