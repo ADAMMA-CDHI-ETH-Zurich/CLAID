@@ -178,6 +178,7 @@ public class Properties
         catch(Exception e)
         {
             Logger.logError("Properties getObjectProperty() failed, unable to serialize property object to json " + e.getMessage() + " " + e.getCause());
+            unknownProperties.add(key);
             return null;
         }
 
@@ -185,6 +186,7 @@ public class Properties
         if(builder == null)
         {
             Logger.logError("Failed to create builder for proto type " + dataType.getName());
+            unknownProperties.add(key);
             return null;
         }
 
@@ -195,6 +197,7 @@ public class Properties
         catch(Exception e)
         {
             Logger.logError("Properties getObjectProperty() failed, unable to deserialize json into type \"" + dataType.getName() + ": " + e.getMessage() + " " + e.getCause());
+            unknownProperties.add(key);
             return null;
         }
         
