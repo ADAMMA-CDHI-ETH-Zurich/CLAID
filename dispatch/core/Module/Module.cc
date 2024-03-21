@@ -303,7 +303,7 @@ namespace claid
 
     void Module::pauseModule()
     {
-        if(!this->isPaused)
+        if(this->isPaused)
         {
             // moduleWarning("Failed to pause Module. Module is already paused.");
             return;
@@ -325,6 +325,11 @@ namespace claid
 
     void Module::resumeModule()
     {
+        if(!this->isPaused)
+        {
+            // moduleWarning("Failed to pause Module. Module is already paused.");
+            return;
+        }
         moduleInfo("Resuming Module");
         this->isPaused = false;
         this->runnableDispatcher.start();

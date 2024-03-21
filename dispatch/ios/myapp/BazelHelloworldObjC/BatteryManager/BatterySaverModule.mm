@@ -32,7 +32,7 @@ namespace claid
             this->powerSavingStrategies.push_back(strategy);
         }
 
-        registerPeriodicFunction("BatteryLevelMonitoring", &BatterySaverModule::getCurrentBatteryLevel, this, Duration::seconds(60));
+        registerPeriodicFunction("BatteryLevelMonitoring", &BatterySaverModule::getCurrentBatteryLevel, this, Duration::seconds(5));
     }
 
 
@@ -42,6 +42,7 @@ namespace claid
         [device setBatteryMonitoringEnabled:YES];
 
         float level = (float)[device batteryLevel] * 100;
+        level = 39;
 
         if(level != this->lastBatteryLevel)
         {
@@ -92,8 +93,8 @@ namespace claid
         std::string strategyString = messageToString(strategy);
         StringUtils::stringReplaceAll(strategyString, "\n", "");
 
-        Logger::logWarning("Battery level %f is below threshold %f, \n",
-            " executing battery persevation strategy %s.", this->lastBatteryLevel, strategy.battery_threshold(), strategyString.c_str());
+        Logger::logWarning("Battery level %f is below threshold %f, executing battery persevation strategy %s.", 
+            this->lastBatteryLevel, strategy.battery_threshold(), strategyString.c_str());
         
 
         for(const std::string& activeModule : strategy.active_modules())

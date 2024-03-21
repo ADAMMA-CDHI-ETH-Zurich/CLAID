@@ -104,8 +104,8 @@ LocationSample locationSample;
         _locationManager = [CLLocationManager new];
         _locationManager.delegate = self;
         _locationManager.allowsBackgroundLocationUpdates = YES;
-        _locationManager.distanceFilter = kCLDistanceFilterNone;
-        _locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+        _locationManager.distanceFilter = self.locationDistanceFilter;
+        _locationManager.desiredAccuracy = self.self.locationAccuracy;
         [self startLocationListener];
 
         [_locationManager startMonitoringSignificantLocationChanges];
@@ -134,6 +134,7 @@ LocationSample locationSample;
 
 - (void) setLowPowerProfile
 {
+    NSLog(@"Power profile low");
     self.locationDistanceFilter = CLLocationDistanceMax;
     self.locationAccuracy = kCLLocationAccuracyThreeKilometers;
 }

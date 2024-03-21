@@ -361,6 +361,7 @@ void ModuleManager::handlePackageWithControlVal(std::shared_ptr<DataPackage> pac
         }
         case CtrlType::CTRL_PAUSE_MODULE:
         {
+            Logger::logWarning("Received pauise module %s", package->target_module().c_str());
             const std::string& targetModule = package->target_module();
 
             auto it = this->runningModules.find(targetModule);
@@ -369,7 +370,10 @@ void ModuleManager::handlePackageWithControlVal(std::shared_ptr<DataPackage> pac
                 // Logger::logError("Got request to pause Module \"%s\", but Module with that id could not be found. Is it running?");
                 return;
             }
+                        Logger::logWarning("Received pauise module  2");
+
             it->second->pauseModule();
+                                    Logger::logWarning("Received pauise module  3");
             break;
         }
         case CtrlType::CTRL_UNPAUSE_MODULE:

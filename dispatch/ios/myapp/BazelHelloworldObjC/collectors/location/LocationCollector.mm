@@ -79,6 +79,7 @@ namespace claid
         if(this->currentPowerProfile.power_profile_type() == PowerProfileType::POWER_SAVING_MODE)
         {
             // Low power
+            moduleWarning("Setting low power profile");
             [locationTracker setLowPowerProfile];
         }
         else
