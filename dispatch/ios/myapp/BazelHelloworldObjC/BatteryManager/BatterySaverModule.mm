@@ -42,7 +42,6 @@ namespace claid
         [device setBatteryMonitoringEnabled:YES];
 
         float level = (float)[device batteryLevel] * 100;
-        level = 39;
 
         if(level != this->lastBatteryLevel)
         {
