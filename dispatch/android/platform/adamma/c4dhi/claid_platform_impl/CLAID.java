@@ -70,12 +70,14 @@ import android.net.wifi.WifiManager;
 
 import android.Manifest;
 import androidx.core.app.ActivityCompat;
-
+import adamma.c4dhi.claid_android.collectors.battery.AlarmBatteryCollector;
+import adamma.c4dhi.claid_android.collectors.audio.MicrophoneCollector;
 import adamma.c4dhi.claid_android.collectors.battery.BatteryCollector;
 import adamma.c4dhi.claid_android.collectors.heartrate.HeartRateCollector;
 import adamma.c4dhi.claid_android.collectors.motion.AccelerometerCollector;
 import adamma.c4dhi.claid_android.collectors.motion.GyroscopeCollector;
 import adamma.c4dhi.claid_android.collectors.location.LocationCollector;
+import adamma.c4dhi.claid_android.collectors.audio.MicrophoneCollector;
 
 import adamma.c4dhi.claid_android.UserFeedback.NotificationModule;
 import adamma.c4dhi.claid_android.UserFeedback.TextToSpeechModule;
@@ -172,6 +174,20 @@ public class CLAID extends JavaCLAIDBase
         CLAID.context = context;
 
    
+
+        if(asyncRunnablesHelperThread == null)
+        {
+            asyncRunnablesHelperThread = new AsyncRunnablesHelperThread();
+        }
+        if(!asyncRunnablesHelperThread.isRunning())
+        {
+            if(!asyncRunnablesHelperThread.start())
+            {
+                Logger.logError("Failed to start async runnables helper thread");
+                return false;
+            }
+        }
+
         // Get the absolute path to the app's data directory
         String appDataDirPath = getAppDataDirectory(context);
 
@@ -250,6 +266,8 @@ public class CLAID extends JavaCLAIDBase
         factory.registerModule(HeartRateCollector.class);
         factory.registerModule(BatterySaverModule.class);
         factory.registerModule(LocationCollector.class);
+        factory.registerModule(MicrophoneCollector.class);
+    factory.registerModule(AlarmBatteryCollector.class);
 
         return factory;
     }
@@ -544,6 +562,7 @@ public class CLAID extends JavaCLAIDBase
             return true;
         }
 
+        Logger.logInfo("Wakelock enabled");
         claidWakeLock.acquire();
         return true;
     }
@@ -564,7 +583,7 @@ public class CLAID extends JavaCLAIDBase
         return true;
     }
 
-    public static boolean disableKeepAppAwake(Context context, Integer waitTimeMs)
+    private static void disableKeepAppAwake(Context context, Integer waitTimeMs)
     {
         try
         {
@@ -575,7 +594,13 @@ public class CLAID extends JavaCLAIDBase
             e.printStackTrace();
         }
 
-        return disableKeepAppAwake(context);
+        Logger.logInfo("WakeLock disabled");
+        disableKeepAppAwake(context);
+    }
+
+    public static void disableKeepAppAwakeAfterMs(Context context, Integer waitTimeMs)
+    {
+        asyncRunnablesHelperThread.insertRunnable(() ->disableKeepAppAwake(context, waitTimeMs));
     }
 
     public static boolean isWearOS(Context context) {

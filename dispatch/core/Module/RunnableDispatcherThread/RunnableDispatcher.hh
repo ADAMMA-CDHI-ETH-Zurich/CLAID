@@ -87,7 +87,7 @@ namespace claid
                 // In any case, when we wake up, we see if we need to execute anything.
                 // wait_for will atomically release the mutex and sleep, and will atomically lock the mutex after waiting.
                 std::unique_lock<std::mutex> lock(this->mutex);
-                this->conditionVariable.wait_for(lock, waitTime, [&]{return this->rescheduleRequired || this->stopped;});
+                this->conditionVariable.wait_for(lock, waitTime, [&]{return this->rescheduleRequired || this->stopped;});    
             }
 
             void processRunnable(ScheduledRunnable& scheduledRunnable)

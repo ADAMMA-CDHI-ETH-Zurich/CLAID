@@ -32,17 +32,32 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.List;
+import java.sql.Time;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 public class AccelerometerCollector extends Module implements SensorEventListener 
 {
     private Channel<AccelerationData> accelerationDataChannel;
-
+    private long lastWakelockTime = 0;
 
     private ReentrantLock mutex = new ReentrantLock();
    
    
-    // Volatile to be thread safe.
-    private volatile AtomicReference<AccelerationSample> latestSample = new AtomicReference<>();
-    private ArrayList<AccelerationSample> collectedAccelerationSamples = new ArrayList<AccelerationSample>();
+   
 
     AccelerationData oldAccelerationData = null;
 
@@ -55,6 +70,9 @@ public class AccelerometerCollector extends Module implements SensorEventListene
     PowerProfile currentPowerProfile = null;
 
     private boolean samplingIsRunning = false;
+
+    long lastSampleTime = 0;
+    AccelerationData.Builder collectedSamples;
 
     public static void annotateModule(ModuleAnnotator annotator)
     {
@@ -95,58 +113,77 @@ public class AccelerometerCollector extends Module implements SensorEventListene
 
         moduleInfo("AccelerometerCollector init " + this.samplingFrequency + " " + this.outputMode);
 
-
+        this.collectedSamples = AccelerationData.newBuilder();
         this.accelerationDataChannel = this.publish("AccelerationData", AccelerationData.class);
 
         startSampling();
     }
 
 
-    public synchronized void sampleAccelerationData()
+    public synchronized void onNewAccelerationSample(AccelerationSample sample)
     {
-        AccelerationSample sample = latestSample.get();
-
-        if(sample == null)
-        {
-            return;
-        }
-
         if(this.outputMode.toUpperCase().equals("STREAM"))
         {
-            AccelerationData.Builder data = AccelerationData.newBuilder();
-
-          
-            data.addSamples(sample);
+            this.collectedSamples.addSamples(sample);
         
-
-            this.accelerationDataChannel.post(data.build());
+            this.accelerationDataChannel.post(this.collectedSamples.build(), sample.getUnixTimestampInMs());
+            this.collectedSamples = AccelerationData.newBuilder();
         }
         else
         {
-            collectedAccelerationSamples.add(sample);
+            this.collectedSamples.addSamples(sample);
 
-            if(collectedAccelerationSamples.size() == samplingFrequency)
+            if(this.collectedSamples.getSamplesList().size() >= samplingFrequency)
             {
-                AccelerationData.Builder data = AccelerationData.newBuilder();
 
-                for(AccelerationSample collectedSample : collectedAccelerationSamples)
-                {   
-                    data.addSamples(collectedSample);
-                }
-
-                this.accelerationDataChannel.post(data.build());
-                collectedAccelerationSamples.clear();
+                this.accelerationDataChannel.post(collectedSamples.build(), sample.getUnixTimestampInMs());
+                this.collectedSamples = AccelerationData.newBuilder();                
             }
         }
         
     }
+    private FileOutputStream fos = null;
 
+    void writeToLogFile(String data) 
+    {
+        
+        try {
 
+            if(fos == null)
+            {
+                // Create a new File instance
+                File file = new File(CLAID.getMediaDirPath(CLAID.getContext()) + "/log_acceleration.txt");
+
+                // Use FileOutputStream to open the file in append mode
+                fos = new FileOutputStream(file, true);
+            }
+            // Get the current date and time
+            String dateTime = getCurrentDateTime();
+
+            // Combine date, time, and data
+            String entry = dateTime + " - " + data + "\n";
+
+            // Write the data to the file
+            fos.write(entry.getBytes());
+
+            // Close the file output stream
+        } catch (IOException e) {
+            e.printStackTrace();
+        } 
+    }
     @Override
     public synchronized void onSensorChanged(SensorEvent sensorEvent)
     {
+        writeToLogFile("On sensor change update");
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
         {
+            if(System.currentTimeMillis() - lastSampleTime < 1000.0/this.samplingFrequency)
+            {
+                return;
+            }   
+            lastSampleTime = System.currentTimeMillis();
+
+        
             // Dividing per g to uniform with iOS
             double x = sensorEvent.values[0] ;/// SensorManager.GRAVITY_EARTH;
             double y = sensorEvent.values[1] ;/// SensorManager.GRAVITY_EARTH;
@@ -165,11 +202,26 @@ public class AccelerometerCollector extends Module implements SensorEventListene
             String formattedString = currentTime.format(formatter);
             sample.setEffectiveTimeFrame(formattedString);
 
-            this.latestSample.set(sample.build());
+            onNewAccelerationSample(sample.build());
+
+            if(System.currentTimeMillis() - lastWakelockTime >= 1000)
+            {
+                
+                CLAID.enableKeepAppAwake(CLAID.getContext());
+                CLAID.disableKeepAppAwakeAfterMs(CLAID.getContext(), 200);
+                lastWakelockTime = System.currentTimeMillis();
+            }
+        
            // System.out.println("Sensor data " +  x + " " +  y + " " + z);
         }
     }
 
+    private static String getCurrentDateTime() {
+        // Get the current date and time in the desired format
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
+        Date currentDate = new Date();
+        return dateFormat.format(currentDate);
+    }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {}
@@ -182,6 +234,7 @@ public class AccelerometerCollector extends Module implements SensorEventListene
             return;
         }
         moduleInfo("Starting sampling");
+
         sensorManager = (SensorManager) CLAID.getContext().getSystemService(Context.SENSOR_SERVICE); 
 
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER); 
@@ -195,7 +248,6 @@ public class AccelerometerCollector extends Module implements SensorEventListene
 
         int samplingPerioid = 1000/this.samplingFrequency;
 
-        registerPeriodicFunction("AccelerometerSampling", () -> sampleAccelerationData(), Duration.ofMillis(samplingPerioid));
         samplingIsRunning = true;
     }
 
@@ -213,7 +265,6 @@ public class AccelerometerCollector extends Module implements SensorEventListene
         sensorManager = null;
         sensor = null;
         samplingIsRunning = false;
-        this.collectedAccelerationSamples.clear();
         samplingIsRunning = false;
     }
 

@@ -31,9 +31,11 @@ import adamma.c4dhi.claid_android.collectors.audio.AudioRecorder;
 import adamma.c4dhi.claid_sensor_data.AudioData;
 import adamma.c4dhi.claid_sensor_data.AudioEncoding;
 import adamma.c4dhi.claid_sensor_data.AudioChannels;
-
+import adamma.c4dhi.claid_sensor_data.AudioData;
+import adamma.c4dhi.claid_sensor_data.AudioEncoding;
 import java.util.Map;
 
+import android.media.AudioFormat;
 
 public class MicrophoneCollector extends Module
 {
@@ -71,9 +73,12 @@ public class MicrophoneCollector extends Module
         System.out.println("Calling init of MicrophoneCollector");
         //new MicrophonePermission().blockingRequest();
 
+        int recorderChannels = AudioFormat.CHANNEL_IN_MONO;
 
-      //  this.recorder = new AudioRecorder(16000);
-      //  this.recorder.start();
+        // We only support PCM_FLOAT for now.
+        int recorderAudioEncoding = AudioFormat.ENCODING_PCM_FLOAT;
+       this.recorder = new AudioRecorder(16000, recorderChannels, recorderAudioEncoding);
+       this.recorder.start();
       //  this.audioDataChannel = this.publish(AudioData.class, this.outputChannel);
       //  System.out.println("Microphone collector initialized");
     }

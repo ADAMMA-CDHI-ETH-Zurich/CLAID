@@ -104,13 +104,13 @@ local_repository(
     path = "../claid_external/tensorflow",
 )
 
-# android_sdk_repository(
-#         name = "androidsdk", # Required. Name *must* be "androidsdk".
-#     )
+android_sdk_repository(
+        name = "androidsdk", # Required. Name *must* be "androidsdk".
+    )
 
-# android_ndk_repository(
-#         name = "androidndk", # Required. Name *must* be "androidndk".
-#     )
+android_ndk_repository(
+        name = "androidndk", # Required. Name *must* be "androidndk".
+    )
 
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")

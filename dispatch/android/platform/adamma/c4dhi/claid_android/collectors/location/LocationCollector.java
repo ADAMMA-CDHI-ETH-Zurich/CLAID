@@ -44,8 +44,7 @@ public class LocationCollector extends Module implements LocationListener
 
     private Channel<LocationData> locationDataChannel;
 
-    // Volatile to be thread safe.
-    private volatile AtomicReference<LocationSample> latestSample = new AtomicReference<>();
+   
     
     private LocationManager locationManager;
     
@@ -106,13 +105,11 @@ public class LocationCollector extends Module implements LocationListener
 
 
         int minimumTimeBetweenUpdatesInMilliseconds = samplingPeriod;
-        int minimumDistanceBetweenUpdatesInMeters = 1;
+        int minimumDistanceBetweenUpdatesInMeters = 0;
         locationManager.requestLocationUpdates(provider, 
             minimumTimeBetweenUpdatesInMilliseconds, 
                 minimumDistanceBetweenUpdatesInMeters, this, Looper.getMainLooper());
 
-        moduleInfo("Starting location updates with samplingPeriod " + samplingPeriod);
-        this.registerPeriodicFunction("SampleLocation", () -> sampleLocation(), Duration.ofMillis(samplingPeriod));
     }
 
     private void stopLocationUpdates()
@@ -133,8 +130,11 @@ public class LocationCollector extends Module implements LocationListener
         this.startLocationUpdates();
     }
 
+
+
     @Override
     public void onLocationChanged(Location location) {
+        moduleInfo("On location changed");
         // This method will be called whenever the location is updated.
         setLatestLocation(location);
     }
@@ -157,16 +157,20 @@ public class LocationCollector extends Module implements LocationListener
         locationSample.setElapsedRealtimeSeconds((double) location.getElapsedRealtimeNanos()/1000000000);
         locationSample.setProvider(location.getProvider());
 
-        latestSample.set(locationSample.build());
+        LocationData.Builder locationData = LocationData.newBuilder();
+        locationData.addSamples(locationSample.build());
+
+        this.locationDataChannel.post(locationData.build());
     }
 
-    public void sampleLocation()
+    /*public void sampleLocation()
     {
         moduleInfo("Sample Location called");
         LocationSample sample = this.latestSample.get();
 
         if(sample == null)
         {
+            moduleInfo("Sample is null");
             return;
         }
 
@@ -174,7 +178,7 @@ public class LocationCollector extends Module implements LocationListener
         locationData.addSamples(sample);
 
         this.locationDataChannel.post(locationData.build());
-    }
+    }*/
 
     @Override
     protected void onPause()

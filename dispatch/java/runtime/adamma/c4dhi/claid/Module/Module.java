@@ -551,9 +551,16 @@ public abstract class Module
         {
             moduleError("Error, tried to unregister periodic function but function was not found in list of registered timers."
             + "Was a function with this name ever registered before?");
+            return;
         }
         
-        timers.get(name).invalidate();
+        ScheduledRunnable runnable = timers.get(name);
+        if(runnable != null)
+        {
+            timers.get(name).invalidate();
+
+        }
+
         timers.remove(name);
     }
 

@@ -118,7 +118,7 @@ public class GyroscopeCollector extends Module implements SensorEventListener
             data.addSamples(sample);
         
 
-            this.GyroscopeDataChannel.post(data.build());
+            this.GyroscopeDataChannel.post(data.build(), sample.getUnixTimestampInMs());
         }
         else
         {
@@ -133,7 +133,7 @@ public class GyroscopeCollector extends Module implements SensorEventListener
                     data.addSamples(collectedSample);
                 }
 
-                this.GyroscopeDataChannel.post(data.build());
+                this.GyroscopeDataChannel.post(data.build(), sample.getUnixTimestampInMs());
                 collectedGyroscopeSamples.clear();
             }
         }
