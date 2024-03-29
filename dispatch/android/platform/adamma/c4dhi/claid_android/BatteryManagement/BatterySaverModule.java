@@ -132,6 +132,17 @@ public class BatterySaverModule extends ManagerModule
         {
             adjustPowerProfileOnModuleById(entry.getKey(), entry.getValue());
         }
+
+        if(strategy.getWakeLock() == true)
+        {
+            Logger.logWarning("enabling keep app awake.");
+            CLAID.enableKeepAppAwake(CLAID.getContext());
+        }
+        else
+        {
+            Logger.logWarning("BatterySaver disabling keep app awake.");
+            CLAID.disableKeepAppAwake(CLAID.getContext());
+        }
     }
 
 }

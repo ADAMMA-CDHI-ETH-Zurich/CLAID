@@ -410,6 +410,7 @@ message PowerSavingStrategy
   repeated string active_modules = 2;
   repeated string paused_modules = 3;
   map<string, PowerProfile> power_profiles = 4;
+  bool wake_lock = 5;
 }
 
 message PowerSavingStrategyList

@@ -98,6 +98,7 @@ public class AudioRecorder
         }
 
         recorder.startRecording();
+        this.isRecording = true;
         return true;
     }
 

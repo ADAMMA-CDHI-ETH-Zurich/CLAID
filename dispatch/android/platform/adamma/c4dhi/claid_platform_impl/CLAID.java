@@ -562,7 +562,7 @@ public class CLAID extends JavaCLAIDBase
             return true;
         }
 
-        Logger.logInfo("Wakelock enabled");
+        Logger.logWarning("Wakelock enabled");
         claidWakeLock.acquire();
         return true;
     }
@@ -594,7 +594,7 @@ public class CLAID extends JavaCLAIDBase
             e.printStackTrace();
         }
 
-        Logger.logInfo("WakeLock disabled");
+        Logger.logWarning("WakeLock disabled");
         disableKeepAppAwake(context);
     }
 

@@ -82,6 +82,19 @@ public class MicrophoneCollector extends Module
       //  this.audioDataChannel = this.publish(AudioData.class, this.outputChannel);
       //  System.out.println("Microphone collector initialized");
     }
+
+    @Override
+    protected void onPause()
+    {
+        this.recorder.stopRecording();
+    }
+
+    @Override 
+    protected void onResume()
+    {
+        this.recorder.start();
+
+    }
   /*
     /*public void onRequest(ChannelData<Request> data)
     {

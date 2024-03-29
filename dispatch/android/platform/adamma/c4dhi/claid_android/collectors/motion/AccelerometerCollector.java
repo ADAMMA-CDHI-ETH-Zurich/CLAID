@@ -207,8 +207,8 @@ public class AccelerometerCollector extends Module implements SensorEventListene
             if(System.currentTimeMillis() - lastWakelockTime >= 1000)
             {
                 
-                CLAID.enableKeepAppAwake(CLAID.getContext());
-                CLAID.disableKeepAppAwakeAfterMs(CLAID.getContext(), 200);
+               // CLAID.enableKeepAppAwake(CLAID.getContext());
+                //CLAID.disableKeepAppAwakeAfterMs(CLAID.getContext(), 200);
                 lastWakelockTime = System.currentTimeMillis();
             }
         

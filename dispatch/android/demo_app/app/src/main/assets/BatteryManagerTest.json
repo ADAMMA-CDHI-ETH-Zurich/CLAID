@@ -6,13 +6,128 @@
       "isServer": false,
       "min_log_severity_level": "WARNING",
       "modules": [
-
+        {
+          "type": "AccelerometerCollector",
+          "id": "Accelerometer",
+          "output_channels": {
+            "AccelerationData" : "AccData"
+          },
+          "properties": {
+            "samplingFrequency" : "50",
+            "outputMode": "BATCHED"
+          }
+        },
         {
           "type": "AlarmBatteryCollector",
-          "id": "AlarmBatteryCollector",
-
+          "id": "AlarmBatteryCollector"
+        },
+        {
+          "type": "MicrophoneCollector",
+          "id": "MicrophoneCollector"
+        },
+        {
+          "type": "DataSaverModule",
+          "id": "AccelerometerSaver",
+          "input_channels": {
+            "DataChannel" : "AccData"
+          },
+          "properties": {
+            "storagePath" : "%media_dir/Data/AccelerationData/",
+            "fileNameFormat": "%Y_%m_%d/%H.json",
+            "fileType": "batch_json"
+          }
         },
 
+        {
+          "type": "LocationCollector",
+          "id": "LocationCollector",
+          "output_channels": {
+            "LocationData" : "LocationData"
+          },
+          "properties": {
+            "samplingPeriod" : "30000",
+          }
+        },
+        {
+          "type": "DataSaverModule",
+          "id": "LocationDataSaver",
+          "input_channels": {
+            "DataChannel" : "LocationData"
+          },
+          "properties": {
+            "storagePath" : "%media_dir/Data/LocationData/",
+            "fileNameFormat": "%Y_%m_%d/%H.json",
+            "fileType": "batch_json"
+          }
+        },
+        {
+          "type": "BatterySaverModule",
+          "id": "BatterySaverModule",
+
+          "properties": {
+            "powerSavingStrategies": {
+              "strategies": [
+                {
+                  "battery_threshold" : 100.0,
+                  "wake_lock": true,
+                  "active_modules": ["Accelerometer", "BatteryCollector", "LocationCollector", "MicrophoneCollector"],
+                  "power_profiles" : {
+                    "Accelerometer" : {
+                      "power_profile_type": "UNRESTRICTED",
+                      "frequency": "50"
+                    },
+                    "LocationCollector" : {
+                      "power_profile_type": "UNRESTRICTED",
+                      "period": "30000"
+                    }
+                  }
+                },
+                {
+
+                  "battery_threshold" : 65.0,
+                  "wake_lock": true,
+                  "active_modules": ["Accelerometer", "LocationCollector", "BatteryCollector", "MicrophoneCollector"],
+                  "power_profiles" : {
+                    "LocationCollector" : {
+                      "power_profile_type": "POWER_SAVING_MODE",
+                      "period": "120000"
+                    },
+                    "Accelerometer" : {
+                      "power_profile_type": "POWER_SAVING_MODE",
+                      "frequency": "5"
+                    }
+                  }
+                },
+                {
+                  "battery_threshold" : 40.0,
+                  "wake_locK": false,
+                  "active_modules": ["Accelerometer", "LocationCollector", "BatteryCollector"],
+                  "paused_modules" : ["MicrophoneCollector"],
+                  "power_profiles" : {
+                    "Accelerometer" : {
+                      "power_profile_type": "POWER_SAVING_MODE",
+                      "frequency": "5"
+                    },
+                    "LocationCollector" : {
+                      "power_profile_type": "POWER_SAVING_MODE",
+                      "period": "120000"
+                    }
+                  }
+                },
+                {
+                  "battery_threshold" : 30.0,
+                  "paused_modules": ["Accelerometer", "LocationCollector", "MicrophoneCollector"],
+                  "wake_lock": false
+                },
+                {
+                  "battery_threshold" : 20.0,
+                  "paused_modules": ["Accelerometer", "LocationCollector", "MicrophoneCollector"],
+                  "wake_lock": false
+                }
+              ]
+            }
+          }
+        }
       ]
     }
 
