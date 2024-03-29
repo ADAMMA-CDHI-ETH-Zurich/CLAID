@@ -1,16 +1,19 @@
-# CLAID API repository
-This repository contains the implementation of the CLAID middleware layer.
+# Closing the Loop on AI & Data Collection
 
-## Other functionalities of CLAID are implemented in the form of CLAID packages, which are available via separate repositories:
+<p align="center">
+  <img alt="ETH" src="assets/eth_logo.png" width="45%">
+&nbsp; &nbsp; &nbsp; &nbsp;
+  <img alt="CDHI" src="assets/cdhi_logo.png" width="45%">
+</p>
 
-- Java bindings (JavaCLAID): [JavaCLAID](https://gitfront.io/r/user-1539181/SKXcxTFeKiqN/JavaCLAID/)
-- Python bindings (PyCLAID): [PyCLAID](https://gitfront.io/r/user-1539181/q71cipzLKA4e/PyCLAID/)
-- TensorFlowLiteModule: [TensorFlowLiteModule](https://gitfront.io/r/user-1539181/e5C2BsUvGhHm/TensorFlowLiteModule/)
-- Data Collection Modules: 
-  - Accelerometer: [AccelerometerCollector](https://gitfront.io/r/user-1539181/42xcLcbhFhvY/AccelerometerCollector/)
-  - Battery: [BatteryCollector](https://gitfront.io/r/user-1539181/hwXyyojNNRZC/BatteryCollector/)
-  - Location: [LocationCollector](https://gitfront.io/r/user-1539181/xWBJSKXRPMnP/CLAIDLocationCollector/)
-  - Microphone: [MicrophoneCollector](https://gitfront.io/r/user-1539181/4h1ZvxV6PUGm/MicrophoneCollector/)
-  - Connectivity: [ConnectivityCollector](https://gitfront.io/r/user-1539181/NRjp84zon5Rs/ConnectivityStateCollector/)
-  - Polar Wearables: [Polar](https://gitfront.io/r/user-1539181/XGqAh7iKKaU3/PolarCollector/)
-  - GreenTEG Core Body Temperature: [GreenTEGCollector](https://gitfront.io/r/user-1539181/FDWH4L9JBzat/GreenTegCORECollector/)
+
+This repository contains the CLAID project, which uses bazel as build system. Different build targets for Android, iOS, Flutter, Python and native builds are available. We will soon provide instructions on how to build CLAID from source.
+Check [https://www.claid.ethz.ch](http://claid.ethz.ch/) for more details and news.
+
+Android build currently only work on Linux, iOS builds only on macOS.
+
+## Contributors
+Patrick Langer, ETH Zurich, 2024  
+Stephan Altmüller, ETH Zurich, 2024 
+Francesco Feher, ETH Zurich, University of Parma, 2024 
+Filipe Barata, ETH Zurich, 2024
