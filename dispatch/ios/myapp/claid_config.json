@@ -4,7 +4,6 @@
       "hostname": "Smartphone",
       "type": "android",
       "isServer": false,
-      "min_log_severity_level": "WARNING",
       "modules": [
         {
           "type": "AccelerometerCollector",
@@ -35,7 +34,7 @@
           },
           "properties": {
             "storagePath" : "%media_dir/Data/AccelerationData/",
-            "fileNameFormat": "%Y_%m_%d/%H.json",
+            "fileNameFormat": "%Y_%m_%d/%H_%M.json",
             "fileType": "batch_json"
           }
         },
@@ -47,7 +46,7 @@
           },
           "properties": {
             "storagePath" : "%media_dir/Data/BatteryData/",
-            "fileNameFormat": "%Y_%m_%d/%H.json",
+            "fileNameFormat": "%Y_%m_%d/%H_%M.json",
             "fileType": "json"
           }
         },
@@ -69,7 +68,7 @@
           },
           "properties": {
             "storagePath" : "%media_dir/Data/LocationData/",
-            "fileNameFormat": "%Y_%m_%d/%H.json",
+            "fileNameFormat": "%Y_%m_%d/%H_%M.json",
             "fileType": "batch_json"
           }
         },
@@ -129,8 +128,8 @@
                  },
                  {
                    "battery_threshold" : 20.0,
-                   "active_modules": ["BatteryCollector"],
-                   "paused_modules": ["Accelerometer", "LocationCollector"]
+                   "active_modules": ["LocationCollector", "BatteryCollector"],
+                   "paused_modules": ["Accelerometer"]
                  }
                ]
             }

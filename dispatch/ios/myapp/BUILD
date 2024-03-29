@@ -21,10 +21,11 @@ objc_library(
     		"BazelHelloworldObjC/Base.lproj/Main.storyboard",
     		"BazelHelloworldObjC/Base.lproj/LaunchScreen.storyboard",
             "claid_config.json",
+            "sax.mp3",
     ],
     deps=["//dispatch/core:capi"],
     linkopts = ["-Wl,-framework,CoreMotion"],
-    sdk_frameworks = ["CoreLocation"],
+    sdk_frameworks = ["CoreLocation", "AVFAudio" ],
     alwayslink = True,
     # copts=["-std=c++14"]
 )
