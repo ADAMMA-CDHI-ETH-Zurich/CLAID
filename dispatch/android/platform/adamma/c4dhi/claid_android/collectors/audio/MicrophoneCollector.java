@@ -4,7 +4,7 @@
 * Core AI & Digital Biomarker, Acoustic and Inflammatory Biomarkers (ADAMMA)
 * Centre for Digital Health Interventions (c4dhi.org)
 * 
-* Authors: Patrick Langer
+* Authors: Patrick Langer, Francesco Feher
 * 
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
