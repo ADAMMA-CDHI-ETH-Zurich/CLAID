@@ -1,5 +1,6 @@
 /***************************************************************************
 * Copyright (C) 2023 ETH Zurich
+* CLAID: Closing the Loop on AI & Data Collection (https://claid.ethz.ch)
 * Core AI & Digital Biomarker, Acoustic and Inflammatory Biomarkers (ADAMMA)
 * Centre for Digital Health Interventions (c4dhi.org)
 * 
@@ -17,6 +18,8 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ***************************************************************************/
+
+
 
 import 'dart:async';
 import 'dart:io';
