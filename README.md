@@ -14,6 +14,6 @@ Android build currently only work on Linux, iOS builds only on macOS.
 
 ## Contributors
 Patrick Langer, ETH Zurich, 2024  
-Stephan Altmüller, ETH Zurich, 2024 
-Francesco Feher, ETH Zurich, University of Parma, 2024 
+Stephan Altmüller, ETH Zurich, 2024   
+Francesco Feher, ETH Zurich, University of Parma, 2024   
 Filipe Barata, ETH Zurich, 2024
