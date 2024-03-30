@@ -164,6 +164,38 @@ public class BatterySaverModule extends ManagerModule
             Logger.logWarning("BatterySaver disabling keep app awake.");
             CLAID.disableKeepAppAwake(CLAID.getContext());
         }
+
+        if(strategy.getDisableNetworkConnections())
+        {
+            deactivateNetworkConnections();
+        }
+        else
+        {
+            activateNetworkConnections();
+        }
+
+        if(strategy.getDisableWifiAndBluetooth())
+        {
+            if(!CLAID.DeviceOwnerFeatures.isDeviceOwner(CLAID.getContext()))
+            {
+                moduleError("Cannot disable Wifi and bluetooth. App is no device owner.");
+                return;
+            }
+
+            CLAID.DeviceOwnerFeatures.disableWifi(CLAID.getContext());
+            CLAID.DeviceOwnerFeatures.disableBluetooth(CLAID.getContext());
+        }
+        else
+        {
+            if(!CLAID.DeviceOwnerFeatures.isDeviceOwner(CLAID.getContext()))
+            {
+                moduleError("Cannot disable Wifi and bluetooth. App is no device owner.");
+                return;
+            }
+
+            CLAID.DeviceOwnerFeatures.enableWifi(CLAID.getContext());
+            CLAID.DeviceOwnerFeatures.enableBluetooth(CLAID.getContext());
+        }
     }
 
 }
