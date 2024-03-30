@@ -43,7 +43,7 @@ public abstract class ManagerModule extends Module
         ControlPackage.Builder ctrlPackageBuilder = ControlPackage.newBuilder();
         
         ctrlPackageBuilder.setCtrlType(CtrlType.CTRL_PAUSE_MODULE);
-        ctrlPackageBuilder.setRuntime(Runtime.RUNTIME_CPP);
+        ctrlPackageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
     
         packageBuilder.setControlVal(ctrlPackageBuilder);
         packageBuilder.setTargetModule(moduleId);
@@ -60,7 +60,7 @@ public abstract class ManagerModule extends Module
         ControlPackage.Builder ctrlPackageBuilder = ControlPackage.newBuilder();
         
         ctrlPackageBuilder.setCtrlType(CtrlType.CTRL_UNPAUSE_MODULE);
-        ctrlPackageBuilder.setRuntime(Runtime.RUNTIME_CPP);
+        ctrlPackageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
     
         packageBuilder.setControlVal(ctrlPackageBuilder);
         packageBuilder.setTargetModule(moduleId);
@@ -78,13 +78,43 @@ public abstract class ManagerModule extends Module
         ControlPackage.Builder ctrlPackageBuilder = ControlPackage.newBuilder();
         
         ctrlPackageBuilder.setCtrlType(CtrlType.CTRL_ADJUST_POWER_PROFILE);
-        ctrlPackageBuilder.setRuntime(Runtime.RUNTIME_CPP);
+        ctrlPackageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
         // Assuming setPowerProfile method is generated
         ctrlPackageBuilder.setPowerProfile(powerProfile);
         
         packageBuilder.setControlVal(ctrlPackageBuilder);
         packageBuilder.setTargetModule(moduleId);
         packageBuilder.setSourceModule(this.getId());
+
+        // Source host and target host will be set to current host 
+        // automatically by Router (since this package is a control package).
+    
+        this.subscriberPublisher.getToModuleManagerQueue().add(packageBuilder.build());
+    }
+
+    public void deactivateNetworkConnections() {
+        DataPackage.Builder packageBuilder = DataPackage.newBuilder();
+        ControlPackage.Builder ctrlPackageBuilder = ControlPackage.newBuilder();
+        
+        ctrlPackageBuilder.setCtrlType(CtrlType.CTRL_DEACTIVATE_NETWORK_CONNECTIONS);
+        ctrlPackageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
+    
+        packageBuilder.setControlVal(ctrlPackageBuilder);
+
+        // Source host and target host will be set to current host 
+        // automatically by Router (since this package is a control package).
+    
+        this.subscriberPublisher.getToModuleManagerQueue().add(packageBuilder.build());
+    }
+
+    public void activateNetworkConnections() {
+        DataPackage.Builder packageBuilder = DataPackage.newBuilder();
+        ControlPackage.Builder ctrlPackageBuilder = ControlPackage.newBuilder();
+        
+        ctrlPackageBuilder.setCtrlType(CtrlType.CTRL_ACTIVATE_NETWORK_CONNECTIONS);
+        ctrlPackageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
+    
+        packageBuilder.setControlVal(ctrlPackageBuilder);
 
         // Source host and target host will be set to current host 
         // automatically by Router (since this package is a control package).

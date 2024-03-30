@@ -585,6 +585,41 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
             });
             break;  
         }
+        case CtrlType::CTRL_DEACTIVATE_NETWORK_CONNECTIONS:
+        {
+            if(this->remoteDispatcherClient != nullptr && this->remoteDispatcherClient->isRunning())
+            {
+                this->remoteDispatcherClient->shutdown();
+            }
+            if(this->remoteDispatcherServer != nullptr && this->remoteDispatcherServer->isRunning())
+            {
+                this->remoteDispatcherServer->shutdown();
+            }
+            break;
+        }
+        case CtrlType::CTRL_ACTIVATE_NETWORK_CONNECTIONS:
+        {
+            if(this->remoteDispatcherClient != nullptr && this->remoteDispatcherClient->isRunning())
+            {
+                absl::Status status = this->remoteDispatcherClient->start();
+                if(!status.ok())
+                {
+                    Logger::logError("%s", absl::StrCat("Received ControlPackage with type CTRL_ACTIVATE_NETWORK_CONNECTIONS. ",
+                    "Failed to activate RemoteDispatcherClient: ", status.ToString()).c_str());
+                }
+            }
+            if(this->remoteDispatcherServer != nullptr && this->remoteDispatcherServer->isRunning())
+            {
+                absl::Status status = this->remoteDispatcherServer->start();
+                if(!status.ok())
+                {
+                    Logger::logError("%s", absl::StrCat("Received ControlPackage with type CTRL_ACTIVATE_NETWORK_CONNECTIONS. ",
+                    "Failed to activate RemoteDispatcherServer: ", status.ToString()).c_str());
+                }
+            }
+            break;
+        }
+
         
         /*case CtrlType::CTRL_LOCAL_LOG_MESSAGE:
         {

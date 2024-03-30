@@ -56,6 +56,8 @@ namespace claid
             bool isConnected() const;
             absl::Status getLastStatus() const;
 
+            bool isRunning() const;
+
         private:
             void processReading();
             void processWriting();

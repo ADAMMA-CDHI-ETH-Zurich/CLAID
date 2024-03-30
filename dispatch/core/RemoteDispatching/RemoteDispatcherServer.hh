@@ -45,6 +45,8 @@ namespace claid
       absl::Status start();
       void shutdown();
 
+      bool isRunning() const;
+
     private:
       void buildAndStartServer();
 

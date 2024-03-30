@@ -112,4 +112,9 @@ namespace claid
 
         server = builder.BuildAndStart();
     }
+
+    bool RemoteDispatcherServer::isRunning() const
+    {
+        return this->running;
+    }
 }

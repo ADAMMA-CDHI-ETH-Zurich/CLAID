@@ -379,4 +379,9 @@ namespace claid
     {
         return this->lastStatus;   
     }
+
+    bool RemoteDispatcherClient::isRunning() const
+    {
+        return this->connectionMonitorRunning;
+    }
 }

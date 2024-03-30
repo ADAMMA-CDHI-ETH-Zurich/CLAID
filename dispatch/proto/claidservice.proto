@@ -91,6 +91,8 @@ enum CtrlType {
   CTRL_PAUSE_MODULE                                   = 24; // Can be used by local Runtimes to pause Modules running on the same host.
   CTRL_UNPAUSE_MODULE                                 = 25; // Can be used by local Runtimes to unpause Modules running on the same host.
   CTRL_ADJUST_POWER_PROFILE                           = 26; // Can be used by local Runtimes to change the PowerProfile of Modules running on the same host. Only works if a Module supports power profiles.
+  CTRL_ACTIVATE_NETWORK_CONNECTIONS                   = 27; // Can be used to activate network connections after they have been activated by CTRL_DEACTIVATE_NETWORK_CONNECTIONS.
+  CTRL_DEACTIVATE_NETWORK_CONNECTIONS                 = 28; // Can be used to deactivate all RemoteDispatcherClient and Servers, i.e., cutting all external connections.
   //CTRL_ADD_MODULE                         = 11; // Can be used to add a new Module at runtime (requires Module name, properties, channels). This package will be forwarded by the LocalRouter to the Middleware that can handle this Module.
   //CTRL_REMOVE_MODULE                      = 12; // Can be used to remove a Module at runtime.
   //CTRL_ADD_MODULE_SUCCESS                 = 13; // Sent as response to CTRL_ADD_MODULE the Module was added successfully.
@@ -411,6 +413,8 @@ message PowerSavingStrategy
   repeated string paused_modules = 3;
   map<string, PowerProfile> power_profiles = 4;
   bool wake_lock = 5;
+  bool disable_network_connections = 6;
+  bool disable_wifi_and_bluetooth = 7; // Only on Android or WearOS with advanced device management active.
 }
 
 message PowerSavingStrategyList
