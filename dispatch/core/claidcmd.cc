@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     const char* device_id = "something_else";
 
     claid::CLAID claid;
-    bool result = claid.start(socket_path, config_file, host_id, user_id, device_id);
+    bool result = claid.start(socket_path, config_file, host_id, user_id, device_id, "");
     while(true);
     return 0;
 }
