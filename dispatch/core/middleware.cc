@@ -587,8 +587,10 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
         }
         case CtrlType::CTRL_DEACTIVATE_NETWORK_CONNECTIONS:
         {
+            Logger::logWarning("Disabling network connections due to CTRL_DEACTIVATE_NETWORK_CONNECTIONS %d %d", this->remoteDispatcherClient != nullptr, this->remoteDispatcherClient->isRunning());
             if(this->remoteDispatcherClient != nullptr && this->remoteDispatcherClient->isRunning())
             {
+                Logger::logWarning("Calling RemoteDispatcherClient shutdown.");
                 this->remoteDispatcherClient->shutdown();
             }
             if(this->remoteDispatcherServer != nullptr && this->remoteDispatcherServer->isRunning())
@@ -599,7 +601,8 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
         }
         case CtrlType::CTRL_ACTIVATE_NETWORK_CONNECTIONS:
         {
-            if(this->remoteDispatcherClient != nullptr && this->remoteDispatcherClient->isRunning())
+            Logger::logWarning("Enabling network connections due to CTRL_DEACTIVATE_NETWORK_CONNECTIONS");
+            if(this->remoteDispatcherClient != nullptr && !this->remoteDispatcherClient->isRunning())
             {
                 absl::Status status = this->remoteDispatcherClient->start();
                 if(!status.ok())
@@ -608,7 +611,7 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
                     "Failed to activate RemoteDispatcherClient: ", status.ToString()).c_str());
                 }
             }
-            if(this->remoteDispatcherServer != nullptr && this->remoteDispatcherServer->isRunning())
+            if(this->remoteDispatcherServer != nullptr && !this->remoteDispatcherServer->isRunning())
             {
                 absl::Status status = this->remoteDispatcherServer->start();
                 if(!status.ok())

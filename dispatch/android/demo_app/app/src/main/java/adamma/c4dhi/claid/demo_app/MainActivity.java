@@ -58,12 +58,13 @@ public class MainActivity extends Activity {
         factory = ((MyApplication) getApplication()).factory;
         factory = (PersistentModuleFactory) CLAID.registerDefaultModulesToFactory((ModuleFactory) factory);
 
-        CLAID.startInPersistentService(getApplicationContext(), "assets://BatteryManagerTest.json",
+        CLAID.startInPersistentService(getApplicationContext(),
+                CLAID.getMediaDirPath(getApplicationContext()) + "/BatteryManagerTest.json",
                 "Smartphone",
                 "device",
                 "user",
                 factory,
-                CLAIDSpecialPermissionsConfig.regularConfig(),
+                CLAIDSpecialPermissionsConfig.almightyCLAID(),
                 CLAIDPersistanceConfig.maximumPersistance());
 
         CLAID.onStarted(() -> CLAID.enableKeepAppAwake(CLAID.getContext()));

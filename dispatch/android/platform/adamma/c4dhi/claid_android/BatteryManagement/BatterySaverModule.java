@@ -168,10 +168,12 @@ public class BatterySaverModule extends ManagerModule
         if(strategy.getDisableNetworkConnections())
         {
             deactivateNetworkConnections();
+            moduleWarning("Deactivating networking");
         }
         else
         {
             activateNetworkConnections();
+            moduleWarning("Activating networking");
         }
 
         if(strategy.getDisableWifiAndBluetooth())
@@ -184,6 +186,7 @@ public class BatterySaverModule extends ManagerModule
 
             CLAID.DeviceOwnerFeatures.disableWifi(CLAID.getContext());
             CLAID.DeviceOwnerFeatures.disableBluetooth(CLAID.getContext());
+            moduleWarning("Disabling bluetooth and Wifi");
         }
         else
         {
@@ -195,6 +198,7 @@ public class BatterySaverModule extends ManagerModule
 
             CLAID.DeviceOwnerFeatures.enableWifi(CLAID.getContext());
             CLAID.DeviceOwnerFeatures.enableBluetooth(CLAID.getContext());
+            moduleWarning("Enabling bluetooth and Wifi");
         }
     }
 
