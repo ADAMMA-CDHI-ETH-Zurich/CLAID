@@ -54,10 +54,11 @@
 
     </queries>
 
-    <application>
+    <application android:testOnly="true" >
         <receiver android:name="adamma.c4dhi.claid_android.collectors.battery.BatteryReceiver"
         android:enabled="true"
-            android:exported="true"/>
+            android:exported="true"
+            />
 
          <receiver
             android:name="adamma.c4dhi.claid_android.Receivers.OnBootReceiver"

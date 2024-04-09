@@ -209,8 +209,11 @@ public class AccelerometerCollector extends Module implements SensorEventListene
             double x = sensorEvent.values[0] ;/// SensorManager.GRAVITY_EARTH;
             double y = sensorEvent.values[1] ;/// SensorManager.GRAVITY_EARTH;
             double z = sensorEvent.values[2] ;/// SensorManager.GRAVITY_EARTH;
-
             LocalDateTime currentTime = LocalDateTime.now();
+           /*  LocalDateTime currentTime = LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(sensorEvent.timestamp),
+                ZoneId.systemDefault()
+        );*/
 
             AccelerationSample.Builder sample = AccelerationSample.newBuilder();
             sample.setAccelerationX((double) x);

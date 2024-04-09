@@ -64,6 +64,7 @@ namespace claid
 
     void RemoteDispatcherClient::shutdown() 
     {
+        Logger::logWarning("RemoteDispatcherClient shutdown 1");
         if(!this->connectionMonitorRunning)
         {
             return;
@@ -71,24 +72,33 @@ namespace claid
         // Closing the outgoing queue will end the writer thread.
         // The writer thread will invoke stream->WritesDone() after the outgoingQueue was closed.
         // This will close the stream and also abort stream->Read() for the reader thread.
-       
+        Logger::logWarning("RemoteDispatcherClient shutdown 2");
+        Logger::logWarning("RemoteDispatcherClient shutdown 3");
+
         this->connectionMonitorRunning = false;
         this->connected = false;
-        
+                this->clientTable.getToRemoteClientQueue().interruptOnce();
+
+                Logger::logWarning("RemoteDispatcherClient shutdown 4");
+
        // this->stream->Finish();
 
 
-        if (this->writeThread) 
-        {
-            this->writeThread->join();
-            this->writeThread = nullptr;
-        }
+        // Do not do this here!
+        // WriteThread will be shutdown in monitoring function.
+        // if (this->writeThread) 
+        // {
+        //     this->writeThread->join();
+        //     this->writeThread = nullptr;
+        // }
 
+        Logger::logWarning("RemoteDispatcherClient shutdown 6");
         if (this->watcherAndReaderThreader) 
         {
             this->watcherAndReaderThreader->join();
             this->watcherAndReaderThreader = nullptr;
         }
+        Logger::logWarning("RemoteDispatcherClient shutdown 7");
 
     }
 
@@ -194,7 +204,6 @@ namespace claid
 
             Logger::logInfo("RemoteDispatcherClient lost connection, stopping reader and writer.");
             this->connected = false;
-            this->stream->WritesDone();
             this->clientTable.getToRemoteClientQueue().interruptOnce();
 
             // TODO: Check if we have to call stream->Finish().
@@ -206,8 +215,13 @@ namespace claid
            // this->stream->Finish();
             
             Logger::logInfo("RemoteDispatcherClient waiting for writerThread to join.");
-            writeThread->join();
-            writeThread = nullptr;
+
+            if(writeThread != nullptr)
+            {
+                writeThread->join();
+                writeThread = nullptr;
+            }
+            
             Logger::logInfo("RemoteDispatcherClient is reset.");
         }
         
@@ -286,6 +300,7 @@ namespace claid
         {
             SharedQueue<DataPackage>& toRemoteClientQueue = this->clientTable.getToRemoteClientQueue();
             auto pkt = toRemoteClientQueue.interruptable_pop_front();
+            Logger::logWarning("RemoteDispatcherClient processwriting woke up!");
             if (!pkt) 
             {
                 // It's alright, null pkt can happen due to spurious wakeups or when toRemoteClientQueue.interruptOnce() is called.
@@ -336,6 +351,7 @@ namespace claid
                 this->lastTimePackageWasSent = Time::now();
             }
         }
+        this->stream->WritesDone();
         Logger::logInfo("RemoteDispatcherClient processWriting done");
     }
 
