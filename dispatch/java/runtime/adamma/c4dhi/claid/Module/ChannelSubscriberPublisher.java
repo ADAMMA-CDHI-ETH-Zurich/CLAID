@@ -179,6 +179,24 @@ public class ChannelSubscriberPublisher
         return description.getPayloadOneofCase();
     }
 
+    public String getDataTypeNameOfChannel(final String channelName)
+    {
+        if(!this.channelDescriptions.containsKey(channelName))
+        {
+            return "";
+        }
+        ChannelDescription description = this.channelDescriptions.get(channelName);
+
+        String caseName = description.getPayloadOneofCase().name();
+
+        if(!caseName.equals("blob_val"))
+        {
+            return caseName;
+        }
+
+        return description.getBlobName();
+    }
+
     public void reset()
     {
         channelDescriptions.clear();

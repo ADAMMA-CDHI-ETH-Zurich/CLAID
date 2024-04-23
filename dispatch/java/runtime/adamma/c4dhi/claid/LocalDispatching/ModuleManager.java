@@ -335,9 +335,15 @@ public class ModuleManager
             }
             else
             {
+               String dataPackageDataTypeName = dataPackage.getPayloadOneofCase().name();
+               if(dataPackageDataTypeName.equals("blob_val"))
+               {
+                dataPackageDataTypeName = dataPackage.getBlobVal().getName();
+               }
+
                 Logger.logInfo("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n"
             + "however the data type of payload of the package did not match the data type of the Channel.\n"
-            + "Expected payload type \"" + subscriberPublisher.getPayloadCaseOfChannel(channelName).name() + "\" but got \"" + dataPackage.getPayloadOneofCase().name());
+            + "Expected payload type \"" + subscriberPublisher.getDataTypeNameOfChannel(channelName) + "\" but got \"" + dataPackageDataTypeName);
             }
             return;
         }

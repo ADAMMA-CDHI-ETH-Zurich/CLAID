@@ -196,4 +196,9 @@ public class ChannelDescription
     {
         return this.templatePackage.getPayloadOneofCase();
     }
+
+    public String getBlobName()
+    {
+        return this.templatePackage.getBlobVal().getName();
+    }
 }
