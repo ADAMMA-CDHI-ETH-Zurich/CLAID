@@ -45,27 +45,39 @@ public class PermissionActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        Logger.logInfo("Request microphon permission 1.1");
 
-        this.setTheme();
+        super.onCreate(savedInstanceState);
+        Logger.logInfo("Request microphon permission 1.2");
+
+        Logger.logInfo("Request microphon permission 1.3");
+
         String[] permissions = getIntent().getStringArrayExtra(EXTRA_PERMISSIONS);
+        Logger.logInfo("Request microphon permission 1.4");
 
         int requestCode = getIntent().getIntExtra(EXTRA_REQUEST_CODE, DEFAULT_PERMISSION_REQUEST_CODE);
+        Logger.logInfo("Request microphon permission 14");
+
         this.requestPermissions(permissions, requestCode);
+        Logger.logInfo("Request microphon permission 15");
+
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        Logger.logInfo("request microphone permission10");
-
+        Logger.logInfo("Request microphon permission 12");
         if (!Arrays.stream(grantResults).allMatch(result -> result == PackageManager.PERMISSION_GRANTED))
         {
+            Logger.logInfo("Request microphon permission 13");
+
             displayAlertDialog(getIntent().getStringExtra(EXTRA_DIALOG_TITLE), getIntent().getStringExtra(EXTRA_DIALOG_BODY));
         }
         else
         {
+            Logger.logInfo("Request microphon permission 14");
+
             finish();
         }
     }
@@ -74,21 +86,24 @@ public class PermissionActivity extends Activity {
     {
         Logger.logInfo("request microphone permission11");
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(dialogTitle);
-        builder.setMessage(dialogBody);
-        builder.setPositiveButton("OK", (dialog, id) -> {
-            PackageManager packageManager = this.getPackageManager();
-            Intent intent = packageManager.getLaunchIntentForPackage(this
-                    .getPackageName());
-            ComponentName componentName = intent.getComponent();
-            Intent mainIntent = Intent.makeRestartActivityTask(componentName);
-            this.startActivity(mainIntent);
-            Runtime.getRuntime().exit(0);
-        });
-        builder.setCancelable(false);
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
-        builder.show();
+        runOnUiThread(() -> 
+
+                new AlertDialog.Builder(this)
+                .setTitle(dialogTitle)
+                .setMessage(dialogBody)
+                .setPositiveButton("OK", (dialog, id) -> {
+                    PackageManager packageManager = this.getPackageManager();
+                    Intent intent = packageManager.getLaunchIntentForPackage(this
+                            .getPackageName());
+                    ComponentName componentName = intent.getComponent();
+                    Intent mainIntent = Intent.makeRestartActivityTask(componentName);
+                    this.startActivity(mainIntent);
+                    Runtime.getRuntime().exit(0);
+                })
+                .setCancelable(false)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show());
+
     }
 
     private void setTheme()

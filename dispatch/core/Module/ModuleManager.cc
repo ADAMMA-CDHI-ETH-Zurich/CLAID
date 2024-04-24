@@ -307,8 +307,8 @@ void ModuleManager::onPackageReceivedFromModulesDispatcher(std::shared_ptr<DataP
     if(!subscriberPublisher.isDataPackageCompatibleWithChannel(*dataPackage, moduleId))
     {
         const std::string payloadCaseName = dataPackagePayloadCaseToString(*dataPackage);
-        Logger::logInfo("ModuleManager received package with target for Module \"%s\" on Channel \"%s\",\n"
-            "however the data type of payload of the package did not match the data type of the Channel.\n"
+        Logger::logInfo("ModuleManager received package with target for Module \"%s\" on Channel \"%s\","
+            "however the data type of payload of the package did not match the data type of the Channel."
             "Expected payload type \"%s\" but got \"%s\".",
             moduleId.c_str(), channelName.c_str(), payloadCaseName.c_str(), payloadCaseName.c_str());
 

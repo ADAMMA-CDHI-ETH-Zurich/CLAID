@@ -29,6 +29,23 @@ import android.os.PowerManager;
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid_android.Permissions.BatteryOptimizationExemptionActivity;
 import adamma.c4dhi.claid_android.Permissions.Permission;
+import adamma.c4dhi.claid_platform_impl.CLAID;
+import android.app.ActivityManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
+import android.view.WindowManager;
+import android.app.Activity;
+import java.util.List;
+
 
 public class BatteryOptimizationExemption extends Permission
 {
@@ -54,7 +71,7 @@ public class BatteryOptimizationExemption extends Permission
     public void blockingRequest() 
     {
         if (isGranted()) {
-            Logger.logInfo("We have battery optimization exemtpion.");
+            Logger.logInfo("We have battery optimization exemption.");
             return;
         }
         Logger.logInfo("Checking battery optimization 4");
@@ -65,6 +82,35 @@ public class BatteryOptimizationExemption extends Permission
 
         getContext().startActivity(intent);
         Logger.logInfo("Checking battery optimization 5");
+        try{
+            Thread.sleep(2000);
+        }
+        catch(InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+        Logger.logInfo("Checking battery optimization testx " + isGranted() + " " + isAppOnForeground());
 
+        while(!isGranted() || !isAppOnForeground())
+        {
+            Logger.logInfo("Checking battery optimization test " + isGranted() + " " + isAppOnForeground());
+
+        }
     }
+
+    public boolean isAppOnForeground() {
+        ActivityManager activityManager = (ActivityManager) this.getContext().getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
+        if (appProcesses == null) {
+            return false;
+        }
+        final String packageName = this.getContext().getPackageName();
+        for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
+            if (appProcess.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND && appProcess.processName.equals(packageName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

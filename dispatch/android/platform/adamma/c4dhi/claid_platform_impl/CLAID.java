@@ -84,6 +84,21 @@ import adamma.c4dhi.claid_android.UserFeedback.NotificationModule;
 import adamma.c4dhi.claid_android.UserFeedback.TextToSpeechModule;
 import adamma.c4dhi.claid_android.BatteryManagement.BatterySaverModule;
 
+import android.app.ActivityManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
+import android.view.WindowManager;
+import android.app.Activity;
+import java.util.List;
 
 public class CLAID extends JavaCLAIDBase
 {
@@ -476,6 +491,21 @@ public class CLAID extends JavaCLAIDBase
         permission.blockingRequest();
 
         return permission.isGranted();
+    }
+
+    public static boolean isAppOnForeground(Context context) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
+        if (appProcesses == null) {
+            return false;
+        }
+        final String packageName = context.getPackageName();
+        for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
+            if (appProcess.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND && appProcess.processName.equals(packageName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void onUnrecoverableException(final String exception)

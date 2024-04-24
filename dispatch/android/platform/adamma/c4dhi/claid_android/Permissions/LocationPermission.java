@@ -24,6 +24,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import adamma.c4dhi.claid.Logger.Logger;
 
 
 
@@ -88,19 +89,30 @@ public class LocationPermission extends Permission {
     public void blockingRequest() {
             if (isGranted()) {
                 System.out.println("We have location permissions");
+                return;
             }
             // On API 30+ we need to perform incremental permissions request
             else if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)) {
+                Logger.logInfo("location 1");
                 if (!isFineGranted()) {
+                    Logger.logInfo("location 2");
+
                     super.startIntentWithExtras(stringPermissionsFineCoarse, LOCATION_REQUEST_CODE, userDialogTitleFineLocationOver29, userDialogBodyFineLocationOver29);
                 }
+                Logger.logInfo("location 3");
 
                 while (!isFineGranted()) {
                 }
 
+                Logger.logInfo("location 4");
+
                 if (!isBackgroundGranted()) {
+                    Logger.logInfo("location 5");
+
                     super.startIntentWithExtras(stringPermissionsBackground, LOCATION_REQUEST_CODE, userDialogTitleBackgroundOver29, userDialogBodyBackgroundOver29);
                 }
+                Logger.logInfo("location 6");
+
             }
             // On API 29 we need to ask all permissions together
             else if ((Build.VERSION.SDK_INT == Build.VERSION_CODES.Q)) {
@@ -114,7 +126,16 @@ public class LocationPermission extends Permission {
                     super.startIntentWithExtras(stringPermissionsFineCoarse, LOCATION_REQUEST_CODE, userDialogTitleLocation, userDialogBodyLocation);
                 }
             }
-            while (!isGranted()){}
+            try{
+                Thread.sleep(2000);
+            }
+            catch(InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+
+            while (!isGranted() || !isAppOnForeground()){                Logger.logInfo("location 8");
+        }
     }
 
 }

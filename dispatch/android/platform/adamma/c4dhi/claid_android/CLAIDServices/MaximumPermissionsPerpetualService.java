@@ -84,12 +84,6 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-      
-
-
-
-  
-
         Notification notification = buildNotification();
 
         // TODO: Add support for Android 14:
@@ -274,6 +268,12 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
                 return false;
             }
         }
+
+        while(!CLAID.isAppOnForeground(context))
+        {
+
+        }
+
         Logger.logInfo("Checking battery optimization ");
         if((persistanceConfig.DISABLE_BATTERY_OPTIMIZATIONS || persistanceConfig.MONITOR_TRY_RESTART_IF_CRASHED_OR_EXITED) 
             && !CLAID.isBatteryOptimizationDisabled(context))
