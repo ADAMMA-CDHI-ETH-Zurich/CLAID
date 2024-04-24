@@ -35,6 +35,7 @@ package adamma.c4dhi.claid_android.CLAIDServices;
 
 import adamma.c4dhi.claid_android.CLAIDServices.ServiceRestartDescription;
 import adamma.c4dhi.claid_android.Configuration.CLAIDPersistanceConfig;
+import adamma.c4dhi.claid_android.Permissions.BluetoothPermission;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -72,6 +73,8 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
     public static boolean isRunning = false;
     public static final String CHANNEL_ID = "MaximumPermissionsPerpetualServiceChannel";
     public static final String ACTION_STOP_SERVICE = "adamma.c4dhi.org.claid.STOP_SERVICE";
+
+    private static Thread claidThread;
 
     @Override
     public void onCreate()
@@ -194,7 +197,15 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
 
         // Starts CLAID in the service. A registered PersistentModuleFactory will be used as ModuleFactory.
         // This requires that the user already has called CLAID.getPersistentModuleFactory(), which only works from the Application's onCreate() method.
-        CLAID.onServiceStarted(this, socketPath, configFilePath, hostId, userId, deviceId);
+        
+        if(MaximumPermissionsPerpetualService.claidThread == null)
+        {
+            MaximumPermissionsPerpetualService.claidThread = new Thread(() -> {
+                CLAID.onServiceStarted(this, socketPath, configFilePath, hostId, userId, deviceId);
+            });
+            
+            MaximumPermissionsPerpetualService.claidThread.start();
+        }
     }
 
     @Override
@@ -281,6 +292,7 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
             Logger.logInfo("Requesting exemption from battery optimization " + CLAID.isBatteryOptimizationDisabled(context));
             CLAID.requestBatteryOptimizationExemption(context); 
         }
+
 
         
         return true;
