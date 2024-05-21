@@ -18,3 +18,12 @@ build_android_libs: build_android
 .PHONY: aar_package
 aar_package: build_android_libs
 	cd aar/claid && ./gradlew build
+
+
+.PHONY: publish_maven
+publish_maven: aar_package
+	cd aar/claid && ./gradlew publishToMavenLocal 
+	cd ~/.m2/ch/claid/claid/0.6 &&
+		gpg -ab claid-0.6.aar && 
+		gpg -ab claid-0.6.pom && 
+		gpg -ab claid-0.6.pom &&

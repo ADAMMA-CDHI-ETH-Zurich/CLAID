@@ -1,24 +1,3 @@
-/***************************************************************************
-* Copyright (C) 2023 ETH Zurich
-* CLAID: Closing the Loop on AI & Data Collection (https://claid.ethz.ch)
-* Core AI & Digital Biomarker, Acoustic and Inflammatory Biomarkers (ADAMMA)
-* Centre for Digital Health Interventions (c4dhi.org)
-* 
-* Authors: Patrick Langer, Stephan Altmüller
-* 
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-* 
-*         http://www.apache.org/licenses/LICENSE-2.0
-* 
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-***************************************************************************/
-
 // ignore_for_file: always_specify_types
 // ignore_for_file: camel_case_types
 // ignore_for_file: non_constant_identifier_names
@@ -79,6 +58,43 @@ class ClaidCoreBindings {
           ffi.Pointer<ffi.Char>,
           ffi.Pointer<ffi.Char>)>();
 
+  ffi.Pointer<ffi.Void> start_core_with_event_tracker(
+    ffi.Pointer<ffi.Char> socket_path,
+    ffi.Pointer<ffi.Char> config_file,
+    ffi.Pointer<ffi.Char> host_id,
+    ffi.Pointer<ffi.Char> user_id,
+    ffi.Pointer<ffi.Char> device_id,
+    ffi.Pointer<ffi.Char> common_data_path,
+  ) {
+    return _start_core_with_event_tracker(
+      socket_path,
+      config_file,
+      host_id,
+      user_id,
+      device_id,
+      common_data_path,
+    );
+  }
+
+  late final _start_core_with_event_trackerPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Void> Function(
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>)>>('start_core_with_event_tracker');
+  late final _start_core_with_event_tracker =
+      _start_core_with_event_trackerPtr.asFunction<
+          ffi.Pointer<ffi.Void> Function(
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>)>();
+
   void shutdown_core(
     ffi.Pointer<ffi.Void> handle,
   ) {
@@ -92,21 +108,6 @@ class ClaidCoreBindings {
           'shutdown_core');
   late final _shutdown_core =
       _shutdown_corePtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
-
-  ffi.Pointer<ffi.Char> get_socket_path(
-    ffi.Pointer<ffi.Void> handle,
-  ) {
-    return _get_socket_path(
-      handle,
-    );
-  }
-
-  late final _get_socket_pathPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Pointer<ffi.Char> Function(
-              ffi.Pointer<ffi.Void>)>>('get_socket_path');
-  late final _get_socket_path = _get_socket_pathPtr
-      .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Void>)>();
 
   ffi.Pointer<ffi.Void> attach_cpp_runtime(
     ffi.Pointer<ffi.Void> handle,
@@ -139,4 +140,170 @@ class ClaidCoreBindings {
               ffi.Pointer<ffi.Char>)>>('load_new_config');
   late final _load_new_config = _load_new_configPtr
       .asFunction<int Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Char>)>();
+
+  void set_payload_data_path(
+    ffi.Pointer<ffi.Void> handle,
+    ffi.Pointer<ffi.Char> path,
+  ) {
+    return _set_payload_data_path(
+      handle,
+      path,
+    );
+  }
+
+  late final _set_payload_data_pathPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Pointer<ffi.Void>,
+              ffi.Pointer<ffi.Char>)>>('set_payload_data_path');
+  late final _set_payload_data_path = _set_payload_data_pathPtr.asFunction<
+      void Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Char>)>();
+
+  ffi.Pointer<ffi.Char> get_payload_data_path(
+    ffi.Pointer<ffi.Void> handle,
+  ) {
+    return _get_payload_data_path(
+      handle,
+    );
+  }
+
+  late final _get_payload_data_pathPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Char> Function(
+              ffi.Pointer<ffi.Void>)>>('get_payload_data_path');
+  late final _get_payload_data_path = _get_payload_data_pathPtr
+      .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Void>)>();
+
+  void set_common_data_path(
+    ffi.Pointer<ffi.Void> handle,
+    ffi.Pointer<ffi.Char> path,
+  ) {
+    return _set_common_data_path(
+      handle,
+      path,
+    );
+  }
+
+  late final _set_common_data_pathPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Pointer<ffi.Void>,
+              ffi.Pointer<ffi.Char>)>>('set_common_data_path');
+  late final _set_common_data_path = _set_common_data_pathPtr.asFunction<
+      void Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Char>)>();
+
+  ffi.Pointer<ffi.Char> get_common_data_path(
+    ffi.Pointer<ffi.Void> handle,
+  ) {
+    return _get_common_data_path(
+      handle,
+    );
+  }
+
+  late final _get_common_data_pathPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Char> Function(
+              ffi.Pointer<ffi.Void>)>>('get_common_data_path');
+  late final _get_common_data_path = _get_common_data_pathPtr
+      .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Void>)>();
+
+  ffi.Pointer<ffi.Char> get_socket_path(
+    ffi.Pointer<ffi.Void> handle,
+  ) {
+    return _get_socket_path(
+      handle,
+    );
+  }
+
+  late final _get_socket_pathPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Char> Function(
+              ffi.Pointer<ffi.Void>)>>('get_socket_path');
+  late final _get_socket_path = _get_socket_pathPtr
+      .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Void>)>();
+
+  ffi.Pointer<ffi.Char> get_host_id(
+    ffi.Pointer<ffi.Void> handle,
+  ) {
+    return _get_host_id(
+      handle,
+    );
+  }
+
+  late final _get_host_idPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Char> Function(
+              ffi.Pointer<ffi.Void>)>>('get_host_id');
+  late final _get_host_id = _get_host_idPtr
+      .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Void>)>();
+
+  ffi.Pointer<ffi.Char> get_user_id(
+    ffi.Pointer<ffi.Void> handle,
+  ) {
+    return _get_user_id(
+      handle,
+    );
+  }
+
+  late final _get_user_idPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Char> Function(
+              ffi.Pointer<ffi.Void>)>>('get_user_id');
+  late final _get_user_id = _get_user_idPtr
+      .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Void>)>();
+
+  ffi.Pointer<ffi.Char> get_device_id(
+    ffi.Pointer<ffi.Void> handle,
+  ) {
+    return _get_device_id(
+      handle,
+    );
+  }
+
+  late final _get_device_idPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Char> Function(
+              ffi.Pointer<ffi.Void>)>>('get_device_id');
+  late final _get_device_id = _get_device_idPtr
+      .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Void>)>();
+
+  int get_log_sink_severity_level(
+    ffi.Pointer<ffi.Void> handle,
+  ) {
+    return _get_log_sink_severity_level(
+      handle,
+    );
+  }
+
+  late final _get_log_sink_severity_levelPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<ffi.Void>)>>(
+          'get_log_sink_severity_level');
+  late final _get_log_sink_severity_level = _get_log_sink_severity_levelPtr
+      .asFunction<int Function(ffi.Pointer<ffi.Void>)>();
+
+  void enable_designer_mode(
+    ffi.Pointer<ffi.Void> handle,
+  ) {
+    return _enable_designer_mode(
+      handle,
+    );
+  }
+
+  late final _enable_designer_modePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+          'enable_designer_mode');
+  late final _enable_designer_mode = _enable_designer_modePtr
+      .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  void disable_designer_mode(
+    ffi.Pointer<ffi.Void> handle,
+  ) {
+    return _disable_designer_mode(
+      handle,
+    );
+  }
+
+  late final _disable_designer_modePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+          'disable_designer_mode');
+  late final _disable_designer_mode = _disable_designer_modePtr
+      .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 }

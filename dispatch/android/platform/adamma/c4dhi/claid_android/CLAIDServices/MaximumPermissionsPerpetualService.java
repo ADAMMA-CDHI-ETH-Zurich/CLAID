@@ -74,7 +74,6 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
     public static final String CHANNEL_ID = "MaximumPermissionsPerpetualServiceChannel";
     public static final String ACTION_STOP_SERVICE = "adamma.c4dhi.org.claid.STOP_SERVICE";
 
-    private static Thread claidThread;
 
     @Override
     public void onCreate()
@@ -198,14 +197,10 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
         // Starts CLAID in the service. A registered PersistentModuleFactory will be used as ModuleFactory.
         // This requires that the user already has called CLAID.getPersistentModuleFactory(), which only works from the Application's onCreate() method.
         
-        if(MaximumPermissionsPerpetualService.claidThread == null)
-        {
-            MaximumPermissionsPerpetualService.claidThread = new Thread(() -> {
-                CLAID.onServiceStarted(this, socketPath, configFilePath, hostId, userId, deviceId);
-            });
-            
-            MaximumPermissionsPerpetualService.claidThread.start();
-        }
+     
+        CLAID.onServiceStarted(this, socketPath, configFilePath, hostId, userId, deviceId);
+ 
+        
     }
 
     @Override

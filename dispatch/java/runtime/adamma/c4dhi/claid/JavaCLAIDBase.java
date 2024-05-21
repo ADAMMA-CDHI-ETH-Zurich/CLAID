@@ -74,6 +74,7 @@ public abstract class JavaCLAIDBase
     private static long handle = 0;
     private static long cppRuntimeHandle = 0;
 
+    private static Thread moduleManagerThread = null;
     
 
     // Starts the middleware and attaches to it.
@@ -142,7 +143,23 @@ public abstract class JavaCLAIDBase
         moduleDispatcher = new ModuleDispatcher(socketPath);
         moduleManager = new ModuleManager(moduleDispatcher, factory);
 
-        return moduleManager.start();
+        if(moduleManagerThread == null)
+        {
+            Logger.logInfo("ModuleManagerThread 1");
+            moduleManagerThread = new Thread(() -> {
+                moduleManager.start();
+            });
+            moduleManagerThread.start();
+        }
+        else
+        {
+            
+            Logger.logInfo("ModuleManagerThread 2");
+
+            return false;
+        }
+            
+        return true;
     }
 
     protected static boolean attachJavaRuntimeInternal(long handle, ModuleFactory factory)

@@ -61,10 +61,10 @@ build_middleware:
 # Build the Android Apk, extract the libs from the Apk and copy them to the blobs folder.
 # Make sure to use CC=gcc, not clang! Otherwise build fails
 .PHONY: flutter_package
-flutter_package: 
+flutter_package:  build
 	rm -fr android/libs
 	mkdir android/libs
-	cd ../../android/; make aar_package && cp aar/claid/app/build/outputs/aar/app-debug.aar ../dart/claid/android/libs/claid_debug.aar
+	cd ../../android/; make aar_package && cp aar/claid/claid/build/outputs/aar/app-debug.aar ../dart/claid/android/libs/claid_debug.aar
 
 
 
@@ -121,7 +121,9 @@ generate_dart:
 		../../proto/claidservice.proto \
 		../../proto/*.proto\
 		google/protobuf/timestamp.proto \
-		google/protobuf/empty.proto
+		google/protobuf/empty.proto \
+		google/protobuf/struct.proto 
+
 
 .PHONY: generate_test_dart
 generate_test_dart:

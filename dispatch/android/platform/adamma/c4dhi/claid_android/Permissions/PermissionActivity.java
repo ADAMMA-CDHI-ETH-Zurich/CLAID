@@ -55,6 +55,7 @@ public class PermissionActivity extends Activity {
         String[] permissions = getIntent().getStringArrayExtra(EXTRA_PERMISSIONS);
         Logger.logInfo("Request microphon permission 1.4");
 
+        this.setTheme();
         int requestCode = getIntent().getIntExtra(EXTRA_REQUEST_CODE, DEFAULT_PERMISSION_REQUEST_CODE);
         Logger.logInfo("Request microphon permission 14");
 

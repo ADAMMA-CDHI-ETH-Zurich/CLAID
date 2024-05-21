@@ -35,6 +35,8 @@ import adamma.c4dhi.claid_android.UserFeedback.TextToSpeechModule;
 import android.content.Context;
 import android.app.Application;
 
+import android.location.LocationManager;
+
 import android.content.res.AssetManager;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -83,6 +85,7 @@ import adamma.c4dhi.claid_android.collectors.audio.MicrophoneCollector;
 import adamma.c4dhi.claid_android.UserFeedback.NotificationModule;
 import adamma.c4dhi.claid_android.UserFeedback.TextToSpeechModule;
 import adamma.c4dhi.claid_android.BatteryManagement.BatterySaverModule;
+import adamma.c4dhi.claid_android.Dialog.Dialog;
 
 import android.app.ActivityManager;
 import android.content.ComponentName;
@@ -121,6 +124,9 @@ public class CLAID extends JavaCLAIDBase
     private static PowerManager.WakeLock claidWakeLock;
 
     private static Runnable onCLAIDStartedCallback = null;
+    
+    private static Thread claidThread = null;
+
 
     // Starts the middleware and attaches to it.
     // Volatile, as CLAID might only run as long as the App is in the foreground.
@@ -641,6 +647,35 @@ public class CLAID extends JavaCLAIDBase
     }
 
 
+    public static void displayAlertDialog(String title, String body)
+    {
+        Dialog dialog = new Dialog();
+        dialog.showDialogBlocking(title, body);
+    }
+
+
+    public static boolean isBluetoothEnabled()
+    {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        if(bluetoothAdapter == null)
+        {
+            return false;
+        }
+
+        return bluetoothAdapter.isEnabled();
+    }
+
+    public static boolean isLocationEnabled()
+    {
+        LocationManager locationManager = (LocationManager) CLAID.getContext().getSystemService(Context.LOCATION_SERVICE);
+        if (locationManager == null) 
+        {
+            return false;
+        }
+        boolean isLocationEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        return isLocationEnabled;
+    }
 
     public static class DeviceOwnerFeatures
     {

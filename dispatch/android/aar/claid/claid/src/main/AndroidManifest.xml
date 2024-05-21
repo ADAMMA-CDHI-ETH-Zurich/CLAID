@@ -91,13 +91,16 @@
         <activity
             android:name="adamma.c4dhi.claid_android.Permissions.PermissionActivity"
             android:exported="true">
-
         </activity>
 
         <activity
             android:name="adamma.c4dhi.claid_android.Permissions.BatteryOptimizationExemptionActivity"
             android:exported="true">
+        </activity>
 
+        <activity
+            android:name="adamma.c4dhi.claid_android.Dialog.DialogActivity"
+            android:exported="true">
         </activity>
 
     <!-- TODO adjust for Android 14 |health|fileManagement|dataSync -->
