@@ -50,13 +50,34 @@ struct ModuleTableProperties {
 struct ChannelEntry {
   std::map<std::string, bool> sources;
   std::map<std::string, bool> targets;
-  claidservice::DataPackage::PayloadOneofCase payloadType;
-
+  
   // Either adds or sets the given key in sources or targets.
   // 'isSrc' selects the target field. If the given key exists
   // it will be set to true, if it doesn't exist it will be added.
   // The function returns true if they key existed beforehand.
   bool addSet(const std::string& key, bool isSrc);
+
+  void setPayloadType(const std::string& payloadType)
+  {
+    this->payloadType = payloadType;
+    this->payloadTypeSet = true;
+  }
+
+  const std::string& getPayloadType() const
+  {
+    return this->payloadType;
+  }
+
+  bool isPayloadTypeSet() const
+  {
+    return this->payloadTypeSet;
+  }
+
+  private:
+    std::string payloadType = "";
+    bool payloadTypeSet = false;
+
+ 
 };
 
 class ModuleTable {

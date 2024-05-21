@@ -49,18 +49,10 @@ message DataPackage {
   repeated TracePoint trace_points = 10;
   uint64 unix_timestamp_ms = 11; // unix timestamp in milliseconds of when the package was created
 
-  // To add another message type add it below.
-  oneof payload_oneof {
-    ControlPackage control_val = 30;
-    double number_val = 31;
-    string string_val = 32;
-    bool bool_val = 33;
-    NumberArray number_array_val = 34;
-    StringArray string_array_val = 35;
-    NumberMap number_map = 36;
-    StringMap string_map = 37;
-    Blob blob_val = 38;
-  }
+  // Blob stores a payload in binary representation alongside a corresponding header.
+  
+  Blob payload = 12;
+  ControlPackage control_val = 13;
 }
 
 enum CtrlType {
@@ -140,8 +132,23 @@ message ActionRequest {
   map<string, string> action_params = 1;
 }
 
+message NumberVal
+{
+  double val = 1;
+}
+
 message NumberArray {
   repeated double val = 1;
+}
+
+message BoolVal 
+{
+  bool val = 1;
+}
+
+message StringVal
+{
+  string val = 1;
 }
 
 message StringArray {
@@ -162,14 +169,13 @@ message Blob {
   // The byte blob containing the payload data.
   bytes payload = 2;
 
-  string name = 3;  // local name of the blob (e.g. file name)
 
   // type and subtype contains meta information to decode the bytes contained above.
   // See this list of common mime types
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
   //
-  string message_type = 4;  // mime type, protobuf type (to decode payload)
-  string sub_type = 5;      // mime subtype, etc.
+  string message_type = 3;  // protobuf type (to decode payload)
+  //string sub_type = 4;      // subtype, etc.
 }
 
 enum Codec {

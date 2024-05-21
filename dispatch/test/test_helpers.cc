@@ -116,3 +116,25 @@ bool claidtest::parseFromBlob(const Blob& srcBlob, Message& msg) {
 
     return msg.ParseFromString(srcBlob.payload());
 }
+
+double claidtest::getNumberVal(DataPackage& packet)
+{
+    claidservice::NumberVal val;
+    parseFromBlob(packet.payload(), val);
+    return val.val();
+}
+
+
+google::protobuf::Value claidtest::createValue(const std::string& str) {
+    google::protobuf::Value value;
+    value.set_string_value(str);
+    return value;
+}
+
+google::protobuf::Struct claidtest::createStruct(const std::initializer_list<std::pair<const std::string, std::string>>& props) {
+    google::protobuf::Struct result;
+    for (const auto& prop : props) {
+        (*result.mutable_fields())[prop.first] = createValue(prop.second);
+    }
+    return result;
+}

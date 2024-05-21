@@ -32,7 +32,7 @@ class SenderModule : public Module
 
     int ctr = 0;
 
-    void initialize(const std::map<std::string, std::string>& properties)
+    void initialize(Properties& properties)
     {
         Logger::logInfo("SenderModule init!");
 
@@ -61,7 +61,7 @@ class ReceiverModule : public Module
 {
     Channel<std::string> channel;
 
-    void initialize(const std::map<std::string, std::string>& properties)
+    void initialize(Properties& properties)
     {
         channel = subscribe<std::string>("InputData", &ReceiverModule::onData, this);
     }

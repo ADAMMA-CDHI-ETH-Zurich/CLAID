@@ -32,12 +32,14 @@ using namespace claidservice;
 
 // compPacketType compares whether the 'val' packet matches the
 // channel and payload in the 'ref' packet.
-bool claid::compPacketType(const DataPackage& ref, const DataPackage& val) {
-    return (ref.channel() == val.channel()) &&
-        // ((ref.source_module() == val.source_module()) ||
-        // (ref.target_module() == val.target_module())) &&
-        (ref.payload_oneof_case() == val.payload_oneof_case());
+bool claid::compPacketType(const DataPackage& ref, const DataPackage& val) 
+{
+    const Blob& refBlob = ref.payload();
+    const Blob& valBlob = val.payload();
+
+    return refBlob.message_type() == valBlob.message_type();
 }
+
 
 // Returns true if the packet from the client is valid.
 // A packet is considered valid when
@@ -49,7 +51,6 @@ bool claid::validPacketType(const DataPackage& ref) {
     return !(ref.channel().empty() ||
         (ref.source_module().empty() && ref.target_module().empty()) ||
         (!ref.source_module().empty() && !ref.target_module().empty()) ||
-        (ref.payload_oneof_case() == DataPackage::PayloadOneofCase::PAYLOAD_ONEOF_NOT_SET) ||
         ref.has_control_val());
 }
 
@@ -166,16 +167,16 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         }
 
         // Find the channel and verify and set the type.
-        auto entry = findChannel(channelId);
+        ChannelEntry* entry = findChannel(channelId);
         if (!entry) {
             Logger::logWarning("%s", absl::StrCat("Channel \"", channelId, "\" not known, did you specify it in the configuration file?").c_str());
             continue;
         }
 
-        // If the type was already set and the type doesn't match we return an error.
-        if ((entry->payloadType != DataPackage::PAYLOAD_ONEOF_NOT_SET) && (entry->payloadType != chanPkt.payload_oneof_case())) {
+        // If the type doesn't match we return an error.
+        if (entry->isPayloadTypeSet() && entry->getPayloadType() != chanPkt.payload().message_type()) {
             return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid packet type for channel '",chanPkt.channel(), "' : ",
-              messageToString(chanPkt), "Payload type is ", entry->payloadType, " but expected ", chanPkt.payload_oneof_case()));
+              messageToString(chanPkt), "Payload type is ", entry->getPayloadType(), " but expected ", chanPkt.payload().message_type()));
         }
 
         // Mark the source / target as matched by this module.
@@ -188,16 +189,16 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
                 isSource ? "output channel" : "input channel", " of Module \"", val,  "\" in the configuration file."
             ));
         }
-        Logger::logInfo("Setting channel %s %d", channelId.c_str(), chanPkt.payload_oneof_case());
+        Logger::logInfo("Setting channel %s %s", channelId.c_str(), chanPkt.payload().message_type().c_str());
 
-        if(chanPkt.payload_oneof_case() == DataPackage::PayloadOneofCase::PAYLOAD_ONEOF_NOT_SET)
-        {
-            return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
-                "Failed to set channel \"", channelId, "\". Payload type is not set."
-            ));
-        }
+        // if(chanPkt.payload_oneof_case() == DataPackage::PayloadOneofCase::PAYLOAD_ONEOF_NOT_SET)
+        // {
+        //     return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
+        //         "Failed to set channel \"", channelId, "\". Payload type is not set."
+        //     ));
+        // }
 
-        entry->payloadType = chanPkt.payload_oneof_case();
+        entry->setPayloadType(chanPkt.payload().message_type());
     }
     return Status::OK;
 }
@@ -215,7 +216,7 @@ bool ModuleTable::ready() const {
                 return false;
             }
         }
-        if (it.second.payloadType == DataPackage::PAYLOAD_ONEOF_NOT_SET) {
+        if (!it.second.isPayloadTypeSet()) {
             return false;
         }
     }
@@ -238,8 +239,8 @@ const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt) const {
         return nullptr;
     }
 
-    if (entry->payloadType != pkt.payload_oneof_case()) {
-        Logger::logError("Invalid package, payload type mismatch! Expected \"%d\" but got \"%d\"", entry->payloadType, pkt.payload_oneof_case());
+    if (entry->getPayloadType() != pkt.payload().message_type()) {
+        Logger::logError("Invalid package, payload type mismatch! Expected \"%s\" but got \"%s\"", entry->getPayloadType().c_str(), pkt.payload().message_type().c_str());
         return nullptr;
     }
 
@@ -333,7 +334,7 @@ const string ModuleTable::toString() const {
         }
         out << endl;
 
-        out << "         Type:" << it.second.payloadType << endl;
+        out << "         Type:" << it.second.getPayloadType() << endl;
     }
     return out.str();
 }

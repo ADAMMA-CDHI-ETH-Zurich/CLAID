@@ -167,7 +167,7 @@ public:
                 // What if this function is used before InitRuntime? Then it is not guaranteed that the payload cases are verified.
                 if(templatePackage.channel() == channelName)
                 {
-                    return templatePackage.payload_oneof_case() == dataPackage.payload_oneof_case();
+                    return compPacketType(templatePackage, dataPackage);
                 }
 
             }
@@ -176,7 +176,7 @@ public:
         return false;
     }
 
-    DataPackage::PayloadOneofCase getPayloadCaseOfChannel(const std::string& channelName, const std::string& receiverModule)
+    std::string getPayloadTypeNameOfChannel(const std::string& channelName, const std::string& receiverModule)
     {    
         auto it = examplePackagesForEachModule.find(receiverModule);
         if(it != this->examplePackagesForEachModule.end())
@@ -189,11 +189,11 @@ public:
                 // What if this function is used before InitRuntime? Then it is not guaranteed that the payload cases are verified.
                 if(templatePackage.channel() == channelName)
                 {
-                    return templatePackage.payload_oneof_case();
+                    return templatePackage.payload().message_type();
                 }
             }
         }
-        return DataPackage::PayloadOneofCase::PAYLOAD_ONEOF_NOT_SET;
+        return "";
     }
 
     void reset()

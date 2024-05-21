@@ -33,9 +33,6 @@ namespace claid {
 template<typename T>
 class Mutator
 {
-    // In Java, Protobuf types are immutable. 
-    // Hence, the setter has to return a new DataPacke.
-
     std::function<void(DataPackage&, const T&)> setter;
     std::function<void (const DataPackage&, T& )> getter;
     

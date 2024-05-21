@@ -136,7 +136,7 @@ namespace claid
         // Forward package to output queue, that's all we have to do.
         // The output queue is connected to the MasterRouter, which will forward
         // the package accordingly.
-        if (!pkt.has_control_val())
+        if (!pkt.control_val().ctrl_type() != CtrlType::CTRL_UNSPECIFIED)
         {
             this->incomingQueue.push_back(std::make_shared<DataPackage>(pkt));
             return;
