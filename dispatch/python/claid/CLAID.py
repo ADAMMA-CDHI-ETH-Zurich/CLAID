@@ -62,8 +62,20 @@ class CLAID():
             claid_clib_path = CLAID.get_claid_clib_storage_path()
             print("CLAID PATH ", claid_clib_path)
 
+            current_file_path = os.path.abspath(__file__)
+
+            # Get the directory containing the currently executed Python file
+            current_directory = os.path.dirname(current_file_path)
+
             if not os.path.isfile(claid_clib_path):
-                raise ValueError("Failed to load CLAID library from {}".format(claid_clib_path))
+                alternative_default_path = "{}/../../core/{}".format(current_directory, CLAID.get_claid_clib_name())
+                print("alternative path: {}".format(alternative_default_path))
+
+                if os.path.isfile(alternative_default_path):
+                    claid_clib_path = alternative_default_path
+                else:
+                    raise ValueError("Failed to load CLAID library from {}".format(claid_clib_path))
+                
             CLAID.claid_c_lib = ctypes.CDLL(claid_clib_path)
 
             # Required, otherwise claid_c_lib.attach_cpp_runtime will fail (same for shutdown_core etc).
@@ -106,38 +118,39 @@ class CLAID():
     
         print("CLAID c lib loaded")
 
-    @staticmethod
-    def get_claid_clib_storage_path():
+    @staticmethod 
+    def get_claid_clib_name():
         current_os = platform.system()
-        architecture = platform.machine()
+       
 
-        if architecture == "aarch64":
-            architecture = "arm64"
-
-        current_file_path = os.path.abspath(__file__)
-
-        # Get the directory containing the currently executed Python file
-        current_directory = os.path.dirname(current_file_path)
         
         platform_library_extension = ""
         # Check the operating system
         if current_os == "Linux":
             platform_library_extension = ".so"
 
-            if architecture == "x86":
-                raise ValueError("MacOS 32-bit (x86) not supported with CLAID on Linux.")
+
         elif current_os == "Darwin":
             platform_library_extension = ".dylib"
 
-            if architecture == "x86":
-                raise ValueError("MacOS 32-bit (x86) not supported with CLAID on macOS.")
+            
         elif current_os == "Windows":
-            raise ValueError("Windows currently not supported.")
             platform_library_extension = ".dll"
 
-        
-        libname = os.path.join(current_directory, "dispatch/core/{}/{}/libclaid_capi{}".format(current_os, architecture, platform_library_extension))
+        return "libclaid_capi{}".format(platform_library_extension)
+
+    @staticmethod
+    def get_claid_clib_storage_path():
+        current_file_path = os.path.abspath(__file__)
+
+        # Get the directory containing the currently executed Python file
+        current_directory = os.path.dirname(current_file_path)
+
+        current_os = platform.system()
+        architecture = platform.machine()
+        libname = os.path.join(current_directory, "dispatch/core/{}/{}/{}".format(current_os, architecture, CLAID.get_claid_clib_name()))
         return libname
+
     def __init__(self, module_injection_storage_path = None):
         self.__handle = 0
         self.__cpp_runtime_handle = 0

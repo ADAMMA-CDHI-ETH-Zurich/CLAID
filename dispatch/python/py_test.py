@@ -24,8 +24,8 @@ import sys
 import dispatch.proto.sensor_data_types_pb2
 import ctypes
 import pathlib
-from module.module_factory import ModuleFactory
-from logger.logger import Logger
+from claid.module.module_factory import ModuleFactory
+from claid.logger.logger import Logger
 import sys,os
 sys.path.append(os.getcwd() + "/dispatch/python")
 from local_dispatching.module_dispatcher import ModuleDispatcher
@@ -99,7 +99,7 @@ module_factory = ModuleFactory()
 # module_factory.register_module(TestModule2)
 claid = CLAID()
 claid.hello_world()
-claid.start("/Users/planger/Development/ModuleAPIV2/dispatch/python/test_config.json", "test_client", "user", "device", module_factory)
+claid.start("claid/test_config.json", "test_client", "user", "device", module_factory)
 
 
 print("Getting available modules")
