@@ -36,8 +36,10 @@ bool claid::compPacketType(const DataPackage& ref, const DataPackage& val)
 {
     const Blob& refBlob = ref.payload();
     const Blob& valBlob = val.payload();
+    auto a = refBlob.message_type() == valBlob.message_type();
+    Logger::logInfo("Dbg 1.8 %d %s %s", a, refBlob.message_type().c_str(), valBlob.message_type().c_str());
 
-    return refBlob.message_type() == valBlob.message_type();
+    return a;
 }
 
 
@@ -174,9 +176,14 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         }
 
         // If the type doesn't match we return an error.
-        if (entry->isPayloadTypeSet() && entry->getPayloadType() != chanPkt.payload().message_type()) {
-            return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid packet type for channel '",chanPkt.channel(), "' : ",
-              messageToString(chanPkt), "Payload type is ", entry->getPayloadType(), " but expected ", chanPkt.payload().message_type()));
+        if (entry->isPayloadTypeSet() && entry->getPayloadType() != chanPkt.payload().message_type()) 
+        {
+            // If subscribed channel is of type claid.CLAIDANY, we make an exception.s
+            if(entry->getPayloadType() != "claidservice.CLAIDANY")
+            {
+                return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid packet type for channel '",chanPkt.channel(), "' : ",
+                messageToString(chanPkt), "Payload type is ", entry->getPayloadType(), " but expected ", chanPkt.payload().message_type()));
+            }
         }
 
         // Mark the source / target as matched by this module.

@@ -184,6 +184,7 @@ cc_test(
   size = "small",
   srcs = ["router_test.cc"],
   deps = [
+    ":test_helpers",
     "//dispatch/core:routing",
   ] + FRAMEWORK_DEPS,
 )

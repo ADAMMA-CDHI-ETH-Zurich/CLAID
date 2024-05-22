@@ -17,10 +17,9 @@
 				{
 					"type": "DataSaverModule",
 					"id": "DataSaverModule",
-					"input_channels": {"Data" : "Data"},
+					"input_channels": {"DataChannel" : "Data"},
 					"output_channels": {},
 					"properties": {
-						"what": "Data",
 						"storagePath": "data_saver_json_test/",
 						"fileNameFormat": "test_data.json",
 						"fileType": "json"

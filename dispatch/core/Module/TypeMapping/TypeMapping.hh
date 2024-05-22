@@ -125,7 +125,7 @@ namespace claid {
                 [](const DataPackage& packet, T& returnValue) 
                 { 
                     BoolVal protoVal;
-                    getProtoPayload(packet, returnValue);
+                    getProtoPayload(packet, protoVal);
 
                     returnValue = protoVal.val();
                 }
@@ -229,7 +229,7 @@ namespace claid {
                     NumberMap numberMap;
                     for (const auto& pair : map) 
                     {
-                        (numberMap.mutable_val())[pair.first] = pair.second;
+                        (*numberMap.mutable_val())[pair.first] = pair.second;
                     }
                     setProtoPayload(packet, numberMap);
                 },
@@ -257,7 +257,7 @@ namespace claid {
                     StringMap stringMap;
                     for (const auto& pair : map) 
                     {
-                        (stringMap.mutable_val())[pair.first] = pair.second;
+                        (*stringMap.mutable_val())[pair.first] = pair.second;
                     }
                     setProtoPayload(packet, stringMap);
                 },

@@ -27,6 +27,7 @@
 
 #include "dispatch/core/Router/RoutingTree.hh"
 #include "dispatch/core/Router/RoutingTreeParser.hh"
+#include "dispatch/test/test_helpers.hh"
 
 
 #include <vector>
@@ -34,6 +35,8 @@
 #include <string>
 
 using namespace claid;
+
+using claidtest::setStringVal;
 
 typedef std::function<void(DataPackage&)> setterFn;
 
@@ -65,15 +68,15 @@ const std::string test_host = "test_host";
 
 // Simulate each Module sending to data to every Module (including itself).
 std::vector<std::shared_ptr<DataPackage>> packages = {
-    makePkt(channel11, mod1, mod1, [](auto& p) {  p.set_target_host(test_host); p.set_string_val("package11");}),
-    makePkt(channel12, mod1, mod2, [](auto& p) { p.set_target_host(test_host); p.set_string_val("package12"); }),
-    makePkt(channel13, mod1, mod3, [](auto& p) { p.set_target_host(test_host); p.set_string_val("package13"); }),
-    makePkt(channel21, mod2, mod1, [](auto& p) { p.set_target_host(test_host); p.set_string_val("package21"); }),
-    makePkt(channel22, mod2, mod2, [](auto& p) { p.set_target_host(test_host); p.set_string_val("package22"); }),
-    makePkt(channel23, mod2, mod3, [](auto& p) { p.set_target_host(test_host); p.set_string_val("package23"); }),
-    makePkt(channel31, mod3, mod1, [](auto& p) { p.set_target_host(test_host); p.set_string_val("package31"); }),
-    makePkt(channel32, mod3, mod2, [](auto& p) { p.set_target_host(test_host); p.set_string_val("package32"); }),
-    makePkt(channel33, mod3, mod3, [](auto& p) { p.set_target_host(test_host); p.set_string_val("package33"); })
+    makePkt(channel11, mod1, mod1, [](auto& p) {  p.set_target_host(test_host); setStringVal(p, "package11");}),
+    makePkt(channel12, mod1, mod2, [](auto& p) { p.set_target_host(test_host); setStringVal(p, "package12"); }),
+    makePkt(channel13, mod1, mod3, [](auto& p) { p.set_target_host(test_host); setStringVal(p, "package13"); }),
+    makePkt(channel21, mod2, mod1, [](auto& p) { p.set_target_host(test_host); setStringVal(p, "package21"); }),
+    makePkt(channel22, mod2, mod2, [](auto& p) { p.set_target_host(test_host); setStringVal(p, "package22"); }),
+    makePkt(channel23, mod2, mod3, [](auto& p) { p.set_target_host(test_host); setStringVal(p, "package23"); }),
+    makePkt(channel31, mod3, mod1, [](auto& p) { p.set_target_host(test_host); setStringVal(p, "package31"); }),
+    makePkt(channel32, mod3, mod2, [](auto& p) { p.set_target_host(test_host); setStringVal(p, "package32"); }),
+    makePkt(channel33, mod3, mod3, [](auto& p) { p.set_target_host(test_host); setStringVal(p, "package33"); })
 };
 
 std::shared_ptr<DataPackage> makePackageFromToHost(const std::string& source_host, const std::string& targetHost, const std::string& packageStringVal)
@@ -82,7 +85,7 @@ std::shared_ptr<DataPackage> makePackageFromToHost(const std::string& source_hos
 
     dataPackage->set_source_host(source_host); 
     dataPackage->set_target_host(targetHost); 
-    dataPackage->set_string_val(packageStringVal);
+    setStringVal(*dataPackage, packageStringVal);
     return dataPackage;
 }
 
@@ -112,17 +115,17 @@ void assertQueues(SharedQueue<DataPackage>*& outputQueue1, SharedQueue<DataPacka
     ASSERT_EQ(outputQueue2->size(), 3) << "Expected 3 packages in output queue 2, but got " << outputQueue2->size();
     ASSERT_EQ(outputQueue3->size(), 3) << "Expected 3 packages in output queue 3, but got " << outputQueue3->size();
 
-    ASSERT_EQ(outputQueue1->pop_front()->string_val(), "package11");
-    ASSERT_EQ(outputQueue1->pop_front()->string_val(), "package21");
-    ASSERT_EQ(outputQueue1->pop_front()->string_val(), "package31");
+    ASSERT_EQ(claidtest::getStringVal(*outputQueue1->pop_front()), "package11");
+    ASSERT_EQ(claidtest::getStringVal(*outputQueue1->pop_front()), "package21");
+    ASSERT_EQ(claidtest::getStringVal(*outputQueue1->pop_front()), "package31");
 
-    ASSERT_EQ(outputQueue2->pop_front()->string_val(), "package12");
-    ASSERT_EQ(outputQueue2->pop_front()->string_val(), "package22");
-    ASSERT_EQ(outputQueue2->pop_front()->string_val(), "package32");
+    ASSERT_EQ(claidtest::getStringVal(*outputQueue2->pop_front()), "package12");
+    ASSERT_EQ(claidtest::getStringVal(*outputQueue2->pop_front()), "package22");
+    ASSERT_EQ(claidtest::getStringVal(*outputQueue2->pop_front()), "package32");
 
-    ASSERT_EQ(outputQueue3->pop_front()->string_val(), "package13");
-    ASSERT_EQ(outputQueue3->pop_front()->string_val(), "package23");
-    ASSERT_EQ(outputQueue3->pop_front()->string_val(), "package33");
+    ASSERT_EQ(claidtest::getStringVal(*outputQueue3->pop_front()), "package13");
+    ASSERT_EQ(claidtest::getStringVal(*outputQueue3->pop_front()), "package23");
+    ASSERT_EQ(claidtest::getStringVal(*outputQueue3->pop_front()), "package33");
 }
 
 inline HostDescription makeHostDescription(const std::string& hostname, bool isServer, const std::string& hostServerAddress, const std::string& connectTo)

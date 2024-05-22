@@ -30,8 +30,8 @@ ModuleManager::ModuleManager(DispatcherClient& dispatcher,
     std::shared_ptr<EventTracker> eventTracker) :   dispatcher(dispatcher), 
                                                     fromModuleDispatcherQueue(fromModuleDispatcherQueue), 
                                                     toModuleDispatcherQueue(toModuleDispatcherQueue),
-                                                    subscriberPublisher(toModuleDispatcherQueue),
-                                                    eventTracker(eventTracker)
+                                                    eventTracker(eventTracker),
+                                                    subscriberPublisher(toModuleDispatcherQueue)
 {
     Logger::logInfo("ModuleManager constructor event tracker %lu", eventTracker.get());
 }
@@ -304,19 +304,27 @@ void ModuleManager::onPackageReceivedFromModulesDispatcher(std::shared_ptr<DataP
                     moduleId.c_str(), channelName.c_str());
 
 
+    Logger::logInfo("Dbg 1");
     if(!subscriberPublisher.isDataPackageCompatibleWithChannel(*dataPackage, moduleId))
     {
-        const std::string payloadCaseName = dataPackagePayloadCaseToString(*dataPackage);
-        Logger::logInfo("ModuleManager received package with target for Module \"%s\" on Channel \"%s\","
+                Logger::logInfo("Dbg 110");
+
+        const std::string payloadCaseName = dataPackageDataTypeName(*dataPackage);
+        const std::string expectedPayloadCaseName = subscriberPublisher.getPayloadTypeNameOfChannel(channelName, moduleId);
+        Logger::logInfo("Dbg 111");
+        Logger::logFatal("ModuleManager received package with target for Module \"%s\" on Channel \"%s\","
             "however the data type of payload of the package did not match the data type of the Channel."
             "Expected payload type \"%s\" but got \"%s\".",
-            moduleId.c_str(), channelName.c_str(), payloadCaseName.c_str(), payloadCaseName.c_str());
+            moduleId.c_str(), channelName.c_str(), expectedPayloadCaseName.c_str(), payloadCaseName.c_str());
+        Logger::logInfo("Dbg 112");
 
         return;
     }
+    Logger::logInfo("Dbg 2");
 
     std::vector<std::shared_ptr<AbstractSubscriber>> subscriberList 
         = this->subscriberPublisher.getSubscriberInstancesOfModule(channelName, moduleId);
+    Logger::logInfo("Dbg 3");
 
     Logger::logInfo("ModuleManager invoking subscribers. Found %d subscribers.", subscriberList.size());
     for(std::shared_ptr<AbstractSubscriber> subscriber : subscriberList)

@@ -87,14 +87,23 @@ static void setPayload(DataPackage& packet, T& data)
     blobMsgFromProto(data, blob);
 }
 
-template<typename T> static  void setNumberVal(DataPackage& packet, const T& number)
+template<typename T> static void setNumberVal(DataPackage& packet, const T& number)
 {
     claidservice::NumberVal val;
     val.set_val(number);
     setPayload(packet, val);
 }
 
+static void setStringVal(DataPackage& packet, const std::string& str)
+{
+    claidservice::StringVal val;
+    val.set_val(str);
+    setPayload(packet, val);
+}
+
+
 double getNumberVal(DataPackage& packet);
+std::string getStringVal(DataPackage& packet);
 
 // Definitino of the modules and channels.
 const std::string

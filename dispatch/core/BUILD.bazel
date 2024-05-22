@@ -51,7 +51,8 @@ cc_library(
     deps = [
         ":CLAID",
     ],
-
+    linkstatic = True,   # only create a static lib
+    alwayslink = True,   # include everything in dependents
 )
 
 cc_library(

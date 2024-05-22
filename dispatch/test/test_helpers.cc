@@ -124,6 +124,12 @@ double claidtest::getNumberVal(DataPackage& packet)
     return val.val();
 }
 
+std::string claidtest::getStringVal(DataPackage& packet)
+{
+    claidservice::StringVal val;
+    parseFromBlob(packet.payload(), val);
+    return val.val();
+}
 
 google::protobuf::Value claidtest::createValue(const std::string& str) {
     google::protobuf::Value value;

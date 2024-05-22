@@ -32,16 +32,13 @@ class SenderModule : public Module
 
     int ctr = 0;
 
-    void initialize(Properties& properties)
+    void initialize(Properties properties)
     {
         Logger::logInfo("SenderModule init!");
 
         int dataPeriodMs = 100;
-        auto it = properties.find("dataPeriodMs");
-        if(it != properties.end())
-        {
-            dataPeriodMs = std::atoi(it->second.c_str());
-        }
+       
+        properties.getNumberProperty("dataPeriodMs", dataPeriodMs);
         Logger::logInfo("Data period set to %d", dataPeriodMs);
         registerPeriodicFunction("TestFunction", &SenderModule::periodicFunction, this, Duration::milliseconds(dataPeriodMs));
         
@@ -61,7 +58,7 @@ class ReceiverModule : public Module
 {
     Channel<std::string> channel;
 
-    void initialize(Properties& properties)
+    void initialize(Properties properties)
     {
         channel = subscribe<std::string>("InputData", &ReceiverModule::onData, this);
     }

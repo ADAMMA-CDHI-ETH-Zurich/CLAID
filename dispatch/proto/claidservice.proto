@@ -427,3 +427,9 @@ message PowerSavingStrategyList
 {
     repeated PowerSavingStrategy strategies = 1;
 }
+
+// Used by claid::AnyProtoType 
+message CLAIDANY
+{
+
+}

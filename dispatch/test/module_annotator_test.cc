@@ -36,12 +36,20 @@ class TestModuleWithAnnotationFunction : public Module
         // properties["val1"] = "42";
         // properties["otherVal"] = "1337";
     }
+
+    void initialize(Properties properties)
+    {
+
+    }
 };
 REGISTER_MODULE(TestModuleWithAnnotationFunction, TestModuleWithAnnotationFunction);
 
 class TestModuleWithoutAnnotationFunction : public Module
 {
-    
+    void initialize(Properties properties)
+    {
+
+    }
 };
 REGISTER_MODULE(TestModuleWithoutAnnotationFunction, TestModuleWithoutAnnotationFunction);
 

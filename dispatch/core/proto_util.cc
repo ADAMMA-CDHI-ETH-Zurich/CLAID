@@ -47,4 +47,10 @@ std::string claid::dataPackagePayloadCaseToString(const DataPackage& dataPackage
     }
     return "";
 }
+
+std::string claid::dataPackageDataTypeName(const DataPackage& dataPackage)
+{
+    return dataPackage.payload().message_type();
+}
+
  
