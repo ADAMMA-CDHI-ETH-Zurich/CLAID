@@ -179,7 +179,7 @@ public class ChannelDescription
             return false;
         }
 
-        return dataPackage.getPayloadOneofCase() == this.templatePackage.getPayloadOneofCase(); 
+        return dataPackage.getPayload().getMessageType().equals(this.templatePackage.getPayload().getMessageType()); 
     }
 
     public ArrayList<DataPackage> getChannelTemplatePackagesForModule(final String moduleId)
@@ -192,13 +192,8 @@ public class ChannelDescription
         return this.modules.get(moduleId);
     }
 
-    public DataPackage.PayloadOneofCase getPayloadOneofCase()
+    public String getPayloadDataTypeName()
     {
-        return this.templatePackage.getPayloadOneofCase();
-    }
-
-    public String getBlobName()
-    {
-        return this.templatePackage.getBlobVal().getName();
+        return this.templatePackage.getPayload().getMessageType();
     }
 }

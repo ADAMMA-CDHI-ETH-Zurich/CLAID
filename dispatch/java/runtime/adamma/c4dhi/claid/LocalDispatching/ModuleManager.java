@@ -328,22 +328,18 @@ public class ModuleManager
     
         if(!subscriberPublisher.isDataPackageCompatibleWithChannel(dataPackage))
         {
-            if(subscriberPublisher.getPayloadCaseOfChannel(channelName).name().equals(DataPackage.PayloadOneofCase.PAYLOADONEOF_NOT_SET.name()))
+            if(subscriberPublisher.getDataTypeNameOfChannel(channelName).equals(""))
             {
                 Logger.logError("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n"
-                + "however the Module has never subscribed to that channel (payload type is \"" + DataPackage.PayloadOneofCase.PAYLOADONEOF_NOT_SET + "\").");
+                + "however the Module has never subscribed to that channel (payload type is \"\").");
             }
             else
             {
-               String dataPackageDataTypeName = dataPackage.getPayloadOneofCase().name();
-               if(dataPackageDataTypeName.equals("blob_val"))
-               {
-                dataPackageDataTypeName = dataPackage.getBlobVal().getName();
-               }
+               String dataPackageDataTypeName = dataPackage.getPayload().getMessageType();
 
                 Logger.logInfo("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n"
-            + "however the data type of payload of the package did not match the data type of the Channel.\n"
-            + "Expected payload type \"" + subscriberPublisher.getDataTypeNameOfChannel(channelName) + "\" but got \"" + dataPackageDataTypeName);
+                + "however the data type of payload of the package did not match the data type of the Channel.\n"
+                + "Expected payload type \"" + subscriberPublisher.getDataTypeNameOfChannel(channelName) + "\" but got \"" + dataPackageDataTypeName);
             }
             return;
         }
