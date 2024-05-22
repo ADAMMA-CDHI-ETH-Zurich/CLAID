@@ -68,7 +68,7 @@ class CLAID():
             current_directory = os.path.dirname(current_file_path)
 
             if not os.path.isfile(claid_clib_path):
-                alternative_default_path = "{}/../../core/{}".format(current_directory, CLAID.get_claid_clib_name())
+                alternative_default_path = "{}/dispatch/core/{}".format(os.getcwd(), CLAID.get_claid_clib_name())
                 print("alternative path: {}".format(alternative_default_path))
 
                 if os.path.isfile(alternative_default_path):
@@ -301,6 +301,7 @@ class CLAID():
     
     def process_runnables_blocking(self):
 
+        print("Processing runnables ", self.__started)
         while self.__started:
 
             scheduled_runnable = self.__main_thread_queue.get()

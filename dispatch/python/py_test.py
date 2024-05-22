@@ -33,7 +33,7 @@ from module.module_factory import ModuleFactory
 
 import platform
 from CLAID import CLAID
-from module.module import Module
+from claid.module.module import Module
 
 # from module.module_factory import ModuleFactory
 # from module.module import Module
@@ -95,11 +95,11 @@ class TestModule2(Module):
         print("Data", data.get_data())
 
 module_factory = ModuleFactory()
-# module_factory.register_module(TestModule)
-# module_factory.register_module(TestModule2)
+module_factory.register_module(TestModule)
+module_factory.register_module(TestModule2)
 claid = CLAID()
 claid.hello_world()
-claid.start("claid/test_config.json", "test_client", "user", "device", module_factory)
+claid.start("{}/dispatch/python/claid/test_config.json".format(os.getcwd()), "test_client", "user", "device", module_factory)
 
 
 print("Getting available modules")
