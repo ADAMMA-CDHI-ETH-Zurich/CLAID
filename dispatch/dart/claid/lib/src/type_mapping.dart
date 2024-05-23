@@ -74,55 +74,80 @@ class TypeMapping {
     return _protoCodecMap[fullName] ?? ProtoCodec(msg);
   }
 
+  DataPackage _setProtoPayload<T>(DataPackage package, GeneratedMessage payload)
+  {
+    ProtoCodec codec = _getProtoCodec(payload);
+    Blob blob = codec.encode(payload);
+    package.payload = blob;
+    return package;
+  }
+
+  GeneratedMessage _getProtoPayload(DataPackage package, GeneratedMessage exampleInstance)
+  {
+    ProtoCodec codec = _getProtoCodec(exampleInstance);
+    GeneratedMessage msg = codec.decode(package.payload);
+    
+    return msg;
+  }
+
+
   Mutator<T> getMutator<T>(T inst) {
     if (inst is double) {
       return Mutator<T>(
-          (p, v) => p.numberVal = v as double, (p) => p.numberVal as T);
+          (p, v) => _setProtoPayload(p, NumberVal()..val = v as double), 
+          (p) => (_getProtoPayload(p, NumberVal()) as NumberVal).val as T);
     }
 
-    if (inst is bool) {
-      return Mutator<T>((p, v) => p.boolVal = v as bool, (p) => p.boolVal as T);
+    if (inst is bool) 
+    {
+      return Mutator<T>(
+          (p, v) => _setProtoPayload(p, BoolVal()..val = v as bool), 
+          (p) => (_getProtoPayload(p, BoolVal()) as BoolVal).val as T);
     }
 
     if (inst is String) {
       return Mutator<T>(
-          (p, v) => p.stringVal = v as String, (p) => p.stringVal as T);
+          (p, v) => _setProtoPayload(p, StringVal()..val = v as String), 
+          (p) => (_getProtoPayload(p, StringVal()) as StringVal).val as T);
     }
 
     // List double
     if (inst is List<double>) {
       return Mutator<T>(
-          (p, v) => p.numberArrayVal = NumberArray(val: v as List<double>),
-          (p) => p.numberArrayVal.val as T);
+          (p, v) => _setProtoPayload(p, NumberArray(val: v as List<double>)),
+          (p) => (_getProtoPayload(p, NumberArray()) as NumberArray).val as T);
     }
 
     // List string
     if (inst is List<String>) {
       return Mutator<T>(
-          (p, v) => p.stringArrayVal = StringArray(val: v as List<String>),
-          (p) => p.stringArrayVal.val as T);
+          (p, v) => _setProtoPayload(p, StringArray(val: v as List<String>)),
+          (p) => (_getProtoPayload(p, StringArray()) as StringArray).val as T);
     }
 
     // Map double
     if (inst is Map<String, double>) {
       return Mutator<T>(
-          (p, v) => p.numberMap = NumberMap(val: v as Map<String, double>),
-          (p) => p.numberMap.val as T);
+        (p, v) => _setProtoPayload(p, NumberMap(val: v as Map<String, double>)),
+        (p) => (_getProtoPayload(p, NumberMap()) as NumberMap).val as T);
     }
 
     // Map string
     if (inst is Map<String, String>) {
+
       return Mutator<T>(
-          (p, v) => p.stringMap = StringMap(val: v as Map<String, String>),
-          (p) => p.stringMap.val as T);
+        (p, v) => _setProtoPayload(p, StringMap(val: v as Map<String, String>)),
+        (p) => (_getProtoPayload(p, StringMap()) as StringMap).val as T);
+
+
     }
 
     // Protobuf
     if (inst is GeneratedMessage) {
       final codec = _getProtoCodec(inst);
       return Mutator.wrap<T, GeneratedMessage>((p, v) {
-        p.blobVal = codec.encode(v);
-      }, (p) => codec.decode(p.blobVal));
+        p.payload = codec.encode(v);
+      }, (p) => codec.decode(p.payload));
     }
 
     throw ArgumentError('Type "${inst.runtimeType}" is not a valid type.');

@@ -39,28 +39,36 @@ void main() {
   test('test basic type to message mapping', () async {
     final tm = TypeMapping();
 
+    final mutNumberVal = tm.getMutator<NumberVal>(NumberVal());
+    final mutBoolVal = tm.getMutator<BoolVal>(BoolVal());
+    final mutStringVal = tm.getMutator<StringVal>(StringVal());
+    final mutNumberArray = tm.getMutator<NumberArray>(NumberArray());
+    final mutStringArray = tm.getMutator<StringArray>(StringArray());
+    final mutNumberMap = tm.getMutator<NumberMap>(NumberMap());
+    final mutStringMap = tm.getMutator<StringMap>(StringMap());
+
     // Test double, bool and String
-    testMapping(tm, 0.1, 5.0, (pkt) => pkt.numberVal);
-    testMapping(tm, false, true, (pkt) => pkt.boolVal);
-    testMapping(tm, '', 'something', (pkt) => pkt.stringVal);
+    testMapping(tm, 0.1, 5.0, (pkt) => mutNumberVal.getter(pkt));
+    testMapping(tm, false, true, (pkt) => mutBoolVal.getter(pkt));
+    testMapping(tm, '', 'something', (pkt) => mutStringVal.getter(pkt));
 
     // Test double array, String array, Map<String, double>, Map<String, String>
     testMapping(
-        tm, <double>[], <double>[5, 3.5, 7.9], (pkt) => pkt.numberArrayVal.val);
+        tm, <double>[], <double>[5, 3.5, 7.9], (pkt) => mutNumberArray.getter(pkt).val);
     testMapping(tm, <String>[], <String>['hello', 'world'],
-        (pkt) => pkt.stringArrayVal.val);
+        (pkt) => mutStringArray.getter(pkt).val);
     testMapping(
         tm,
         <String, double>{},
         <String, double>{'hello': 5.3, 'world': 42},
-        (pkt) => pkt.numberMap.val);
+        (pkt) => mutNumberMap.getter(pkt).val);
     testMapping(
         tm,
         <String, String>{},
         <String, String>{'hello': 'my', 'world': 'friend'},
-        (pkt) => pkt.stringMap.val);
+        (pkt) => mutStringMap.getter(pkt).val);
 
-    expect(() => testMapping<int>(tm, 0, 0, (pkt) => pkt.numberVal.toInt()),
+    expect(() => testMapping<int>(tm, 0, 0, (pkt) => mutNumberVal.getter(pkt).val.toInt()),
         throwsArgumentError);
 
     // Test protobuf payload
@@ -68,8 +76,8 @@ void main() {
     final mutProto = tm.getMutator<ExamplePayload>(ExamplePayload());
     final pkt = DataPackage();
     mutProto.setter(pkt, expPayload);
-    expect(pkt.blobVal.codec, Codec.CODEC_PROTO);
-    expect(pkt.blobVal.messageType, 'examplemsg.ExamplePayload');
+    expect(pkt.payload.codec, Codec.CODEC_PROTO);
+    expect(pkt.payload.messageType, 'examplemsg.ExamplePayload');
 
     final actualPayload = mutProto.getter(pkt);
     expect(actualPayload, expPayload);

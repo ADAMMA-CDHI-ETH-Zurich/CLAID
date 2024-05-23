@@ -22,12 +22,14 @@
 
 
 import 'dart:async';
+import 'package:claid/src/type_mapping.dart';
 
 import 'package:claid/dispatcher.dart';
 import 'package:claid/mocks.dart';
 import 'package:claid/module.dart';
 
 import 'package:test/test.dart';
+import 'package:claid/properties.dart';
 
 // ModuleClassName, module ids and channel ids
 //
@@ -116,11 +118,15 @@ void main() {
     expect(myMod.triggeredEvents.length, 3);
     expect(myMod.scheduledEvents.length, 2);
 
+    final tm = TypeMapping();
+
+    final mutBoolVal = tm.getMutator<BoolVal>(BoolVal());
+
     // sensor events received by the output module
     expect(
         moduleEnv
             .getEventsForChannel(triggerReadChannel)
-            ?.map<bool>((e) => e.boolVal)
+            ?.map<bool>((e) => mutBoolVal.getter(e).val)
             .toList(),
         <bool>[true, true, true]);
 
@@ -174,11 +180,11 @@ class MyTestModuleOne extends Module {
   MyTestModuleOne(this._countReached);
 
   @override
-  void initialize(Map<String, String> props) {
+  void initialize(Properties props) {
     // Parse the properties
-    _intervalMs = parseInt(props['interval']);
-    _maxSensorCount = parseInt(props['max_count']);
-    _scheduleMs = parseInt(props['schedule_in']);
+    _intervalMs = props.getNumberProperty("interval");
+    _maxSensorCount = props.getNumberProperty("max_count");
+    _scheduleMs = props.getNumberProperty("schedule_in");
 
     // register periodic functions
     registerPeriodicFunction(periodicName, Duration(milliseconds: _intervalMs),

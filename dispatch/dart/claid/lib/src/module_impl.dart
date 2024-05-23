@@ -26,7 +26,10 @@ import 'dart:collection';
 
 import 'package:claid/dispatcher.dart';
 import 'package:claid/generated/claidservice.pb.dart';
+import 'package:claid/generated/google/protobuf/struct.pb.dart';
+
 import 'package:claid/mocks.dart';
+import 'package:claid/properties.dart';
 
 import '../module.dart';
 import 'type_mapping.dart';
@@ -42,7 +45,7 @@ enum Lifecycle {
 
 class ModuleState {
   final Module instance;
-  final Map<String, String> props;
+  Struct props;
   Lifecycle lifecycle;
   ModuleState(this.instance, this.props, this.lifecycle);
 }
@@ -156,7 +159,7 @@ class ModuleManager {
       final modState = _moduleMap[key]!;
       print("Dart ModuleManager initializing module ${modState} ");
       modState.lifecycle = Lifecycle.initializing;
-      modState.instance.initialize(modState.props);
+      modState.instance.initialize(Properties(modState.props));
       modState.lifecycle = Lifecycle.initialized;
     }
   }

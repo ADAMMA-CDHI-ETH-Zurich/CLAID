@@ -24,7 +24,7 @@
 import 'dart:async';
 import './src/module_impl.dart' as impl;
 import './dispatcher.dart';
-
+import './properties.dart';
 // Helpers
 // Duration parseDuration(String? durStr) {
 //   return const Duration(microseconds: 5);
@@ -70,7 +70,7 @@ abstract class Module {
   //         - parse properties to extract module params
   //         - set up periodic functions
   //         - Set up channels for subscription and publishing
-  void initialize(Map<String, String> properties);
+  void initialize(Properties properties);
 
   // Initialize is called to wind down the module (like a destructor).
   void terminate() {}

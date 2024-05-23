@@ -29,6 +29,9 @@ import 'package:fixnum/fixnum.dart';
 
 import 'package:claid/generated/claidservice.pb.dart';
 import 'package:claid/generated/google/protobuf/timestamp.pb.dart';
+import 'package:claid/generated/google/protobuf/struct.pb.dart';
+
+import 'package:claid/properties.dart';
 import 'module.dart';
 import 'dispatcher.dart';
 
@@ -165,7 +168,7 @@ abstract class EnvModule {}
 abstract class _BaseMockModule {
   final String id;
   final String? moduleClass;
-  final Map<String, String>? properties;
+  final Struct? properties;
 
   _BaseMockModule({required this.id, this.moduleClass, this.properties});
 
@@ -181,7 +184,7 @@ class MockModule extends _BaseMockModule implements EnvModule {
 
   @override
   ModDescriptor get descriptor =>
-      ModDescriptor(id, _moduleClass, <String, String>{});
+      ModDescriptor(id, _moduleClass, Struct());
 
   FactoryFunc getMockFactory(MockModuleEnv env) =>
       () => _MockModuleImpl(this, env);
@@ -347,7 +350,7 @@ class _MockModuleImpl extends Module {
   _MockModuleImpl(MockModule mockModule, this.env) : _info = mockModule;
 
   @override
-  void initialize(Map<String, String> properties) {
+  void initialize(Properties properties) {
     // Register the subscription channels
     for (var chan in env._incomingChannelsFor(_info.id)) {
       _subs.add(subscribe(chan.id, chan.generator!())

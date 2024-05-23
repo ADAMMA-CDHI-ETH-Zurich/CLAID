@@ -28,6 +28,8 @@ import 'package:claid/generated/claidservice.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
 
 import 'middleware.dart';
+import './properties.dart';
+import 'package:claid/generated/google/protobuf/struct.pb.dart';
 
 class StreamingError implements Error {
   final String message;
@@ -41,7 +43,7 @@ class StreamingError implements Error {
 class ModDescriptor {
   final String moduleId;
   final String moduleClass;
-  final Map<String, String> properties;
+  final Struct properties;
   const ModDescriptor(this.moduleId, this.moduleClass, this.properties);
 }
 
