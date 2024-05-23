@@ -64,35 +64,37 @@ class TypeMapping:
     @staticmethod
     def get_mutator(example_instance) -> Mutator:
         cls = type(example_instance)
-        print(cls)
+        print("Clz ", cls)
         if issubclass(cls, int) or issubclass(cls, float):
             return Mutator(
-                setter = lambda packet, value: packet.payload.CopyFrom(TypeMapping.setProtoPayload(packet, NumberVal(val=value)).payload),
+                setter = lambda packet, value: TypeMapping.setProtoPayload(packet, NumberVal(val=value)),
                 getter = lambda packet: TypeMapping.getProtoPayload(packet, NumberVal()).val
             )
         elif cls == bool:
             return Mutator(
-                setter = lambda packet, value: setattr(packet, "bool_val", value),
-                getter = lambda packet: packet.bool_val
+                setter = lambda packet, value: TypeMapping.setProtoPayload(packet, BoolVal(val=value)),
+                getter = lambda packet: TypeMapping.getProtoPayload(packet, BoolVal()).val
             )
         elif cls == str:
             return Mutator(
-                setter = lambda packet, value: setattr(packet, "string_val", value),
-                getter = lambda packet: packet.string_val
+                setter = lambda packet, value: TypeMapping.setProtoPayload(packet, StringVal(val=value)),
+                getter = lambda packet: TypeMapping.getProtoPayload(packet, StringVal()).val
             )
         elif issubclass(cls, np.ndarray):
             
             if example_instance.dtype in [np.float32, np.float64, \
             np.int8, np.int16, np.int32, np.int64, \
             np.uint8, np.uint16, np.uint32, np.uint64]:
-                return Mutator(
-                    lambda packet, value: packet.number_array_val.CopyFrom(NumberArray(val=value)),
-                    lambda packet: np.array([val for val in packet.number_array_val])
+                a = Mutator(
+                    lambda packet, value: TypeMapping.setProtoPayload(packet, NumberArray(val=value)),
+                    lambda packet: np.array([val for val in TypeMapping.getProtoPayload(packet, NumberArray).val])
                 )
+                print("Made mutator, returning")
+                return a
             elif np.issubdtype(example_instance.dtype, np.str_):
                 return Mutator(
-                    lambda packet, value: packet.string_array_val.CopyFrom(StringArray(val=value)),
-                    lambda packet: np.array([val for val in packet.string_array_val])
+                    lambda packet, value: TypeMapping.setProtoPayload(packet, StringArray(val=value)),
+                    lambda packet: np.array([val for val in TypeMapping.getProtoPayload(packet, StringArray).val])
                 )
             else:
                 raise Exception("Unsupported type for array or list in TypeMapping. Cannot use type \"{}\" to set or get payload of DataPackage.".format(str(example_instance.dtype)))
@@ -100,8 +102,8 @@ class TypeMapping:
             if(len(example_instance) != 1):
                 raise Exception("Failed to get Mutator for dict. The dict instance was expected to contain exactly one element, but it contained {}.".format(len(example_instance)))
             
-            key_type = list(example_instance.keys())[0]
-            value_type = list(example_instance.values())[0]
+            key_type = type(list(example_instance.keys())[0])
+            value_type = type(list(example_instance.values())[0])
 
             print(key_type, type(key_type), isinstance(type, type(key_type)))
             if(not isinstance(type, type(key_type))):
@@ -120,13 +122,16 @@ class TypeMapping:
                 
                 if value_type in [int, float]:
                     return Mutator(
-                        lambda packet, value: packet.number_map.CopyFrom(NumberMap(val=value)),
-                        lambda packet: dict(packet.number_map.val)
+                        lambda packet, value: TypeMapping.setProtoPayload(packet, NumberMap(val=value)),
+                        lambda packet: dict(TypeMapping.getProtoPayload(packet, NumberMap()).val)
                     )
                 elif value_type == str:
                     return Mutator(
-                        lambda packet, value: packet.number_map.CopyFrom(StringMap(val=value)),
-                        lambda packet: dict(packet.string_map.val)
+                        lambda packet, value: (
+                            print(value),
+                            TypeMapping.setProtoPayload(packet, StringMap(val=value))
+                        ),
+                        lambda packet: dict(TypeMapping.getProtoPayload(packet, StringMap).val)
                     )
                 else:
                     raise Exception("Value type {} is not supported for type mapping in CLAID".format(value_type))

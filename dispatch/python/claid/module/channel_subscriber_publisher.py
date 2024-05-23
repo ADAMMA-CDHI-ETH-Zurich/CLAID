@@ -53,9 +53,11 @@ class ChannelSubscriberPublisher:
         print(type(channel_name))
         data_package.channel = channel_name
 
-        mutator = TypeMapping.get_mutator(example_instance=data_type_example)
-        mutator.set_package_payload(data_package, data_type_example.__class__())
+        print("Preparing example package for channel ", channel_name, type(data_type_example))
 
+        mutator = TypeMapping.get_mutator(example_instance=data_type_example)
+
+        mutator.set_package_payload(data_package, data_type_example)
         return data_package
 
     def publish(self, data_type_example, module, channel_name: str) -> Channel:

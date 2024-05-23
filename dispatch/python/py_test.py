@@ -53,7 +53,7 @@ import google.protobuf as protobuf
 from datetime import datetime, timedelta
 
 from dispatch.proto.claidservice_pb2 import RemoteClientInfo
-
+import numpy as np
 class TestModule(Module):
     def __init__(self):
         super().__init__()
@@ -64,12 +64,15 @@ class TestModule(Module):
         annotator.set_module_description("This Module can...")
         annotator.describe_property("samplingRate", "Allows to")
         annotator.describe_publish_channel("MyChannel", int(42), "")
+        
         return {"test": "test"}
 
     def initialize(self, properties):
         Logger.log_info("TestModule Initialize")
         self.output_channel = self.publish("TestChannel", RemoteClientInfo())
         self.int_channel = self.publish("IntChannel", int(42))
+        self.number_array_channel = self.publish("NumberArrayChannel", np.array([42]))
+        self.string_map_channel = self.publish("StringMapChannel", dict({"": ""}))
 
         self.ctr = 0
         self.register_periodic_function("Test", self.periodic_function, timedelta(milliseconds=1000))
@@ -80,6 +83,8 @@ class TestModule(Module):
         remote_client_info.host = "42 " + str(self.ctr)
         self.output_channel.post(remote_client_info)
         self.int_channel.post(self.ctr)
+        self.number_array_channel.post([self.ctr, self.ctr*2, self.ctr*3])
+        self.string_map_channel.post(dict({"data": f"Counter is currently: {self.ctr}"}))
         self.ctr+=1
 
 
@@ -92,6 +97,8 @@ class TestModule2(Module):
         Logger.log_info("TestModule Initialize")
         self.input_channel = self.subscribe("TestChannel", RemoteClientInfo(), self.on_data)
         self.int_channel = self.subscribe("IntChannel", int(42), self.on_int_data)
+        self.number_array_channel = self.subscribe("NumberArrayChannel", np.array([42]), self.on_array_data)
+        self.string_map_channel = self.subscribe("StringMapChannel", dict({"":""}), self.on_map_data)
         self.ctr = 0
 
     def on_data(self, data):
@@ -100,6 +107,12 @@ class TestModule2(Module):
 
     def on_int_data(self, data):
         print("Int data: ", data.get_data())
+
+    def on_array_data(self, data):
+        print("Array data: ", data.get_data())
+
+    def on_map_data(self, data):
+        print("Map data: ", data.get_data())
 
 module_factory = ModuleFactory()
 module_factory.register_module(TestModule)
