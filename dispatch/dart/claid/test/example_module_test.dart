@@ -23,6 +23,7 @@
 
 import 'dart:async';
 import 'package:claid/src/type_mapping.dart';
+import 'package:claid/generated/claidservice.pb.dart';
 
 import 'package:claid/dispatcher.dart';
 import 'package:claid/mocks.dart';
@@ -30,6 +31,8 @@ import 'package:claid/module.dart';
 
 import 'package:test/test.dart';
 import 'package:claid/properties.dart';
+
+import 'package:claid/generated/google/protobuf/struct.pb.dart';
 
 // ModuleClassName, module ids and channel ids
 //
@@ -56,6 +59,14 @@ const triggerReadChannel = 'trigger_read';
 const sensorChannel = 'sensor_value';
 const dailySensorChannel = 'daily_sensor_value';
 
+Map<String, String> propertiesMap = {
+      'interval': '200',
+      'max_count': '10',
+      'schedule_in': '500',
+    };
+
+
+
 // Set up a module environment.
 final moduleEnv = MockModuleEnv(modules: <EnvModule>[
   MockModule(id: 'inputModule'),
@@ -63,11 +74,11 @@ final moduleEnv = MockModuleEnv(modules: <EnvModule>[
   UnderTest(
     id: moduleInstanceId,
     moduleClass: moduleClassName,
-    properties: <String, String>{
-      'interval': '200',
-      'max_count': '10',
-      'schedule_in': '500',
-    },
+    properties: 
+      Struct(fields: {
+        for (var entry in propertiesMap.entries) 
+          entry.key: Value()..stringValue = entry.value
+      }),
   ),
 ], channels: <MockChannel>[
   MockChannel<bool>(
@@ -182,9 +193,12 @@ class MyTestModuleOne extends Module {
   @override
   void initialize(Properties props) {
     // Parse the properties
-    _intervalMs = props.getNumberProperty("interval");
-    _maxSensorCount = props.getNumberProperty("max_count");
-    _scheduleMs = props.getNumberProperty("schedule_in");
+    _intervalMs = props.getNumberProperty("interval").toInt();
+    _maxSensorCount = props.getNumberProperty("max_count").toInt();
+    _scheduleMs = props.getNumberProperty("schedule_in").toInt();
+
+    double val = props.getNumberProperty("schedule_in");
+    print('The value of scheduleMs is: $val');
 
     // register periodic functions
     registerPeriodicFunction(periodicName, Duration(milliseconds: _intervalMs),

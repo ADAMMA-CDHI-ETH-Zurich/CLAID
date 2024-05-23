@@ -48,9 +48,9 @@ void main() {
     final mutStringMap = tm.getMutator<StringMap>(StringMap());
 
     // Test double, bool and String
-    testMapping(tm, 0.1, 5.0, (pkt) => mutNumberVal.getter(pkt));
-    testMapping(tm, false, true, (pkt) => mutBoolVal.getter(pkt));
-    testMapping(tm, '', 'something', (pkt) => mutStringVal.getter(pkt));
+    testMapping(tm, 0.1, 5.0, (pkt) => mutNumberVal.getter(pkt).val);
+    testMapping(tm, false, true, (pkt) => mutBoolVal.getter(pkt).val);
+    testMapping(tm, '', 'something', (pkt) => mutStringVal.getter(pkt).val);
 
     // Test double array, String array, Map<String, double>, Map<String, String>
     testMapping(
