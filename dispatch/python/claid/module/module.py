@@ -79,14 +79,12 @@ class Module(ABC):
 
         self.__runnable_dispatcher = RunnableDispatcher(main_thread_runnables_queue)
 
-        
         if not self.__runnable_dispatcher.start():
             self.module_error("Failed to start RunnableDispatcher.")
             return False
 
         self.__is_initializing = True
         self.__is_initialized = False
-
 
         function_runnable = FunctionRunnableWithParams(self.__initialize_internal)
         function_runnable.set_params(properties)

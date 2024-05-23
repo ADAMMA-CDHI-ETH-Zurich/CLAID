@@ -44,6 +44,10 @@ class ModuleDispatcher:
         self.__from_middleware_queue = None
         self.__running = False
 
+        self.__ping_package_ready = False
+        self.__ping_package_acknowledged = False
+        self.__ping_package = None
+
 
     def get_to_dispatcher_queue(self):
         return self.__to_middleware_queue
@@ -118,11 +122,17 @@ class ModuleDispatcher:
     def to_middleware_queue_get(self):
 
         while self.__running:
-            data = self.__to_middleware_queue.get()
-            if not data is None:
-                yield data
-            elif not self.__running:
-                return
+
+            if self.__ping_package_acknowledged:
+                data = self.__to_middleware_queue.get()
+                if not data is None:
+                    yield data
+                elif not self.__running:
+                    return
+            else:
+                if self.__ping_package_ready:
+                    yield self.__ping_package
+                    self.__ping_package_ready = False
 
 
     def send_receive_packages(self):
@@ -135,16 +145,21 @@ class ModuleDispatcher:
             return False
 
         self.waiting_for_ping_response = True
-        ping_req = self.make_control_runtime_ping()
 
-        Logger.log_info("Putting package")
-        self.__to_middleware_queue.put(ping_req)
+        Logger.log_info("Putting ping package")
+        self.__ping_package = self.make_control_runtime_ping()
+        self.__ping_package_acknowledged = False
+        self.__ping_package_ready = True
 
         ping_resp = self.await_ping_package()
 
         if(ping_resp.control_val.ctrl_type != CtrlType.CTRL_RUNTIME_PING):
             Logger.log_error(f"Sent ping package to middleware and expected ping package as response, but got: {ping_resp}")
             return False
+        
+        self.__ping_package_acknowledged = True
+        self.__ping_package_ready = False
+        self.__ping_package = None
 
         return True
 

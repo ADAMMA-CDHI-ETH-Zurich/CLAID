@@ -192,7 +192,7 @@ class ModuleManager():
         return host_and_module
 
     def on_data_package_received_from_module_dispatcher(self, data_package):
-        if data_package.HasField('control_val'):
+        if data_package.HasField('control_val') and data_package.control_val.ctrl_type != CtrlType.CTRL_UNSPECIFIED:
             self.handle_package_with_control_val(data_package)
             return
 
@@ -206,7 +206,7 @@ class ModuleManager():
             return
 
         if not self.__channel_subscriber_publisher.is_data_package_compatible_with_channel(data_package, module_id):
-            payload_case = data_package.WhichOneof("payload_oneof")
+            payload_case = data_package.payload.message_type
             Logger.log_info(f"ModuleManager received package with target for Module \"{module_id}\" on Channel \"{channel_name}\", "
                             f"however the data type of payload of the package did not match the data type of the Channel.\n"
                             f"Expected payload type \"{self.__channel_subscriber_publisher.get_payload_case_of_channel(channel_name, module_id)}\" but got \"{payload_case}")

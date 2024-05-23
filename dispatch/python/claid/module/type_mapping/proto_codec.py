@@ -54,17 +54,23 @@ class ProtoCodec:
 
         try:
             
+            # In Python, protobuf might decide to leave the "payload" field of the blob as None, if a
+            # certain message only has default values. For example, if the payload is a NumberVal, and NumberVal.val = 0, then
+            # blob.payload would be None (or 0), because protobuf considers NumberVal.val = 0 to be the default case and hence does not serialize any data.
+            # In such case, we simply return a default value.
             if len(blob.payload) == 0:
-                Logger.log_warning("Cannot parse protobuf message of type {}. Payload data is null. Very likely the sender Module postet a protobuf message without data").format(self.full_name)
+                Logger.log_warning("Cannot parse protobuf message of type {}. Payload data is null. Very likely the sender Module postet a protobuf message without data".format(self.full_name))
+            
                 return return_value
 
-            if not return_value.ParseFromString(blob.payload):
-                Logger.log_error("Failed to parse protobuf message of type {}. ParseFromString failed.").format(self.full_name)
-            
-                return None
+            else:
+                if not return_value.ParseFromString(blob.payload):
+                    Logger.log_error("Failed to parse protobuf message of type {}. ParseFromString failed.").format(self.full_name)
+                
+                    return None
 
             return return_value
         except Exception as e:
             # Replace with actual error handling/logging
-            Logger.log_error("Failed to parse protobuf message from Blob: %s", str(e))
+            Logger.log_error("Failed to parse protobuf message from Blob: {}".format(str(e)))
             return None

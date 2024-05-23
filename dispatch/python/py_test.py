@@ -69,6 +69,8 @@ class TestModule(Module):
     def initialize(self, properties):
         Logger.log_info("TestModule Initialize")
         self.output_channel = self.publish("TestChannel", RemoteClientInfo())
+        self.int_channel = self.publish("IntChannel", int(42))
+
         self.ctr = 0
         self.register_periodic_function("Test", self.periodic_function, timedelta(milliseconds=1000))
 
@@ -77,6 +79,7 @@ class TestModule(Module):
         remote_client_info = RemoteClientInfo()
         remote_client_info.host = "42 " + str(self.ctr)
         self.output_channel.post(remote_client_info)
+        self.int_channel.post(self.ctr)
         self.ctr+=1
 
 
@@ -88,11 +91,15 @@ class TestModule2(Module):
     def initialize(self, properties):
         Logger.log_info("TestModule Initialize")
         self.input_channel = self.subscribe("TestChannel", RemoteClientInfo(), self.on_data)
+        self.int_channel = self.subscribe("IntChannel", int(42), self.on_int_data)
         self.ctr = 0
 
     def on_data(self, data):
         
         print("Data", data.get_data())
+
+    def on_int_data(self, data):
+        print("Int data: ", data.get_data())
 
 module_factory = ModuleFactory()
 module_factory.register_module(TestModule)

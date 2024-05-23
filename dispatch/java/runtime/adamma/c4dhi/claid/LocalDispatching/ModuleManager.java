@@ -303,7 +303,7 @@ public class ModuleManager
             + "Unable to split the address into host:module");
         }*/
 
-        if(dataPackage.hasControlVal())
+        if(dataPackage.hasControlVal() && dataPackage.getControlVal().getCtrlType() != CtrlType.CTRL_UNSPECIFIED)
         {
            // Logger.logError("ModuleManager received DataPackage with controlVal. The controlVal should have been handled by ModuleDispatcher");
            handlePackageWithControlVal(dataPackage); 

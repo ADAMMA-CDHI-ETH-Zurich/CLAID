@@ -101,7 +101,7 @@ class ChannelSubscriberPublisher:
         if receiver_module in self.__example_packages_for_each_module:
             for template_package in self.__example_packages_for_each_module[receiver_module]:
                 if template_package.channel == channel_name:
-                    return template_package.WhichOneof("payload_oneof") == data_package.WhichOneof("payload_oneof")
+                    return template_package.payload.message_type == data_package.payload.message_type
 
         return False
 
@@ -110,9 +110,9 @@ class ChannelSubscriberPublisher:
             print(self.__example_packages_for_each_module)
             for template_package in self.__example_packages_for_each_module[receiver_module]:
                 if template_package.channel == channel_name:
-                    return template_package.WhichOneof("payload_oneof")
+                    return template_package.payload.message_type
 
-        return "PAYLOAD_ONEOF_NOT_SET"
+        return ""
     
     def reset(self):
         self.__example_packages_for_each_module = {}

@@ -25,7 +25,7 @@ from google.protobuf.descriptor import Descriptor
 from google.protobuf.message_factory import MessageFactory
 from module.type_mapping.mutator import Mutator
 from module.type_mapping.proto_codec import ProtoCodec
-from dispatch.proto.claidservice_pb2 import DataPackage, NumberMap, StringMap, NumberArray, StringArray, Blob
+from dispatch.proto.claidservice_pb2 import DataPackage, NumberVal, BoolVal, StringVal, NumberMap, StringMap, NumberArray, StringArray, Blob
 import numpy as np
 
 class TypeMapping:
@@ -41,13 +41,34 @@ class TypeMapping:
         return TypeMapping.protoCodecMap[full_name]
 
     @staticmethod
+    def setProtoPayload(packet: DataPackage, value: Message):
+
+        proto_codec = TypeMapping.get_proto_codec(value)
+
+        blob = proto_codec.encode(value)
+        packet.payload.CopyFrom(blob)
+
+        print("Test package", packet)
+        print("Value", value)
+        return packet
+    
+    @staticmethod
+    def getProtoPayload(packet: DataPackage, example_instance: Message):
+        
+        proto_codec = TypeMapping.get_proto_codec(example_instance)
+        data = proto_codec.decode(packet.payload)
+
+        return data
+
+
+    @staticmethod
     def get_mutator(example_instance) -> Mutator:
         cls = type(example_instance)
         print(cls)
         if issubclass(cls, int) or issubclass(cls, float):
             return Mutator(
-                setter = lambda packet, value: setattr(packet, "number_val", value),
-                getter = lambda packet: packet.number_val
+                setter = lambda packet, value: packet.payload.CopyFrom(TypeMapping.setProtoPayload(packet, NumberVal(val=value)).payload),
+                getter = lambda packet: TypeMapping.getProtoPayload(packet, NumberVal()).val
             )
         elif cls == bool:
             return Mutator(
@@ -118,8 +139,8 @@ class TypeMapping:
             instance = cls()
             return Mutator(
 
-                lambda packet, value: packet.blob_val.CopyFrom(TypeMapping.get_proto_codec(value).encode(value)),
-                lambda packet: TypeMapping.get_proto_codec(instance).decode(packet.blob_val)
+                lambda packet, value: packet.payload.CopyFrom(TypeMapping.get_proto_codec(value).encode(value)),
+                lambda packet: TypeMapping.get_proto_codec(instance).decode(packet.payload)
             )
         else:
             raise Exception("Unsupported type in TypeMapping. Cannot use type \"{}\" to set or get payload of DataPackage.".format(str(cls)))

@@ -360,13 +360,16 @@ void ServiceImpl::shutdown() {
     }
 }
 
-RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& status) {
+RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& status) 
+{
     status = Status::OK;
     auto runTime = pkt.control_val().runtime();
 
+    Logger::logInfo("Got message %s", messageToString(pkt).c_str());
+
     // Make sure we got a control package with a CTRL_RUNTIME_PING message.
     if (!validCtrlRuntimePingPkt(pkt)) {
-        status = Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid control type or unspecified runtime %s %s", Runtime_Name(pkt.control_val().runtime()).c_str(), CtrlType_Name(pkt.control_val().ctrl_type())).c_str());
+        status = Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid control type or unspecified runtime ", Runtime_Name(pkt.control_val().runtime()).c_str(), " ", CtrlType_Name(pkt.control_val().ctrl_type())).c_str());
         return nullptr;
     }
 
