@@ -301,8 +301,8 @@ class MockDispatcher implements ModuleDispatcher {
     // necessary.
     if ((pkt.sourceModule.isEmpty) ||
         (pkt.channel.isEmpty) ||
-        (pkt.whichPayloadOneof() == DataPackage_PayloadOneof.notSet)) {
-      throw ArgumentError('Data packet nees a channel, a source and payload');
+        (pkt.payload.messageType == "")) {
+      throw ArgumentError('Data packet needs a channel, a source and payload');
     }
 
     // augment the fields like the router would in the middleware.
