@@ -494,16 +494,6 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
 
     switch(controlPackage->control_val().ctrl_type())
     {
-        case CtrlType::CTRL_CONNECTED_TO_REMOTE_SERVER:
-        case CtrlType::CTRL_DISCONNECTED_FROM_REMOTE_SERVER:
-        case CtrlType::CTRL_UNLOAD_MODULES:
-        case CtrlType::CTRL_PAUSE_MODULE:
-        case CtrlType::CTRL_UNPAUSE_MODULE:
-        case CtrlType::CTRL_ADJUST_POWER_PROFILE:
-        {
-            this->forwardControlPackageToAllRuntimes(controlPackage);
-            break;
-        }
         case CtrlType::CTRL_UNLOAD_MODULES_DONE:
         {
             Logger::logInfo("Received CTRL_UNLOAD_MODULES_DONE from Runtime %s", Runtime_Name(controlPackage->control_val().runtime()).c_str());
@@ -620,6 +610,17 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
                     "Failed to activate RemoteDispatcherServer: ", status.ToString()).c_str());
                 }
             }
+            break;
+        }
+        // case CtrlType::CTRL_CONNECTED_TO_REMOTE_SERVER:
+        // case CtrlType::CTRL_DISCONNECTED_FROM_REMOTE_SERVER:
+        // case CtrlType::CTRL_UNLOAD_MODULES:
+        // case CtrlType::CTRL_PAUSE_MODULE:
+        // case CtrlType::CTRL_UNPAUSE_MODULE:
+        // case CtrlType::CTRL_ADJUST_POWER_PROFILE:
+        default:
+        {
+            this->forwardControlPackageToAllRuntimes(controlPackage);
             break;
         }
 
