@@ -21,23 +21,40 @@
 
 package adamma.c4dhi.claid.RemoteFunction;
 
-import adamma.c4dhi.claid.RemoteFunction.FutureUniqueIdentifier;
-import adamma.c4dhi.claid.RemoteFunction.FuturesTable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
-public class FutureHandler 
+public class FuturesTable 
 {
-    
-    private FuturesTable openFutures = new FuturesTable();
+    private Map<String, AbstractFuture> futures = new HashMap<>();
+    private final ReentrantLock lock = new ReentrantLock();
 
-    public <T> Future<T> registerNewFuture(Class<T> returnDataType)
+    public void addFuture(AbstractFuture future)
     {
-        FutureUniqueIdentifier uniqueIdentifier = FutureUniqueIdentifier.makeUniqueIdentifier();
-        Future<T> future = new Future<t>(this.openFutures, uniqueIdentifier, returnDataType);
+        lock.lock();
+        futures.put(future.getUniqueIdentifier(), future);
+        lock.unlock();
+    }
 
-        this.openFutures.addFuture(future);
+    public boolean removeFuture(AbstractFuture future)
+    {
+        FutureUniqueIdentifier futureIdentifier = future.getUniqueIdentifier();
 
-        return future;
-    };
+        lock.lock();
 
+        if(futures.containsKey(futureIdentifier))
+        {
+            AbstractFuture other = futures.get(futureIdentifier);
+            if(other == future)
+            {
+                futures.remove(futureIdentifier);
+                return true;
+            }
+        }
+        lock.unlock();
+        return false;
+    }
     
 }

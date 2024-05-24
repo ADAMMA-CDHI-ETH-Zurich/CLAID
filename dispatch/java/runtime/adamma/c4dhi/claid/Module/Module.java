@@ -69,7 +69,8 @@ public abstract class Module
 
     Map<String, ScheduledRunnable> timers = new HashMap<>();
 
-
+    // Functions registered by this Module, which can be executed from other Modules or entities.
+    Map<String, RemoteFunctionRunnable> registeredRemoteFunctions = new HashMap<>();
 
     public Module(/*ThreadSafeChannel<DataPackage> moduleInputQueue,  
         ThreadSafeChannel<DataPackage> moduleOutputQueue*/)
@@ -632,6 +633,31 @@ public abstract class Module
         this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> onDisconnectedFromRemoteServer()));
     }
 
+    public void enqueueRPC(DataPackage rpcRequest)
+    {
+        // Some entity requested for us to execute a remote function.
+        // Create a ConsumerRunnable and enqueue it to execute the remote function of the thread of the Module.
+        ConsumerRunnable<DataPackage> consumerRunnable = 
+            new ConsumerRunnable<DataPackage>(rpcRequest, (request) -> executeRPCRequest(request), ScheduleOnce.now());
+
+        ScheduledRunnable runnable = (ScheduledRunnable) consumerRunnable;
+
+        this.runnableDispatcher.addRunnable(runnable);
+    }
+
+    // 
+    private void executeRPCRequest(DataPackage rpcRequest)
+    {
+        if(rpcRequest.getTargetModule() != this.id)
+        {
+            Logger.logError("Failed to execute RPC request. RPC is targeted for Module \"" + rpcRequest.getTargetModule() +
+                 "\", but we are Module \"" + this.id + "\".");
+            return;
+        }
+
+
+    }
+
     public void pauseModule() {
         if (isPaused) {
             // moduleWarning("Failed to pause Module. Module is already paused.");
@@ -702,6 +728,8 @@ public abstract class Module
 
     protected void onPowerProfileChanged(PowerProfile powerProfile) {
     }
+
+
 
 //         String name, Duration period, RegisteredCallback callback) =>
 //     _scheduler.registerPeriodicFunction(_modId, name, period, callback);
