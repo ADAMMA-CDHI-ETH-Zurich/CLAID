@@ -39,5 +39,10 @@ public class FutureHandler
         return future;
     };
 
+    public AbstractFuture lookupFuture(FutureUniqueIdentifier identifier)
+    {
+        return openFutures.lookupFuture(identifier);
+    }
+
     
 }

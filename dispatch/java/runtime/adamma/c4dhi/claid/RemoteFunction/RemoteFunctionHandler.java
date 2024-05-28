@@ -21,14 +21,18 @@
 
 import adamma.c4dhi.claid.Module.ThreadSafeChannel;
 import adamma.c4dhi.claid.Module.Scheduling.ConsumerRunnable;
+import adamma.c4dhi.claid.RemoteFunction.FutureUniqueIdentifier;
 import adamma.c4dhi.claid.RemoteFunction.RemoteFunction;
 
-public class RemoteFunctionMapper 
+import adamma.c4dhi.claid.Logger.Logger;
+
+
+public class RemoteFunctionHandler 
 {
     private FuturesHandler futuresHandler = new FuturesHandler();
     private ThreadSafeChannel<DataPackage> toMiddlewareQueue;
 
-    public RemoteFunctionMapper(ThreadSafeChannel<DataPackage> toMiddlewareQueue)
+    public RemoteFunctionHandler(ThreadSafeChannel<DataPackage> toMiddlewareQueue)
     {
         this.toMiddlewareQueue = toMiddlewareQueue;
     }
@@ -45,12 +49,13 @@ public class RemoteFunctionMapper
         return function;
     }
 
-    public <T> RemoteFunction<T> mapModuleFunction(String moduleId, String functionName, Class<T> returnType, Class<?>... parameterDataTypes)
+    public <T> RemoteFunction<T> mapModuleFunction(String sourceModule, String targetModule, String functionName, Class<T> returnType, Class<?>... parameterDataTypes)
     {
         RemoteFunction<T> function = new RemoteFunction<>(
+                sourceModule,
                 this.futuresHandler, 
                 this.toMiddlewareQueue, 
-                makeRemoteFunctionIdentifier(moduleId, functionName), 
+                makeRemoteFunctionIdentifier(targetModule, functionName), 
                 returnType, 
                 parameterDataTypes);
 
@@ -73,6 +78,38 @@ public class RemoteFunctionMapper
         remoteFunctionIdentifier.setModuleId(runtime);
 
         return remoteFunctionIdentifier.build();
+    }
+
+    public void handleResponse(DataPackage remoteFunctionResponse)
+    {
+        if(!remoteFunctionResponse.getControlVal().hasRemoteFunctionReturn())
+        {
+            Logger.logError("Failed to handle remote function response " + remoteFunctionResponse + ". Did not find RemoteFunctionReturn data");
+            return;
+        }
+       
+
+        RemoteFunctionReturn remoteFunctionReturn = remoteFunctionResponse.getControlVal().getRemoteFunctionReturn();
+        String futureIdentifier = remoteFunctionReturn.getRemoteFutureIdentifier();
+        FutureUniqueIdentifier uniqueIdentifier = FutureUniqueIdentifier.fromString(futureIdentifier);
+
+        AbstractFuture future = this.futuresHandler.lookupFuture(uniqueIdentifier);
+
+        if(future == null)
+        {
+            Logger.logError("Failed to forward result of remote function. Cannot find future with identifier \"" + futureIdentifier + "\".");
+            return;
+        }
+
+        if(remoteFunctionReturn.getStatus() != RemoteFunctionExecutionStatus.STATUS_OK)
+        {
+            Logger.logError("Failed to forward result of remote function. Future with identifier \"" + 
+                futureIdentifier + "\" failed with status \"" + remoteFunctionReturn.getStatus().name() + "\".");
+            future.setFailed();
+            return;
+        }
+        future.setResponse(remoteFunctionResponse);
+
     }
 }
 

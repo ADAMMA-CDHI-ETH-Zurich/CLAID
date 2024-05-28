@@ -28,6 +28,7 @@ import adamma.c4dhi.claid.Module.Scheduling.RunnableDispatcher;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduleOnce;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduleRepeatedIntervall;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduledRunnable;
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunction;
 import adamma.c4dhi.claid.EventTracker.EventTracker;
 
 import adamma.c4dhi.claid.TypeMapping.DataType;
@@ -38,8 +39,10 @@ import adamma.c4dhi.claid.PowerProfile;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.Consumer;
 
 
@@ -50,6 +53,8 @@ import adamma.c4dhi.claid.Module.Scheduling.ConsumerRunnable;
 import adamma.c4dhi.claid.Module.Scheduling.RunnableDispatcher;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduleOnce;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduledRunnable;
+import adamma.c4dhi.claid.Module.RemoteFunction.RemoteFunctionHandler;
+import adamma.c4dhi.claid.Module.RemoteFunction.RemoteFunctionRunnableHandler;
 
 public abstract class Module
 {
@@ -58,7 +63,9 @@ public abstract class Module
     protected EventTracker eventTracker;
 
     protected ChannelSubscriberPublisher subscriberPublisher;
-    
+    protected RemoteFunctionHandler remoteFunctionHandler;
+    private RemoteFunctionRunnableHandler remoteFunctionRunnableHandler = null;
+
     private RunnableDispatcher runnableDispatcher = new RunnableDispatcher();
 
     private boolean isInitializing = false;
@@ -70,7 +77,7 @@ public abstract class Module
     Map<String, ScheduledRunnable> timers = new HashMap<>();
 
     // Functions registered by this Module, which can be executed from other Modules or entities.
-    Map<String, RemoteFunctionRunnable> registeredRemoteFunctions = new HashMap<>();
+    Map<String, RemoteFunctionRunnable> registeredRemoteFunctionRunnables = new HashMap<>();
 
     public Module(/*ThreadSafeChannel<DataPackage> moduleInputQueue,  
         ThreadSafeChannel<DataPackage> moduleOutputQueue*/)
@@ -109,7 +116,7 @@ public abstract class Module
         Logger.log(LogMessageSeverityLevel.WARNING, debugMsg, LogMessageEntityType.MODULE, this.id);
     }
 
-    public boolean start(ChannelSubscriberPublisher subscriberPublisher, Properties properties)
+    public boolean start(ChannelSubscriberPublisher subscriberPublisher, RemoteFunctionHandler remoteFunctionHandler, Properties properties)
     {
         if(this.isInitialized)
         {
@@ -117,6 +124,8 @@ public abstract class Module
             return false;
         }
         this.subscriberPublisher = subscriberPublisher;
+        this.remoteFunctionHandler = remoteFunctionHandler;
+        this.remoteFunctionRunnableHandler = new RemoteFunctionRunnableHandler("Module " + this.id);
 
         if(!this.runnableDispatcher.start())
         {
@@ -124,6 +133,7 @@ public abstract class Module
             return false;
         }
  
+    
         // Publishing / subscribing is only allowed in initialize function.
         // Use booleans to guard the access to the publish/subscribe functions.
         this.isInitializing = true;
@@ -240,7 +250,6 @@ public abstract class Module
     private void enqueueRunnable(ScheduledRunnable runnable)
     {
         this.runnableDispatcher.addRunnable(runnable);
-
     }
 
     
@@ -645,27 +654,52 @@ public abstract class Module
         this.runnableDispatcher.addRunnable(runnable);
     }
 
+
+
     // 
     private void executeRPCRequest(DataPackage rpcRequest)
     {
         if(rpcRequest.getTargetModule() != this.id)
         {
-            Logger.logError("Failed to execute RPC request. RPC is targeted for Module \"" + rpcRequest.getTargetModule() +
+            moduleError("Failed to execute RPC request. RPC is targeted for Module \"" + rpcRequest.getTargetModule() +
                  "\", but we are Module \"" + this.id + "\".");
             return;
         }
 
+        DataPackage response = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable();
+        if(response == null)
+        {
+            moduleError("Failed to execute rpcRequest " + response);
+            return;
+        }
 
+        this.toMiddlewareQueue.post(response);
     }
 
-    public void pauseModule() {
-        if (isPaused) {
+    protected boolean registerRemoteFunction(String functionName, Class<?> returnType, Class<?>... parameters)
+    {
+        return this.remoteFunctionRunnableHandler.registerRunnable(this, functionName, returnType, parameters);
+    }
+
+    protected <T> RemoteFunction<T> mapRemoteFunctionOfModule(String moduleId, String functionName, Class<?> returnType, Class<?>... parameters)
+    {
+        return this.remoteFunctionHandler.mapModuleFunction(this.id, moduleId, functionName, returnType, parameters);
+    }
+
+    protected <T> RemoteFunction<T> mapRemoteFunctionOfRuntime(Runtime runtime, String functionName, Class<?> returnType, Class<?>... parameters)
+    {
+        return this.remoteFunctionHandler.mapModuleFunction(runtime, functionName, returnType, parameters);
+    }
+
+    public void pauseModule() 
+    {
+        if (isPaused) 
+        {
             // moduleWarning("Failed to pause Module. Module is already paused.");
             return;
         }
         moduleInfo("Pausing Module");
         this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> pauseInternal()));
-
 
         while (!isPaused) {
             try {

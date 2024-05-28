@@ -1,7 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
 
-
 cc_binary(
     name = "claid_capi_java",
     linkshared = True,
@@ -14,8 +13,6 @@ cc_binary(
         "@fmeum_rules_jni//jni",
     ]
 )
-
-
 
 java_library(
     name = "java_local_dispatching",

@@ -28,7 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class FuturesTable 
 {
-    private Map<String, AbstractFuture> futures = new HashMap<>();
+    private Map<FutureUniqueIdentifier, AbstractFuture> futures = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
 
     public void addFuture(AbstractFuture future)
@@ -50,11 +50,24 @@ public class FuturesTable
             if(other == future)
             {
                 futures.remove(futureIdentifier);
+                lock.unlock();
                 return true;
             }
         }
         lock.unlock();
         return false;
+    }
+
+    public AbstractFuture lookupFuture(FutureUniqueIdentifier uniqueIdentifier)
+    {
+        AbstractFuture future = null;
+        lock.lock();
+        if(this.futures.containsKey(uniqueIdentifier))
+        {
+            future = this.futures.get(uniqueIdentifier);
+        }
+        lock.unlock();
+        return future;
     }
     
 }

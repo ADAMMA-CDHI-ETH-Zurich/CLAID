@@ -113,7 +113,7 @@ message ControlPackage {
   ConfigUploadPayload config_upload_payload        = 8; // CTRL_UPLOAD_CONFIG_AND_DATA and CTRL_ON_NEW_CONFIG_PAYLOAD_DATA
   LogMessage log_message                           = 9; // CTRL_LOCAL_LOG_MESSAGE and CTRL_LOG_MESSAGE_STREAM_TO_LOG_SINK
   PowerProfile power_profile                       = 10; // CTRL_ADJUST_POWER_PROFILE, can be used to tell Modules to enter power saving mode.
-  RemoteFunctionExecutionRequest remote_function_request  = 11; // CTRL_REMOTE_FUNCTION_REQUEST
+  RemoteFunctionRequest remote_function_request  = 11; // CTRL_REMOTE_FUNCTION_REQUEST
   RemoteFunctionReturn remote_function_return             = 12; // CTRL_REMOTE_FUNCTION_RESPONSE
 }
 
@@ -453,7 +453,7 @@ message RemoteFunctionIdentifier
 
 
 
-message RemoteFunctionExecutionRequest
+message RemoteFunctionRequest
 {
   RemoteFunctionIdentifier remote_function_identifier = 1;
   string remote_future_identifier = 2; // Unique identifier for the future which is waiting for the response of the function.
@@ -462,15 +462,16 @@ message RemoteFunctionExecutionRequest
 
 enum RemoteFunctionExecutionStatus
 {
-  UNDEFINED                 = 0;
-  STATUS_OK                 = 1;
-  FAILED_FUNCTION_NOT_FOUND = 2;
-  FAILED_INVALID_PARAMETERS = 3;
+  UNDEFINED                                       = 0;
+  STATUS_OK                                       = 1;
+  FAILED_FUNCTION_NOT_FOUND_OR_FAILED_TO_EXECUTE  = 2;
+  FAILED_INVALID_NUMBER_OF_PARAMETERS             = 3;
+  FAILED_MISMATCHING_PARAMETERS                   = 4;
 }
 
-message RemoteFunctionExecutionStatus
+message RemoteFunctionReturn
 {
   RemoteFunctionStatus execution_status = 1;
   RemoteFunctionIdentifier remote_function_identifier = 2;
-  string remote_future_identifier = 2; // Unique identifier for the future which is waiting for the response of the function.
+  string remote_future_identifier = 3; // Unique identifier for the future which is waiting for the response of the function.
 }

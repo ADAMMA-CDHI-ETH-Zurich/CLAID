@@ -54,7 +54,8 @@ import adamma.c4dhi.claid.ModuleListResponse.ModuleDescriptor;
 import adamma.c4dhi.claid.ControlPackage;
 import adamma.c4dhi.claid.CtrlType;
 import adamma.c4dhi.claid.LogMessage;
-
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionHandler;
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionRunnableHandler;
 import io.grpc.stub.StreamObserver;
 
 
@@ -83,19 +84,23 @@ public class ModuleManager
     private DataPackage restartControlPackage;
 
     ChannelSubscriberPublisher subscriberPublisher;
+    RemoteFunctionHandler remoteFunctionHandler; 
+    RemoteFunctionRunnableHandler remoteFunctionRunnableHandler;
 
     EventTracker eventTracker = new EventTracker();
-
-    
 
     ThreadSafeChannel<DataPackage> fromModulesChannel = new ThreadSafeChannel<>();
     Thread readFromModulesThread;
     boolean running = false;
 
+
+
     public ModuleManager(ModuleDispatcher dispatcher, ModuleFactory moduleFactory)
     {
         this.dispatcher = dispatcher;
         this.moduleFactory = moduleFactory;
+        this.remoteFunctionHandler = new RemoteFunctionHandler(fromModulesChannel);
+        this.remoteFunctionRunnableHandler = new RemoteFunctionRunnableHandler();
     }
 
     private boolean instantiateModule(String moduleId, String moduleClass)
@@ -158,9 +163,8 @@ public class ModuleManager
             // Hence, once all Modules have been initialized, we know the available Channels.
             Logger.logInfo("Calling module.start() for Module \"" + module.getId() + "\".");
             Properties properties = new Properties(descriptor.getProperties());
-            module.start(subscriberPublisher, properties);
+            module.start(subscriberPublisher, remoteFunctionHandler, properties);
             Logger.logInfo("Module \"" + module.getId() + "\" has started.");
-
         }
         return true;
     }
@@ -439,7 +443,14 @@ public class ModuleManager
                 this.runningModules.get(targetModule).adjustPowerProfile(packet.getControlVal().getPowerProfile());
             }
         }
-        
+        else if(packet.getControlVal().getCtrlType() == CtrlType.CTRL_REMOTE_FUNCTION_REQUEST)
+        {
+            handleRemoteFunctionRequest(packet);
+        }
+        else if(packet.getControlVal().getCtrlType() == CtrlType.CTRL_REMOTE_FUNCTION_RESPONSE)
+        {
+            handleRemoteFunctionResponse(packet);
+        }
         else
         {
             Logger.logWarning("ModuleManager received package with unsupported control val " + packet.getControlVal().getCtrlType());
@@ -459,7 +470,7 @@ public class ModuleManager
             }
             else
             {
-                System.out.println("Read from modules null");
+                Logger.logError("Read from modules null");
             }
         }
     }
@@ -519,5 +530,55 @@ public class ModuleManager
         DataPackage response = responseBuilder.build();
        // this.fromModulesChannel.add(response);
     }
+
+    private void handleRemoteFunctionRequest(DataPackage remoteFunctionRequest)
+    {
+        RemoteFunctionRequest request = remoteFunctionRequest.getControlVal().getRemoteFunctionRequest();
+
+        if(request.hasRuntime())
+        {
+            handleRuntimeRemoteFunctionExecution(remoteFunctionRequest);
+        }
+        else
+        {
+            handleModuleRemoteFunctionExecution(remoteFunctionRequest);
+        }
+    }
+
+    private void handleRuntimeRemoteFunctionExecution(DataPackage request)
+    {
+        DataPackage response = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(request);
+
+        if(response == null)
+        {
+            Logger.logError("Java runtime failed to execute RPC request");
+            return;
+        }
+
+        this.fromModulesChannel.post(response);
+    }
+
+
+    private void handleModuleRemoteFunctionExecution(DataPackage request)
+    {
+        RemoteFunctionRequest request = remoteFunctionRequest.getControlVal().getRemoteFunctionRequest();
+        String moduleId = request.getModuleId();
+
+        if(!this.runningModules.containsKey(moduleId))
+        {
+            Logger.logError("Failed to execute remote function request. Could not find Module \"" + moduleId + "\"");
+            return;
+        }
+
+        this.runningModules.get(moduleId).enqueueRPC(request);
+    }
+
+
+
+    private void handleRemoteFunctionResponse(DataPackage remoteFunctionResponse)
+    {
+        this.remoteFunctionHandler.handleResponse(remoteFunctionResponse);
+    }
+
 
 }

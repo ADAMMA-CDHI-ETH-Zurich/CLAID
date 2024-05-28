@@ -53,12 +53,32 @@ public class RemoteFunction<T>
     
     boolean successful = false;
 
+    String sourceModule = "";
+
     public RemoteFunction(
         FuturesHandler futuresHandler, 
         ThreadSafeChannel<DataPackage> toMiddlewareQueue,
         RemoteFunctionIdentifier functionIdentifier,
         Class<T> returnType, ArrayList<Class<?>> parameterTypes)
     {
+        this.futuresHandler = futuresHandler;
+        this.toMiddlewareQueue = toMiddlewareQueue;
+        this.remoteFunctionIdentifier = remoteFunctionIdentifier;
+
+        this.returnType = returnType;
+        this.parameterTypes = parameterTypes;
+    }
+
+    public RemoteFunction(
+        String sourceModule,
+        FuturesHandler futuresHandler, 
+        ThreadSafeChannel<DataPackage> toMiddlewareQueue,
+        RemoteFunctionIdentifier functionIdentifier,
+        Class<T> returnType, ArrayList<Class<?>> parameterTypes)
+    {
+        this.isModuleFunction = true;
+        this.sourceModule = sourceModule;
+        
         this.futuresHandler = futuresHandler;
         this.toMiddlewareQueue = toMiddlewareQueue;
         this.remoteFunctionIdentifier = remoteFunctionIdentifier;
@@ -94,11 +114,18 @@ public class RemoteFunction<T>
         controlPackageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
 
         RemoteFunctionRequest remoteFunctionRequest = 
-            makeRemoteFunctionExecutionRequest(future.getUniqueIdentifier().toString(), parameters);
+            makeRemoteFunctionRequest(future.getUniqueIdentifier().toString(), parameters);
 
         controlPackageBuilder.setRemoteFunctionRequest(remoteFunctionRequest);
 
         dataPackageBuilder.setControlVal(controlPackageBuilder.build());
+
+        if(this.remoteFunctionIdentifier.hasModuleId())
+        {
+            dataPackageBuilder.setTargetModule(this.remoteFunctionIdentifier.getModuleId());
+            dataPackageBuilder.setSourceModule(this.sourceModule);
+        }
+       
 
         toMiddlewareQueue.add(dataPackageBuilder.build());
 
@@ -106,9 +133,9 @@ public class RemoteFunction<T>
 
     }
 
-    private RemoteFunctionExecutionRequest makeRemoteFunctionExecutionRequest(String futureIdentifier, Objects... parameters)
+    private RemoteFunctionRequest makeRemoteFunctionRequest(String futureIdentifier, Objects... parameters)
     {
-        RemoteFunctionExecutionRequest.Builder request = RemoteFunctionExecutionRequest.newBuilder();
+        RemoteFunctionRequest.Builder request = RemoteFunctionRequest.newBuilder();
 
         request.setRemoteFunctionIdentifier(this.remoteFunctionIdentifier);
         request.setRemoteFutureIdentifier(futureIdentifier);
@@ -117,12 +144,12 @@ public class RemoteFunction<T>
         // However, Mutator expects a DataPackage to set the blob directly.
         // Hence, we create a stub data package and simply retrieve it's payload, 
         // after the mutator has converted and set the blob.
-        DataPackage.Builder stubPackage = DataPackage.newBuilder();
+        DataPackage stubPackage = DataPackage.newBuilder().build();
 
         for(int i = 0; i < parameters.length; i++)
         {
             Mutator<?> mutator = TypeMapping.getMutator(new DataType(parameterTypes.get(i)));
-            stubPackage = mutator.setPackagePayload(stubPackage, parameters[i]);
+            stubPackage = mutator.setPackagePayload(stubPackage.build(), parameters[i]);
             request.addParameterPayloads(stubPackage.getPayload());
         }
 

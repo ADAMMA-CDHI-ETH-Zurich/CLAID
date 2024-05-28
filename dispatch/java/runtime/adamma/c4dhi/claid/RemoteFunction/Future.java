@@ -42,7 +42,7 @@ public class Future<T> extends AbstractFuture
 
     public T await()
     {
-        DataPackage responsePackage = super.awaitUntyped();
+        DataPackage responsePackage = super.awaitResponse();
         if(responsePackage == null || !this.wasExecutedSuccessfully())
         {
             return null;
@@ -54,6 +54,11 @@ public class Future<T> extends AbstractFuture
             return null;
         }
 
+        if(Void.class.equals(returnType))
+        {
+            return null;
+        }
+        
         Mutator<T> mutator = TypeMapping.getMutator(new DataType(this.returnType));
 
         T t = mutator.getPackagePayload(responsePackage);
