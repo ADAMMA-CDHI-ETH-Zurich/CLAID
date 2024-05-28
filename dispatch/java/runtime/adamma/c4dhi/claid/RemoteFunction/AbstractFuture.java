@@ -39,18 +39,18 @@ public abstract class AbstractFuture
     private DataPackage responsePackage = null;
     private boolean successful = false;
 
-    private final Lock mutex = new ReentrantLock();
-    private final Condition conditionVariable = mutex.newCondition();
+    private final Lock lock = new ReentrantLock();
+    private final Condition condition = lock.newCondition();
 
     // The list used by the FutureHandler to manage its associated futures.
     // Note: FuturesTable is thread safe.
     private FuturesTable futuresTableInHandler = null;
 
-    private FutureUniqueIdentifier uniqueIdentifier = new FutureUniqueIdentifier();
+    private FutureUniqueIdentifier uniqueIdentifier = null;
 
     public AbstractFuture(FuturesTable futuresTableInHandler, FutureUniqueIdentifier uniqueIdentifier)
     {
-        this.listOfFuturesInHandler = futuresTableInHandler;
+        this.futuresTableInHandler = futuresTableInHandler;
         this.uniqueIdentifier = uniqueIdentifier;
     }
 

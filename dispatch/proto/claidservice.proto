@@ -441,13 +441,13 @@ message CLAIDANY
 
 message RemoteFunctionIdentifier
 {
-  String function_name = 1;
+  string function_name = 1;
   // Is it a function of a Runtime (e.g., of the C++ or Java runtime)?
   // Or is it a function of a Module?
   oneof function_type 
   {
     Runtime runtime = 2;
-    String module_id = 3;
+    string module_id = 3;
   }
 }
 
@@ -460,7 +460,7 @@ message RemoteFunctionRequest
   repeated Blob parameter_payloads = 3;
 }
 
-enum RemoteFunctionExecutionStatus
+enum RemoteFunctionStatus
 {
   UNDEFINED                                       = 0;
   STATUS_OK                                       = 1;

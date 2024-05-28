@@ -18,18 +18,29 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ***************************************************************************/
+package adamma.c4dhi.claid.RemoteFunction;
 
 import adamma.c4dhi.claid.Module.ThreadSafeChannel;
 import adamma.c4dhi.claid.Module.Scheduling.ConsumerRunnable;
 import adamma.c4dhi.claid.RemoteFunction.FutureUniqueIdentifier;
 import adamma.c4dhi.claid.RemoteFunction.RemoteFunction;
+import adamma.c4dhi.claid.RemoteFunctionIdentifier;
+import adamma.c4dhi.claid.Module.ThreadSafeChannel;
 
 import adamma.c4dhi.claid.Logger.Logger;
+
+import java.util.Arrays;
+import java.util.ArrayList;
+
+import adamma.c4dhi.claid.DataPackage;
+import adamma.c4dhi.claid.Runtime;
+import adamma.c4dhi.claid.RemoteFunctionReturn;
+import adamma.c4dhi.claid.RemoteFunctionStatus;
 
 
 public class RemoteFunctionHandler 
 {
-    private FuturesHandler futuresHandler = new FuturesHandler();
+    private FutureHandler futuresHandler = new FutureHandler();
     private ThreadSafeChannel<DataPackage> toMiddlewareQueue;
 
     public RemoteFunctionHandler(ThreadSafeChannel<DataPackage> toMiddlewareQueue)
@@ -39,25 +50,25 @@ public class RemoteFunctionHandler
 
     public<T> RemoteFunction<T> mapRuntimeFunction(Runtime runtime, String functionName, Class<T> returnType, Class<?>... parameterDataTypes)
     {
-        RemoteFunction<T> function = new RemoteFunction<>(
+        RemoteFunction<T> function = new RemoteFunction<T>(
                 this.futuresHandler, 
                 this.toMiddlewareQueue, 
                 makeRemoteFunctionIdentifier(runtime, functionName), 
                 returnType, 
-                parameterDataTypes);
+                new ArrayList<>(Arrays.asList(parameterDataTypes)));
 
         return function;
     }
 
     public <T> RemoteFunction<T> mapModuleFunction(String sourceModule, String targetModule, String functionName, Class<T> returnType, Class<?>... parameterDataTypes)
     {
-        RemoteFunction<T> function = new RemoteFunction<>(
+        RemoteFunction<T> function = new RemoteFunction<T>(
                 sourceModule,
                 this.futuresHandler, 
                 this.toMiddlewareQueue, 
                 makeRemoteFunctionIdentifier(targetModule, functionName), 
                 returnType, 
-                parameterDataTypes);
+                new ArrayList<>(Arrays.asList(parameterDataTypes)));
 
         return function;
     }
@@ -75,7 +86,7 @@ public class RemoteFunctionHandler
     {
         RemoteFunctionIdentifier.Builder remoteFunctionIdentifier = RemoteFunctionIdentifier.newBuilder();
         remoteFunctionIdentifier.setFunctionName(functionName);
-        remoteFunctionIdentifier.setModuleId(runtime);
+        remoteFunctionIdentifier.setModuleId(moduleId);
 
         return remoteFunctionIdentifier.build();
     }
@@ -101,10 +112,10 @@ public class RemoteFunctionHandler
             return;
         }
 
-        if(remoteFunctionReturn.getStatus() != RemoteFunctionExecutionStatus.STATUS_OK)
+        if(remoteFunctionReturn.getExecutionStatus() != RemoteFunctionStatus.STATUS_OK)
         {
             Logger.logError("Failed to forward result of remote function. Future with identifier \"" + 
-                futureIdentifier + "\" failed with status \"" + remoteFunctionReturn.getStatus().name() + "\".");
+                futureIdentifier + "\" failed with status \"" + remoteFunctionReturn.getExecutionStatus().name() + "\".");
             future.setFailed();
             return;
         }

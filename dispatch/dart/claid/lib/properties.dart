@@ -19,30 +19,17 @@
 * limitations under the License.
 ***************************************************************************/
 
-package adamma.c4dhi.claid.RemoteFunction;
+import 'package:claid/generated/google/protobuf/struct.pb.dart';
 
-import adamma.c4dhi.claid.RemoteFunction.FutureUniqueIdentifier;
-import adamma.c4dhi.claid.RemoteFunction.FuturesTable;
-import adamma.c4dhi.claid.RemoteFunction.Future;
-
-public class FutureHandler 
+class Properties
 {
-    
-    private FuturesTable openFutures = new FuturesTable();
+    Struct properties;
 
-    public <T> Future<T> registerNewFuture(Class<T> returnDataType)
+    Properties(this.properties);
+
+    double getNumberProperty(String key)
     {
-        FutureUniqueIdentifier uniqueIdentifier = FutureUniqueIdentifier.makeUniqueIdentifier();
-        Future<T> future = new Future<T>(this.openFutures, uniqueIdentifier, returnDataType);
-
-        this.openFutures.addFuture(future);
-
-        return future;
-    };
-
-    public AbstractFuture lookupFuture(FutureUniqueIdentifier identifier)
-    {
-        return openFutures.lookupFuture(identifier);
+        return double.tryParse(properties.fields[key]!.stringValue!)!;
     }
 
     

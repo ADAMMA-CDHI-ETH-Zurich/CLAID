@@ -29,13 +29,15 @@ import adamma.c4dhi.claid.TypeMapping.DataType;
 import adamma.c4dhi.claid.TypeMapping.Mutator;
 import adamma.c4dhi.claid.TypeMapping.TypeMapping;
 import adamma.c4dhi.claid.Logger.Logger;
+import adamma.c4dhi.claid.RemoteFunction.FutureHandler;
 
-import adamma.c4dhi.claid.RemoteFunctionIdentifier;
-import adamma.c4dhi.claid.RemoteFutureIdentifier;
+import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.ControlPackage;
 import adamma.c4dhi.claid.CtrlType;
 import adamma.c4dhi.claid.RemoteFunctionRequest;
 import adamma.c4dhi.claid.RemoteFunctionReturn;
+import adamma.c4dhi.claid.RemoteFunctionIdentifier;
+import adamma.c4dhi.claid.Module.ThreadSafeChannel;
 
 import adamma.c4dhi.claid.Runtime;
 
@@ -47,7 +49,7 @@ public class RemoteFunction<T>
     private Class<T> returnType = null;
     private ArrayList<Class<?>> parameterTypes = null;
     
-    private FuturesHandler futuresHandler = null;
+    private FutureHandler futuresHandler = null;
     private ThreadSafeChannel<DataPackage> toMiddlewareQueue = null;
     private RemoteFunctionIdentifier remoteFunctionIdentifier = null;
     
@@ -56,7 +58,7 @@ public class RemoteFunction<T>
     String sourceModule = "";
 
     public RemoteFunction(
-        FuturesHandler futuresHandler, 
+        FutureHandler futuresHandler, 
         ThreadSafeChannel<DataPackage> toMiddlewareQueue,
         RemoteFunctionIdentifier functionIdentifier,
         Class<T> returnType, ArrayList<Class<?>> parameterTypes)
@@ -71,12 +73,11 @@ public class RemoteFunction<T>
 
     public RemoteFunction(
         String sourceModule,
-        FuturesHandler futuresHandler, 
+        FutureHandler futuresHandler, 
         ThreadSafeChannel<DataPackage> toMiddlewareQueue,
         RemoteFunctionIdentifier functionIdentifier,
         Class<T> returnType, ArrayList<Class<?>> parameterTypes)
     {
-        this.isModuleFunction = true;
         this.sourceModule = sourceModule;
         
         this.futuresHandler = futuresHandler;
@@ -87,7 +88,7 @@ public class RemoteFunction<T>
         this.parameterTypes = parameterTypes;
     }
 
-    public<T> Future<T> execute(Object... parameters)
+    public Future<T> execute(Object... parameters)
     {
         if(parameters.length != parameterTypes.size())
         {
@@ -109,7 +110,7 @@ public class RemoteFunction<T>
         Future<T> future = this.futuresHandler.registerNewFuture(this.returnType);
 
         DataPackage.Builder dataPackageBuilder = DataPackage.newBuilder();
-        ControlPackage.Builder controlPackage = ControlPackage.newBuilder();
+        ControlPackage.Builder controlPackageBuilder = ControlPackage.newBuilder();
         controlPackageBuilder.setCtrlType(CtrlType.CTRL_REMOTE_FUNCTION_REQUEST);
         controlPackageBuilder.setRuntime(Runtime.RUNTIME_JAVA);
 
@@ -133,7 +134,7 @@ public class RemoteFunction<T>
 
     }
 
-    private RemoteFunctionRequest makeRemoteFunctionRequest(String futureIdentifier, Objects... parameters)
+    private RemoteFunctionRequest makeRemoteFunctionRequest(String futureIdentifier, Object... parameters)
     {
         RemoteFunctionRequest.Builder request = RemoteFunctionRequest.newBuilder();
 
@@ -149,19 +150,22 @@ public class RemoteFunction<T>
         for(int i = 0; i < parameters.length; i++)
         {
             Mutator<?> mutator = TypeMapping.getMutator(new DataType(parameterTypes.get(i)));
-            stubPackage = mutator.setPackagePayload(stubPackage.build(), parameters[i]);
+            Object tmp = parameters[i];
+            stubPackage = mutator.setPackagePayloadFromObject(stubPackage, tmp);
             request.addParameterPayloads(stubPackage.getPayload());
         }
 
         return request.build();
     }
 
+  
+
     public String getFunctionSignature()
     {
         String returnTypeName = returnType == null ? "void" : returnType.getSimpleName();
         String functionName = "";
 
-        boolean isRuntimeFunction = this.remoteFunctionIdentifier.getFunctionType().name().equals("runtime");
+        boolean isRuntimeFunction = this.remoteFunctionIdentifier.hasRuntime();
 
         if(isRuntimeFunction)
         {
@@ -169,7 +173,7 @@ public class RemoteFunction<T>
         }
         else
         {
-            functionName = this.remoteFunctionIdentifier.getModule().name() + "::" + this.remoteFunctionIdentifier.getFunctionName();
+            functionName = this.remoteFunctionIdentifier.getModuleId() + "::" + this.remoteFunctionIdentifier.getFunctionName();
         }
 
         String parameterNames = this.parameterTypes.size() > 0 ? this.parameterTypes.get(0).getSimpleName() : "";

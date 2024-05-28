@@ -29,6 +29,8 @@ import adamma.c4dhi.claid.Module.Scheduling.ScheduleOnce;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduleRepeatedIntervall;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduledRunnable;
 import adamma.c4dhi.claid.RemoteFunction.RemoteFunction;
+import adamma.c4dhi.claid.Runtime;
+
 import adamma.c4dhi.claid.EventTracker.EventTracker;
 
 import adamma.c4dhi.claid.TypeMapping.DataType;
@@ -36,13 +38,13 @@ import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.LogMessageSeverityLevel;
 import adamma.c4dhi.claid.LogMessageEntityType;
 import adamma.c4dhi.claid.PowerProfile;
+import adamma.c4dhi.claid.Module.Properties;
 
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.function.Consumer;
 
 
@@ -53,8 +55,10 @@ import adamma.c4dhi.claid.Module.Scheduling.ConsumerRunnable;
 import adamma.c4dhi.claid.Module.Scheduling.RunnableDispatcher;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduleOnce;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduledRunnable;
-import adamma.c4dhi.claid.Module.RemoteFunction.RemoteFunctionHandler;
-import adamma.c4dhi.claid.Module.RemoteFunction.RemoteFunctionRunnableHandler;
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionRunnable;
+
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionHandler;
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionRunnableHandler;
 
 public abstract class Module
 {
@@ -125,7 +129,7 @@ public abstract class Module
         }
         this.subscriberPublisher = subscriberPublisher;
         this.remoteFunctionHandler = remoteFunctionHandler;
-        this.remoteFunctionRunnableHandler = new RemoteFunctionRunnableHandler("Module " + this.id);
+        this.remoteFunctionRunnableHandler = new RemoteFunctionRunnableHandler("Module " + this.id, subscriberPublisher.getToModuleManagerQueue());
 
         if(!this.runnableDispatcher.start())
         {
@@ -666,14 +670,13 @@ public abstract class Module
             return;
         }
 
-        DataPackage response = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable();
-        if(response == null)
+        boolean result = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(rpcRequest);
+        if(!result)
         {
-            moduleError("Failed to execute rpcRequest " + response);
+            moduleError("Failed to execute rpcRequest");
             return;
         }
 
-        this.toMiddlewareQueue.post(response);
     }
 
     protected boolean registerRemoteFunction(String functionName, Class<?> returnType, Class<?>... parameters)
@@ -681,14 +684,14 @@ public abstract class Module
         return this.remoteFunctionRunnableHandler.registerRunnable(this, functionName, returnType, parameters);
     }
 
-    protected <T> RemoteFunction<T> mapRemoteFunctionOfModule(String moduleId, String functionName, Class<?> returnType, Class<?>... parameters)
+    protected <T> RemoteFunction<T> mapRemoteFunctionOfModule(String moduleId, String functionName, Class<T> returnType, Class<?>... parameters)
     {
         return this.remoteFunctionHandler.mapModuleFunction(this.id, moduleId, functionName, returnType, parameters);
     }
 
-    protected <T> RemoteFunction<T> mapRemoteFunctionOfRuntime(Runtime runtime, String functionName, Class<?> returnType, Class<?>... parameters)
+    protected <T> RemoteFunction<T> mapRemoteFunctionOfRuntime(Runtime runtime, String functionName, Class<T> returnType, Class<?>... parameters)
     {
-        return this.remoteFunctionHandler.mapModuleFunction(runtime, functionName, returnType, parameters);
+        return this.remoteFunctionHandler.mapRuntimeFunction(runtime, functionName, returnType, parameters);
     }
 
     public void pauseModule() 

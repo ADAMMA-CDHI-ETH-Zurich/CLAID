@@ -26,6 +26,7 @@ import adamma.c4dhi.claid.TypeMapping.DataType;
 import adamma.c4dhi.claid.TypeMapping.Mutator;
 import adamma.c4dhi.claid.TypeMapping.TypeMapping;
 import adamma.c4dhi.claid.Blob;
+import adamma.c4dhi.claid.DataPackage;
 
 
 public class Future<T> extends AbstractFuture 

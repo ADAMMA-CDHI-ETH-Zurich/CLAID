@@ -29,6 +29,7 @@ import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.ControlPackage;
 import adamma.c4dhi.claid.CtrlType;
 import adamma.c4dhi.claid.Runtime;
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionHandler;
 
 import adamma.c4dhi.claid.PowerProfile;
 
@@ -123,9 +124,9 @@ public abstract class ManagerModule extends Module
     }
 
     @Override
-    public boolean start(ChannelSubscriberPublisher subscriberPublisher, Properties properties) 
+    public boolean start(ChannelSubscriberPublisher subscriberPublisher, RemoteFunctionHandler remoteFunctionHandler, Properties properties)
     {
-        super.start(subscriberPublisher, properties);
+        super.start(subscriberPublisher, remoteFunctionHandler, properties);
         this.subscriberPublisher = subscriberPublisher;
         return true;
     }

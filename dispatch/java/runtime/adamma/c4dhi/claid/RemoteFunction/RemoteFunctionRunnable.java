@@ -1,4 +1,4 @@
-
+package adamma.c4dhi.claid.RemoteFunction;
 
 
 // The RemoteFunctionRunnable is the counterpart to the RemoteFunction.
@@ -6,22 +6,29 @@
 // E.g., it could be a function registered inside a Module. 
 
 import java.lang.reflect.Method;
-import java.rmi.Remote;
-import java.sql.Blob;
+
 import java.util.ArrayList;
 
 import adamma.c4dhi.claid.RemoteFunctionRequest;
 import adamma.c4dhi.claid.RemoteFunctionReturn;
-import adamma.c4dhi.claid.RemoteFunctionExecutionStatus;
-import adamma.c4dhi.claid.RemoteFunctionRunnableResult;
+import adamma.c4dhi.claid.RemoteFunctionStatus;
 
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.TypeMapping.DataType;
 import adamma.c4dhi.claid.TypeMapping.Mutator;
 import adamma.c4dhi.claid.TypeMapping.TypeMapping;
 
+import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.ControlPackage;
 import adamma.c4dhi.claid.CtrlType;
+import adamma.c4dhi.claid.Blob;
+
+import adamma.c4dhi.claid.RemoteFunctionIdentifier;
+
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionRunnableResult;
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionRunnable;
+
+import com.google.protobuf.GeneratedMessageV3;
 
 public class RemoteFunctionRunnable 
 {
@@ -44,28 +51,36 @@ public class RemoteFunctionRunnable
 
         RemoteFunctionIdentifier remoteFunctionIdentifier = executionRequest.getRemoteFunctionIdentifier();
 
-        ArrayList<Blob> payloads = request.getParameterPayloads();
+        int payloadsSize = executionRequest.getParameterPayloadsCount();
 
-        if(payloads.size() != this.parameterTypes.size())
+        if(payloadsSize!= this.parameterTypes.size())
         {
-            Logger.logError("Failed to execute RemoteFunctionRunnable \"" + getFunctionSignature(remoteFunctionIdentifier) + "\". Number of parameters do not match. " +
-            "Function expected " + parameterTypes.size() + " parameters, but was executed with " + parameters.size());
+            Logger.logError("Failed to execute RemoteFunctionRunnable \"" + getFunctionSignature(remoteFunctionIdentifier, executionRequest) + "\". Number of parameters do not match. " +
+            "Function expected " + parameterTypes.size() + " parameters, but was executed with " + payloadsSize);
 
-            status = RemoteFunctionRunnableResult.makeFailedResult(RemoteFunctionExecutionStatus.FAILED_INVALID_NUMBER_OF_PARAMETERS);
-            return makeRemoteFunctionReturn(status);
+            status = RemoteFunctionRunnableResult.makeFailedResult(RemoteFunctionStatus.FAILED_INVALID_NUMBER_OF_PARAMETERS);
+            return makeRPCResponsePackage(status, rpcRequest);
         }
 
         ArrayList<Object> parameters = new ArrayList<>();
-        for(int i = 0; i < this.parameterTypes.size(); i++)
+        for(int i = 0; i < payloadsSize; i++)
         {
             Class<?> dataType = this.parameterTypes.get(i);
             Mutator<?> mutator = TypeMapping.getMutator(new DataType(dataType));
 
-            DataPackage tmpPackage = DataPackage.newBuilder().build();
-            tmpPackage = tmpPackage.setPayload(payloads.get(i));
+            DataPackage.Builder tmpPackage = DataPackage.newBuilder();
+            tmpPackage.setPayload(executionRequest.getParameterPayloads(i));
 
             Object data = mutator.getPackagePayload(tmpPackage.build());
             parameters.add(data);
+
+            if(!parameters.get(i).getClass().equals(this.parameterTypes.get(i)))
+            {
+                Logger.logError("Failed to execute RemoteFunctionRunnable \"" + getFunctionSignature(remoteFunctionIdentifier, executionRequest) + "\". Parameter object " + i +
+                " is of type \"" + parameters.get(i).getClass() + "\", but expected type \"" + parameterTypes.get(i).getSimpleName() + "\".");
+                status = RemoteFunctionRunnableResult.makeFailedResult(RemoteFunctionStatus.FAILED_MISMATCHING_PARAMETERS);
+                return makeRPCResponsePackage(status, rpcRequest);
+            }
         }
 
         status = executeRemoteFunctionRequest(object, parameters);
@@ -77,29 +92,19 @@ public class RemoteFunctionRunnable
     {
         try 
         {        
-            for(int i = 0; i < this.parameterTypes.size(); i++)
-            {
-                if(!parameters.get(i).getClass().equals(this.parameterTypes.get(i)))
-                {
-                    Logger.logError("Failed to execute RemoteFunctionRunnable \"" + getFunctionSignature() + "\". Parameter object " + i +
-                    " is of type \"" + parameters.get(i).getClass() + "\", but expected type \"" + parameterTypes.get(i).getSimpleName() + "\".");
-                }
-                return RemoteFunctionRunnableResult.makeFailedResult(RemoteFunctionExecutionStatus.FAILED_MISMATCHING_PARAMETERS);
-
-            }
-            Class<?> myClass = object.getClass();
+            Class<?> objClass = object.getClass();
 
             Method method = RemoteFunctionRunnable.lookupMethod(object, functionName, parameterTypes);
             if(method == null)
             {
-                return RemoteFunctionRunnableResult.makeFailedResult(RemoteFunctionExecutionStatus.FAILED_FUNCTION_NOT_FOUND_OR_FAILED_TO_EXECUTE);
+                return RemoteFunctionRunnableResult.makeFailedResult(RemoteFunctionStatus.FAILED_FUNCTION_NOT_FOUND_OR_FAILED_TO_EXECUTE);
             }
 
             // Convert the ArrayList to an array of Objects
             Object[] paramsArray = parameters.toArray();
 
             // Invoke the method on the instance with the parameters
-            Obj result = method.invoke(myClassInstance, paramsArray);
+            Object result = method.invoke(objClass, paramsArray);
 
             return RemoteFunctionRunnableResult.makeSuccessfulResult(result);
         } 
@@ -107,7 +112,7 @@ public class RemoteFunctionRunnable
         {
             e.printStackTrace();
             Logger.logError("Failed to execute RemoteFunctionRunnable. Got exception \"" + e.getMessage() + "\".");
-            return RemoteFunctionRunnableResult.makeFailedResult(RemoteFunctionExecutionStatus.FAILED_FUNCTION_NOT_FOUND_OR_FAILED_TO_EXECUTE);
+            return RemoteFunctionRunnableResult.makeFailedResult(RemoteFunctionStatus.FAILED_FUNCTION_NOT_FOUND_OR_FAILED_TO_EXECUTE);
         }
     }
 
@@ -116,8 +121,11 @@ public class RemoteFunctionRunnable
         try 
         {        
             Class<?> myClass = object.getClass();
+            
+            Class<?>[] parameterTypesArray = new Class<?>[parameterTypes.size()];
+            parameterTypesArray = parameterTypes.toArray(parameterTypesArray);
 
-            Method method = myClass.getMethod(functionName, parameterTypes.toArray());        
+            Method method = myClass.getMethod(functionName, parameterTypesArray);        
 
             return method;
         } 
@@ -145,7 +153,7 @@ public class RemoteFunctionRunnable
     {
         String returnTypeName = returnType == null ? "void" : returnType.getSimpleName();
 
-        boolean isRuntimeFunction = remoteFunctionIdentifier.getFunctionType().name().equals("runtime");
+        boolean isRuntimeFunction = remoteFunctionIdentifier.hasRuntime();
 
         String parameterNames = this.parameterTypes.size() > 0 ? this.parameterTypes.get(0).getSimpleName() : "";
 
@@ -170,16 +178,16 @@ public class RemoteFunctionRunnable
         remoteFunctionReturn.setRemoteFutureIdentifier(executionRequest.getRemoteFutureIdentifier());
 
 
-        return remoteFunctionReturn;
+        return remoteFunctionReturn.build();
     }
 
     DataPackage makeRPCResponsePackage(RemoteFunctionRunnableResult result, DataPackage rpcRequest)
     {
         RemoteFunctionRequest executionRequest = rpcRequest.getControlVal().getRemoteFunctionRequest();
 
-        DataPackage.Builder reponseBuilder = DataPackage.newBuilder();
+        DataPackage.Builder responseBuilder = DataPackage.newBuilder();
 
-        reponseBuilder.setSourceModule(rpcRequest.getTargetModule());
+        responseBuilder.setSourceModule(rpcRequest.getTargetModule());
         responseBuilder.setTargetModule(rpcRequest.getSourceModule());
 
 
@@ -187,9 +195,9 @@ public class RemoteFunctionRunnable
         ctrlPackage.setCtrlType(CtrlType.CTRL_REMOTE_FUNCTION_RESPONSE);
         ctrlPackage.setRemoteFunctionReturn(makeRemoteFunctionReturn(result, executionRequest));
 
-        if(executionRequest.hasRuntime())
+        if(executionRequest.getRemoteFunctionIdentifier().hasRuntime())
         {
-            ctrlPackage.setRuntime(executionRequest.getRuntime());
+            ctrlPackage.setRuntime(executionRequest.getRemoteFunctionIdentifier().getRuntime());
         }
 
         responseBuilder.setControlVal(ctrlPackage.build());
@@ -200,7 +208,7 @@ public class RemoteFunctionRunnable
         if(returnValue != null)
         {
             Mutator<?> mutator = TypeMapping.getMutator(new DataType(this.returnType));
-            responsePackage = mutator.setPackagePayload(responsePackage, returnValue);
+            responsePackage = mutator.setPackagePayloadFromObject(responsePackage, returnValue);
         }
 
         return responsePackage;

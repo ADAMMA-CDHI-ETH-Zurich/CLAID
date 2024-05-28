@@ -5,17 +5,26 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import adamma.c4dhi.claid.RemoteFunctionRunnable;
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionRunnable;
+import adamma.c4dhi.claid.DataPackage;
+import adamma.c4dhi.claid.RemoteFunctionRequest;
+import adamma.c4dhi.claid.RemoteFunctionIdentifier;
+import adamma.c4dhi.claid.Module.ThreadSafeChannel;
+
+
+import adamma.c4dhi.claid.Logger.Logger;
 
 public class RemoteFunctionRunnableHandler 
 {
 
     private String entityName;
+    private ThreadSafeChannel<DataPackage> toMiddlewareQueue;
     private Map<String, RemoteFunctionRunnable> registeredRunnables = new HashMap<>();
 
-    RemoteFunctionHandler(String entityName)
+    public RemoteFunctionRunnableHandler(String entityName, ThreadSafeChannel<DataPackage> toMiddlewareQueue)
     {
         this.entityName = entityName;
+        this.toMiddlewareQueue = toMiddlewareQueue;
     }
 
     public boolean addRunnable(String functionName, RemoteFunctionRunnable runnable)
@@ -35,29 +44,29 @@ public class RemoteFunctionRunnableHandler
 
         if(registeredRunnables.containsKey(functionName))
         {
-            moduleError("Failed to register function \"" + functionName + "\" in Module \"" + this.entityName + "\" (\"" + this.getType() + "\". Function already registered before.");
+            Logger.logError("Failed to register function \"" + functionName + "\" in Module \"" + this.entityName + "\". Function already registered before.");
             return false;
         }
 
-        if(!RemoteFunctionRunnable.doesFunctionExist(object, functionName, returnType, parameterList))
+        if(!RemoteFunctionRunnable.doesFunctionExist(object, functionName, parameterList))
         {
-            moduleError("Failed to register function \"" + functionName + "\" in Module \"" + this.entityName + "\" (\"" + this.getType() + "\". Function not found or invalid parameters.");
+            Logger.logError("Failed to register function \"" + functionName + "\" in Module \"" + this.entityName + "\". Function not found or invalid parameters.");
             return false;
         }
 
         if(!RemoteFunctionRunnable.isDataTypeSupported(returnType))
         {
-            moduleError("Failed to register function \"" + functionName + "\" in Module \"" + this.entityName + "\" (\"" + this.getType() +
+            Logger.logError("Failed to register function \"" + functionName + "\" in Module \"" + this.entityName  +
                 "\". Return type \"" + returnType.getName() + "\" is no CLAID data type and hence not supported.");
             return false;
         }
 
-        for(int i = 0; i < parameters.length; i++)
+        for(int i = 0; i < parameterTypes.length; i++)
         {
-            if(!RemoteFunctionRunnable.isDataTypeSupported(parameters[i]))
+            if(!RemoteFunctionRunnable.isDataTypeSupported(parameterTypes[i]))
             {
                 Logger.logError("Failed to register function \"" + functionName + "\" of entity \"" + this.entityName + ". Parameter type \"" + 
-                    parameters[i].getName() + "\" is no CLAID data type and hence not supported.");
+                parameterTypes[i].getName() + "\" is no CLAID data type and hence not supported.");
                 return false;
             }
         }
@@ -67,13 +76,13 @@ public class RemoteFunctionRunnableHandler
         return this.addRunnable(functionName, runnable);
     }
     
-    public DataPackage executeRemoteFunctionRunnable(DataPackage rpcRequest)
+    public boolean executeRemoteFunctionRunnable(DataPackage rpcRequest)
     {
         RemoteFunctionRequest request;
         if(!rpcRequest.getControlVal().hasRemoteFunctionRequest())
         {
-            moduleError("Failed to execute RPC request data package. Could not find definition of RemoteFunctionRequest.");
-            return null;
+            Logger.logError("Failed to execute RPC request data package. Could not find definition of RemoteFunctionRequest.");
+            return false;
         }
 
         request = rpcRequest.getControlVal().getRemoteFunctionRequest();
@@ -84,12 +93,17 @@ public class RemoteFunctionRunnableHandler
         if(!this.registeredRunnables.containsKey(functionName))
         {
             Logger.logError("Failed to execute RPC request. Entity \"" + this.entityName + "\" does not have a registered remote function called \"" + functionName + "\".");
-            return null;
+            return false;
         }
 
         RemoteFunctionRunnable runnable = this.registeredRunnables.get(functionName);
         DataPackage response = runnable.executeRemoteFunctionRequest(this, rpcRequest);
 
-        return response;
+        if(response != null)
+        {
+            this.toMiddlewareQueue.add(response);
+        }
+
+        return true;
     }
 }

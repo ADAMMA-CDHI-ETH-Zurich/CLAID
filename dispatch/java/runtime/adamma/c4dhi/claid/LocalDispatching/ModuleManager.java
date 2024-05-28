@@ -25,9 +25,11 @@ import adamma.c4dhi.claid.Module.ChannelSubscriberPublisher;
 import adamma.c4dhi.claid.Module.Module;
 import adamma.c4dhi.claid.Module.ModuleAnnotator;
 import adamma.c4dhi.claid.Module.ModuleFactory;
+import adamma.c4dhi.claid.Module.Properties;
 import adamma.c4dhi.claid.Module.ThreadSafeChannel;
 import adamma.c4dhi.claid.LocalDispatching.ModuleInstanceKey;
 import adamma.c4dhi.claid.Logger.Logger;
+
 import adamma.c4dhi.claid.LogMessageSeverityLevel;
 import adamma.c4dhi.claid.EventTracker.EventTracker;
 
@@ -56,6 +58,8 @@ import adamma.c4dhi.claid.CtrlType;
 import adamma.c4dhi.claid.LogMessage;
 import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionHandler;
 import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionRunnableHandler;
+import adamma.c4dhi.claid.RemoteFunctionRequest;
+
 import io.grpc.stub.StreamObserver;
 
 
@@ -100,7 +104,7 @@ public class ModuleManager
         this.dispatcher = dispatcher;
         this.moduleFactory = moduleFactory;
         this.remoteFunctionHandler = new RemoteFunctionHandler(fromModulesChannel);
-        this.remoteFunctionRunnableHandler = new RemoteFunctionRunnableHandler();
+        this.remoteFunctionRunnableHandler = new RemoteFunctionRunnableHandler("RUNTIME_JAVA", fromModulesChannel);
     }
 
     private boolean instantiateModule(String moduleId, String moduleClass)
@@ -535,7 +539,7 @@ public class ModuleManager
     {
         RemoteFunctionRequest request = remoteFunctionRequest.getControlVal().getRemoteFunctionRequest();
 
-        if(request.hasRuntime())
+        if(request.getRemoteFunctionIdentifier().hasRuntime())
         {
             handleRuntimeRemoteFunctionExecution(remoteFunctionRequest);
         }
@@ -547,22 +551,21 @@ public class ModuleManager
 
     private void handleRuntimeRemoteFunctionExecution(DataPackage request)
     {
-        DataPackage response = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(request);
+        boolean result = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(request);
 
-        if(response == null)
+        if(!result)
         {
             Logger.logError("Java runtime failed to execute RPC request");
             return;
         }
 
-        this.fromModulesChannel.post(response);
     }
 
 
     private void handleModuleRemoteFunctionExecution(DataPackage request)
     {
-        RemoteFunctionRequest request = remoteFunctionRequest.getControlVal().getRemoteFunctionRequest();
-        String moduleId = request.getModuleId();
+        RemoteFunctionRequest remoteFunctionRequest = request.getControlVal().getRemoteFunctionRequest();
+        String moduleId = remoteFunctionRequest.getRemoteFunctionIdentifier().getModuleId();
 
         if(!this.runningModules.containsKey(moduleId))
         {

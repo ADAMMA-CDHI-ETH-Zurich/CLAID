@@ -1,11 +1,14 @@
 package adamma.c4dhi.claid.RemoteFunction;
 
+import adamma.c4dhi.claid.RemoteFunctionReturn;
+import adamma.c4dhi.claid.RemoteFunctionStatus;
+
 class RemoteFunctionRunnableResult
 {
     Object returnValue;
-    RemoteFunctionExecutionStatus status;
+    RemoteFunctionStatus status;
 
-    public RemoteFunctionRunnableResult(Object returnValue, RemoteFunctionExecutionStatus status)
+    public RemoteFunctionRunnableResult(Object returnValue, RemoteFunctionStatus status)
     {
         this.status = status;
         this.returnValue = returnValue;
@@ -21,7 +24,7 @@ class RemoteFunctionRunnableResult
         return new RemoteFunctionRunnableResult(null, status);
     }
 
-    public RemoteFunctionExecutionStatus getStatus()
+    public RemoteFunctionStatus getStatus()
     {
         return this.status;
     }

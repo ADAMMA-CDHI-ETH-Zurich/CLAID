@@ -34,7 +34,7 @@ public class FutureUniqueIdentifier
     public static FutureUniqueIdentifier makeUniqueIdentifier()
     {
         mutex.lock();
-        int idCopy = currentId;
+        long idCopy = currentId;
         currentId++;
         mutex.unlock();
 
