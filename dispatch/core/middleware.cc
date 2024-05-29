@@ -618,6 +618,61 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
         // case CtrlType::CTRL_PAUSE_MODULE:
         // case CtrlType::CTRL_UNPAUSE_MODULE:
         // case CtrlType::CTRL_ADJUST_POWER_PROFILE:
+        case CtrlType::CTRL_REMOTE_FUNCTION_REQUEST:
+        {
+            const ControlPackage& ctrlPackage = controlPackage->control_val();
+            const RemoteFunctionRequest& rpcRequest = ctrlPackage.remote_function_request();
+            const RemoteFunctionIdentifier& remoteFunctionIdentifier = rpcRequest.remote_function_identifier();
+
+            if(remoteFunctionIdentifier.function_type_case() == RemoteFunctionIdentifier::FunctionTypeCase::kRuntime)
+            {
+                forwardControlPackageToSpecificRuntime(controlPackage, remoteFunctionIdentifier.runtime());
+            }
+            else if(remoteFunctionIdentifier.function_type_case() == RemoteFunctionIdentifier::FunctionTypeCase::kModuleId)
+            {
+
+                const std::string& targetModule = remoteFunctionIdentifier.module_id();
+
+                SharedQueue<DataPackage>* queue = this->moduleTable.lookupOutputQueue(targetModule);
+
+                // Route package to target runtime.
+                if(queue == nullptr)
+                {
+                    Logger::logError("Unable to forward RPC request. Unable to find Module %s", targetModule.c_str());
+                    handleRPCModuleNotFoundError(controlPackage);
+                    return;
+                }
+                queue->push_back(controlPackage);
+
+            }
+            // if(rpcRequest.)
+            break;
+        }
+        case CtrlType::CTRL_REMOTE_FUNCTION_RESPONSE:
+        {
+            const ControlPackage& ctrlPackage = controlPackage->control_val();
+            const RemoteFunctionReturn& rpcReturn = ctrlPackage.remote_function_return();
+            const RemoteFunctionIdentifier& remoteFunctionIdentifier = rpcReturn.remote_function_identifier();
+
+            if(remoteFunctionIdentifier.function_type_case() == RemoteFunctionIdentifier::FunctionTypeCase::kRuntime)
+            {
+                // The convention is as follows: When a RPC targets a runtime (and not a module), the target
+                // runtime (as specified by rpcRequest.remote_function_identifier().runtime()) sets dataPackage.ctrl_val().runtime() to the runtime
+                // which was issuing the rpc request (as specified by the ctrl_val().runtime() value of the original RPC request data package).
+                forwardControlPackageToSpecificRuntime(controlPackage, controlPackage->control_val().runtime());
+            }
+            else if(remoteFunctionIdentifier.function_type_case() == RemoteFunctionIdentifier::FunctionTypeCase::kModuleId)
+            {
+                // The convention is as follows: When a RPC targets a module (and not a runtime), target_module of
+                // the package is set to the module whose function to execute, and source_module
+
+                const std::string& targetModule = controlPackage->target_module();
+                SharedQueue<DataPackage>* queue = this->moduleTable.lookupOutputQueue(targetModule);
+                // Route package to target runtime.
+                queue->push_back(controlPackage);
+            }
+            break;
+        }
         default:
         {
             this->forwardControlPackageToAllRuntimes(controlPackage);
@@ -694,6 +749,17 @@ void MiddleWare::forwardControlPackageToTargetRuntime(std::shared_ptr<DataPackag
         queue->push_back(package);
     }
 }
+
+void MiddleWare::forwardControlPackageToSpecificRuntime(std::shared_ptr<DataPackage> package, Runtime runtime)
+{
+    std::shared_ptr<SharedQueue<DataPackage>> queue = this->moduleTable.getOutputQueueOfRuntime(runtime);
+    
+    if(queue != nullptr)
+    {
+        queue->push_back(package);
+    }
+}
+
 
 
 absl::Status MiddleWare::unloadAllModulesInAllLocalRuntimes()
@@ -1159,4 +1225,34 @@ int MiddleWare::getLogSinkSeverityLevel() const
 std::shared_ptr<EventTracker> MiddleWare::getEventTracker()
 {
     return this->eventTracker;
+}
+
+void MiddleWare::handleRPCModuleNotFoundError(std::shared_ptr<DataPackage> rpcRequestPackage)
+{
+    const RemoteFunctionRequest& rpcRequest = rpcRequestPackage->control_val().remote_function_request();
+    
+    std::shared_ptr<DataPackage> response = std::make_shared<DataPackage>();
+    ControlPackage* ctrlPackage = response->mutable_control_val();
+
+    response->set_source_module(rpcRequestPackage->target_module());
+    response->set_target_module(rpcRequestPackage->source_module());
+    response->set_source_host(this->hostId);
+    response->set_target_host(rpcRequestPackage->source_host());
+
+
+    RemoteFunctionReturn* remoteFunctionReturn = ctrlPackage->mutable_remote_function_return();
+    remoteFunctionReturn->set_execution_status(RemoteFunctionStatus::FAILED_MODULE_NOT_FOUND);
+    remoteFunctionReturn->set_remote_future_identifier(rpcRequest.remote_future_identifier());
+    *remoteFunctionReturn->mutable_remote_function_identifier() = rpcRequest.remote_function_identifier();
+
+    ctrlPackage->set_ctrl_type(CtrlType::CTRL_REMOTE_FUNCTION_RESPONSE);
+    
+    SharedQueue<DataPackage>* queue = this->moduleTable.lookupOutputQueue(rpcRequestPackage->source_module());
+
+    if(queue == nullptr)
+    {
+        Logger::logError("Error in handleRPCModuleNotFoundError(): Unable to find queue for Module \"%s\"", rpcRequestPackage->source_module().c_str());
+        return;
+    }
+    queue->push_back(response);
 }

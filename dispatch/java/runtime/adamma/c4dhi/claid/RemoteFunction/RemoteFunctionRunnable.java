@@ -22,6 +22,7 @@ import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.ControlPackage;
 import adamma.c4dhi.claid.CtrlType;
 import adamma.c4dhi.claid.Blob;
+import adamma.c4dhi.claid.Runtime;
 
 import adamma.c4dhi.claid.RemoteFunctionIdentifier;
 
@@ -92,8 +93,6 @@ public class RemoteFunctionRunnable
     {
         try 
         {        
-            Class<?> objClass = object.getClass();
-
             Method method = RemoteFunctionRunnable.lookupMethod(object, functionName, parameterTypes);
             if(method == null)
             {
@@ -104,7 +103,7 @@ public class RemoteFunctionRunnable
             Object[] paramsArray = parameters.toArray();
 
             // Invoke the method on the instance with the parameters
-            Object result = method.invoke(objClass, paramsArray);
+            Object result = method.invoke(object, paramsArray);
 
             return RemoteFunctionRunnableResult.makeSuccessfulResult(result);
         } 
@@ -118,14 +117,18 @@ public class RemoteFunctionRunnable
 
     public static Method lookupMethod(Object object, String functionName, ArrayList<Class<?>> parameterTypes)
     {
+        Logger.logError("dbg 1");
         try 
         {        
             Class<?> myClass = object.getClass();
-            
+            Logger.logError("dbg 2");
+
             Class<?>[] parameterTypesArray = new Class<?>[parameterTypes.size()];
             parameterTypesArray = parameterTypes.toArray(parameterTypesArray);
+            Logger.logError("dbg 3");
 
             Method method = myClass.getMethod(functionName, parameterTypesArray);        
+            Logger.logError("dbg 4 " + method);
 
             return method;
         } 
@@ -139,6 +142,7 @@ public class RemoteFunctionRunnable
 
     public static boolean doesFunctionExist(Object object, String functionName, ArrayList<Class<?>> parameterTypes)
     {
+        Logger.logError("Dbg 0 " + parameterTypes.size());
         return RemoteFunctionRunnable.lookupMethod(object, functionName, parameterTypes) != null;
     }
 
@@ -146,7 +150,7 @@ public class RemoteFunctionRunnable
     {
         Mutator<?> mutator = TypeMapping.getMutator(new DataType(type));
         
-        return mutator != null && GeneratedMessageV3.class.isAssignableFrom(type);
+        return mutator != null;
     }
 
     public String getFunctionSignature(RemoteFunctionIdentifier remoteFunctionIdentifier, RemoteFunctionRequest RemoteFunctionRequest)
@@ -195,10 +199,8 @@ public class RemoteFunctionRunnable
         ctrlPackage.setCtrlType(CtrlType.CTRL_REMOTE_FUNCTION_RESPONSE);
         ctrlPackage.setRemoteFunctionReturn(makeRemoteFunctionReturn(result, executionRequest));
 
-        if(executionRequest.getRemoteFunctionIdentifier().hasRuntime())
-        {
-            ctrlPackage.setRuntime(executionRequest.getRemoteFunctionIdentifier().getRuntime());
-        }
+        ctrlPackage.setRuntime(Runtime.RUNTIME_JAVA);
+
 
         responseBuilder.setControlVal(ctrlPackage.build());
 

@@ -57,9 +57,11 @@ public class MainActivity extends Activity {
 
         factory = ((MyApplication) getApplication()).factory;
         factory = (PersistentModuleFactory) CLAID.registerDefaultModulesToFactory((ModuleFactory) factory);
+        factory.registerModule(RPCTestModule1.class);
+        factory.registerModule(RPCTestModule2.class);
 
         CLAID.startInPersistentService(getApplicationContext(),
-                CLAID.getMediaDirPath(getApplicationContext()) + "/BatteryManagerTest.json",
+                "assets://RPCTest.json",
                 "Smartphone",
                 "device",
                 "user",

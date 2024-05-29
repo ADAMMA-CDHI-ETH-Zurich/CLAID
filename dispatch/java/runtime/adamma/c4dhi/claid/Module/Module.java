@@ -648,6 +648,7 @@ public abstract class Module
 
     public void enqueueRPC(DataPackage rpcRequest)
     {
+
         // Some entity requested for us to execute a remote function.
         // Create a ConsumerRunnable and enqueue it to execute the remote function of the thread of the Module.
         ConsumerRunnable<DataPackage> consumerRunnable = 
@@ -656,6 +657,7 @@ public abstract class Module
         ScheduledRunnable runnable = (ScheduledRunnable) consumerRunnable;
 
         this.runnableDispatcher.addRunnable(runnable);
+
     }
 
 
@@ -663,14 +665,15 @@ public abstract class Module
     // 
     private void executeRPCRequest(DataPackage rpcRequest)
     {
-        if(rpcRequest.getTargetModule() != this.id)
+
+        if(!rpcRequest.getTargetModule().equals(this.id))
         {
             moduleError("Failed to execute RPC request. RPC is targeted for Module \"" + rpcRequest.getTargetModule() +
                  "\", but we are Module \"" + this.id + "\".");
             return;
         }
 
-        boolean result = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(rpcRequest);
+        boolean result = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(this, rpcRequest);
         if(!result)
         {
             moduleError("Failed to execute rpcRequest");
@@ -686,6 +689,11 @@ public abstract class Module
 
     protected <T> RemoteFunction<T> mapRemoteFunctionOfModule(String moduleId, String functionName, Class<T> returnType, Class<?>... parameters)
     {
+        if(moduleId.equals(this.id))
+        {
+            moduleFatal("Cannot map remote function. Module tried to map function \"" + functionName + "\" of itself, which is not allowed.");
+            return null;
+        }
         return this.remoteFunctionHandler.mapModuleFunction(this.id, moduleId, functionName, returnType, parameters);
     }
 

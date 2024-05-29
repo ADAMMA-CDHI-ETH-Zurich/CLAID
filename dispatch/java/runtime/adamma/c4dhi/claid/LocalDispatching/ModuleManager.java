@@ -481,7 +481,7 @@ public class ModuleManager
 
     public void onDataPackageFromModule(DataPackage dataPackage)
     {
-        Logger.logInfo("ModuleManager received local package from Module \"" + dataPackage.getSourceModule() + "\".");
+        Logger.logInfo("ModuleManager received local package from Module \"" + dataPackage.getSourceModule() + "\": " + dataPackage);
         this.dispatcher.postPackage(dataPackage);
     }
 
@@ -551,7 +551,7 @@ public class ModuleManager
 
     private void handleRuntimeRemoteFunctionExecution(DataPackage request)
     {
-        boolean result = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(request);
+        boolean result = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(this, request);
 
         if(!result)
         {
@@ -566,6 +566,7 @@ public class ModuleManager
     {
         RemoteFunctionRequest remoteFunctionRequest = request.getControlVal().getRemoteFunctionRequest();
         String moduleId = remoteFunctionRequest.getRemoteFunctionIdentifier().getModuleId();
+
 
         if(!this.runningModules.containsKey(moduleId))
         {

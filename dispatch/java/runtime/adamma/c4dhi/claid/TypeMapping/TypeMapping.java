@@ -62,7 +62,8 @@ public class TypeMapping {
                     .setSourceUserToken(p.getSourceUserToken())
                     .setTargetUserToken(p.getTargetUserToken())
                     .setUnixTimestampMs(p.getUnixTimestampMs())
-                    .setDeviceId(p.getDeviceId());
+                    .setDeviceId(p.getDeviceId())
+                    .setControlVal(p.getControlVal());
 
         List<TracePoint> tracePoints = p.getTracePointsList();
         for(int i = 0; i < tracePoints.size(); i++)
@@ -280,7 +281,8 @@ public class TypeMapping {
                 (p, v) -> 
                 {
                     DataPackage.Builder builderCopy = dataPackageBuilderCopy(p);
-                    NumberVal val = NumberVal.newBuilder().setVal((Double) v).build();
+                    Number numberValue = (Number) v;
+                    NumberVal val = NumberVal.newBuilder().setVal(numberValue.doubleValue()).build();
 
                     builderCopy = setProtoPayload(builderCopy, val);
 
@@ -333,7 +335,7 @@ public class TypeMapping {
                     StringVal val = StringVal.newBuilder().build();
                     val = getProtoPayload(p, val);
 
-                    return (T) Boolean.valueOf(val.getVal());
+                    return (T) val.getVal();
                 }
             );
         }

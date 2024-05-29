@@ -114,7 +114,7 @@ public class RemoteFunctionHandler
 
         if(remoteFunctionReturn.getExecutionStatus() != RemoteFunctionStatus.STATUS_OK)
         {
-            Logger.logError("Failed to forward result of remote function. Future with identifier \"" + 
+            Logger.logError("Remote function failed. Future with identifier \"" + 
                 futureIdentifier + "\" failed with status \"" + remoteFunctionReturn.getExecutionStatus().name() + "\".");
             future.setFailed();
             return;

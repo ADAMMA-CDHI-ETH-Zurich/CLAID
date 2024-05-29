@@ -87,6 +87,8 @@ public class Logger {
     public static void logFatal(final String message)
     {
         log(LogMessageSeverityLevel.FATAL, message);
+        throw new RuntimeException(message);
+
     }
 
 

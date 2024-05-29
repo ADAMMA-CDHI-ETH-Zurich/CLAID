@@ -100,6 +100,7 @@ public class RunnableDispatcher
             writeToLogFile("condition variable waiting for "  + waitTime + " milliseconds");
 
             conditionVariable.await(waitTime, TimeUnit.MILLISECONDS);
+
             writeToLogFile("Condition variable awoke");
         } catch (InterruptedException e) {
             writeToLogFile("Interrupted exception");
@@ -232,7 +233,8 @@ public class RunnableDispatcher
         mutex.lock();
         try {
             LocalDateTime executionTime = runnable.schedule.getExecutionTime();
-
+            
+            // Ensure that we do not override an existing runnable.
             while(scheduledRunnables.containsKey(executionTime))
             {
                     Logger.logInfo("Runnables contains key");
@@ -246,22 +248,28 @@ public class RunnableDispatcher
                 Logger.logInfo("Runnables " + scheduledRunnables.size());
             // This will lead to a wake-up, so we can reschedule.
             rescheduleRequired = true;
+
             conditionVariable.signalAll();
+
         } finally {
             mutex.unlock();
         }
+
     }
 
     public void runScheduling() {
         List<ScheduledRunnable> dueRunnables = new ArrayList<>();
         while (running) {
+
             do {
                 writeToLogFile("Scheduler woke up.");
+
                 // While we process runnables, it is possible
                 // that another runnable becomes due in the meantime.
                 // Hence, we repeat this loop until there are no more
                 // runnables that are due.
                 dueRunnables = getAndRemoveDueRunnables();
+
                 writeToLogFile("Scheduler due runnables: " + dueRunnables.size());
 
                 processRunnables(dueRunnables);
@@ -274,6 +282,7 @@ public class RunnableDispatcher
     private FileOutputStream fos = null;
     void writeToLogFile(String data) 
     {
+        Logger.logInfo(data);
         /*
         try {
 

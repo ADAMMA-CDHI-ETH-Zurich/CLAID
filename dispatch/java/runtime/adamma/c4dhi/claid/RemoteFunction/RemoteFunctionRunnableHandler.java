@@ -41,22 +41,23 @@ public class RemoteFunctionRunnableHandler
     public boolean registerRunnable(Object object, String functionName, Class<?> returnType, Class<?>... parameterTypes)
     {
         ArrayList<Class<?>> parameterList = new ArrayList<>(Arrays.asList(parameterTypes));
+        Logger.logError("-1 " + parameterTypes.length + " " + parameterList.size());
 
         if(registeredRunnables.containsKey(functionName))
         {
-            Logger.logError("Failed to register function \"" + functionName + "\" in Module \"" + this.entityName + "\". Function already registered before.");
+            Logger.logFatal("Failed to register function \"" + functionName + "\" in Module \"" + this.entityName + "\". Function already registered before.");
             return false;
         }
 
         if(!RemoteFunctionRunnable.doesFunctionExist(object, functionName, parameterList))
         {
-            Logger.logError("Failed to register function \"" + functionName + "\" in Module \"" + this.entityName + "\". Function not found or invalid parameters.");
+            Logger.logFatal("Failed to register function \"" + functionName + "\" in Module \"" + this.entityName + "\". Function not found or invalid parameters.");
             return false;
         }
 
         if(!RemoteFunctionRunnable.isDataTypeSupported(returnType))
         {
-            Logger.logError("Failed to register function \"" + functionName + "\" in Module \"" + this.entityName  +
+            Logger.logFatal("Failed to register function \"" + functionName + "\" in Module \"" + this.entityName  +
                 "\". Return type \"" + returnType.getName() + "\" is no CLAID data type and hence not supported.");
             return false;
         }
@@ -65,7 +66,7 @@ public class RemoteFunctionRunnableHandler
         {
             if(!RemoteFunctionRunnable.isDataTypeSupported(parameterTypes[i]))
             {
-                Logger.logError("Failed to register function \"" + functionName + "\" of entity \"" + this.entityName + ". Parameter type \"" + 
+                Logger.logFatal("Failed to register function \"" + functionName + "\" of entity \"" + this.entityName + ". Parameter type \"" + 
                 parameterTypes[i].getName() + "\" is no CLAID data type and hence not supported.");
                 return false;
             }
@@ -76,7 +77,7 @@ public class RemoteFunctionRunnableHandler
         return this.addRunnable(functionName, runnable);
     }
     
-    public boolean executeRemoteFunctionRunnable(DataPackage rpcRequest)
+    public boolean executeRemoteFunctionRunnable(Object object, DataPackage rpcRequest)
     {
         RemoteFunctionRequest request;
         if(!rpcRequest.getControlVal().hasRemoteFunctionRequest())
@@ -97,7 +98,7 @@ public class RemoteFunctionRunnableHandler
         }
 
         RemoteFunctionRunnable runnable = this.registeredRunnables.get(functionName);
-        DataPackage response = runnable.executeRemoteFunctionRequest(this, rpcRequest);
+        DataPackage response = runnable.executeRemoteFunctionRequest(object, rpcRequest);
 
         if(response != null)
         {

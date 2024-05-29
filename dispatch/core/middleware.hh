@@ -192,6 +192,9 @@ namespace claid
             void handleControlPackage(std::shared_ptr<DataPackage> controlPackage);
             void forwardControlPackageToAllRuntimes(std::shared_ptr<DataPackage> package);
             void forwardControlPackageToTargetRuntime(std::shared_ptr<DataPackage> package);
+            void forwardControlPackageToSpecificRuntime(std::shared_ptr<DataPackage> package, Runtime runtime);
+
+            void handleRPCModuleNotFoundError(std::shared_ptr<DataPackage> rpcRequestPackage);
 
             void readLocalLogMessages();
             void handleLocalLogMessage(std::shared_ptr<LogMessage> logMessage);

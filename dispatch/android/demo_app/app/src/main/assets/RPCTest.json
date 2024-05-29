@@ -1,0 +1,34 @@
+{
+  "hosts": [
+    {
+      "hostname": "Smartphone",
+      "type": "android",
+      "isServer": false,
+      "min_log_severity_level": "WARNING",
+      "modules": [
+        {
+          "type": "RPCTestModule1",
+          "id": "RPCTestModule1",
+          "output_channels": {
+
+          },
+          "properties": {
+
+          }
+        },
+        {
+          "type": "RPCTestModule2",
+          "id": "RPCTestModule2",
+          "output_channels": {
+
+          },
+          "properties": {
+
+          }
+        }
+
+      ]
+    }
+
+  ]
+}
