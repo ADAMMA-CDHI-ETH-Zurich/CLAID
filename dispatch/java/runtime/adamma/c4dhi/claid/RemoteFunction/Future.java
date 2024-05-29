@@ -28,10 +28,13 @@ import adamma.c4dhi.claid.TypeMapping.TypeMapping;
 import adamma.c4dhi.claid.Blob;
 import adamma.c4dhi.claid.DataPackage;
 
+import java.util.function.Consumer;
+
 
 public class Future<T> extends AbstractFuture 
 {
     private Class<?> returnType = null;
+    Consumer<T> callbackConsumer = null;
 
     public Future(FuturesTable futuresTableInHandler, 
         FutureUniqueIdentifier uniqueIdentifier,
@@ -49,6 +52,15 @@ public class Future<T> extends AbstractFuture
             return null;
         }
 
+        return getReturnData(responsePackage);
+    }
+
+    private T getReturnData(DataPackage responsePackage)
+    {
+        if(responsePackage == null)
+        {
+            return null;
+        }
         // For void functions.
         if(this.returnType == null)
         {
@@ -65,5 +77,22 @@ public class Future<T> extends AbstractFuture
         T t = mutator.getPackagePayload(responsePackage);
 
         return t;
+    }
+
+    public void then(Consumer<T> callbackConsumer)
+    {
+        this.callbackConsumer = callbackConsumer;
+        super.thenUntyped((data) -> callback(data));
+    }
+
+    private void callback(DataPackage data)
+    {
+        if(this.callbackConsumer == null)
+        {
+            return;
+        }
+        
+        T t = getReturnData(data);
+        this.callbackConsumer.accept(t);
     }
 }

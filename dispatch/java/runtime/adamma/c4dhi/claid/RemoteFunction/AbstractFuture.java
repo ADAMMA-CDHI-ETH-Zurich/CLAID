@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 import adamma.c4dhi.claid.RemoteFunction.FutureUniqueIdentifier;
 import adamma.c4dhi.claid.RemoteFunction.FuturesTable;
@@ -47,6 +48,8 @@ public abstract class AbstractFuture
     private FuturesTable futuresTableInHandler = null;
 
     private FutureUniqueIdentifier uniqueIdentifier = null;
+
+    Consumer<DataPackage> callback = null;
 
     public AbstractFuture(FuturesTable futuresTableInHandler, FutureUniqueIdentifier uniqueIdentifier)
     {
@@ -87,6 +90,10 @@ public abstract class AbstractFuture
         }
         return null;
     }
+    protected void thenUntyped(Consumer<DataPackage> callback)
+    {
+        this.callback = callback;
+    }
 
     public void setResponse(DataPackage responsePackage) 
     {
@@ -95,6 +102,12 @@ public abstract class AbstractFuture
         {
             this.responsePackage = responsePackage;
             this.successful = true;
+
+            if(this.callback != null)
+            {
+                this.callback.accept(responsePackage);
+            }
+
             this.finished = true;
             this.condition.signalAll();
         } 
@@ -111,6 +124,12 @@ public abstract class AbstractFuture
         {
             this.responsePackage = null;
             this.successful = false;
+            
+            if(this.callback != null)
+            {
+                this.callback.accept(null);
+            }
+
             this.finished = true;
             this.condition.signalAll();
         } 
