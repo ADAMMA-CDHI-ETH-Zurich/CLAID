@@ -1,5 +1,5 @@
 # Closing the Loop on AI & Data Collection
-[![DOI](https://img.shields.io/badge/DOI-10.1016/j.future.2024.05.026-blue.svg)](https://doi.org/10.1016/j.future.2024.05.026-blue)
+[![DOI](https://img.shields.io/badge/DOI-10.1016/j.future.2024.05.026-blue.svg)](https://doi.org/10.1016/j.future.2024.05.026)
 
 <p align="center">
   <img alt="ETH" src="assets/eth_logo.png" width="45%">
