@@ -21,13 +21,14 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:claid/CLAID.dart';
-import 'package:claid/module.dart';
-import 'package:claid/module_factory.dart';
+import 'package:claid/module/module.dart';
+import 'package:claid/module/module_factory.dart';
+import 'package:claid/module/module_manager.dart';
 
 import 'dart:async';
 import 'dart:io';
 import 'package:path/path.dart';
-import 'package:claid/properties.dart';
+import 'package:claid/module/properties.dart';
 
 const String configFile = './test/testdata/middleware_test_config.json';
 const String hostId = 'alex_client';

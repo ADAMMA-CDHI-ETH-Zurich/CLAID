@@ -24,15 +24,17 @@ import 'package:claid/claid_core_bindings_generated.dart';
 import 'package:claid/dispatcher.dart';
 import 'package:claid/generated/claidservice.pb.dart';
 import 'package:claid/middleware.dart';
-import 'package:claid/module.dart';
-import 'package:claid/module_factory.dart';
+import 'package:claid/module/module.dart';
+import 'package:claid/module/module_factory.dart';
+import 'package:claid/module/module_manager.dart';
+
 import './src/module_impl.dart' as impl;
 
 class CLAID
 {
   static ModuleDispatcher? _dispatcher;
   static MiddleWareBindings? _middleWare;
-  static impl.ModuleManager? _moduleManager;
+  static ModuleManager? _moduleManager;
 
   static void start(final String socketPath, 
     final String configFilePath, final String hostId, 
@@ -53,7 +55,7 @@ class CLAID
 
     final factories = moduleFactory.getFactories();
 
-    _moduleManager = impl.ModuleManager(_dispatcher!, factories);
+    _moduleManager = ModuleManager(_dispatcher!, factories);
     _moduleManager!.start();
   }
 

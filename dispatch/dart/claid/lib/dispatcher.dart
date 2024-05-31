@@ -28,7 +28,7 @@ import 'package:claid/generated/claidservice.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
 
 import 'middleware.dart';
-import './properties.dart';
+import 'package:claid/module/properties.dart';
 import 'package:claid/generated/google/protobuf/struct.pb.dart';
 
 class StreamingError implements Error {
@@ -136,10 +136,12 @@ class ModuleDispatcher {
       Stream<DataPackage> source, Completer<void> completer) async* {
     var first = false;
 
-    await for (var pkt in source) {
+    await for (var pkt in source) 
+    {
       // Always deal with errors first.
       if (pkt.hasControlVal() &&
-          pkt.controlVal.ctrlType == CtrlType.CTRL_ERROR) {
+          pkt.controlVal.ctrlType == CtrlType.CTRL_ERROR) 
+      {
         final ctrlMsg = pkt.controlVal;
         final err = ctrlMsg.errorMsg;
         if (err.cancel) {
@@ -161,9 +163,27 @@ class ModuleDispatcher {
         continue;
       }
 
-      // TODO: Here we could filter control packets and not pass them
-      // on to the business logic.
-      yield pkt;
+
+      // if(pkt.hasControlVal())
+      // {
+      //   handleControlPackage(pkt);
+      // }
+      // else
+      // {
+          yield pkt;
+      // }
+      
     }
+  }
+
+  void handleControlPackage(DataPackage package)
+  {
+    ControlPackage ctrlPackage = package.controlVal;
+
+    // switch(ctrlPackage.ctrlType)
+    // {
+    //   case CtrlType.
+    // };
+
   }
 }
