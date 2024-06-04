@@ -159,6 +159,15 @@ cc_test(
 )
 
 cc_test(
+  name = "remote_function_test",
+  size = "small",
+  srcs = ["remote_function_test.cc"],
+  deps = [
+    "//dispatch/core:cpp_modules",
+  ] + FRAMEWORK_DEPS,
+)
+
+cc_test(
   name = "mutator_test",
   size = "small",
   srcs = ["mutator_test.cc"],

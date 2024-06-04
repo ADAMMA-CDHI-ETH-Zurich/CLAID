@@ -92,6 +92,7 @@ cc_library(
         "Utilities/**/*.cc",
         "Exception/**/*.cc",
         "EventTracker/**/*.cc",
+        "RemoteFunction/*.cc",
     ]),
     hdrs = glob([
         "Module/**/*.hh",
@@ -100,7 +101,8 @@ cc_library(
         "shared_queue.hh",
         "module_table.hh",
         "Exception/**/*.hh",
-        "EventTracker/**/*.hh"
+        "EventTracker/**/*.hh",
+        "RemoteFunction/*.hh",
     ]),
     deps = [
         ":proto_util",
