@@ -54,7 +54,6 @@ class RemoteFunction
         std::string sourceModule = "";
 
     public:
-        template<typename... Parameters>
         RemoteFunction(
             FutureHandler& futuresHandler, 
             SharedQueue<DataPackage>& toMiddlewareQueue,
@@ -67,7 +66,6 @@ class RemoteFunction
             // helpers = {std::static_pointer_cast<AbstractMutatorHelper>(std::make_shared<TypedMutatorHelper<T...>>())...};
         }
 
-        template<typename... Parameters>
         RemoteFunction(
             std::string sourceModule,
             FutureHandler& futuresHandler, 
@@ -111,7 +109,7 @@ class RemoteFunction
             ControlPackage& controlPackage = *(dataPackage->mutable_control_val());
 
             controlPackage.set_ctrl_type(CtrlType::CTRL_REMOTE_FUNCTION_REQUEST);
-            controlPackage.set_runtime(Runtime::RUNTIME_JAVA);
+            controlPackage.set_runtime(Runtime::RUNTIME_CPP);
 
             RemoteFunctionRequest& remoteFunctionRequest = *controlPackage.mutable_remote_function_request();
 
@@ -206,11 +204,11 @@ class RemoteFunction
                 functionName = this->remoteFunctionIdentifier.module_id() + "::" + this->remoteFunctionIdentifier.function_name();
             }
 
-            std::string parameterNames = this->parameterTypes.size() > 0 ? this->mutatorHelpers[0].getDataTypeName() : "";
+            std::string parameterNames = this->mutatorHelpers.size() > 0 ? this->mutatorHelpers[0]->getDataTypeName() : "";
 
-            for(int i = 1; i < this->parameterTypes.size(); i++)
+            for(int i = 1; i < this->mutatorHelpers.size(); i++)
             {
-                parameterNames += ", " + this->mutatorHelpers[i].getDataTypeName();
+                parameterNames += ", " + this->mutatorHelpers[i]->getDataTypeName();
             }
 
             std::string functionSignature = isRuntimeFunction ? "RuntimeFunction: " : "ModuleFunction: ";

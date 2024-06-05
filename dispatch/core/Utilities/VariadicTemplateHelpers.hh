@@ -77,17 +77,31 @@ namespace claid
             return bind_with_variadic_placeholders(p, obj, typename generateIntegerSequence<sizeof...(Args)>::type());
         }
 
+        template<class Class, class Return, class... Args, int... Is>
+        static std::function<Return (Args...)> bind_with_variadic_placeholders_and_return(Return (Class::*p)(Args...), Class* obj, sequence<Is...>)
+        {
+            // std::function<void (Args...)>  y = std::bind(p, obj, boost::placeholders::_1, boost::placeholders::_2);
+            std::function<Return (Args...)> x = std::bind(p, obj, placeholder_template<Is>{}...);
+            return x;
+        }
+
+        template<class Class, class Return, class... Args>
+        static std::function<Return (Args...)> bind_with_variadic_placeholders_and_return(Return (Class::*p)(Args...), Class* obj)
+        {
+            return bind_with_variadic_placeholders_and_return(p, obj, typename generateIntegerSequence<sizeof...(Args)>::type());
+        }
+
 
         template<typename FunctionType, typename TupleType, int ...S>
-        static void applyTupleToFunction(sequence<S...>, TupleType& tuple, FunctionType& function) 
+        static typename FunctionType::result_type applyTupleToFunction(sequence<S...>, TupleType& tuple, FunctionType& function) 
         {
-            function(std::get<S>(tuple) ...);
+            return function(std::get<S>(tuple) ...);
         }
 
         template<typename FunctionType, typename... Ts>
-        static void applyTupleToFunction(std::tuple<Ts...>& tuple, FunctionType& function)
+        static typename FunctionType::result_type applyTupleToFunction(std::tuple<Ts...>& tuple, FunctionType& function)
         {
-            applyTupleToFunction(typename generateIntegerSequence<sizeof...(Ts)>::type(), tuple, function);
+            return applyTupleToFunction(typename generateIntegerSequence<sizeof...(Ts)>::type(), tuple, function);
         }
     };
 }

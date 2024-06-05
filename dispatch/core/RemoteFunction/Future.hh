@@ -41,14 +41,14 @@ public:
     }
 
     template<typename U = T>
-    std::enable_if<std::is_same<U, void>::value, void> await()
+    typename std::enable_if<std::is_same<U, void>::value, void>::type await()
     {
         std::shared_ptr<DataPackage> responsePackage = this->awaitResponse();
     }
 
 
     template<typename U = T>
-    std::enable_if<!std::is_same<U, void>::value,U> await()
+    typename std::enable_if<!std::is_same<U, void>::value,U>::type await()
     {
         std::shared_ptr<DataPackage> responsePackage = this->awaitResponse();
         if(responsePackage == nullptr || !this->wasExecutedSuccessfully())
