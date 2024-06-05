@@ -53,6 +53,13 @@ class RemoteFunction
 
         std::string sourceModule = "";
 
+        bool valid = false;
+
+        RemoteFunction()
+        {
+            this->valid = false;
+        }
+
     public:
         RemoteFunction(
             FutureHandler& futuresHandler, 
@@ -64,6 +71,7 @@ class RemoteFunction
         {
             // this->mutatorHelpers = {std::static_pointer_cast<AbstractMutatorHelper>(std::make_shared<TypedMutatorHelper<Parameters...>>())};
             // helpers = {std::static_pointer_cast<AbstractMutatorHelper>(std::make_shared<TypedMutatorHelper<T...>>())...};
+            this->valid = true;
         }
 
         RemoteFunction(
@@ -77,11 +85,25 @@ class RemoteFunction
                 mutatorHelpers(mutatorHelpers)
         {
             // this->mutatorHelpers = {std::static_pointer_cast<AbstractMutatorHelper>(std::make_shared<TypedMutatorHelper<Parameters...>>())};
+            this->valid = true;
         }
+
+        RemoteFunction InvalidRemoteFunction()
+        {
+            // Using private constructor to create invalid function
+            return RemoteFunction();
+        }
+
 
         template<typename... Parameters>
         std::shared_ptr<Future<T>> execute(Parameters... params)
         {
+            if(!this->valid)
+            {
+                Logger::logError("Failed to execute RemoteFunction (RPC stub) \"" + getFunctionSignature() + "\". Function is not valid.");      
+                return nullptr;
+            }
+            
             if(this->remoteFunctionIdentifier.hasModuleId() && this->remoteFunctionIdentifier->module_id() == this->sourceModule)
             {
                 Logger::logError("Failed to execute RPC! Module \"" + this->sourceModule + 

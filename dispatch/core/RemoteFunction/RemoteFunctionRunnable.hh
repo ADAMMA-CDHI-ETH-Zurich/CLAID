@@ -96,7 +96,6 @@ class RemoteFunctionRunnable : public AbstractRemoteFunctionRunnable
 
         std::shared_ptr<DataPackage> executeRemoteFunctionRequest(std::shared_ptr<DataPackage> rpcRequest) override final
         {
-
             RemoteFunctionRequest executionRequest = rpcRequest->control_val().remote_function_request();
 
             RemoteFunctionIdentifier remoteFunctionIdentifier = executionRequest.remote_function_identifier();

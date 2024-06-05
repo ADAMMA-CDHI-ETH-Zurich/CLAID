@@ -33,6 +33,9 @@
 #include "dispatch/core/Module/Subscriber.hh"
 #include "dispatch/core/Module/Properties.hh"
 #include "dispatch/core/EventTracker/EventTracker.hh"
+#include "dispatch/core/RemoteFunction/RemoteFunctionHandler.hh"
+#include "dispatch/core/RemoteFunction/RemoteFunction.hh"
+
 namespace claid
 {
     class Module;
@@ -172,6 +175,29 @@ namespace claid
         virtual void onPowerProfileChanged(PowerProfile powerProfile);
 
         std::string getCommonDataPath() const;
+
+        template<typename Class, typename Return, typename... Parameters>
+        bool registerRemoteFunction(std::string functionName,  Return (Class::*f)(Parameters...), Class* obj)
+        {
+            return this.remoteFunctionRunnableHandler.registerRunnable(functionName, f, obj);
+        }
+
+        template<typename Return, typename... Parameters>
+        RemoteFunction<Return> mapRemoteFunctionOfModule(std::string moduleId, std::string functionName)
+        {
+            if(moduleId == this->id)
+            {
+                moduleFatal(absl::strCat(
+                    "Cannot map remote function. Module tried to map function \"", functionName ,"\" of itself, which is not allowed."));
+                return RemoteFunction<Return>::InvalidRemoteFunction();
+            }
+            return this->remoteFunctionHandler.mapModuleFunction<Return, Parameters...>(this->id, moduleId, functionName);
+        }
+
+        protected <T> RemoteFunction<T> mapRemoteFunctionOfRuntime(Runtime runtime, String functionName, Class<T> returnType, Class<?>... parameters)
+        {
+            return this.remoteFunctionHandler.mapRuntimeFunction(runtime, functionName, returnType, parameters);
+        }
     };
 
 }
