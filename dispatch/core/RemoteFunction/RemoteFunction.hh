@@ -23,11 +23,12 @@
 
 #include <string>
 
-#include "dispatch/core/Logger/Logger.hh"
 #include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/core/Logger/Logger.hh"
 #include "AbstractMutatorHelper.hh"
+#include "TypedMutatorHelper.hh"
 #include "FutureHandler.hh"
-
+#include <functional>
 // A remote function is an RPC stub, 
 // which remotely calls an RemoteFunctionRunnable in another entity (another Runtime or Module).
 // Actually, this should be called RemoteFunctionStub, but might be less intutive for people not familiar with RPC terminology.
@@ -57,10 +58,12 @@ class RemoteFunction
         RemoteFunction(
             FutureHandler& futuresHandler, 
             SharedQueue<DataPackage>& toMiddlewareQueue,
-            RemoteFunctionIdentifier remoteFunctionIdentifier) : 
-                futuresHandler(futuresHandler), toMiddlewareQueue(toMiddlewareQueue), remoteFunctionIdentifier(remoteFunctionIdentifier)
+            RemoteFunctionIdentifier remoteFunctionIdentifier,
+            std::vector<std::shared_ptr<AbstractMutatorHelper>> mutatorHelpers) : 
+                futuresHandler(futuresHandler), toMiddlewareQueue(toMiddlewareQueue), 
+                remoteFunctionIdentifier(remoteFunctionIdentifier), mutatorHelpers(mutatorHelpers)
         {
-            this->mutatorHelpers = {std::static_pointer_cast<AbstractMutatorHelper>(make_shared<TypedMutatorHelper<Parameters...>>())};
+            // this->mutatorHelpers = {std::static_pointer_cast<AbstractMutatorHelper>(std::make_shared<TypedMutatorHelper<Parameters...>>())};
             // helpers = {std::static_pointer_cast<AbstractMutatorHelper>(std::make_shared<TypedMutatorHelper<T...>>())...};
         }
 
@@ -69,61 +72,60 @@ class RemoteFunction
             std::string sourceModule,
             FutureHandler& futuresHandler, 
             SharedQueue<DataPackage>& toMiddlewareQueue,
-            RemoteFunctionIdentifier remoteFunctionIdentifier) : 
+            RemoteFunctionIdentifier remoteFunctionIdentifier,
+            std::vector<std::shared_ptr<AbstractMutatorHelper>> mutatorHelpers) : 
                 sourceModule(sourceModule), futuresHandler(futuresHandler), 
-                toMiddlewareQueue(toMiddlewareQueue), remoteFunctionIdentifier(remoteFunctionIdentifier)
+                toMiddlewareQueue(toMiddlewareQueue), remoteFunctionIdentifier(remoteFunctionIdentifier),
+                mutatorHelpers(mutatorHelpers)
         {
-            this->mutatorHelpers = {std::static_pointer_cast<AbstractMutatorHelper>(make_shared<TypedMutatorHelper<Parameters...>>())};
+            // this->mutatorHelpers = {std::static_pointer_cast<AbstractMutatorHelper>(std::make_shared<TypedMutatorHelper<Parameters...>>())};
         }
 
         template<typename... Parameters>
         std::shared_ptr<Future<T>> execute(Parameters... params)
         {
-            if(this->remoteFunctionIdentifier.hasModuleId() && this.remoteFunctionIdentifier->module_id() == this.sourceModule)
+            if(this->remoteFunctionIdentifier.hasModuleId() && this->remoteFunctionIdentifier->module_id() == this->sourceModule)
             {
-                Logger.logError("Failed to execute RPC! Module \"" + this.sourceModule + 
+                Logger::logError("Failed to execute RPC! Module \"" + this->sourceModule + 
                     "\" tried to call an RPC function of itself, which is not allowed.");
-                return null;
+                return nullptr;
             }
 
-            if(parameters.length != parameterTypes.size())
+            int parametersLength = sizeof...(params);
+            if(parametersLength != mutatorHelpers.size())
             {
-                Logger.logError("Failed to execute RemoteFunction (RPC stub) \"" + getFunctionSignature() + "\". Number of parameters do not match. " +
-                "Function expected " + parameterTypes.size() + " parameters, but was executed with " + parameters.length);
-                return null;
+                Logger::logError("Failed to execute RemoteFunction (RPC stub) \"" + getFunctionSignature() + "\". Number of parameters do not match. " +
+                "Function expected " + mutatorHelpers.size() + " parameters, but was executed with " + parametersLength);
+                return nullptr;
             }
 
-            for(int i = 0; i < parameters.length; i++)
+            if(!checkParameterTypes<0, Parameters...>(params...))
             {
-                if(!parameters[i].getClass().equals(parameterTypes.get(i)))
-                {
-                    Logger.logError("Failed to execute remote function \"" + getFunctionSignature() + "\". Parameter object " + i +
-                    " is of type \"" + parameters[i].getClass() + "\", but expected type \"" + parameterTypes.get(i).getSimpleName() + "\".");
-                    return nullptr;
-                }
+                return nullptr;
             }
+            
 
-            std::shared_ptr<Future<T>> future = this->futuresHandler.registerNewFuture<T>();
+            std::shared_ptr<Future<T>> future = this->futuresHandler.registerNewFuture();
 
-            DataPackage dataPackage;
-            ControlPackage& controlPackage = *dataPackage.mutable_control_val();
+            std::shared_ptr<DataPackage> dataPackage = std::make_shared<DataPackage>();
+            ControlPackage& controlPackage = *(dataPackage->mutable_control_val());
 
-            controlPackage.setCtrlType(CtrlType::CTRL_REMOTE_FUNCTION_REQUEST);
-            controlPackage.setRuntime(Runtime::RUNTIME_JAVA);
+            controlPackage.set_ctrl_type(CtrlType::CTRL_REMOTE_FUNCTION_REQUEST);
+            controlPackage.set_runtime(Runtime::RUNTIME_JAVA);
 
             RemoteFunctionRequest& remoteFunctionRequest = *controlPackage.mutable_remote_function_request();
 
-            remoteFunctionRequest = makeRemoteFunctionRequest(future.getUniqueIdentifier().toString(), parameters);
+            remoteFunctionRequest = makeRemoteFunctionRequest(future.getUniqueIdentifier().toString(), params...);
 
 
             if(this->remoteFunctionIdentifier.hasModuleId())
             {
-                dataPackageBuilder.set_target_module(this.remoteFunctionIdentifier.getModuleId());
-                dataPackageBuilder.set_source_module(this.sourceModule);
+                dataPackage->set_target_module(this->remoteFunctionIdentifier.getModuleId());
+                dataPackage->set_source_module(this->sourceModule);
             }
         
 
-            toMiddlewareQueue.push_back(dataPackageBuilder.build());
+            toMiddlewareQueue.push_back(mutatorHelpers);
 
             return future;
 
@@ -132,7 +134,7 @@ class RemoteFunction
         template<typename... Parameters>
         void makeRemoteFunctionRequest(std::string futureIdentifier, RemoteFunctionRequest& request, Parameters... parameters)
         {
-            request.set_remote_function_identifier(this.remoteFunctionIdentifier);
+            *(request.mutable_remote_function_identifier()) = this->remoteFunctionIdentifier;
             request.set_remote_future_identifier(futureIdentifier);
 
             // We want to use the mutator to convert each parameter to a Blob.
@@ -141,14 +143,9 @@ class RemoteFunction
             // after the mutator has converted and set the blob.
             DataPackage stubPackage;
 
-            const int parametersLength = sizeof...(parameters);
-            for(int i = 0; i < parametersLength; i++)
-            {
-                std::shared_ptr<AbstractMutatorHelper> helper = this->mutatorHelpers[i];
-                helper->setPackagePayload(stubPackage, st);
 
-                setParameterPayloads<0, Parameters...>(request, parameters...);
-            }
+            setParameterPayloads<0, Parameters...>(request, parameters...);
+          
 
         }
 
@@ -157,7 +154,7 @@ class RemoteFunction
         {
             DataPackage stubPackage;
 
-            std::shared_ptr<AbstractMutatorHelper> helper = this->mutatorHelpers[i];
+            std::shared_ptr<AbstractMutatorHelper> helper = this->mutatorHelpers[C];
             helper->setPackagePayload(stubPackage, parameter);
             (*request.add_parameter_payloads()) = stubPackage.payload();
 
@@ -169,27 +166,49 @@ class RemoteFunction
         {
             // Base case
         }
-    
+
+        template<int C, typename U, typename... Us>
+        bool checkParameterTypes(U& parameter, Us&... rest)
+        {
+            if(C >= mutatorHelpers.size())
+            {
+                return false;
+            }
+
+            if(!mutatorHelpers[C]->template isSameType<U>())
+            {
+                Logger::logError("Failed to execute remote function \"%s\". Parameter object %d is of type \"%s\", but expected type \"%s\".",
+                getFunctionSignature().c_str(), C, typeid(parameter).name(), mutatorHelpers[C]->getTypeName().c_str());
+                return false;
+            }
+            return checkParameterTypes<C + 1, Us...>(rest...);
+        }
+
+        template<int C>
+        bool checkParameterTypes()
+        {
+            return true;
+        }
 
         std::string getFunctionSignature()
         {
             std::string returnTypeName = typeid(T).name();
             std::string functionName = "";
 
-            bool isRuntimeFunction = this.remoteFunctionIdentifier.hasRuntime();
+            bool isRuntimeFunction = this->remoteFunctionIdentifier.hasRuntime();
 
             if(isRuntimeFunction)
             {
-                functionName = this.remoteFunctionIdentifier.runtime().name() + "::" + this.remoteFunctionIdentifier.function_name();
+                functionName = this->remoteFunctionIdentifier.runtime().name() + "::" + this->remoteFunctionIdentifier.function_name();
             }
             else
             {
-                functionName = this.remoteFunctionIdentifier.module_id() + "::" + this.remoteFunctionIdentifier.function_name();
+                functionName = this->remoteFunctionIdentifier.module_id() + "::" + this->remoteFunctionIdentifier.function_name();
             }
 
-            std::string parameterNames = this.parameterTypes.size() > 0 ? this->mutatorHelpers[0].getDataTypeName() : "";
+            std::string parameterNames = this->parameterTypes.size() > 0 ? this->mutatorHelpers[0].getDataTypeName() : "";
 
-            for(int i = 1; i < this.parameterTypes.size(); i++)
+            for(int i = 1; i < this->parameterTypes.size(); i++)
             {
                 parameterNames += ", " + this->mutatorHelpers[i].getDataTypeName();
             }
@@ -200,4 +219,24 @@ class RemoteFunction
             return functionSignature;
         }
 };
+
+
+template<typename Return, typename... Parameters>
+RemoteFunction<Return> makeRemoteFunction(FutureHandler& futuresHandler, SharedQueue<DataPackage>& queue, RemoteFunctionIdentifier identifier)
+{
+    std::vector<std::shared_ptr<AbstractMutatorHelper>> mutatorHelpers = {std::static_pointer_cast<AbstractMutatorHelper>(std::make_shared<TypedMutatorHelper<Parameters>>())...};
+
+    return RemoteFunction<Return>(futuresHandler, queue, identifier, mutatorHelpers);
+}
+
+template<typename Return, typename... Parameters>
+RemoteFunction<Return> makeRemoteFunction(
+        std::string moduleId, FutureHandler& futuresHandler, 
+        SharedQueue<DataPackage>& queue, RemoteFunctionIdentifier identifier)
+{
+    std::vector<std::shared_ptr<AbstractMutatorHelper>> mutatorHelpers = {std::static_pointer_cast<AbstractMutatorHelper>(std::make_shared<TypedMutatorHelper<Parameters>>())...};
+
+    return RemoteFunction<Return>(moduleId, futuresHandler, queue, identifier, mutatorHelpers);
+}
+
 }

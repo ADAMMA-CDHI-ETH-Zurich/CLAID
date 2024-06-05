@@ -13,12 +13,12 @@ using claidservice::DataPackage;
 using namespace claid;
 
 
+
 // Tests if all available Mutators can be implemented using the template specialization.
 TEST(RemoteFunctionTestSuite, RemoteFunctionTest) 
 {   
-    FutureHandler futuresHandler;
+    FutureHandler handler;
     SharedQueue<DataPackage> queue;
     RemoteFunctionIdentifier identifier;
-
-   RemoteFunction<T, int, int> function(futuresHandler, queue, identifier);
+    RemoteFunction<std::string> function = makeRemoteFunction<std::string, int, int>(handler, queue, identifier);
 }

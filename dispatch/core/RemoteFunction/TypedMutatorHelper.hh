@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AbstractMutatorHelper.hh"
-#include "TypeMapping.hh"
+#include "dispatch/core/Module/TypeMapping/TypeMapping.hh"
 
 namespace claid {
 
@@ -29,7 +29,7 @@ namespace claid {
             return type == typeid(T);
         }
 
-        std::string TypedMutatorHelper::getTypeName() const
+        std::string getTypeName() const
         {
             return typeid(T).name();
         }

@@ -15,6 +15,12 @@ namespace claid {
             virtual bool isSameTypeInternal(const std::type_info& type) = 0;
 
         public: 
+
+            virtual ~AbstractMutatorHelper()
+            {
+                
+            }
+
             template<typename T>
             void setPackagePayload(DataPackage& dataPackage, T& data)
             {
