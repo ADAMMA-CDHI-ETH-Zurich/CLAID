@@ -19,54 +19,41 @@
 * limitations under the License.
 ***************************************************************************/
 
-package adamma.c4dhi.claid.RemoteFunction;
+import 'FutureUniqueIdentifier.dart';
+import 'AbstractRPCCompleter.dart';
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
-
-public class FuturesTable 
+class FuturesTable 
 {
-    private Map<FutureUniqueIdentifier, AbstractFuture> futures = new HashMap<>();
-    private final ReentrantLock lock = new ReentrantLock();
+    Map<FutureUniqueIdentifier, AbstractRPCCompleter> futures = {};
 
-    public void addFuture(AbstractFuture future)
+    void addFuture(AbstractRPCCompleter future)
     {
-        lock.lock();
-        futures.put(future.getUniqueIdentifier(), future);
-        lock.unlock();
+        futures.addAll({future.getUniqueIdentifier() : future});
     }
 
-    public boolean removeFuture(AbstractFuture future)
+    bool removeFuture(AbstractRPCCompleter future)
     {
         FutureUniqueIdentifier futureIdentifier = future.getUniqueIdentifier();
 
-        lock.lock();
-
         if(futures.containsKey(futureIdentifier))
         {
-            AbstractFuture other = futures.get(futureIdentifier);
+            AbstractRPCCompleter other = futures[futureIdentifier]!;
             if(other == future)
             {
                 futures.remove(futureIdentifier);
-                lock.unlock();
                 return true;
             }
         }
-        lock.unlock();
         return false;
     }
 
-    public AbstractFuture lookupFuture(FutureUniqueIdentifier uniqueIdentifier)
+    AbstractRPCCompleter? lookupFuture(FutureUniqueIdentifier uniqueIdentifier)
     {
-        AbstractFuture future = null;
-        lock.lock();
+        AbstractRPCCompleter? future = null;
         if(this.futures.containsKey(uniqueIdentifier))
         {
-            future = this.futures.get(uniqueIdentifier);
+            future = this.futures[uniqueIdentifier];
         }
-        lock.unlock();
         return future;
     }
     
