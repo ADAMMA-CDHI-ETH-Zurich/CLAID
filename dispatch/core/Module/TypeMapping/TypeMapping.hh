@@ -40,6 +40,12 @@ namespace claid {
     {
         static std::map<std::string, ProtoCodec> protoCodecMap;
 
+        template<typename T>
+        static std::shared_ptr<const google::protobuf::Message> makeMessage()
+        {
+            return std::static_pointer_cast<const google::protobuf::Message>(std::make_shared<T>());
+        }
+
         static ProtoCodec& getProtoCodec(const google::protobuf::Message* instance) 
         {
             const std::string fullName =  instance->GetDescriptor()->full_name();
@@ -92,6 +98,7 @@ namespace claid {
         static getMutator()
         {
             return Mutator<T>(
+                makeMessage<NumberVal>(),
                 [](DataPackage& packet, const T& value) 
                 { 
                     NumberVal protoVal;
@@ -115,6 +122,7 @@ namespace claid {
         static getMutator()
         {
             return Mutator<bool>(
+                makeMessage<BoolVal>(),
                 [](DataPackage& packet, const bool& value) 
                 { 
                     BoolVal protoVal;
@@ -138,6 +146,7 @@ namespace claid {
         static getMutator()
         {
             return Mutator<std::string>(
+                makeMessage<StringVal>(),
                 [](DataPackage& packet, const std::string& value) 
                 { 
                     StringVal protoVal;
@@ -163,6 +172,7 @@ namespace claid {
         static getMutator()
         {
             return Mutator<T>(
+                makeMessage<NumberArray>(),
                 [](DataPackage& packet, const T& array) 
                 { 
                     NumberArray numberArray;
@@ -192,6 +202,7 @@ namespace claid {
         static getMutator()
         {
             return Mutator<T>(
+                makeMessage<StringArray>(),
                 [](DataPackage& packet, const T& array) 
                 { 
                     StringArray stringArray;
@@ -224,6 +235,7 @@ namespace claid {
         static getMutator()
         {
             return Mutator<T>(
+                makeMessage<NumberMap>(),
                 [](DataPackage& packet, const T& map) 
                 { 
                     NumberMap numberMap;
@@ -252,6 +264,7 @@ namespace claid {
         static getMutator()
         {
             return Mutator<T>(
+                makeMessage<StringMap>(),
                 [](DataPackage& packet, const T& map) 
                 { 
                     StringMap stringMap;
@@ -284,6 +297,7 @@ namespace claid {
             Logger::logInfo("Is protobuf typ pe in typemapper");
         
             return Mutator<T>(
+                makeMessage<T>(),
                 [](DataPackage& packet, const T& value) 
                 { 
                     setProtoPayload(packet, value);
@@ -303,6 +317,7 @@ namespace claid {
             Logger::logInfo("Is AnyProtoType in typemapper");
         
             return Mutator<T>(
+                makeMessage<claidservice::CLAIDANY>(),
                 [](DataPackage& packet, const T& value) 
                 { 
                     std::shared_ptr<const google::protobuf::Message> message = value.getMessage();

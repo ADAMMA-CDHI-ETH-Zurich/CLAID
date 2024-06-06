@@ -11,6 +11,7 @@ filegroup(
         "test_config.json",
         "cpp_runtime_test.json",
         "remote_dispatching_test.json",
+        "remote_function_test.json",
         "data_saver_json_test.json",
         "config_reload_test_1.json",
         "config_reload_test_2.json"
@@ -163,8 +164,11 @@ cc_test(
   size = "small",
   srcs = ["remote_function_test.cc"],
   deps = [
-    "//dispatch/core:cpp_modules",
+    "//dispatch/core:capi",
   ] + FRAMEWORK_DEPS,
+  data = [
+    ":test_configs",
+  ]
 )
 
 cc_test(

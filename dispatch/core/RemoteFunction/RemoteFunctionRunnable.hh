@@ -53,7 +53,7 @@ class RemoteFunctionRunnable : public AbstractRemoteFunctionRunnable
         
 
         template<int C, typename U, typename... Us>
-        void extractParameters(RemoteFunctionRequest request, std::tuple<Parameters...>& tuple)
+        void extractParameters(const RemoteFunctionRequest& request, std::tuple<Parameters...>& tuple)
         {
             DataPackage tmpPackage;
             *tmpPackage.mutable_payload() = request.parameter_payloads(C);
@@ -61,10 +61,12 @@ class RemoteFunctionRunnable : public AbstractRemoteFunctionRunnable
             Mutator<U> mutator = TypeMapping::getMutator<U>();
             
             mutator.getPackagePayload(tmpPackage, std::get<C>(tuple));
+
+            extractParameters<C + 1, Us...>(request, tuple);
         }
 
         template<int C>
-        void extractParameters()
+        void extractParameters(const RemoteFunctionRequest& request, std::tuple<Parameters...>& tuple)
         {
 
         }
@@ -91,7 +93,7 @@ class RemoteFunctionRunnable : public AbstractRemoteFunctionRunnable
         RemoteFunctionRunnable(std::string functionName, 
             FunctionType function) : functionName(functionName), function(function)
         {
-            this->mutatorHelpers = {std::static_pointer_cast<AbstractMutatorHelper>(std::make_shared<TypedMutatorHelper<Parameters...>>())};
+            this->mutatorHelpers = {std::static_pointer_cast<AbstractMutatorHelper>(std::make_shared<TypedMutatorHelper<Parameters>>())...};
         }
 
         std::shared_ptr<DataPackage> executeRemoteFunctionRequest(std::shared_ptr<DataPackage> rpcRequest) override final

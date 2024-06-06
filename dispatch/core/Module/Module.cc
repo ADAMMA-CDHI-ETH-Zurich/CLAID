@@ -89,7 +89,7 @@ namespace claid
         this->moduleWarning(warningStr);
     }
 
-    bool Module::start(ChannelSubscriberPublisher* subscriberPublisher, Properties properties) 
+    bool Module::start(ChannelSubscriberPublisher* subscriberPublisher, RemoteFunctionHandler* remoteFunctionHandler, Properties properties) 
     {
         if (this->isInitialized) 
         {
@@ -98,6 +98,10 @@ namespace claid
         }
 
         this->subscriberPublisher = subscriberPublisher;
+        this->remoteFunctionHandler = remoteFunctionHandler;
+        this->remoteFunctionRunnableHandler = 
+            std::make_shared<RemoteFunctionRunnableHandler>("Module " + this->id, subscriberPublisher->getToModuleDispatcherQueue());
+
 
         if (!runnableDispatcher.start()) 
         {
@@ -108,7 +112,8 @@ namespace claid
         this->isInitializing = true;
         this->isInitialized = false;
 
-        std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>([this, properties] { initializeInternal(properties); }));
+        std::shared_ptr<FunctionRunnable<void>> functionRunnable 
+            (new FunctionRunnable<void>([this, properties] { initializeInternal(properties); }));
 
         this->runnableDispatcher.addRunnable(
             ScheduledRunnable(

@@ -4,7 +4,7 @@
 #include "dispatch/proto/claidservice.grpc.pb.h"
 #include "dispatch/core/RemoteFunction/RemoteFunction.hh"
 #include "dispatch/core/RemoteFunction/RemoteFunctionRunnableHandler.hh"
-
+#include "dispatch/core/CLAID.hh"
 using claidservice::DataPackage;
 
 #include <string>
@@ -12,6 +12,9 @@ using claidservice::DataPackage;
 #include <map>
 
 using namespace claid;
+
+bool rpcCorrect = false;
+std::string errorMessage;
 
 class TestClass
 {
@@ -26,16 +29,81 @@ class TestClass
         }
 };
 
+
+class RPCCaller : public claid::Module
+{
+
+    RemoteFunction<int> mappedFunction;
+
+    void initialize(Properties properties)
+    {
+        moduleInfo("Intialize");
+        mappedFunction = mapRemoteFunctionOfModule<int, std::string, std::string>("RPCCallee", "calculate_sum");
+        registerScheduledFunction("TestFunction", Time::now() + Duration::seconds(1), &RPCCaller::scheduledFunction, this);
+    }
+
+    void scheduledFunction()
+    {
+        int result = mappedFunction.execute<std::string, std::string>("5", "42")->await();
+        Logger::logInfo("Got result %d", result);
+        if(result == 5 + 42)
+        {
+            rpcCorrect = true;
+        }
+        else
+        {
+            errorMessage = "Invalid result! Expected 47 but got " + std::to_string(result);
+        }
+    }
+
+    
+};
+
+class RPCCallee : public claid::Module
+{
+    void initialize(Properties properties)
+    {
+        registerRemoteFunction("calculate_sum", &RPCCallee::calculateSum, this);
+    }
+
+    int calculateSum(std::string a, std::string b)
+    {
+        Logger::logInfo("Received data %s %s", a.c_str(), b.c_str());
+        int result = std::atoi(a.c_str()) + std::atoi(b.c_str());
+        Logger::logInfo("Result %d", result);
+        return result;
+    }
+};
+
+REGISTER_MODULE_FACTORY_CUSTOM_NAME(RPCCaller, RPCCaller)
+REGISTER_MODULE_FACTORY_CUSTOM_NAME(RPCCallee, RPCCallee)
+
 // Tests if all available Mutators can be implemented using the template specialization.
 TEST(RemoteFunctionTestSuite, RemoteFunctionTest) 
 {   
     FutureHandler handler;
     SharedQueue<DataPackage> queue;
     RemoteFunctionIdentifier identifier;
-    RemoteFunction<std::string> function = makeRemoteFunction<std::string, int, int>(handler, queue, identifier);
+    RemoteFunction<std::string> function = makeRemoteFunction<std::string, int, int>(&handler, &queue, identifier);
     
     RemoteFunctionRunnableHandler runnableHandler("TestObject", queue);
     
     TestClass testObject;
     runnableHandler.registerRunnable("test", &TestClass::test, &testObject);
+
+    const char* socket_path_local_1 = "unix:///tmp/remote_function_test_grpc_client.sock";
+
+
+    const char* config_file = "dispatch/test/remote_function_test.json";
+    const char* client_host_id = "test_client";
+    const char* user_id = "user42";
+    const char* device_id = "something_else";
+
+
+    CLAID clientMiddleware;
+    bool result = clientMiddleware.start(socket_path_local_1, config_file, client_host_id, user_id, device_id);
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    clientMiddleware.shutdown();
+
+    ASSERT_TRUE(rpcCorrect) << errorMessage;
 }

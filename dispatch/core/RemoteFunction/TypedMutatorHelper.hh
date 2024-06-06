@@ -31,7 +31,8 @@ namespace claid {
 
         std::string getTypeName() const
         {
-            return typeid(T).name();
+            Mutator<T> mutator = TypeMapping::getMutator<T>();
+            return mutator.getMessageTypeName();
         }
     };
 

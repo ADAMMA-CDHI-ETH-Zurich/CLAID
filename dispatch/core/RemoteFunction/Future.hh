@@ -58,7 +58,8 @@ public:
 
         Mutator<T> mutator = TypeMapping::getMutator<T>();
 
-        T t = mutator.getPackagePayload(responsePackage);
+        T t;
+        mutator.getPackagePayload(*responsePackage, t);
 
         return t;
     }
