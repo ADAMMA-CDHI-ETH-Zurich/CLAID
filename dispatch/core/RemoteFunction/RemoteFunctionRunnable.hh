@@ -194,7 +194,8 @@ class RemoteFunctionRunnable : public AbstractRemoteFunctionRunnable
             ctrlPackage.set_ctrl_type(CtrlType::CTRL_REMOTE_FUNCTION_RESPONSE);
             (*ctrlPackage.mutable_remote_function_return()) = makeRemoteFunctionReturn(result, executionRequest);
 
-            ctrlPackage.set_runtime(Runtime::RUNTIME_CPP);
+            // Send back to the runtime where the rpcRequest came from.
+            ctrlPackage.set_runtime(rpcRequest->control_val().runtime());
 
 
             std::shared_ptr<Return> returnValue = result.getReturnValue();

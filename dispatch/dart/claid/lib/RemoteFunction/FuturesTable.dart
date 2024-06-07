@@ -28,11 +28,12 @@ class FuturesTable
 
     void addFuture(AbstractRPCCompleter future)
     {
-        futures.addAll({future.getUniqueIdentifier() : future});
+        futures[future.getUniqueIdentifier()] = future;
     }
 
     bool removeFuture(AbstractRPCCompleter future)
     {
+        print("Remove future");
         FutureUniqueIdentifier futureIdentifier = future.getUniqueIdentifier();
 
         if(futures.containsKey(futureIdentifier))
@@ -55,6 +56,11 @@ class FuturesTable
             future = this.futures[uniqueIdentifier];
         }
         return future;
+    }
+
+    void printFutures()
+    {
+        print(futures.toString());
     }
     
 }

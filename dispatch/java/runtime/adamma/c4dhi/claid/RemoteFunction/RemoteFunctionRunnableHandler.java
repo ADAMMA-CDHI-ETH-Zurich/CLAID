@@ -83,6 +83,16 @@ public class RemoteFunctionRunnableHandler
         if(!rpcRequest.getControlVal().hasRemoteFunctionRequest())
         {
             Logger.logError("Failed to execute RPC request data package. Could not find definition of RemoteFunctionRequest.");
+            DataPackage response = 
+                RemoteFunctionRunnable.makeRPCResponsePackage(
+                    RemoteFunctionRunnableResult.makeFailedResult(
+                        RemoteFunctionStatus.REMOTE_FUNCTION_REQUEST_INVALID),
+                    rpcRequest, null);
+
+            if(response != null)
+            {
+                this.toMiddlewareQueue.add(response);
+            }
             return false;
         }
 
@@ -94,16 +104,30 @@ public class RemoteFunctionRunnableHandler
         if(!this.registeredRunnables.containsKey(functionName))
         {
             Logger.logError("Failed to execute RPC request. Entity \"" + this.entityName + "\" does not have a registered remote function called \"" + functionName + "\".");
+            DataPackage response = 
+                RemoteFunctionRunnable.makeRPCResponsePackage(
+                    RemoteFunctionRunnableResult.makeFailedResult(
+                        RemoteFunctionStatus.FAILED_FUNCTION_NOT_FOUND_OR_FAILED_TO_EXECUTE),
+                    rpcRequest, null);
+
+            if(response != null)
+            {
+                this.toMiddlewareQueue.add(response);
+            }
             return false;
         }
-
-        RemoteFunctionRunnable runnable = this.registeredRunnables.get(functionName);
-        DataPackage response = runnable.executeRemoteFunctionRequest(object, rpcRequest);
-
-        if(response != null)
+        else
         {
-            this.toMiddlewareQueue.add(response);
+            RemoteFunctionRunnable runnable = this.registeredRunnables.get(functionName);
+            DataPackage response = runnable.executeRemoteFunctionRequest(object, rpcRequest);
+
+            if(response != null)
+            {
+                this.toMiddlewareQueue.add(response);
+            }
         }
+        
+        
 
         return true;
     }

@@ -31,7 +31,7 @@ abstract class AbstractRPCCompleter
     bool _finished = false;
     bool _successful = false;
 
-    Completer<DataPackage?> _completer = new Completer<DataPackage>();
+    Completer<DataPackage?> _completer = Completer<DataPackage>();
 
     // The list used by the FutureHandler to manage its associated futures.
     // Note: FuturesTable is thread safe.

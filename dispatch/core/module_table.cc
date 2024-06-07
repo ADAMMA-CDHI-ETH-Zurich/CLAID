@@ -57,12 +57,22 @@ bool claid::validPacketType(const DataPackage& ref) {
 }
 
 SharedQueue<DataPackage>* ModuleTable::lookupOutputQueue(const string& moduleId) {
+    for(auto& entry : moduleRuntimeMap)
+    {
+        Logger::logInfo("%s %d", entry.first.c_str(), entry.second);
+    }
     auto rt = moduleRuntimeMap[moduleId];
     if (rt != Runtime::RUNTIME_UNSPECIFIED) {
         auto outQueue = runtimeQueueMap[rt];
+            Logger::logWarning("Output queue size: %d", outQueue->size());
+
         if (outQueue) {
             return outQueue.get();
         }
+    }
+    else
+    {
+        Logger::logError("ModuleTable::lookupOutputQueue runtime is unspecified");
     }
     return nullptr;
 }

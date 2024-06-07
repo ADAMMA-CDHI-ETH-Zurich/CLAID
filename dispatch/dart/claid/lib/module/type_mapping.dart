@@ -98,6 +98,12 @@ class TypeMapping {
           (p) => (_getProtoPayload(p, NumberVal()) as NumberVal).val as T);
     }
 
+    if (inst is int) {
+      return Mutator<T>(
+          (p, v) => _setProtoPayload(p, NumberVal()..val = (v as int).toDouble()), 
+          (p) => (_getProtoPayload(p, NumberVal()) as NumberVal).val.toInt() as T);
+    }
+
     if (inst is bool) 
     {
       return Mutator<T>(
@@ -150,6 +156,6 @@ class TypeMapping {
       }, (p) => codec.decode(p.payload));
     }
 
-    throw ArgumentError('Type "${inst.runtimeType}" is not a valid type.');
+    throw ArgumentError('Type "${inst.runtimeType}" is not a valid type to use with CLAID. Type is not supported.');
   }
 }

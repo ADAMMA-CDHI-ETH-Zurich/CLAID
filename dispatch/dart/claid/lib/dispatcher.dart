@@ -30,6 +30,7 @@ import 'package:grpc/grpc.dart';
 import 'middleware.dart';
 import 'package:claid/module/properties.dart';
 import 'package:claid/generated/google/protobuf/struct.pb.dart';
+import 'package:claid/Logger/Logger.dart';
 
 class StreamingError implements Error {
   final String message;
@@ -61,6 +62,8 @@ class ModuleDispatcher {
   ResponseStream<DataPackage>? _responseStream;
   StreamController<DataPackage>? _outputController;
 
+  Function? _onControlPackageFunction = null;
+
   ModuleDispatcher(this._socketPath)
   {
       _channel = ClientChannel(
@@ -86,10 +89,13 @@ class ModuleDispatcher {
   Future<Stream<DataPackage>> initRuntime(
       Map<String, List<DataPackage>> modules,
       StreamController<DataPackage> outputController) async {
+    Logger.logInfo("Initruntime got modules: " + modules.toString());
     final req = InitRuntimeRequest(
         runtime: Runtime.RUNTIME_DART,
         modules: modules.entries.map((e) => InitRuntimeRequest_ModuleChannels(
             moduleId: e.key, channelPackets: e.value)));
+
+    Logger.logInfo("Runtime request: " + req.toString());
     await _stub.initRuntime(req);
 
     final listenCalled = Completer<void>();
@@ -164,22 +170,32 @@ class ModuleDispatcher {
       }
 
 
-      // if(pkt.hasControlVal())
-      // {
-      //   handleControlPackage(pkt);
-      // }
-      // else
-      // {
+      if(pkt.hasControlVal())
+      {
+        print("handleControlPackage");
+        handleControlPackage(pkt);
+        continue;
+      }
+      else
+      {
           yield pkt;
-      // }
+      }
       
     }
+  }
+
+  void setOnControlPackageFunction(Function function)
+  {
+    this._onControlPackageFunction = function;
   }
 
   void handleControlPackage(DataPackage package)
   {
     ControlPackage ctrlPackage = package.controlVal;
-
+    if(this._onControlPackageFunction != null)
+    {
+      this._onControlPackageFunction!(package);
+    }
     // switch(ctrlPackage.ctrlType)
     // {
     //   case CtrlType.

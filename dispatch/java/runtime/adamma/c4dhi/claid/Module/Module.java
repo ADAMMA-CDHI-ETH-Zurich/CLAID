@@ -694,7 +694,7 @@ public abstract class Module
             moduleFatal("Cannot map remote function. Module tried to map function \"" + functionName + "\" of itself, which is not allowed.");
             return null;
         }
-        return this.remoteFunctionHandler.mapModuleFunction(this.id, moduleId, functionName, returnType, parameters);
+        return this.remoteFunctionHandler.mapModuleFunction(moduleId, functionName, returnType, parameters);
     }
 
     protected <T> RemoteFunction<T> mapRemoteFunctionOfRuntime(Runtime runtime, String functionName, Class<T> returnType, Class<?>... parameters)

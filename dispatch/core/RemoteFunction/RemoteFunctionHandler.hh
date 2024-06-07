@@ -76,10 +76,9 @@ namespace claid {
         }
 
         template<typename Return, typename... Parameters>
-        RemoteFunction<Return> mapModuleFunction(std::string sourceModule, std::string targetModule, std::string functionName)
+        RemoteFunction<Return> mapModuleFunction(std::string targetModule, std::string functionName)
         {
             RemoteFunction<Return> function = makeRemoteFunction<Return, Parameters...>(
-                    sourceModule,
                     &this->futuresHandler, 
                     &this->toMiddlewareQueue, 
                     makeRemoteFunctionIdentifier(targetModule, functionName));

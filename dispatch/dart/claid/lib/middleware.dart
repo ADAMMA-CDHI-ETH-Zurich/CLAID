@@ -75,7 +75,7 @@ class MiddleWareBindings {
 /// The dynamic library in which the symbols for [ClaidCoreBindings] can be found.
 final ffi.DynamicLibrary _dylib = () {
   if (Platform.isMacOS || Platform.isIOS) {
-    return ffi.DynamicLibrary.open('$_libName.framework/$_libName');
+    return ffi.DynamicLibrary.open('blobs/lib$_libName.dylib');
   }
   if (Platform.isLinux) {
     return ffi.DynamicLibrary.open('blobs/lib${_libName}_${_platform}.so');

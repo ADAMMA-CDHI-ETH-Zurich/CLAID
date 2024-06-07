@@ -283,6 +283,12 @@ class MockDispatcher implements ModuleDispatcher {
   }
 
   @override
+  void setOnControlPackageFunction(Function function)
+  {
+
+  }
+
+  @override
   void handleControlPackage(DataPackage package)
   {
     

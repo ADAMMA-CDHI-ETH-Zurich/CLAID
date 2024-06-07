@@ -19,8 +19,9 @@
 * limitations under the License.
 ***************************************************************************/
 
-
 import 'dart:async';
+
+
 class FutureUniqueIdentifier 
 {
     static int _currentId = 0;
@@ -32,14 +33,12 @@ class FutureUniqueIdentifier
         DateTime now = DateTime.now();
         int milliseconds = now.millisecondsSinceEpoch;
 
-
         String identifier = "CLAID_DART_" + FutureUniqueIdentifier._currentId.toString() + "_" + milliseconds.toString();
 
         FutureUniqueIdentifier._currentId++;
+
         return new FutureUniqueIdentifier(identifier);
     } 
-
-
 
     FutureUniqueIdentifier(this.identifier)
     {
@@ -57,9 +56,6 @@ class FutureUniqueIdentifier
 
     bool operator==(Object o) 
     {
-        if (this == o)
-            return true;
-
         if (o is! FutureUniqueIdentifier)
             return false;
 

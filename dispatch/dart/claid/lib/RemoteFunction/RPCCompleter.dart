@@ -32,13 +32,13 @@ import 'dart:io';
 
 class RPCCompleter<T> extends AbstractRPCCompleter 
 {
-    T returnTypeExample;
+    T _returnTypeExample;
 
-    Completer<T> _typedCompleter = new Completer<T>();
+    Completer<T> _typedCompleter = Completer<T>();
 
     RPCCompleter(FuturesTable futuresTableInHandler, 
         FutureUniqueIdentifier uniqueIdentifier,
-        this.returnTypeExample) : super(futuresTableInHandler, uniqueIdentifier) 
+        this._returnTypeExample) : super(futuresTableInHandler, uniqueIdentifier) 
     {
       
     }
@@ -74,7 +74,7 @@ class RPCCompleter<T> extends AbstractRPCCompleter
             return null;
         }
 
-        Mutator<T> mutator = TypeMapping().getMutator(this.returnTypeExample);
+        Mutator<T> mutator = TypeMapping().getMutator(this._returnTypeExample);
 
         T t = mutator.getter(responsePackage);
 

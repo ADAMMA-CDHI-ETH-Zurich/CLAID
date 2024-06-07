@@ -60,10 +60,9 @@ public class RemoteFunctionHandler
         return function;
     }
 
-    public <T> RemoteFunction<T> mapModuleFunction(String sourceModule, String targetModule, String functionName, Class<T> returnType, Class<?>... parameterDataTypes)
+    public <T> RemoteFunction<T> mapModuleFunction(String targetModule, String functionName, Class<T> returnType, Class<?>... parameterDataTypes)
     {
         RemoteFunction<T> function = new RemoteFunction<T>(
-                sourceModule,
                 this.futuresHandler, 
                 this.toMiddlewareQueue, 
                 makeRemoteFunctionIdentifier(targetModule, functionName), 

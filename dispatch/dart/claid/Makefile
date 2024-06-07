@@ -10,7 +10,7 @@ else
     endif
     ifeq ($(UNAME_S),Darwin)
         OUTPUT_LIB = bazel-bin/dispatch/core/libclaid_capi.dylib
-		TARGET_LIB = dispatch/dart/claid/blobs/libclaid_capi_linux.dylib
+		TARGET_LIB = dispatch/dart/claid/blobs/libclaid_capi.dylib
     endif
 endif
 

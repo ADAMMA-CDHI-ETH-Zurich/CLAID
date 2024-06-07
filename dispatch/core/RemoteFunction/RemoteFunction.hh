@@ -52,7 +52,6 @@ class RemoteFunction
         
         bool successful = false;
 
-        std::string sourceModule = "";
 
         bool valid = false;
 
@@ -77,19 +76,7 @@ class RemoteFunction
             this->valid = true;
         }
 
-        RemoteFunction(
-            std::string sourceModule,
-            FutureHandler* futuresHandler, 
-            SharedQueue<DataPackage>* toMiddlewareQueue,
-            RemoteFunctionIdentifier remoteFunctionIdentifier,
-            std::vector<std::shared_ptr<AbstractMutatorHelper>> mutatorHelpers) : 
-                futuresHandler(futuresHandler), 
-                toMiddlewareQueue(toMiddlewareQueue), remoteFunctionIdentifier(remoteFunctionIdentifier),
-                mutatorHelpers(mutatorHelpers), sourceModule(sourceModule)
-        {
-            // this->mutatorHelpers = {std::static_pointer_cast<AbstractMutatorHelper>(std::make_shared<TypedMutatorHelper<Parameters...>>())};
-            this->valid = true;
-        }
+        
 
         static RemoteFunction InvalidRemoteFunction()
         {
@@ -104,12 +91,6 @@ class RemoteFunction
             if(!this->valid)
             {
                 Logger::logError("Failed to execute RemoteFunction (RPC stub) \"%s\". Function is not valid.", getFunctionSignature().c_str());      
-                return nullptr;
-            }
-            
-            if(this->remoteFunctionIdentifier.has_module_id() && this->remoteFunctionIdentifier.module_id() == this->sourceModule)
-            {
-                Logger::logError("Failed to execute RPC! Module \"%s\" tried to call an RPC function of itself, which is not allowed.", this->sourceModule.c_str());
                 return nullptr;
             }
 
@@ -144,7 +125,6 @@ class RemoteFunction
             if(this->remoteFunctionIdentifier.has_module_id())
             {
                 dataPackage->set_target_module(this->remoteFunctionIdentifier.module_id());
-                dataPackage->set_source_module(this->sourceModule);
             }
         
 
@@ -179,6 +159,7 @@ class RemoteFunction
 
             std::shared_ptr<AbstractMutatorHelper> helper = this->mutatorHelpers[C];
             helper->setPackagePayload(stubPackage, parameter);
+            
             Logger::logInfo("Stub package %s", messageToString(stubPackage).c_str());
             (*request.add_parameter_payloads()) = stubPackage.payload();
 

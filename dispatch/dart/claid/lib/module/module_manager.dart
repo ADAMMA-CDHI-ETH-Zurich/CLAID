@@ -3,6 +3,11 @@ import 'package:claid/src/module_impl.dart';
 import 'package:claid/dispatcher.dart';
 import 'package:claid/generated/claidservice.pb.dart';
 import 'package:claid/generated/google/protobuf/struct.pb.dart';
+import 'package:claid/Logger/Logger.dart';
+import 'package:claid/RemoteFunction/RemoteFunctionRunnable.dart';
+import 'package:claid/RemoteFunction/RemoteFunctionHandler.dart';
+import 'package:claid/RemoteFunction/RemoteFunctionRunnableHandler.dart';
+
 import 'properties.dart';
 
 import 'module.dart';
@@ -33,14 +38,22 @@ class ModuleManager {
   bool _outputPaused = true;
   final _pausedQueue = Queue<Completer<void>>();
 
+  late RemoteFunctionHandler _remoteFunctionHandler; 
+  late RemoteFunctionRunnableHandler _remoteFunctionRunnableHandler;
+
+
   // factory ModuleManager(ModuleDispatcher disp, List<FactoryFunc> factories) {}
   factory ModuleManager(
-      ModuleDispatcher dispatcher, Map<String, FactoryFunc> factories) {
+      ModuleDispatcher dispatcher, Map<String, FactoryFunc> factories) 
+  {
     _manager = _manager ?? ModuleManager._internal(dispatcher, factories);
     return _manager!;
   }
 
-  ModuleManager._internal(this._dispatcher, this._factories);
+  ModuleManager._internal(this._dispatcher, this._factories)
+  {
+    this._dispatcher.setOnControlPackageFunction(this._onControlPackage);
+  }
 
   Lifecycle lifecycle(String moduleId) =>
       _moduleMap[moduleId]?.lifecycle ?? Lifecycle.unknown;
@@ -49,7 +62,15 @@ class ModuleManager {
     // if (!_dispatcher.start()) {
     //   throw AssertionError('ModuleDispatcher is not ready');
     // }
-
+    _outputCtrl = StreamController<DataPackage>(
+      onListen: _resumeOutput,
+      onPause: _pauseOutput,
+      onResume: _resumeOutput,
+      onCancel: _pauseOutput,
+    );
+    this._remoteFunctionHandler = RemoteFunctionHandler(_outputCtrl!);
+    this._remoteFunctionRunnableHandler = RemoteFunctionRunnableHandler("RUNTIME_DART", _outputCtrl!);
+    
     // Get the list of modules and instantiate + initialize them.
     print("Dart ModuleManager getting module list ${_factories.keys.toList()}");
     final modDesc = await _dispatcher.getModuleList(_factories.keys.toList());
@@ -57,18 +78,17 @@ class ModuleManager {
 
     _instantiateModules(modDesc);
     _initializeModules();
-    _outputCtrl = StreamController<DataPackage>(
-      onListen: _resumeOutput,
-      onPause: _pauseOutput,
-      onResume: _resumeOutput,
-      onCancel: _pauseOutput,
-    );
+    
+
+    
 
     final inStream = await _dispatcher.initRuntime(_modChanMap, _outputCtrl!);
     _inputSub = inStream.listen(_handleInputMessage,
         onDone: _cancelSubscription,
         onError: _handleSubscriptionErrors,
         cancelOnError: false);
+
+      Logger.logInfo("Init runtime done");
   }
 
 
@@ -98,7 +118,7 @@ class ModuleManager {
 
   void _instantiateModules(List<ModDescriptor> modDesc) {
     for (var mod in modDesc) {
-      print("Dart ModuleManager instantiating Module ${mod}");
+      print("Dart ModuleManager instantiating Module ${mod.moduleId} (class: ${mod.moduleClass})");
       final fn = _factories[mod.moduleClass];
       if (fn == null) {
         
@@ -110,7 +130,10 @@ class ModuleManager {
       _moduleMap[mod.moduleId] =
           ModuleState(instance, mod.properties, Lifecycle.created);
       instance.moduleId = mod.moduleId;
-      print("Dart ModuleManager instantiated Module ${mod}");
+      // Add module to the modChanMap. Important because even if Module does not publish/subscribe any channel,
+      // it needs to be in there, because the ModuleDispatcher needs to tell the Middleware what modules are running.
+      _modChanMap[mod.moduleId] = <DataPackage>[];
+      print("Dart ModuleManager instantiated Module ${mod.moduleId} " + _modChanMap.toString());
 
     }
   }
@@ -124,8 +147,9 @@ class ModuleManager {
       final modState = _moduleMap[key]!;
       print("Dart ModuleManager initializing module ${modState} ");
       modState.lifecycle = Lifecycle.initializing;
-      modState.instance.initialize(Properties(modState.props));
+      modState.instance.start(Properties(modState.props), _remoteFunctionHandler, _outputCtrl!);
       modState.lifecycle = Lifecycle.initialized;
+      
     }
   }
 
@@ -229,5 +253,89 @@ class ModuleManager {
 
     // If state is null, return null; otherwise, return the instance property of state.
     return state?.instance;
+  }
+
+  void _onControlPackage(DataPackage package)
+  {
+    ControlPackage controlPackage = package.controlVal;
+    CtrlType controlPackageType = controlPackage.ctrlType;
+
+    switch(controlPackageType)
+    {
+        case CtrlType.CTRL_REMOTE_FUNCTION_REQUEST:
+        {
+            _handleRemoteFunctionRequest(package);
+            break;
+        }
+        case CtrlType.CTRL_REMOTE_FUNCTION_RESPONSE:
+        {
+          print("Handle remote function response " + package.toString());
+            _handleRemoteFunctionResponse(package);
+            break;
+        }
+        default:
+        {
+          break;
+        }
+    }
+  }
+
+  void _handleRemoteFunctionRequest(DataPackage remoteFunctionRequest)
+  {
+      RemoteFunctionRequest request = remoteFunctionRequest.controlVal.remoteFunctionRequest;
+
+      if(request.remoteFunctionIdentifier.hasRuntime())
+      {
+          _handleRuntimeRemoteFunctionExecution(remoteFunctionRequest);
+      }
+      else
+      {
+          _handleModuleRemoteFunctionExecution(remoteFunctionRequest);
+      }
+  }
+
+  void _handleRuntimeRemoteFunctionExecution(DataPackage request)
+  {
+      // Will automatically send a response message even if failed.
+      bool result = this._remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(request);
+       
+      if(!result)
+      {
+          Logger.logError("Java runtime failed to execute RPC request");
+          return;
+      }
+
+  }
+
+
+  void _handleModuleRemoteFunctionExecution(DataPackage request)
+  {
+      RemoteFunctionRequest remoteFunctionRequest = request.controlVal.remoteFunctionRequest;
+      String moduleId = remoteFunctionRequest.remoteFunctionIdentifier.moduleId;
+
+
+      if(!this._moduleMap.containsKey(moduleId))
+      {
+          Logger.logError("Failed to execute remote function request. Could not find Module \"" + moduleId + "\"");
+
+          DataPackage response = 
+                RemoteFunctionRunnable.prepareResponsePackage(
+                    RemoteFunctionStatus.FAILED_MODULE_NOT_FOUND, request);
+                
+          if(response != null)
+          {
+              this._outputCtrl!.add(response);
+          }
+
+          return;
+      }
+
+      this._moduleMap[moduleId]!.instance.enqueueRPC(request);
+  }
+
+
+  void _handleRemoteFunctionResponse(DataPackage remoteFunctionResponse)
+  {
+      this._remoteFunctionHandler.handleResponse(remoteFunctionResponse);
   }
 }

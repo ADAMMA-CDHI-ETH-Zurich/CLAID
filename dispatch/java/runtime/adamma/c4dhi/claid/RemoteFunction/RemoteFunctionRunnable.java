@@ -60,7 +60,7 @@ public class RemoteFunctionRunnable
             "Function expected " + parameterTypes.size() + " parameters, but was executed with " + payloadsSize);
 
             status = RemoteFunctionRunnableResult.makeFailedResult(RemoteFunctionStatus.FAILED_INVALID_NUMBER_OF_PARAMETERS);
-            return makeRPCResponsePackage(status, rpcRequest);
+            return makeRPCResponsePackage(status, rpcRequest, this.returnType);
         }
 
         ArrayList<Object> parameters = new ArrayList<>();
@@ -80,13 +80,13 @@ public class RemoteFunctionRunnable
                 Logger.logError("Failed to execute RemoteFunctionRunnable \"" + getFunctionSignature(remoteFunctionIdentifier, executionRequest) + "\". Parameter object " + i +
                 " is of type \"" + parameters.get(i).getClass() + "\", but expected type \"" + parameterTypes.get(i).getSimpleName() + "\".");
                 status = RemoteFunctionRunnableResult.makeFailedResult(RemoteFunctionStatus.FAILED_MISMATCHING_PARAMETERS);
-                return makeRPCResponsePackage(status, rpcRequest);
+                return makeRPCResponsePackage(status, rpcRequest, this.returnType);
             }
         }
 
         status = executeRemoteFunctionRequest(object, parameters);
 
-        return makeRPCResponsePackage(status, rpcRequest);
+        return makeRPCResponsePackage(status, rpcRequest, this.returnType);
     }
 
     RemoteFunctionRunnableResult executeRemoteFunctionRequest(Object object, ArrayList<Object> parameters)
@@ -185,7 +185,7 @@ public class RemoteFunctionRunnable
         return remoteFunctionReturn.build();
     }
 
-    DataPackage makeRPCResponsePackage(RemoteFunctionRunnableResult result, DataPackage rpcRequest)
+    public DataPackage makeRPCResponsePackage(RemoteFunctionRunnableResult result, DataPackage rpcRequest, Class<?> returnType)
     {
         RemoteFunctionRequest executionRequest = rpcRequest.getControlVal().getRemoteFunctionRequest();
 
@@ -199,7 +199,8 @@ public class RemoteFunctionRunnable
         ctrlPackage.setCtrlType(CtrlType.CTRL_REMOTE_FUNCTION_RESPONSE);
         ctrlPackage.setRemoteFunctionReturn(makeRemoteFunctionReturn(result, executionRequest));
 
-        ctrlPackage.setRuntime(Runtime.RUNTIME_JAVA);
+        // Send back to the runtime where the rpcRequest came from.
+        ctrlPackage.setRuntime(rpcRequest.getRuntime());
 
 
         responseBuilder.setControlVal(ctrlPackage.build());
@@ -207,9 +208,9 @@ public class RemoteFunctionRunnable
         DataPackage responsePackage = responseBuilder.build();
 
         Object returnValue = result.getReturnValue();
-        if(returnValue != null)
+        if(returnValue != null && returnType != null)
         {
-            Mutator<?> mutator = TypeMapping.getMutator(new DataType(this.returnType));
+            Mutator<?> mutator = TypeMapping.getMutator(new DataType(returnType));
             responsePackage = mutator.setPackagePayloadFromObject(responsePackage, returnValue);
         }
 

@@ -242,7 +242,7 @@ namespace claid
                     "Cannot map remote function. Module tried to map function \"", functionName ,"\" of itself, which is not allowed."));
                 return RemoteFunction<Return>::InvalidRemoteFunction();
             }
-            return this->remoteFunctionHandler->mapModuleFunction<Return, Parameters...>(this->id, moduleId, functionName);
+            return this->remoteFunctionHandler->mapModuleFunction<Return, Parameters...>(moduleId, functionName);
         }
 
         template<typename Return, typename... Parameters>

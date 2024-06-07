@@ -71,30 +71,10 @@ public class RemoteFunction<T>
         this.parameterTypes = parameterTypes;
     }
 
-    public RemoteFunction(
-        String sourceModule,
-        FutureHandler futuresHandler, 
-        ThreadSafeChannel<DataPackage> toMiddlewareQueue,
-        RemoteFunctionIdentifier remoteFunctionIdentifier,
-        Class<T> returnType, ArrayList<Class<?>> parameterTypes)
-    {
-        this.sourceModule = sourceModule;
-        
-        this.futuresHandler = futuresHandler;
-        this.toMiddlewareQueue = toMiddlewareQueue;
-        this.remoteFunctionIdentifier = remoteFunctionIdentifier;
-
-        this.returnType = returnType;
-        this.parameterTypes = parameterTypes;
-    }
+    
 
     public Future<T> execute(Object... parameters)
     {
-        if(this.remoteFunctionIdentifier.hasModuleId() && this.remoteFunctionIdentifier.getModuleId().equals(this.sourceModule))
-        {
-            Logger.logError("Failed to execute RPC! Module \"" + this.sourceModule + "\" tried to call an RPC function of itself, which is not allowed.");
-            return null;
-        }
         if(parameters.length != parameterTypes.size())
         {
             Logger.logError("Failed to execute RemoteFunction (RPC stub) \"" + getFunctionSignature() + "\". Number of parameters do not match. " +
@@ -129,7 +109,6 @@ public class RemoteFunction<T>
         if(this.remoteFunctionIdentifier.hasModuleId())
         {
             dataPackageBuilder.setTargetModule(this.remoteFunctionIdentifier.getModuleId());
-            dataPackageBuilder.setSourceModule(this.sourceModule);
         }
        
 

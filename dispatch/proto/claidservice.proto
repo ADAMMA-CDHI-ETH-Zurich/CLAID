@@ -468,6 +468,7 @@ enum RemoteFunctionStatus
   FAILED_INVALID_NUMBER_OF_PARAMETERS             = 3;
   FAILED_MISMATCHING_PARAMETERS                   = 4;
   FAILED_MODULE_NOT_FOUND                         = 5;
+  REMOTE_FUNCTION_REQUEST_INVALID                 = 6;
 }
 
 message RemoteFunctionReturn

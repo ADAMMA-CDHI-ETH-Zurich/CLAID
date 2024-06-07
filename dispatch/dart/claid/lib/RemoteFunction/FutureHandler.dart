@@ -19,31 +19,35 @@
 * limitations under the License.
 ***************************************************************************/
 
-package adamma.c4dhi.claid.RemoteFunction;
+import "dart:async";
+import "RPCCompleter.dart";
+import "FutureUniqueIdentifier.dart";
+import "FuturesTable.dart";
+import "AbstractRPCCompleter.dart";
+// Why is this called FutureHandler and not RPCComplerHandler? 
+// -> Check Java and C++ implementations. For Java and C++, we implemented custom Future classes.
+// For Dart, we use the integrated Future data type.
+class FutureHandler {
+  FuturesTable openFutures = FuturesTable();
 
-import adamma.c4dhi.claid.RemoteFunction.FutureUniqueIdentifier;
-import adamma.c4dhi.claid.RemoteFunction.FuturesTable;
-import adamma.c4dhi.claid.RemoteFunction.Future;
+  RPCCompleter<T> registerNewFuture<T>(T returnDataTypeExample) 
+  {
+    FutureUniqueIdentifier uniqueIdentifier =
+        FutureUniqueIdentifier.makeUniqueIdentifier();
 
-public class FutureHandler 
-{
-    
-    private FuturesTable openFutures = new FuturesTable();
+    RPCCompleter<T> completer =
+        RPCCompleter<T>(openFutures, uniqueIdentifier, returnDataTypeExample);
 
-    public <T> Future<T> registerNewFuture(Class<T> returnDataType)
-    {
-        FutureUniqueIdentifier uniqueIdentifier = FutureUniqueIdentifier.makeUniqueIdentifier();
-        Future<T> future = new Future<T>(this.openFutures, uniqueIdentifier, returnDataType);
+    print("Registering future");
+    openFutures.addFuture(completer);
 
-        this.openFutures.addFuture(future);
+    return completer;
+  }
 
-        return future;
-    };
-
-    public AbstractFuture lookupFuture(FutureUniqueIdentifier identifier)
-    {
-        return openFutures.lookupFuture(identifier);
-    }
-
-    
+  AbstractRPCCompleter? lookupFuture(FutureUniqueIdentifier identifier) 
+  {
+    openFutures.printFutures();
+    return openFutures.lookupFuture(identifier);
+  }
 }
+
