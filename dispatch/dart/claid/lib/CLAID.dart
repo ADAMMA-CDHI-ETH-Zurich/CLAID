@@ -81,4 +81,9 @@ class CLAID
       return null;
     }
   }
+
+  static ModuleManager? getModuleManager()
+  {
+    return CLAID._moduleManager;
+  }
 }

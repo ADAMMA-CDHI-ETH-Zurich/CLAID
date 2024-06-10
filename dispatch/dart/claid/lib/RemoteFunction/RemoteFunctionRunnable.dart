@@ -20,7 +20,7 @@
 ***************************************************************************/
 
 import 'dart:async';
-import 'package:claid/Logger/Logger.dart';
+import 'package:claid/logger/Logger.dart';
 import 'package:claid/generated/claidservice.pb.dart';
 import 'package:claid/module/type_mapping.dart';
 import 'RemoteFunctionRunnableResult.dart';

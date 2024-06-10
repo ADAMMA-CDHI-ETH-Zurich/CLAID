@@ -129,7 +129,7 @@ public abstract class Module
         }
         this.subscriberPublisher = subscriberPublisher;
         this.remoteFunctionHandler = remoteFunctionHandler;
-        this.remoteFunctionRunnableHandler = new RemoteFunctionRunnableHandler("Module " + this->id, subscriberPublisher.getToModuleManagerQueue());
+        this.remoteFunctionRunnableHandler = new RemoteFunctionRunnableHandler("Module " + this.id, subscriberPublisher.getToModuleManagerQueue());
 
         if(!this.runnableDispatcher.start())
         {

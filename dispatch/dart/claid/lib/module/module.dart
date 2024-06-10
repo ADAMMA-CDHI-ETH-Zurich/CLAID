@@ -30,7 +30,7 @@ import 'channel.dart';
 import 'package:claid/RemoteFunction/RemoteFunction.dart';
 import 'package:claid/RemoteFunction/RemoteFunctionHandler.dart';
 import 'package:claid/RemoteFunction/RemoteFunctionRunnableHandler.dart';
-import 'package:claid/Logger/Logger.dart';
+import 'package:claid/logger/Logger.dart';
 
 import 'package:claid/generated/claidservice.pb.dart';
 

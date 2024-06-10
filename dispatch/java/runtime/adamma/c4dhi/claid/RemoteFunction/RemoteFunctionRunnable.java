@@ -172,7 +172,7 @@ public class RemoteFunctionRunnable
         return functionSignature;
     }
 
-    RemoteFunctionReturn makeRemoteFunctionReturn(RemoteFunctionRunnableResult result, RemoteFunctionRequest executionRequest)
+    static RemoteFunctionReturn makeRemoteFunctionReturn(RemoteFunctionRunnableResult result, RemoteFunctionRequest executionRequest)
     {
         RemoteFunctionReturn.Builder remoteFunctionReturn = RemoteFunctionReturn.newBuilder();
         RemoteFunctionIdentifier remoteFunctionIdentifier = executionRequest.getRemoteFunctionIdentifier();
@@ -185,7 +185,7 @@ public class RemoteFunctionRunnable
         return remoteFunctionReturn.build();
     }
 
-    public DataPackage makeRPCResponsePackage(RemoteFunctionRunnableResult result, DataPackage rpcRequest, Class<?> returnType)
+    public static DataPackage makeRPCResponsePackage(RemoteFunctionRunnableResult result, DataPackage rpcRequest, Class<?> returnType)
     {
         RemoteFunctionRequest executionRequest = rpcRequest.getControlVal().getRemoteFunctionRequest();
 
@@ -197,10 +197,10 @@ public class RemoteFunctionRunnable
 
         ControlPackage.Builder ctrlPackage = ControlPackage.newBuilder();
         ctrlPackage.setCtrlType(CtrlType.CTRL_REMOTE_FUNCTION_RESPONSE);
-        ctrlPackage.setRemoteFunctionReturn(makeRemoteFunctionReturn(result, executionRequest));
+        ctrlPackage.setRemoteFunctionReturn(RemoteFunctionRunnable.makeRemoteFunctionReturn(result, executionRequest));
 
         // Send back to the runtime where the rpcRequest came from.
-        ctrlPackage.setRuntime(rpcRequest.getRuntime());
+        ctrlPackage.setRuntime(ctrlPackage.getRuntime());
 
 
         responseBuilder.setControlVal(ctrlPackage.build());

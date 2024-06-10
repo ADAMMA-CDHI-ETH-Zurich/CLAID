@@ -1,15 +1,19 @@
 import 'dart:io';
 
-import 'package:alex_data_collection/CLAID/DeviceView.dart';
 import 'package:flutter/material.dart';
 
+import 'CLAIDModuleView.dart';
 
 
 
-class EmptyDefaultDeviceView extends DeviceView {
+
+class EmptyDefaultDeviceView extends CLAIDModuleView {
 
   String imagePath = "";
-  EmptyDefaultDeviceView({Key? key, required this.imagePath}) : super(key: key);
+
+
+  EmptyDefaultDeviceView({Key? key, required this.imagePath,
+      required super.mappedModuleId, required super.moduleClass, required super.remoteFunctionHandler}) : super(key: key);
 
   @override
   State<EmptyDefaultDeviceView> createState() => _EmptyDefaultDeviceViewState();
@@ -41,6 +45,11 @@ class EmptyDefaultDeviceView extends DeviceView {
       height: MediaQuery.of(context).size.height * 0.075,
       width: MediaQuery.of(context).size.width * 0.125,
     );
+  }
+
+  String getName()
+  {
+    return "DefaultView";
   }
 
 }

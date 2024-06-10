@@ -22,11 +22,14 @@
 
 
 import 'dart:io';
+import 'dart:async';
 import 'dart:ffi' as ffi;
+import 'dart:isolate'; // Import Isolate class
+
 import 'package:ffi/ffi.dart';
-
+import "package:path/path.dart" show dirname;
 import 'claid_core_bindings_generated.dart';
-
+import 'dart:io' show Platform;
 const String _libName = 'claid_capi';
 final String _platform = Platform.isAndroid ? 'android' : 'linux';
 
@@ -72,13 +75,19 @@ class MiddleWareBindings {
   bool get ready => _ready;
 }
 
+
+
+ 
+
+
 /// The dynamic library in which the symbols for [ClaidCoreBindings] can be found.
 final ffi.DynamicLibrary _dylib = () {
   if (Platform.isMacOS || Platform.isIOS) {
     return ffi.DynamicLibrary.open('blobs/lib$_libName.dylib');
   }
   if (Platform.isLinux) {
-    return ffi.DynamicLibrary.open('blobs/lib${_libName}_${_platform}.so');
+      Directory current = Directory.current;
+    return ffi.DynamicLibrary.open('../../dispatch/dart/claid/blobs/lib${_libName}_${_platform}.so');
   }
   if (Platform.isAndroid)
   {

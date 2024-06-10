@@ -20,7 +20,7 @@
 ***************************************************************************/
 
 import 'dart:async';
-import 'package:claid/Logger/Logger.dart';
+import 'package:claid/logger/Logger.dart';
 import 'package:claid/generated/claidservice.pb.dart';
 
 class RemoteFunctionRunnableResult<T>

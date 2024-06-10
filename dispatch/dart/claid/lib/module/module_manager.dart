@@ -3,7 +3,7 @@ import 'package:claid/src/module_impl.dart';
 import 'package:claid/dispatcher.dart';
 import 'package:claid/generated/claidservice.pb.dart';
 import 'package:claid/generated/google/protobuf/struct.pb.dart';
-import 'package:claid/Logger/Logger.dart';
+import 'package:claid/logger/Logger.dart';
 import 'package:claid/RemoteFunction/RemoteFunctionRunnable.dart';
 import 'package:claid/RemoteFunction/RemoteFunctionHandler.dart';
 import 'package:claid/RemoteFunction/RemoteFunctionRunnableHandler.dart';
@@ -338,4 +338,6 @@ class ModuleManager {
   {
       this._remoteFunctionHandler.handleResponse(remoteFunctionResponse);
   }
+
+  RemoteFunctionHandler getRemoteFunctionHandler() => this._remoteFunctionHandler;
 }

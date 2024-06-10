@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import 'DeviceView.dart';
+import 'CLAIDModuleView.dart';
 
 
 class SelectableDeviceViewWidget extends StatelessWidget
@@ -13,7 +13,7 @@ class SelectableDeviceViewWidget extends StatelessWidget
   final ButtonStyle style =
   ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20));
 
-  DeviceView deviceView;
+  CLAIDModuleView deviceView;
 
   SelectableDeviceViewWidget({Key? key,
     required this.title,

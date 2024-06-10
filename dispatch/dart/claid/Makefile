@@ -64,7 +64,7 @@ build_middleware:
 flutter_package:  build
 	rm -fr android/libs
 	mkdir android/libs
-	cd ../../android/; make aar_package && cp aar/claid/claid/build/outputs/aar/app-debug.aar ../dart/claid/android/libs/claid_debug.aar
+	cd ../../android/; make aar_package && cp aar/claid/claid/build/outputs/aar/claid-debug.aar ../dart/claid/android/libs/claid_debug.aar
 
 
 

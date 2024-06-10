@@ -7,6 +7,8 @@ import java.util.Map;
 
 import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionRunnable;
 import adamma.c4dhi.claid.DataPackage;
+import adamma.c4dhi.claid.RemoteFunctionStatus;
+
 import adamma.c4dhi.claid.RemoteFunctionRequest;
 import adamma.c4dhi.claid.RemoteFunctionIdentifier;
 import adamma.c4dhi.claid.Module.ThreadSafeChannel;

@@ -23,7 +23,7 @@ import 'dart:async';
 import 'FutureHandler.dart';
 import 'RPCCompleter.dart';
 import 'package:claid/generated/claidservice.pb.dart';
-import 'package:claid/Logger/Logger.dart';
+import 'package:claid/logger/Logger.dart';
 import 'package:claid/module/type_mapping.dart';
 // A remote function is an RPC stub, 
 // which remotely calls an RemoteFunctionRunnable in another entity (another Runtime or Module).

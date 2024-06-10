@@ -1,0 +1,15 @@
+{
+  "hosts": [{
+    "hostname": "test_host",
+    "type": "linux",
+    "is_server": false,
+    "connect_to": "",
+    "modules": [
+      {
+        "type": "TestStreamModule",
+        "id": "TestStreamModule"
+      }
+    ]
+  }
+  ]
+}

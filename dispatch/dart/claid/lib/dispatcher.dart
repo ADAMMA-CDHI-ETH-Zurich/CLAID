@@ -30,7 +30,7 @@ import 'package:grpc/grpc.dart';
 import 'middleware.dart';
 import 'package:claid/module/properties.dart';
 import 'package:claid/generated/google/protobuf/struct.pb.dart';
-import 'package:claid/Logger/Logger.dart';
+import 'package:claid/logger/Logger.dart';
 
 class StreamingError implements Error {
   final String message;

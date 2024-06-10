@@ -15,7 +15,6 @@ class MappedModule
         return _remoteFunctionHandler.mapModuleFunction(this._mappedModuleId, returnType, parameters);
     }
 
-
     RemoteFunction<T> mapMiddlewareFunction(String functionName, T returnType, List<dynamic> parameters)
     {
         return _remoteFunctionHandler.mapRuntimeFunction(Runtime.RUNTIME_CPP, functionName, returnType, parameters);

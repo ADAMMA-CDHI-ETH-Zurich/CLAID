@@ -20,7 +20,7 @@
 ***************************************************************************/
 
 import 'dart:async';
-import 'package:claid/Logger/Logger.dart';
+import 'package:claid/logger/Logger.dart';
 import 'RemoteFunction.dart';
 import 'FutureHandler.dart';
 import 'AbstractRPCCompleter.dart';

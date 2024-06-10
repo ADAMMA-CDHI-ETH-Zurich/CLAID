@@ -1,5 +1,7 @@
-import 'package:claid/ui/DeviceOverviewPage.dart';
+import 'package:claid_flutter_demo/CLAIDAppPage.dart';
 import 'package:flutter/material.dart';
+
+import 'CLAIDDeviceView.dart';
 
 void main() {
   runApp(const MyApp());
@@ -77,17 +79,22 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+    return MaterialApp(
+      title: 'CLAID Test App',
+      theme: ThemeData(
+        // This is the theme of your application.
+        //
+        // Try running your application with "flutter run". You'll see the
+        // application has a blue toolbar. Then, without quitting the app, try
+        // changing the primarySwatch below to Colors.green and then invoke
+        // "hot reload" (press "r" in the console where you ran "flutter run",
+        // or simply save your changes to "hot reload" in a Flutter IDE).
+        // Notice that the counter didn't reset back to zero; the application
+        // is not restarted.
+
+
       ),
-      body: DeviceOverviewPage(onPressed: null,),
+      home: CLAIDAppPage(title: 'My CLAID App',),
     );
   }
 }
