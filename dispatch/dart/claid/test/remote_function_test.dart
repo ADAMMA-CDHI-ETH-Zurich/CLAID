@@ -13,6 +13,8 @@ import 'package:claid/RemoteFunction/RemoteFunction.dart';
 
 bool rpcCorrect = false;
 
+Map<String, String> runningModulesRPCResult;
+
 class TestClass
 {
   String prefix;
@@ -31,20 +33,20 @@ class TestClass
 class RPCCaller extends Module
 {
 
-    RemoteFunction<int>? mappedFunction = null;
 
     void initialize(Properties properties)
     {
         moduleInfo("Intialize");
-        mappedFunction = mapRemoteFunctionOfModule<int>("RPCCallee", "calculate_sum", 42, ["", ""]);
 
         final targetTime = DateTime.now().add(Duration(milliseconds: 1000));
-        registerScheduledFunction("TestFunction", targetTime, _scheduledFunction);
+        registerScheduledFunction("ModuleRPCTest", targetTime, _moduleRPCTest);
+        registerScheduledFunction("RuntimeRPCTest", targetTime, _runtimeRPCTest);
 
     }
 
     void _scheduledFunction() async
     {
+      RemoteFunction<int>? mappedFunction = mapRemoteFunctionOfModule<int>("RPCCallee", "calculate_sum", 42, ["", ""]);
       print("Scheduled function called");
       int result = (await mappedFunction!.execute(["5", "42"]))!;
       print("Got result " + result.toString());
@@ -58,6 +60,14 @@ class RPCCaller extends Module
           var errorMessage = "Invalid result! Expected 47 but got " + result.toString();
           print(errorMessage);
       }
+    }
+
+    void _runtimeRPCTest() async
+    {
+        RemoteFunction<int>? mappedFunction = 
+          mapRemoteFunctionOfRuntime<int>(Runtime.RUNTIME_CPP, "get_running_modules", Map<String, String>, []);
+
+        runningModulesRPCResult = await mappedFunction!.execute();
     }
 
    
@@ -131,6 +141,7 @@ void main() {
     runTest();
     await Future.delayed(Duration(seconds: 4));
     expect(rpcCorrect, true);
+    expect(runningModulesRPCResult.size(), 2);
   });
 
 }

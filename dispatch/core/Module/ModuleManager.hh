@@ -31,6 +31,7 @@
 #include "dispatch/core/Module/Properties.hh"
 #include "dispatch/core/RemoteFunction/RemoteFunctionHandler.hh"
 #include "dispatch/core/RemoteFunction/RemoteFunctionRunnableHandler.hh"
+#include "dispatch/core/module_table.hh"
 
 
 using claidservice::DataPackage;
@@ -52,6 +53,7 @@ namespace claid {
 
             SharedQueue<DataPackage>& fromModuleDispatcherQueue;
             SharedQueue<DataPackage>& toModuleDispatcherQueue;
+            ModuleTable& moduleTable; 
 
             std::shared_ptr<EventTracker> eventTracker;
 
@@ -94,10 +96,13 @@ namespace claid {
 
             void restart();
 
+            std::map<std::string, std::string> getAllRunningModulesOfAllRuntimes();
+
         public:
             ModuleManager(DispatcherClient& dispatcher,
                 SharedQueue<DataPackage>& fromModuleDispatcherQueue,
                 SharedQueue<DataPackage>& toModuleDispatcherQueue,
+                ModuleTable& moduleTable,
                 std::shared_ptr<EventTracker> eventTracker);
 
             ~ModuleManager();

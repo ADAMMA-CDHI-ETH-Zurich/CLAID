@@ -87,6 +87,7 @@ namespace claid
             void disableDesignerMode();
 
             std::shared_ptr<EventTracker> getEventTracker();
+            ModuleTable& getModuleTable();
 
             virtual ~MiddleWare();
 

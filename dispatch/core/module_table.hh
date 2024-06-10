@@ -148,6 +148,8 @@ class ModuleTable {
 
     bool getTypeOfModuleWithId(const std::string& moduleId, std::string& moduleType);
 
+    const std::map<std::string, std::string>& getModuleToClassMap();
+
   private:
     void augmentFieldValues(claidservice::DataPackage& pkt) const;
     ChannelEntry* findChannel(const std::string& channelId);

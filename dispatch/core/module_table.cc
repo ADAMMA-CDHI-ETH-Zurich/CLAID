@@ -485,3 +485,8 @@ bool ModuleTable::getTypeOfModuleWithId(const std::string& moduleId, std::string
     return true;
 }
 
+
+const std::map<std::string, std::string>& ModuleTable::getModuleToClassMap()
+{
+    return this->moduleToClassMap;
+}

@@ -16,6 +16,8 @@ using namespace claid;
 bool rpcCorrect = false;
 std::string errorMessage;
 
+std::map<std::string, std::string> runningModulesRPCResult;
+
 class TestClass
 {
     private:
@@ -33,17 +35,17 @@ class TestClass
 class RPCCaller : public claid::Module
 {
 
-    RemoteFunction<int> mappedFunction;
 
     void initialize(Properties properties)
     {
         moduleInfo("Intialize");
-        mappedFunction = mapRemoteFunctionOfModule<int, std::string, std::string>("RPCCallee", "calculate_sum");
-        registerScheduledFunction("TestFunction", Time::now() + Duration::seconds(1), &RPCCaller::scheduledFunction, this);
+        registerScheduledFunction("TestModuleRPC", Time::now() + Duration::seconds(1), &RPCCaller::testModuleRPC, this);
+        registerScheduledFunction("TestRuntimeRPC", Time::now() + Duration::seconds(1), &RPCCaller::testRuntimeRPC, this);
     }
 
-    void scheduledFunction()
+    void testModuleRPC()
     {
+        RemoteFunction<int> mappedFunction = mapRemoteFunctionOfModule<int, std::string, std::string>("RPCCallee", "calculate_sum");
         int result = mappedFunction.execute<std::string, std::string>("5", "42")->await();
         Logger::logInfo("Got result %d", result);
         if(result == 5 + 42)
@@ -54,6 +56,14 @@ class RPCCaller : public claid::Module
         {
             errorMessage = "Invalid result! Expected 47 but got " + std::to_string(result);
         }
+    }
+
+    void testRuntimeRPC()
+    {
+        RemoteFunction<std::map<std::string, std::string>> function = 
+            mapRemoteFunctionOfRuntime<std::map<std::string, std::string>>(Runtime::RUNTIME_CPP, "get_all_running_modules_of_all_runtimes");
+        
+        runningModulesRPCResult = function.execute()->await();
     }
 
     
@@ -102,8 +112,19 @@ TEST(RemoteFunctionTestSuite, RemoteFunctionTest)
 
     CLAID clientMiddleware;
     bool result = clientMiddleware.start(socket_path_local_1, config_file, client_host_id, user_id, device_id);
+    ASSERT_TRUE(result) << "Failed to start CLAID";
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
     clientMiddleware.shutdown();
 
     ASSERT_TRUE(rpcCorrect) << errorMessage;
+    ASSERT_EQ(runningModulesRPCResult.size(), 2);
+    ASSERT_EQ(runningModulesRPCResult["RPCCaller"], "RPCCaller");
+    ASSERT_EQ(runningModulesRPCResult["RPCCallee"], "RPCCallee");
+
+    std::cout << "Got running Modules: ";
+    for(auto& entry : runningModulesRPCResult)
+    {
+        std::cout << entry.first << "(" << entry.second << ")\n";
+    }
+
 }

@@ -650,9 +650,7 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
         }
         case CtrlType::CTRL_REMOTE_FUNCTION_RESPONSE:
         {
-            const ControlPackage& ctrlPackage = controlPackage->control_val();
-            const RemoteFunctionReturn& rpcReturn = ctrlPackage.remote_function_return();
-            const RemoteFunctionIdentifier& remoteFunctionIdentifier = rpcReturn.remote_function_identifier();
+          
 
             forwardControlPackageToSpecificRuntime(controlPackage, controlPackage->control_val().runtime());
 
@@ -1226,6 +1224,11 @@ int MiddleWare::getLogSinkSeverityLevel() const
 std::shared_ptr<EventTracker> MiddleWare::getEventTracker()
 {
     return this->eventTracker;
+}
+
+ModuleTable& MiddleWare::getModuleTable()
+{
+    return this->moduleTable;
 }
 
 void MiddleWare::handleRPCModuleNotFoundError(std::shared_ptr<DataPackage> rpcRequestPackage)
