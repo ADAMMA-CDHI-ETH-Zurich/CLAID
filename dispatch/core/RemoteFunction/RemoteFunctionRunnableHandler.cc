@@ -23,6 +23,7 @@ bool RemoteFunctionRunnableHandler::addRunnable(std::string functionName, std::s
 
 bool RemoteFunctionRunnableHandler::executeRemoteFunctionRunnable(std::shared_ptr<DataPackage> rpcRequest)
 {
+
     RemoteFunctionRequest request;
     if(!rpcRequest->control_val().has_remote_function_request())
     {

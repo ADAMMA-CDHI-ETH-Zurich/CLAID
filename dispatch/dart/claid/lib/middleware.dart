@@ -64,6 +64,11 @@ class MiddleWareBindings {
     return _ready;
   }
 
+  bool attachCppRuntime()
+  {
+    return _bindings.attach_cpp_runtime(_coreHandle) != null;
+  }
+
   void shutdown() {
     if (_ready && _wasMiddlewareStartedFromDart) {
       _bindings.shutdown_core(_coreHandle);
@@ -87,7 +92,13 @@ final ffi.DynamicLibrary _dylib = () {
   }
   if (Platform.isLinux) {
       Directory current = Directory.current;
-    return ffi.DynamicLibrary.open('../../dispatch/dart/claid/blobs/lib${_libName}_${_platform}.so');
+      String path = "../../dispatch/dart/claid/blobs/lib${_libName}_${_platform}.so";
+
+      if(!File(path).existsSync())
+      {
+        path = "blobs/lib${_libName}_${_platform}.so";
+      }
+    return ffi.DynamicLibrary.open(path);
   }
   if (Platform.isAndroid)
   {

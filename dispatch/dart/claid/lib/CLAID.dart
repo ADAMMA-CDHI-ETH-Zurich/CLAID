@@ -27,6 +27,7 @@ import 'package:claid/middleware.dart';
 import 'package:claid/module/module.dart';
 import 'package:claid/module/module_factory.dart';
 import 'package:claid/module/module_manager.dart';
+import 'package:claid/logger/Logger.dart';
 
 import './src/module_impl.dart' as impl;
 
@@ -44,6 +45,16 @@ class CLAID
 
     _middleWare = _middleWare ?? MiddleWareBindings();
     _middleWare?.start(socketPath, configFilePath, hostId, userId, deviceId);
+
+    if(_middleWare != null)
+    {
+      if(_middleWare?.attachCppRuntime()! != true)
+      {
+          Logger.logError("Failed to attach CLAID C++ Runtime.");
+          return ;
+      }
+
+    }
 
     attachDartRuntime(socketPath, moduleFactory);
   }
