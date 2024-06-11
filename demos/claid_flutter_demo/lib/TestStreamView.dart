@@ -7,17 +7,17 @@ import 'CLAIDModuleView.dart';
 
 
 
-class EmptyDefaultDeviceView extends CLAIDModuleView {
+class TestStreamView extends CLAIDModuleView {
 
-  String imagePath = "assets/images/questionmark.png";
+  String imagePath = "assets/images/ambee.png";
 
 
-  EmptyDefaultDeviceView(
+  TestStreamView(
       super.mappedModuleId, super.moduleClass,
       super.remoteFunctionHandler, {super.key});
 
   @override
-  State<EmptyDefaultDeviceView> createState() => _EmptyDefaultDeviceViewState();
+  State<TestStreamView> createState() => _EmptyDefaultDeviceViewState();
 
   @override
   Widget getSubCaptionWidget()
@@ -56,7 +56,7 @@ class EmptyDefaultDeviceView extends CLAIDModuleView {
 }
 
 
-class _EmptyDefaultDeviceViewState extends State<EmptyDefaultDeviceView>
+class _EmptyDefaultDeviceViewState extends State<TestStreamView>
 {
 
   bool loaded = false;
@@ -76,7 +76,9 @@ class _EmptyDefaultDeviceViewState extends State<EmptyDefaultDeviceView>
             SizedBox(
               height: 50,
             ),
-            Text("Nothing to see here! This is just the default view.");
+            !loaded ? CircularProgressIndicator() : CircularProgressIndicator() ,
+            !loaded ? CircularProgressIndicator() : CircularProgressIndicator() ,
+            !loaded ? CircularProgressIndicator() : CircularProgressIndicator() ,
           ],
         )
     );

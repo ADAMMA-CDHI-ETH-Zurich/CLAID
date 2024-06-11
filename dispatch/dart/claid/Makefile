@@ -66,6 +66,12 @@ flutter_package:  build
 	mkdir android/libs
 	cd ../../android/; make aar_package && cp aar/claid/claid/build/outputs/aar/claid-debug.aar ../dart/claid/android/libs/claid_debug.aar
 
+flutter_package_host_only:  build
+	rm -fr android/libs
+	
+
+
+
 
 
 # mkdir -p blobs

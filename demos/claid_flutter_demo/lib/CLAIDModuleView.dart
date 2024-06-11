@@ -13,10 +13,10 @@ abstract class CLAIDModuleView extends StatefulWidget
   final String moduleClass;
   final RemoteFunctionHandler? remoteFunctionHandler;
 
-  CLAIDModuleView({Key? key, required this.mappedModuleId,
-    required this.moduleClass, required this.remoteFunctionHandler}) : super(key: key)
+  CLAIDModuleView(this.mappedModuleId,
+    this.moduleClass, this.remoteFunctionHandler, {Key? key}) : super(key: key)
   {
-    print("initstate CLAIDModuleView constr");
+    print("initstate CLAIDModuleView constr ${mappedModuleId.length} $mappedModuleId $moduleClass");
   }
 
 

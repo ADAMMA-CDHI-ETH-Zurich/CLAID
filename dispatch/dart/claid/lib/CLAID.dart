@@ -27,6 +27,9 @@ import 'package:claid/middleware.dart';
 import 'package:claid/module/module.dart';
 import 'package:claid/module/module_factory.dart';
 import 'package:claid/module/module_manager.dart';
+import 'package:claid/RemoteFunction/RemoteFunctionHandler.dart';
+import 'package:claid/RemoteFunction/RemoteFunction.dart';
+
 import 'package:claid/logger/Logger.dart';
 
 import './src/module_impl.dart' as impl;
@@ -37,12 +40,17 @@ class CLAID
   static MiddleWareBindings? _middleWare;
   static ModuleManager? _moduleManager;
 
-  static void start(final String socketPath, 
+
+  static Future<void> start(final String socketPath, 
     final String configFilePath, final String hostId, 
-    final String userId, final String deviceId, final ModuleFactory moduleFactory)
+    final String userId, final String deviceId, final ModuleFactory moduleFactory, {String libraryPath = ""}) async
   {
     // Creating the ModuleDispatcher loads the Middleware and starts the Claid core, as of now.
 
+    if(libraryPath != "")
+    {
+      MiddleWareBindings.setLibraryPath(libraryPath);
+    }
     _middleWare = _middleWare ?? MiddleWareBindings();
     _middleWare?.start(socketPath, configFilePath, hostId, userId, deviceId);
 
@@ -56,10 +64,10 @@ class CLAID
 
     }
 
-    attachDartRuntime(socketPath, moduleFactory);
+    return attachDartRuntime(socketPath, moduleFactory);
   }
 
-  static void attachDartRuntime(final String socketPath, final ModuleFactory moduleFactory)
+  static Future<void> attachDartRuntime(final String socketPath, final ModuleFactory moduleFactory) async
   {
     _dispatcher = ModuleDispatcher(socketPath);
 
@@ -67,7 +75,7 @@ class CLAID
     final factories = moduleFactory.getFactories();
 
     _moduleManager = ModuleManager(_dispatcher!, factories);
-    _moduleManager!.start();
+    return _moduleManager!.start();
   }
 
   static T? getModule<T extends Module>(final String moduleId)
@@ -96,5 +104,20 @@ class CLAID
   static ModuleManager? getModuleManager()
   {
     return CLAID._moduleManager;
+  }
+
+  static RemoteFunctionHandler getRemoteFunctionHandler() 
+  {
+    return CLAID._moduleManager!.getRemoteFunctionHandler();
+  }
+
+  static Future<Map<String, String>?> getRunningModules() async
+  {
+    RemoteFunction<Map<String, String>>? mappedFunction = 
+          getRemoteFunctionHandler().mapRuntimeFunction<Map<String, String>>(
+                Runtime.RUNTIME_CPP, "get_all_running_modules_of_all_runtimes",
+                Map<String, String>(), []);
+
+    return (mappedFunction!.execute([]))!;
   }
 }

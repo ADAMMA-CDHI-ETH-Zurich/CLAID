@@ -8,14 +8,17 @@ import 'package:claid/module/module_factory.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'CLAIDDeviceView.dart';
+import 'CLAIDModuleListView.dart';
+import 'CLAIDModuleView.dart';
+import 'CLAIDModuleViewToClassMap.dart';
 import 'TestStreamModule.dart';
 
 
 
 
-class CLAIDAppPage extends StatefulWidget {
-  const CLAIDAppPage({super.key, required this.title});
+class CLAIDView extends StatefulWidget {
+  const CLAIDView({super.key,
+    required this.title, required this.moduleFactory});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -28,16 +31,22 @@ class CLAIDAppPage extends StatefulWidget {
 
   final String title;
 
+  final ModuleFactory moduleFactory;
+
   @override
-  State<CLAIDAppPage> createState() => _CLAIDAppPageState();
+  State<CLAIDView> createState() => _CLAIDViewState();
+
+  static void registerViewClassForModule(String moduleClass, ViewFactoryFunc factoryFunc)
+  {
+    CLAIDModuleViewToClassMap.registerModuleClass(moduleClass, factoryFunc);
+  }
 }
 
-class _CLAIDAppPageState extends State<CLAIDAppPage>
+class _CLAIDViewState extends State<CLAIDView>
 {
-
   bool _claidStarted = false;
 
-  late CLAIDDeviceView deviceView;
+  CLAIDModuleListView? moduleListView = null;
 
   @override
   void initState() {
@@ -48,15 +57,13 @@ class _CLAIDAppPageState extends State<CLAIDAppPage>
   @override
   Widget build(BuildContext context)
   {
-    deviceView = CLAIDDeviceView(title: this.widget.title);
-    print("Dart ALEX main 4");
+
 
     if(!_claidStarted)
     {
-      print("Dart ALEX main 5");
-
       startCLAID();
       _claidStarted = true;
+      return CircularProgressIndicator();
     }
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
@@ -67,13 +74,25 @@ class _CLAIDAppPageState extends State<CLAIDAppPage>
 
 
 
-    return deviceView;
+    return moduleListView != null ? moduleListView! : CircularProgressIndicator();
+  }
+
+  void _createDeviceView(Map<String, String> modules)
+  {
+    setState(() {
+      moduleListView = CLAIDModuleListView(title: this.widget.title,
+          moduleViewClasses: CLAIDModuleViewToClassMap.getMap(),
+          runningModules: modules,
+          remoteFunctionHandler: CLAID.getRemoteFunctionHandler());
+    });
+
+
+
   }
 
   void startCLAID() async
   {
     Directory? appDocDir = await getApplicationDocumentsDirectory();
-    print("Dart ALEX main 6");
 
     // Construct the path to the Android/media directory
     String mediaDirectoryPath = '${appDocDir!.path}';
@@ -81,13 +100,17 @@ class _CLAIDAppPageState extends State<CLAIDAppPage>
     mediaDirectoryPath = mediaDirectoryPath.replaceAll("app_flutter", "files");
     String socketPath = mediaDirectoryPath + "/" + "claid_local.grpc";
 
-    ModuleFactory moduleFactory = ModuleFactory();
-    moduleFactory.registerClass("TestStreamModule", () => TestStreamModule());
+
     print("ATTACHING DART RUNTIME " + socketPath + "\n");
     //moduleFactory.registerClass("MyTestModuleOne", () => MyTestModuleOne());
-    CLAID.start(socketPath,
-    "assets/claid_test.json", "test_host", "test_user", "test_id", moduleFactory);
+
+    print("Current ${Directory.current.path}");
+    await CLAID.start(socketPath,
+    "assets/claid_test.json", "test_host", "test_user", "test_id",
+        this.widget.moduleFactory, libraryPath: "/Users/planger/Development/CLAID/dispatch/dart/claid/blobs/libclaid_capi.dylib");
     //CLAID.attachDartRuntime("unix://" + socketPath, moduleFactory);
     print("Dart ALEX main 7");
+
+    CLAID.getRunningModules().then((modules) => _createDeviceView(modules!));
   }
 }

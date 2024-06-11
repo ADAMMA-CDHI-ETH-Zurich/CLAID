@@ -3,37 +3,37 @@ import 'dart:async';
 import 'dart:io';
 
 
+import 'package:claid/RemoteFunction/RemoteFunctionHandler.dart';
+import 'package:claid_flutter_demo/CLAIDModuleViewToClassMap.dart';
 import 'package:claid_flutter_demo/EmptyDefaultDeviceView.dart';
 import 'package:flutter/material.dart';
 
 import 'CLAIDModuleList.dart';
 import 'CLAIDModuleView.dart';
 
-class CLAIDDeviceView extends StatefulWidget {
-  const CLAIDDeviceView({super.key, required this.title});
+class CLAIDModuleListView extends StatefulWidget {
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+  const CLAIDModuleListView({super.key,
+      required this.title, required this.moduleViewClasses, required this.runningModules, required this.remoteFunctionHandler});
+
+  final Map<String, ViewFactoryFunc> moduleViewClasses;
+  final Map<String, String> runningModules;
+  final RemoteFunctionHandler remoteFunctionHandler;
 
   final String title;
 
   @override
-  State<CLAIDDeviceView> createState() => _CLAIDDeviceViewState();
+  State<CLAIDModuleListView> createState() => _CLAIDModuleListViewState();
 }
 
-class _CLAIDDeviceViewState extends State<CLAIDDeviceView>
+class _CLAIDModuleListViewState extends State<CLAIDModuleListView>
 {
 
   CLAIDModuleList? claidModuleList;
 
-  CLAIDModuleView view =
-    EmptyDefaultDeviceView(imagePath: "assets/images/img.png", mappedModuleId: '', moduleClass: '', remoteFunctionHandler: null,);
+
+
   List<Widget> _pages = [];
   List<CLAIDModuleView> _deviceViews = [];
 
@@ -43,7 +43,10 @@ class _CLAIDDeviceViewState extends State<CLAIDDeviceView>
   void initState()
   {
     super.initState();
-    _deviceViews = [view];
+
+    _deviceViews.addAll(this.widget.runningModules.entries.map((entry) {
+      return CLAIDModuleViewToClassMap().getView(entry.key, entry.value, this.widget.remoteFunctionHandler);
+    }));
 
     print("CLAIDDeviceView InitState");
     claidModuleList = CLAIDModuleList(modules: _deviceViews, onPressed: (val){
@@ -51,6 +54,8 @@ class _CLAIDDeviceViewState extends State<CLAIDDeviceView>
       pageController.jumpToPage(val + 1);
 
     });
+
+
     _pages = [
       claidModuleList!];//_galaxyWatchView, _smartInhalerDeviceView, _smartInhalerDeviceView];
 

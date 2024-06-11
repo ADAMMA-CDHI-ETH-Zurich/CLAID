@@ -1,7 +1,9 @@
-import 'package:claid_flutter_demo/CLAIDAppPage.dart';
+import 'package:claid/module/module_factory.dart';
+import 'package:claid_flutter_demo/CLAIDView.dart';
 import 'package:flutter/material.dart';
 
-import 'CLAIDDeviceView.dart';
+import 'TestStreamModule.dart';
+import 'TestStreamView.dart';
 
 void main() {
   runApp(const MyApp());
@@ -59,17 +61,16 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  ModuleFactory moduleFactory = ModuleFactory();
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  @override
+  void initState() {
+    super.initState();
+
+    moduleFactory.registerClass("TestStreamModule", () => TestStreamModule());
+    CLAIDView.registerViewClassForModule("TestStreamModule", TestStreamView.new);
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
       ),
-      home: CLAIDAppPage(title: 'My CLAID App',),
+      home: CLAIDView(title: 'My CLAID App', moduleFactory: moduleFactory,),
     );
   }
 }

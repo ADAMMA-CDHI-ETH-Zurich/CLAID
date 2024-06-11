@@ -121,7 +121,7 @@ TEST(RemoteFunctionTestSuite, RemoteFunctionTest)
     ASSERT_EQ(runningModulesRPCResult["RPCCaller"], "RPCCaller");
     ASSERT_EQ(runningModulesRPCResult["RPCCallee"], "RPCCallee");
 
-    std::cout << "Got running Modules: ";
+    std::cout << "Got running Modules:\n";
     for(auto& entry : runningModulesRPCResult)
     {
         std::cout << entry.first << "(" << entry.second << ")\n";
