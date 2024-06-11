@@ -17,7 +17,7 @@ import 'CLAIDModuleViewToClassMap.dart';
 
 class CLAIDView extends StatefulWidget {
   const CLAIDView({super.key,
-    required this.title, required this.moduleFactory});
+    required this.title, required this.moduleFactory, this.attachOnly = false, this.claidLibraryPath = ""});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -31,6 +31,9 @@ class CLAIDView extends StatefulWidget {
   final String title;
 
   final ModuleFactory moduleFactory;
+
+  final bool attachOnly;
+  final String claidLibraryPath;
 
   @override
   State<CLAIDView> createState() => _CLAIDViewState();
@@ -104,11 +107,18 @@ class _CLAIDViewState extends State<CLAIDView>
     //moduleFactory.registerClass("MyTestModuleOne", () => MyTestModuleOne());
 
     print("Current ${Directory.current.path}");
-    await CLAID.start(socketPath,
-    "assets/claid_test.json", "test_host", "test_user", "test_id",
-        this.widget.moduleFactory, libraryPath: "/Users/planger/Development/CLAID/dispatch/dart/claid/blobs/libclaid_capi.dylib");
-    //CLAID.attachDartRuntime("unix://" + socketPath, moduleFactory);
-    print("Dart ALEX main 7");
+
+    if(!this.widget.attachOnly)
+    {
+      await CLAID.start(socketPath,
+      "assets/claid_test.json", "test_host", "test_user", "test_id",
+        this.widget.moduleFactory, libraryPath: this.widget.claidLibraryPath    //CLAID.attachDartRuntime("unix://" + socketPath, moduleFactory);
+      );
+    }
+    else
+    {
+      await CLAID.attachDartRuntime(socketPath, this.widget.moduleFactory);
+    }
 
     CLAID.getRunningModules().then((modules) => _createDeviceView(modules!));
   }
