@@ -156,6 +156,16 @@ class TypeMapping {
       }, (p) => codec.decode(p.payload));
     }
 
+    if(T == _getType<T>())
+    {
+      return Mutator<T>(
+        (p, v) => {},
+        (p) => null as T);
+    }
+
     throw ArgumentError('Type "${inst.runtimeType}" is not a valid type to use with CLAID. Type is not supported.');
   }
+
+    Type _getType<T>() => T;
+
 }

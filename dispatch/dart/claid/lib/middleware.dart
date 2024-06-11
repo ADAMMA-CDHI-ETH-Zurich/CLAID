@@ -103,7 +103,7 @@ class MiddleWareBindings {
 
       if(!File(path).existsSync())
       {
-        path = "/blobs/lib$_libName.dylib";
+        path = "blobs/lib$_libName.dylib";
       }
       library = ffi.DynamicLibrary.open(path);
     }

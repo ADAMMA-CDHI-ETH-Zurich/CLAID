@@ -13,6 +13,9 @@ import 'package:claid/generated/claidservice.pb.dart';
 import 'package:claid/RemoteFunction/RemoteFunction.dart';
 
 bool rpcCorrect = false;
+bool voidRPCParameterCorrect = false;
+bool voidRPCReturnCorrect = false;
+bool voidRPCVoidCorrect = false;
 
 Map<String, String> runningModulesRPCResult = {};
 
@@ -42,6 +45,7 @@ class RPCCaller extends Module
         final targetTime = DateTime.now().add(Duration(milliseconds: 1000));
         registerScheduledFunction("ModuleRPCTest", targetTime, _moduleRPCTest);
         registerScheduledFunction("RuntimeRPCTest", targetTime, _runtimeRPCTest);
+        registerScheduledFunction("VoidRPCTest", targetTime, _voidRPCTest);
 
     }
 
@@ -72,6 +76,28 @@ class RPCCaller extends Module
         runningModulesRPCResult = (await mappedFunction!.execute([]))!;
     }
 
+    void _voidRPCTest() async
+    {
+      RemoteFunction<void> voidReturnFunction =
+        mapRemoteFunctionOfModule("RPCCallee", "void_return_function", null, [0]);
+
+      RemoteFunction<int> voidParameterFunction =
+        mapRemoteFunctionOfModule("RPCCallee", "void_parameter_function", 0, []);
+
+      RemoteFunction<void> voidVoidFunction =
+        mapRemoteFunctionOfModule("RPCCallee", "void_void_function", null, []);
+
+      (voidReturnFunction.execute([1337]))!;
+
+      int result = (await voidParameterFunction.execute([]))!;
+      if(result == 1338)
+      {
+        voidRPCReturnCorrect = true;
+      }
+
+      await voidVoidFunction.execute([]);
+    }
+
    
 
     
@@ -83,6 +109,10 @@ class RPCCallee extends Module
     {
         moduleInfo("RPCCalle init");
         registerRemoteFunction<int>("calculate_sum", calculateSum, 42, ["", ""]);
+
+        registerRemoteFunction<void>("void_return_function", voidReturnFunction, null, [0]);
+        registerRemoteFunction<int>("void_parameter_function", voidParameterFunction, 0, []);
+        registerRemoteFunction<void>("void_void_function", voidVoidFunction, null, []);
     }
 
     int calculateSum(String a, String b)
@@ -91,6 +121,24 @@ class RPCCallee extends Module
         int result = int.parse(a) + int.parse(b);
         print("Result " + result.toString());
         return result;
+    }
+
+    void voidReturnFunction(int magic)
+    {
+      if(magic == 1337)
+      {
+        voidRPCParameterCorrect = true;
+      }
+    }
+
+    int voidParameterFunction()
+    {
+       return 1338;
+    }
+
+    void voidVoidFunction()
+    {
+      voidRPCVoidCorrect = true;
     }
 }
 
@@ -146,6 +194,10 @@ void main() {
     expect(runningModulesRPCResult.length, 2);
     expect(runningModulesRPCResult["RPCCaller"], "RPCCaller");
     expect(runningModulesRPCResult["RPCCallee"], "RPCCallee");
+
+    expect(voidRPCParameterCorrect, true);
+    expect(voidRPCReturnCorrect, true);
+    expect(voidRPCVoidCorrect, true);
 
   });
 
