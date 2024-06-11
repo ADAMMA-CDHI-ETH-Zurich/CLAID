@@ -123,8 +123,13 @@ public class RemoteFunctionRunnable
             Class<?> myClass = object.getClass();
             Logger.logError("dbg 2");
 
-            Class<?>[] parameterTypesArray = new Class<?>[parameterTypes.size()];
-            parameterTypesArray = parameterTypes.toArray(parameterTypesArray);
+            Class<?>[] parameterTypesArray = null;
+            if(parameterTypes.size() != 0)
+            {
+                parameterTypesArray = new Class<?>[parameterTypes.size()];
+                parameterTypesArray = parameterTypes.toArray(parameterTypesArray);
+            }
+
             Logger.logError("dbg 3");
 
             Method method = myClass.getMethod(functionName, parameterTypesArray);        
