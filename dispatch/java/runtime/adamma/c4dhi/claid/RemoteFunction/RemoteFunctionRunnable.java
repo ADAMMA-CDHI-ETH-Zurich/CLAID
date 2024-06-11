@@ -207,7 +207,7 @@ public class RemoteFunctionRunnable
         ctrlPackage.setRemoteFunctionReturn(RemoteFunctionRunnable.makeRemoteFunctionReturn(result, executionRequest));
 
         // Send back to the runtime where the rpcRequest came from.
-        ctrlPackage.setRuntime(ctrlPackage.getRuntime());
+        ctrlPackage.setRuntime(rpcRequest.getControlVal().getRuntime());
 
 
         responseBuilder.setControlVal(ctrlPackage.build());

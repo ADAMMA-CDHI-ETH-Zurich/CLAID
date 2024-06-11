@@ -747,6 +747,11 @@ void MiddleWare::forwardControlPackageToTargetRuntime(std::shared_ptr<DataPackag
     {
         queue->push_back(package);
     }
+    else
+    {
+        Logger::logError("Failed to lookup queue for Runtime %s. Cannot forward package %s",
+        Runtime_Name(package->control_val().runtime()).c_str(), messageToString(*package).c_str());
+    }
 }
 
 void MiddleWare::forwardControlPackageToSpecificRuntime(std::shared_ptr<DataPackage> package, Runtime runtime)

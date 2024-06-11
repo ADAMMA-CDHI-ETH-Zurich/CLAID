@@ -761,6 +761,20 @@ public class TypeMapping {
                 return (T) protoCodec.decode(p.getPayload());
             });
         }
+
+        if(dataTypeClass == Void.class)
+        {
+            return new Mutator<T>(
+                (p, v) -> 
+                {
+                    return p;
+                },
+                p -> 
+                {
+                    return null;
+                }
+            );
+        }
         // Have to use NumberArray, StringArray, ..., since we cannot safely distinguish List<Double> and List<String>?
         // Java generics... best generics... not. Type erasure, great invention.
        /* if (dataType == ArrayList<Double>.class) {
