@@ -1,15 +1,15 @@
 import 'dart:io';
 
+import 'package:claid/ui/CLAIDModuleView.dart';
 import 'package:flutter/material.dart';
 
-import 'CLAIDModuleView.dart';
 
 
 
 
 class TestStreamView extends CLAIDModuleView {
 
-  String imagePath = "assets/images/ambee.png";
+  String imagePath = "assets/images/img.png";
 
 
   TestStreamView(

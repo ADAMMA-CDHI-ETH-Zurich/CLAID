@@ -76,7 +76,7 @@ class _EmptyDefaultDeviceViewState extends State<EmptyDefaultDeviceView>
             SizedBox(
               height: 50,
             ),
-            Text("Nothing to see here! This is just the default view.");
+            Text("Nothing to see here! This is just the default view.")
           ],
         )
     );

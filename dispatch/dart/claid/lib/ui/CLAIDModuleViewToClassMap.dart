@@ -1,6 +1,6 @@
 import 'package:claid/RemoteFunction/RemoteFunctionHandler.dart';
-import 'package:claid_flutter_demo/CLAIDModuleView.dart';
-import 'package:claid_flutter_demo/EmptyDefaultDeviceView.dart';
+import 'package:claid/ui/CLAIDModuleView.dart';
+import 'package:claid/ui/EmptyDefaultDeviceView.dart';
 
 typedef ViewFactoryFunc = CLAIDModuleView Function(String moduleId, String moduleClass, RemoteFunctionHandler handler);
 

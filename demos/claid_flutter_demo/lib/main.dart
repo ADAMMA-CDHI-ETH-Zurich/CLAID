@@ -1,5 +1,5 @@
 import 'package:claid/module/module_factory.dart';
-import 'package:claid_flutter_demo/CLAIDView.dart';
+import 'package:claid/ui/CLAIDView.dart';
 import 'package:flutter/material.dart';
 
 import 'TestStreamModule.dart';

@@ -4,8 +4,8 @@ import 'dart:io';
 
 
 import 'package:claid/RemoteFunction/RemoteFunctionHandler.dart';
-import 'package:claid_flutter_demo/CLAIDModuleViewToClassMap.dart';
-import 'package:claid_flutter_demo/EmptyDefaultDeviceView.dart';
+import 'package:claid/ui/CLAIDModuleViewToClassMap.dart';
+import 'package:claid/ui/EmptyDefaultDeviceView.dart';
 import 'package:flutter/material.dart';
 
 import 'CLAIDModuleList.dart';
