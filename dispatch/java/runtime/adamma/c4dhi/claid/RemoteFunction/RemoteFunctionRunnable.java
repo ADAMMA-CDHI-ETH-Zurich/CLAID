@@ -140,7 +140,9 @@ public class RemoteFunctionRunnable
         catch (Exception e) 
         {
             e.printStackTrace();
-            Logger.logError("Failed to lookup function Method \"" + functionName + "\" of object of type \"" + object.getClass().getName() + "\". Got exception \"" + e.getMessage() + "\".");
+            Logger.logError("Failed to lookup function Method \"" + functionName + "\" of object of type \"" + object.getClass().getName() + "\"\n." +
+            "Check if the function exists AND is public. Use class parameters and return types instead of primitives (e.g., Integer instead of int).\n" +
+            "Got exception \"" + e.getMessage() + "\".");
             return null;
         }
     }
