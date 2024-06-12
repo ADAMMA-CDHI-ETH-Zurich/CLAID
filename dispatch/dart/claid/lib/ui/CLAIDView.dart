@@ -85,7 +85,7 @@ class _CLAIDViewState extends State<CLAIDView>
       moduleListView = CLAIDModuleListView(title: this.widget.title,
           moduleViewClasses: CLAIDModuleViewToClassMap.getMap(),
           runningModules: modules,
-          remoteFunctionHandler: CLAID.getRemoteFunctionHandler());
+          moduleManager: CLAID.getModuleManager()!,);
     });
 
 

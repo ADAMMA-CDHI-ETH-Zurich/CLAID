@@ -13,8 +13,9 @@ class EmptyDefaultDeviceView extends CLAIDModuleView  {
 
 
   EmptyDefaultDeviceView(
+      super.entityName,
       super.mappedModuleId, super.moduleClass,
-      super.remoteFunctionHandler, {super.key});
+      super.moduleManager, {super.key});
 
   @override
   State<EmptyDefaultDeviceView> createState() => _EmptyDefaultDeviceViewState();

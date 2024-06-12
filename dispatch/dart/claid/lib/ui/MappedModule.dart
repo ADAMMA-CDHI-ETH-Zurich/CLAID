@@ -10,18 +10,19 @@ import 'package:claid/generated/claidservice.pb.dart';
 
 abstract class MappedModule
 {
-  final String entityName; // Name of this mapped module instance.
+  final String entityName; // Name of this entity.
   final String mappedModuleId;
   final String moduleClass;
-  final RemoteFunctionHandler? remoteFunctionHandler;
+  late RemoteFunctionHandler? remoteFunctionHandler;
 
   Map<String, DataReceiver> _looseDirectSubscriptionCallbacks = {};
 
  
 
   MappedModule(this.entityName, this.mappedModuleId,
-    this.moduleClass, this.remoteFunctionHandler, ModuleManager moduleManager)
+    this.moduleClass, ModuleManager moduleManager)
   {
+    this.remoteFunctionHandler = moduleManager.getRemoteFunctionHandler();
     moduleManager.registerDataReceiverEntity(entityName, this.onDataFromLooseDirectSubscription);
   }
 

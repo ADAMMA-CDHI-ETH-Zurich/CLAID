@@ -13,8 +13,9 @@ class TestStreamView extends CLAIDModuleView {
 
 
   TestStreamView(
+      super.entityName,
       super.mappedModuleId, super.moduleClass,
-      super.remoteFunctionHandler, {super.key});
+      super.moduleManager, {super.key});
 
   @override
   State<TestStreamView> createState() => _TestStreamViewState();
@@ -40,6 +41,8 @@ class TestStreamView extends CLAIDModuleView {
     );
   }
 
+
+
   Widget getImage(BuildContext context)
   {
     return Image.asset(this.imagePath,
@@ -59,11 +62,22 @@ class TestStreamView extends CLAIDModuleView {
 class _TestStreamViewState extends State<TestStreamView> with AutomaticKeepAliveClientMixin
 {
 
+  String currentText = "";
   @override
   void initState() {
     super.initState();
     print("TestStreamView init state");
+
+    this.widget.subscribeModuleChannel("MyData", "", (data) => onStreamData(data));
   }
+
+  void onStreamData(String data)
+  {
+    setState(() {
+      currentText = data;
+    });
+  }
+
   bool loaded = false;
 
   // This widget is the root of your application.
@@ -81,9 +95,7 @@ class _TestStreamViewState extends State<TestStreamView> with AutomaticKeepAlive
             SizedBox(
               height: 50,
             ),
-            !loaded ? CircularProgressIndicator() : CircularProgressIndicator() ,
-            !loaded ? CircularProgressIndicator() : CircularProgressIndicator() ,
-            !loaded ? CircularProgressIndicator() : CircularProgressIndicator() ,
+            currentText == "" ? CircularProgressIndicator() : Text(currentText)
           ],
         )
     );

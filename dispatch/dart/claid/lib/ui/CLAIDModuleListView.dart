@@ -4,6 +4,8 @@ import 'dart:io';
 
 
 import 'package:claid/RemoteFunction/RemoteFunctionHandler.dart';
+import 'package:claid/module/module_manager.dart';
+
 import 'package:claid/ui/CLAIDModuleViewToClassMap.dart';
 import 'package:claid/ui/EmptyDefaultDeviceView.dart';
 import 'package:flutter/material.dart';
@@ -15,11 +17,12 @@ class CLAIDModuleListView extends StatefulWidget {
 
 
   const CLAIDModuleListView({super.key,
-      required this.title, required this.moduleViewClasses, required this.runningModules, required this.remoteFunctionHandler});
+      required this.title, required this.moduleViewClasses,
+      required this.runningModules, required this.moduleManager});
 
   final Map<String, ViewFactoryFunc> moduleViewClasses;
   final Map<String, String> runningModules;
-  final RemoteFunctionHandler remoteFunctionHandler;
+  final ModuleManager moduleManager;
 
   final String title;
 
@@ -48,7 +51,7 @@ class _CLAIDModuleListViewState extends State<CLAIDModuleListView>
     print("CLAIDModuleListView InitState");
 
     _deviceViews.addAll(this.widget.runningModules.entries.map((entry) {
-      return CLAIDModuleViewToClassMap().getView(entry.key, entry.value, this.widget.remoteFunctionHandler);
+      return CLAIDModuleViewToClassMap().getView(entry.key, entry.value, this.widget.moduleManager);
     }));
 
     claidModuleList = CLAIDModuleList(modules: _deviceViews, onPressed: (val){
