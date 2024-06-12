@@ -174,7 +174,8 @@ void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
         Logger::logInfo("RunTimeDispatcher processPacket 4");
 
 
-        moduleTable.addOutputPackets(pkt, chanEntry, incomingQueue);
+        moduleTable.forwardPackageToAllSubscribers(pkt, chanEntry, incomingQueue);
+        moduleTable.forwardPackageOfModuleToAllLooseDirectSubscribers(pkt, incomingQueue);
         Logger::logInfo("RunTimeDispatcher processPacket 5");
 
         // Make a copy of the package and augment it with the
@@ -410,6 +411,7 @@ void ServiceImpl::removeRuntimeDispatcher(Runtime rt) {
     Logger::logInfo("Removing runtime dispatcher");
     lock_guard<mutex> lock(adMutex);
     activeDispatchers.erase(rt);
+    moduleTable.removeAllLooseDirectSubscriptionsOfRuntime(rt);
     Logger::logInfo("Removed runtime dispatcher");
 
 }

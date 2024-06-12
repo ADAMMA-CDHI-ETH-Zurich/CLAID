@@ -89,6 +89,6 @@ TEST(ModuleTableTestSuite, BasicModuleTableTest) {
     // Make sure when sending on this channel we get two output packets.
     auto entry = modTable.isValidChannel(*cpPkt);
     ASSERT_TRUE(entry != nullptr);
-    modTable.addOutputPackets(*cpPkt, entry, outQueue);
+    modTable.forwardPackageToAllSubscribers(*cpPkt, entry, outQueue);
     ASSERT_TRUE(outQueue.size() == 2);
 }

@@ -179,7 +179,7 @@ Future<void> startCLAID() async
     moduleFactory.registerClass("RPCCaller", () => RPCCaller());
     moduleFactory.registerClass("RPCCallee", () => RPCCallee());
 
-    CLAID.start("/tmp/test_grpc_server.sock", 
+    CLAID.start("/tmp/remote_function_test_grpc_server.sock", 
       "test/remote_function_test.json", "test_client",
       "some_user", "some_device", moduleFactory);
 

@@ -53,7 +53,7 @@ class _CLAIDViewState extends State<CLAIDView>
   @override
   void initState() {
     super.initState();
-    print("CLAIDAppPage InitState");
+    print("CLAIDView InitState");
   }
 
   @override

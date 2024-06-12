@@ -31,12 +31,12 @@ abstract class CLAIDModuleView extends StatefulWidget
     return remoteFunctionHandler!.mapRuntimeFunction(Runtime.RUNTIME_CPP, functionName, returnType, parameters);
   }
 
-  /*Future<bool> subscribeChannel<T>(String channelName, T dataType, ChannelCallback<T> callback) async
+  Future<bool> subscribeModuleChannel<T>(String channelName, T dataType, ChannelCallback<T> callback) async
   {
-    RemoteFunction<bool> function = mapFunction<bool>("soft_subscribe_data", bool(), [String()]);
+    RemoteFunction<bool> function = mapMiddlewareFunction<bool>("subscribe_module_channel", bool(), [String()]);
 
     return function.execute(channelName);
-  }*/
+  }
 
   String getName() => mappedModuleId;
   Widget getSubCaptionWidget();

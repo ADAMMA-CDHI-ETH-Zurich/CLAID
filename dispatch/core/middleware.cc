@@ -33,11 +33,23 @@ using namespace std;
 MiddleWare::MiddleWare(const string& socketPath, const string& configurationPath,
     const string& hostId, const string& userId, const string& deviceId)
         : socketPath(socketPath), configurationPath(configurationPath),
-          hostId(hostId), userId(userId), deviceId(deviceId) 
+          hostId(hostId), userId(userId), deviceId(deviceId), remoteFunctionRunnableHandler("MIDDLEWARE", moduleTable.inputQueue())
     {
         moduleTable.setProperties(ModuleTableProperties{userId, deviceId});
         this->logMessagesQueue = std::make_shared<SharedQueue<LogMessage>>();
         this->eventTracker = std::make_shared<EventTracker>();
+
+        remoteFunctionRunnableHandler
+            .registerRunnable(
+                "get_all_running_modules_of_all_runtimes", &MiddleWare::getAllRunningModulesOfAllRuntimes, this);
+    
+        remoteFunctionRunnableHandler
+            .registerRunnable(
+                "add_loose_direct_subscription", &MiddleWare::addLooseDirectSubscription, this);
+
+        remoteFunctionRunnableHandler
+            .registerRunnable(
+                "remove_loose_direct_subscription", &MiddleWare::removeLooseDirectSubscription, this);
     }
 
 MiddleWare::~MiddleWare() {
@@ -626,11 +638,17 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
 
             if(remoteFunctionIdentifier.function_type_case() == RemoteFunctionIdentifier::FunctionTypeCase::kRuntime)
             {
-                forwardControlPackageToSpecificRuntime(controlPackage, remoteFunctionIdentifier.runtime());
+                if(remoteFunctionIdentifier.runtime() == Runtime::MIDDLEWARE_CORE)
+                {
+                    this->remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(controlPackage);
+                }
+                else
+                {
+                    forwardControlPackageToSpecificRuntime(controlPackage, remoteFunctionIdentifier.runtime());
+                }
             }
             else if(remoteFunctionIdentifier.function_type_case() == RemoteFunctionIdentifier::FunctionTypeCase::kModuleId)
             {
-
                 const std::string& targetModule = remoteFunctionIdentifier.module_id();
 
                 SharedQueue<DataPackage>* queue = this->moduleTable.lookupOutputQueue(targetModule);
@@ -670,6 +688,12 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
             //     // Route package to target runtime.
             //     queue->push_back(controlPackage);
             // }
+            break;
+        }
+        case CtrlType::CTRL_DIRECT_SUBSCRIPTION_DATA:
+        {
+            this->forwardControlPackageToSpecificRuntime(controlPackage, 
+                controlPackage->control_val().loose_direct_subscription().subscriber_runtime());
             break;
         }
         default:
@@ -1231,11 +1255,6 @@ std::shared_ptr<EventTracker> MiddleWare::getEventTracker()
     return this->eventTracker;
 }
 
-ModuleTable& MiddleWare::getModuleTable()
-{
-    return this->moduleTable;
-}
-
 void MiddleWare::handleRPCModuleNotFoundError(std::shared_ptr<DataPackage> rpcRequestPackage)
 {
     const RemoteFunctionRequest& rpcRequest = rpcRequestPackage->control_val().remote_function_request();
@@ -1259,4 +1278,24 @@ void MiddleWare::handleRPCModuleNotFoundError(std::shared_ptr<DataPackage> rpcRe
     ctrlPackage->set_runtime(rpcRequestPackage->control_val().runtime());
 
     forwardControlPackageToTargetRuntime(response);
+}
+
+std::map<std::string, std::string> MiddleWare::getAllRunningModulesOfAllRuntimes()
+{
+    return this->moduleTable.getModuleToClassMap();
+}
+
+bool MiddleWare::addLooseDirectSubscription(claidservice::LooseDirectChannelSubscription subscription)
+{
+    if(!this->moduleTable.isModulePublishingChannel(subscription.subscribed_module(), subscription.subscribed_channel()))
+    {
+        return false;
+    }
+    this->moduleTable.addLooseDirectSubscription(subscription);
+    return true;
+}
+
+void MiddleWare::removeLooseDirectSubscription(claidservice::LooseDirectChannelSubscription subscription)
+{
+    this->moduleTable.removeLooseDirectSubscription(subscription);
 }

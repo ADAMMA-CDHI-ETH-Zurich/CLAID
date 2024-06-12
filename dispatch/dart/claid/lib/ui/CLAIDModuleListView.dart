@@ -44,11 +44,13 @@ class _CLAIDModuleListViewState extends State<CLAIDModuleListView>
   {
     super.initState();
 
+
+    print("CLAIDModuleListView InitState");
+
     _deviceViews.addAll(this.widget.runningModules.entries.map((entry) {
       return CLAIDModuleViewToClassMap().getView(entry.key, entry.value, this.widget.remoteFunctionHandler);
     }));
 
-    print("CLAIDDeviceView InitState");
     claidModuleList = CLAIDModuleList(modules: _deviceViews, onPressed: (val){
       print("OnPressed ${val}");
       pageController.jumpToPage(val + 1);

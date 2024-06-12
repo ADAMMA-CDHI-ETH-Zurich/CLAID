@@ -32,6 +32,7 @@ class ModuleManager {
   final _chanInstances = <String, dynamic>{}; // chanId => instance
 
   final _receiverMap = <String, ReceiverFunc>{}; // channelId -> function
+  final _entityDataReceiverMap = <String, ReceiverFunc>{}; // DirectLooseSubscription entity -> function
   final _typeMapper = TypeMapping();
   StreamSubscription<DataPackage>? _inputSub;
   StreamController<DataPackage>? _outputCtrl;
@@ -273,6 +274,11 @@ class ModuleManager {
             _handleRemoteFunctionResponse(package);
             break;
         }
+        case CtrlType.CTRL_DIRECT_SUBSCRIPTION_DATA:
+        {
+          _handleDirectSubscriptionData(package);
+          break;
+        }
         default:
         {
           break;
@@ -338,6 +344,31 @@ class ModuleManager {
   {
       this._remoteFunctionHandler.handleResponse(remoteFunctionResponse);
   }
+
+  bool registerDataReceiverEntity(String entityName, ReceiverFunc dataReceiverFunc)
+  {
+    if(_entityDataReceiverMap.containsKey(entityName))
+    {
+      return false;
+    }
+
+    _entityDataReceiverMap[entityName] = dataReceiverFunc;
+
+    return true;
+  }
+
+  void _handleDirectSubscriptionData(DataPackage package)
+  {
+    String entityName = package.controlVal.looseDirectSubscription.subscriberEntity;
+    if(!_entityDataReceiverMap.containsKey(entityName))
+    {
+      Logger.logError("Unable to forward data of direct data subscription. Entity \"$entityName\" is not registered as data receiver.");
+      return;
+    }
+
+    _entityDataReceiverMap[entityName]!(package);
+  }
+
 
   RemoteFunctionHandler getRemoteFunctionHandler() => this._remoteFunctionHandler;
 }

@@ -240,7 +240,7 @@ bool ModuleTable::ready() const {
     return true;
 }
 
-const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt) const {
+const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt, bool ignorePayload /*= false*/) const {
 
     shared_lock<shared_mutex> lock(const_cast<shared_mutex&>(chanMapMutex));
 
@@ -256,6 +256,10 @@ const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt) const {
         return nullptr;
     }
 
+    if(ignorePayload)
+    {
+        return entry;
+    }
     if (entry->getPayloadType() != pkt.payload().message_type()) {
         Logger::logError("Invalid package, payload type mismatch! Expected \"%s\" but got \"%s\"", entry->getPayloadType().c_str(), pkt.payload().message_type().c_str());
         return nullptr;
@@ -265,7 +269,7 @@ const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt) const {
     return entry;
 }
 
-void ModuleTable::addOutputPackets(const claidservice::DataPackage pkt,
+void ModuleTable::forwardPackageToAllSubscribers(const claidservice::DataPackage& pkt,
                           const ChannelEntry* chanEntry,
                           SharedQueue<claidservice::DataPackage>& queue) const {
 
@@ -304,6 +308,42 @@ void ModuleTable::addOutputPackets(const claidservice::DataPackage pkt,
             }            
         }
     }
+}
+
+// The DataPackage pkt was posted to a Channel by a Module.
+// We forward the pkt to all non-module entities which have subscribed to all data posted to the particular
+// Module on that channel. This is different from regular channel subscriptions.
+// In regular subscriptions, data is forwarded to all subscribers to a channel, no matter what Module posted the data.
+// In loose direct subscriptions, data is forwarded directly to separate non-module subscribers to a channel, but only if the data 
+// was posted by the Module that the non-module subscriber explicitly subscribed to.
+// This typically is used for UI visualizations, allowing UI widgets to subscribe to data posted by a certain Module.
+// For example, check out CLAIDModuleView of FlutterCLAID.
+void ModuleTable::forwardPackageOfModuleToAllLooseDirectSubscribers(
+        const claidservice::DataPackage& pkt, SharedQueue<claidservice::DataPackage>& queue) const
+{
+    //     std::map<std::string, std::map<Runtime, std::vector<claidservice::LooseChannelSubscription>>> looseDirectChannelSubscriptions;
+    const std::string& channelName = pkt.channel();
+    auto it = this->looseDirectChannelSubscriptions.find(channelName);
+
+    if(it != this->looseDirectChannelSubscriptions.end())
+    {
+        for(const auto& runtimeSubscribers : it->second)
+        {
+            for(const claidservice::LooseDirectChannelSubscription& subscription : runtimeSubscribers.second)
+            {
+                if(pkt.source_module() == subscription.subscribed_module())
+                {
+                    std::shared_ptr<DataPackage> newPackage = std::make_shared<DataPackage>(pkt);
+                    ControlPackage* controlVal = newPackage->mutable_control_val();
+                    controlVal->set_ctrl_type(CtrlType::CTRL_DIRECT_SUBSCRIPTION_DATA);
+                    (*controlVal->mutable_loose_direct_subscription()) = subscription;
+                    controlVal->set_runtime(subscription.subscriber_runtime());
+                    queue.push_back(newPackage);
+                }
+            }
+        }
+    }
+
 }
 
 void ModuleTable::augmentFieldValues(claidservice::DataPackage& pkt) const {
@@ -489,4 +529,74 @@ bool ModuleTable::getTypeOfModuleWithId(const std::string& moduleId, std::string
 const std::map<std::string, std::string>& ModuleTable::getModuleToClassMap()
 {
     return this->moduleToClassMap;
+}
+
+
+void ModuleTable::addLooseDirectSubscription(claidservice::LooseDirectChannelSubscription& subscription)
+{
+    unique_lock<shared_mutex> lock(chanMapMutex);
+    const std::string& channel = subscription.subscribed_channel();
+    const claidservice::Runtime& runtime = subscription.subscriber_runtime();
+
+    this->looseDirectChannelSubscriptions[channel][runtime].push_back(subscription);
+}
+
+void ModuleTable::removeLooseDirectSubscription(claidservice::LooseDirectChannelSubscription& subscription)
+{
+    unique_lock<shared_mutex> lock(chanMapMutex);
+    const std::string& channel = subscription.subscribed_channel();
+    const claidservice::Runtime& runtime = subscription.subscriber_runtime();
+
+    std::vector<claidservice::LooseDirectChannelSubscription>& subscriptions = this->looseDirectChannelSubscriptions[channel][runtime];
+
+    std::vector<claidservice::LooseDirectChannelSubscription> subscriptionsToKeep;
+
+    for(const claidservice::LooseDirectChannelSubscription& existingSubscription : subscriptions)
+    {
+        // Runtime subscriber_runtime = 1; 
+        // string subscriber_entity = 2;
+        // string subscribed_module = 3;
+        // string subscribed_channel = 4; 
+        // Check if the subscription in the vector is not equal to the subscription to remove.
+        // If it is not equal, keep it by pushing it into the "subscriptionsToKeep" vector.
+        if(!(
+            existingSubscription.subscriber_runtime() == subscription.subscriber_runtime() &&
+            existingSubscription.subscriber_entity() == subscription.subscriber_entity() &&
+            existingSubscription.subscribed_module() == subscription.subscribed_module() && 
+            existingSubscription.subscribed_channel() == subscription.subscribed_channel()
+        ))
+        {
+            subscriptionsToKeep.push_back(existingSubscription);
+        }
+    }
+
+    subscriptions = subscriptionsToKeep;
+}
+
+void ModuleTable::removeAllLooseDirectSubscriptionsOfRuntime(claidservice::Runtime runtime)
+{
+    unique_lock<shared_mutex> lock(chanMapMutex);
+    // For each channel, check if the runtime has any direct subscribers.
+    // If so, erase the entry from the map.
+    for(auto& entry : this->looseDirectChannelSubscriptions)
+    {
+        std::map<Runtime, 
+            std::vector<LooseDirectChannelSubscription>>& channelRuntimeSubscriptions = entry.second;
+        
+        auto itRuntime = channelRuntimeSubscriptions.find(runtime);
+        if(itRuntime != channelRuntimeSubscriptions.end())
+        {
+            channelRuntimeSubscriptions.erase(itRuntime);
+        }
+
+    }
+}
+
+bool ModuleTable::isModulePublishingChannel(const std::string& moduleId, const std::string& channel)
+{
+    DataPackage package;
+    package.set_source_module(moduleId);
+    package.set_channel(channel);
+
+    return isValidChannel(package, true) != nullptr;
 }

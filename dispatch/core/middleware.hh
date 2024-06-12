@@ -45,6 +45,8 @@
 #include "dispatch/core/EventTracker/EventTracker.hh"
 #include "dispatch/core/Logger/LogSinkConfiguration.hh"
 
+#include "dispatch/core/RemoteFunction/RemoteFunctionRunnableHandler.hh"
+
 using claidservice::ConfigUploadPayload;
 
 namespace claid
@@ -87,10 +89,13 @@ namespace claid
             void disableDesignerMode();
 
             std::shared_ptr<EventTracker> getEventTracker();
-            ModuleTable& getModuleTable();
 
             virtual ~MiddleWare();
 
+            // RPCs
+            std::map<std::string, std::string> getAllRunningModulesOfAllRuntimes();
+            bool addLooseDirectSubscription(claidservice::LooseDirectChannelSubscription subscription);
+            void removeLooseDirectSubscription(claidservice::LooseDirectChannelSubscription subscription); 
 
         private:
 
@@ -151,6 +156,8 @@ namespace claid
             std::set<Runtime> runtimesThatSubscribedToLogSinkStream;
 
             std::unique_ptr<std::thread> controlPackageHandlerThread = nullptr; 
+
+            RemoteFunctionRunnableHandler remoteFunctionRunnableHandler;
 
             // Thread needed to load a new config if a message CTRL_UPLOAD_CONFIG_AND_DATA is received.
             // Loading a new config blocks the thread that calls loadNewConfig until the new config is loaded successfully.

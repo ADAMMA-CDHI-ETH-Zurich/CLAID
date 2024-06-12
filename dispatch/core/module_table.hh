@@ -117,11 +117,14 @@ class ModuleTable {
     // Verifies that a given packet uses a previously verified channel and that the type
     // of the data is correct.
     // It returns the list modules that need to receive the given package.
-    const ChannelEntry* isValidChannel(const claidservice::DataPackage& pkt) const;
+    const ChannelEntry* isValidChannel(const claidservice::DataPackage& pkt, bool ignorePayload = false) const;
 
-    void addOutputPackets(const claidservice::DataPackage pkt,
+    void forwardPackageToAllSubscribers(const claidservice::DataPackage& pkt,
                           const ChannelEntry* chanEntry,
                           SharedQueue<claidservice::DataPackage>& queue) const;
+
+    void forwardPackageOfModuleToAllLooseDirectSubscribers(
+        const claidservice::DataPackage& pkt, SharedQueue<claidservice::DataPackage>& queue) const;
 
     void addRuntimeIfNotExists(const claidservice::Runtime& runtime);
 
@@ -149,6 +152,12 @@ class ModuleTable {
     bool getTypeOfModuleWithId(const std::string& moduleId, std::string& moduleType);
 
     const std::map<std::string, std::string>& getModuleToClassMap();
+
+    void addLooseDirectSubscription(claidservice::LooseDirectChannelSubscription& subscription);
+    void removeLooseDirectSubscription(claidservice::LooseDirectChannelSubscription& subscription);
+    void removeAllLooseDirectSubscriptionsOfRuntime(claidservice::Runtime runtime);
+
+    bool isModulePublishingChannel(const std::string& moduleId, const std::string& channel);
 
   private:
     void augmentFieldValues(claidservice::DataPackage& pkt) const;
@@ -211,6 +220,13 @@ class ModuleTable {
     std::map<std::string, ChannelEntry> chanMap;
 
     std::map<std::string, claidservice::ModuleAnnotation> moduleAnnotations;
+
+    // Allows non-module entities to (temporarily) subscribe to Channels of a certain Module.
+    // Only data posted by that Module on that Channel is forwarded, not all data on the channel.
+    // This is different from normal subscriptions, where data is always forwarded to all subscribers, no matter who posted the data.
+    std::map<std::string, 
+      std::map<claidservice::Runtime, 
+        std::vector<claidservice::LooseDirectChannelSubscription>>> looseDirectChannelSubscriptions;
 
   friend class ServiceImpl;
 };

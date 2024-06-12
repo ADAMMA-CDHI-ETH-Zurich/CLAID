@@ -27,11 +27,9 @@ namespace claid {
 ModuleManager::ModuleManager(DispatcherClient& dispatcher,
     SharedQueue<DataPackage>& fromModuleDispatcherQueue,
     SharedQueue<DataPackage>& toModuleDispatcherQueue,
-    ModuleTable& moduleTable,
     std::shared_ptr<EventTracker> eventTracker) :   dispatcher(dispatcher), 
                                                     fromModuleDispatcherQueue(fromModuleDispatcherQueue), 
                                                     toModuleDispatcherQueue(toModuleDispatcherQueue),
-                                                    moduleTable(moduleTable),
                                                     eventTracker(eventTracker),
                                                     subscriberPublisher(toModuleDispatcherQueue),
                                                     remoteFunctionHandler(toModuleDispatcherQueue),
@@ -39,9 +37,7 @@ ModuleManager::ModuleManager(DispatcherClient& dispatcher,
 {
     Logger::logInfo("ModuleManager constructor event tracker %lu", eventTracker.get());
 
-    remoteFunctionRunnableHandler
-        .registerRunnable(
-            "get_all_running_modules_of_all_runtimes", &ModuleManager::getAllRunningModulesOfAllRuntimes, this);
+    
 }
 
 ModuleManager::~ModuleManager()
@@ -522,11 +518,6 @@ void ModuleManager::restart()
     void ModuleManager::handleRemoteFunctionResponse(std::shared_ptr<DataPackage> remoteFunctionResponse)
     {
         this->remoteFunctionHandler.handleResponse(remoteFunctionResponse);
-    }
-
-    std::map<std::string, std::string> ModuleManager::getAllRunningModulesOfAllRuntimes()
-    {
-        return this->moduleTable.getModuleToClassMap();
     }
 
 }

@@ -115,7 +115,7 @@ class CLAID
   {
     RemoteFunction<Map<String, String>>? mappedFunction = 
           getRemoteFunctionHandler().mapRuntimeFunction<Map<String, String>>(
-                Runtime.RUNTIME_CPP, "get_all_running_modules_of_all_runtimes",
+                Runtime.MIDDLEWARE_CORE, "get_all_running_modules_of_all_runtimes",
                 Map<String, String>(), []);
 
     return (mappedFunction!.execute([]))!;

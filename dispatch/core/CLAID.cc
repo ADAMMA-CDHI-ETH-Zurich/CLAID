@@ -113,7 +113,7 @@ namespace claid {
 
         moduleDispatcher = make_unique<DispatcherClient>(socketPath, fromModuleDispatcherQueue, toModuleDispatcherQueue, registeredModuleClasses, moduleAnnotations);
         moduleManager = make_unique<ModuleManager>(
-                *moduleDispatcher, fromModuleDispatcherQueue, toModuleDispatcherQueue, middleware->getModuleTable(), middleware->getEventTracker());
+                *moduleDispatcher, fromModuleDispatcherQueue, toModuleDispatcherQueue, middleware->getEventTracker());
         Logger::logInfo("Attach cpp runtime 4");
 
         absl::Status status = moduleManager->start();

@@ -290,6 +290,24 @@ namespace claid {
             );
         }
 
+        // // void
+        // template<typename T>
+        // typename std::enable_if<std::is_same<void, T>::value, Mutator<T>>::type
+        // static getMutator()
+        // {
+        //     return Mutator<T>(
+        //         makeMessage<google::protobuf::Empty>(),
+        //         [](DataPackage& packet, const T& map) 
+        //         { 
+                    
+        //         },
+        //         [](const DataPackage& packet, T& returnValue) 
+        //         { 
+                    
+        //         }
+        //     );
+        // }
+
         template<typename T>
         typename std::enable_if<std::is_base_of<google::protobuf::Message, T>::value, Mutator<T>>::type
         static getMutator()

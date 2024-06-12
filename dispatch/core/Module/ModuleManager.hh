@@ -53,7 +53,6 @@ namespace claid {
 
             SharedQueue<DataPackage>& fromModuleDispatcherQueue;
             SharedQueue<DataPackage>& toModuleDispatcherQueue;
-            ModuleTable& moduleTable; 
 
             std::shared_ptr<EventTracker> eventTracker;
 
@@ -96,13 +95,11 @@ namespace claid {
 
             void restart();
 
-            std::map<std::string, std::string> getAllRunningModulesOfAllRuntimes();
 
         public:
             ModuleManager(DispatcherClient& dispatcher,
                 SharedQueue<DataPackage>& fromModuleDispatcherQueue,
                 SharedQueue<DataPackage>& toModuleDispatcherQueue,
-                ModuleTable& moduleTable,
                 std::shared_ptr<EventTracker> eventTracker);
 
             ~ModuleManager();

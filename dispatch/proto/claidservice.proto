@@ -87,7 +87,7 @@ enum CtrlType {
   CTRL_DEACTIVATE_NETWORK_CONNECTIONS                 = 28; // Can be used to deactivate all RemoteDispatcherClient and Servers, i.e., cutting all external connections.
   CTRL_REMOTE_FUNCTION_REQUEST                        = 29; // Can be used to execute a remote function (RPC call, e.g., a registered function of a Module).
   CTRL_REMOTE_FUNCTION_RESPONSE                       = 30; // Response to a remote function request (upon successful or unsuccessful execution of a remote function), if function has return type, this type might be contained in payload of DataPackage
-
+  CTRL_DIRECT_SUBSCRIPTION_DATA                 = 31; // To forward data via a loose direct subscription.
   //CTRL_ADD_MODULE                         = 11; // Can be used to add a new Module at runtime (requires Module name, properties, channels). This package will be forwarded by the LocalRouter to the Middleware that can handle this Module.
   //CTRL_REMOVE_MODULE                      = 12; // Can be used to remove a Module at runtime.
   //CTRL_ADD_MODULE_SUCCESS                 = 13; // Sent as response to CTRL_ADD_MODULE the Module was added successfully.
@@ -115,6 +115,7 @@ message ControlPackage {
   PowerProfile power_profile                       = 10; // CTRL_ADJUST_POWER_PROFILE, can be used to tell Modules to enter power saving mode.
   RemoteFunctionRequest remote_function_request    = 11; // CTRL_REMOTE_FUNCTION_REQUEST
   RemoteFunctionReturn remote_function_return      = 12; // CTRL_REMOTE_FUNCTION_RESPONSE
+  LooseDirectChannelSubscription loose_direct_subscription = 13; // CTRL_DIRECT_SUBSCRIPTION_DATA
 }
 
 message AccumulatedStatus {
@@ -294,10 +295,11 @@ message ModuleAnnotation
 
 enum Runtime {
   RUNTIME_UNSPECIFIED = 0;
-  RUNTIME_CPP = 1;
-  RUNTIME_DART = 2;
-  RUNTIME_JAVA = 3;
-  RUNTIME_PYTHON = 4;
+  MIDDLEWARE_CORE = 1;
+  RUNTIME_CPP = 2;
+  RUNTIME_DART = 3;
+  RUNTIME_JAVA = 4;
+  RUNTIME_PYTHON = 5;
 }
 
 enum LogMessageSeverityLevel
@@ -476,4 +478,18 @@ message RemoteFunctionReturn
   RemoteFunctionStatus execution_status = 1;
   RemoteFunctionIdentifier remote_function_identifier = 2;
   string remote_future_identifier = 3; // Unique identifier for the future which is waiting for the response of the function.
+}
+
+// Can be used for non-Module entities to subscribe directly to the data posted to a channel by a certain Module.
+// In regular subscriptions, data is forwarded to all subscribers to a channel, no matter what Module posted the data.
+// In loose direct subscriptions, data is forwarded directly to separate non-module subscribers to a channel, but only if the data 
+// was posted by the Module that the non-module subscriber explicitly subscribed to.
+// This typically is used for UI visualizations, allowing UI widgets to subscribe to data posted by a certain Module.
+// For example, check out CLAIDModuleView of FlutterCLAID.
+message LooseDirectChannelSubscription
+{
+  Runtime subscriber_runtime = 1; 
+  string subscriber_entity = 2;
+  string subscribed_module = 3;
+  string subscribed_channel = 4; 
 }

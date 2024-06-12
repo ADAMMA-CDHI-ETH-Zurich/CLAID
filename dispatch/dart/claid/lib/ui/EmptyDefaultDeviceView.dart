@@ -7,7 +7,7 @@ import 'CLAIDModuleView.dart';
 
 
 
-class EmptyDefaultDeviceView extends CLAIDModuleView {
+class EmptyDefaultDeviceView extends CLAIDModuleView  {
 
   String imagePath = "assets/images/questionmark.png";
 
@@ -56,7 +56,7 @@ class EmptyDefaultDeviceView extends CLAIDModuleView {
 }
 
 
-class _EmptyDefaultDeviceViewState extends State<EmptyDefaultDeviceView>
+class _EmptyDefaultDeviceViewState extends State<EmptyDefaultDeviceView> with AutomaticKeepAliveClientMixin
 {
 
   bool loaded = false;
@@ -83,6 +83,7 @@ class _EmptyDefaultDeviceViewState extends State<EmptyDefaultDeviceView>
   }
 
 
+  bool get wantKeepAlive => true;
 
 
 }

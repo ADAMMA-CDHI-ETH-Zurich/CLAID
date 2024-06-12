@@ -17,7 +17,7 @@ class TestStreamView extends CLAIDModuleView {
       super.remoteFunctionHandler, {super.key});
 
   @override
-  State<TestStreamView> createState() => _EmptyDefaultDeviceViewState();
+  State<TestStreamView> createState() => _TestStreamViewState();
 
   @override
   Widget getSubCaptionWidget()
@@ -56,9 +56,14 @@ class TestStreamView extends CLAIDModuleView {
 }
 
 
-class _EmptyDefaultDeviceViewState extends State<TestStreamView>
+class _TestStreamViewState extends State<TestStreamView> with AutomaticKeepAliveClientMixin
 {
 
+  @override
+  void initState() {
+    super.initState();
+    print("TestStreamView init state");
+  }
   bool loaded = false;
 
   // This widget is the root of your application.
@@ -83,6 +88,7 @@ class _EmptyDefaultDeviceViewState extends State<TestStreamView>
         )
     );
   }
+  bool get wantKeepAlive => true;
 
 
 

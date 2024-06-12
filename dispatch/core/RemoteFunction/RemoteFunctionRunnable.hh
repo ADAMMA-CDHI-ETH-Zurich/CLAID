@@ -129,11 +129,19 @@ class RemoteFunctionRunnable : public AbstractRemoteFunctionRunnable
         
 
         template<typename U>
-        static bool isDataTypeSupported()
+        static typename std::enable_if<!std::is_same<U, void>::value, bool>::type
+        isDataTypeSupported()
         {
-            // Will file at compile time if U is not supported
+            // Will fail at compile time if U is not supported
             Mutator<U> mutator = TypeMapping::getMutator<U>();
             
+            return true;
+        }
+
+        template<typename U>
+        static typename std::enable_if<std::is_same<U, void>::value, bool>::type
+        isDataTypeSupported()
+        {
             return true;
         }
 
@@ -180,7 +188,7 @@ class RemoteFunctionRunnable : public AbstractRemoteFunctionRunnable
         }
 
         std::shared_ptr<DataPackage> 
-            makeRPCResponsePackage(RemoteFunctionRunnableResult<Return> result, std::shared_ptr<DataPackage> rpcRequest)
+            makeRPCResponsePackage(RemoteFunctionRunnableResult<Return>& result, std::shared_ptr<DataPackage> rpcRequest)
         {
             const RemoteFunctionRequest& executionRequest = rpcRequest->control_val().remote_function_request();
 
@@ -197,15 +205,29 @@ class RemoteFunctionRunnable : public AbstractRemoteFunctionRunnable
             // Send back to the runtime where the rpcRequest came from.
             ctrlPackage.set_runtime(rpcRequest->control_val().runtime());
 
-
-            std::shared_ptr<Return> returnValue = result.getReturnValue();
-            if(returnValue != nullptr)
-            {
-                Mutator<Return> mutator = TypeMapping::getMutator<Return>();
-                mutator.setPackagePayload(*responsePackage, *returnValue);
-            }
+            setReturnPackagePayload<Return>(responsePackage, result);
+            
 
             return responsePackage;
+        }
+
+        template<typename U>
+        typename std::enable_if<!std::is_same<U, void>::value>::type
+        setReturnPackagePayload(std::shared_ptr<DataPackage> package, RemoteFunctionRunnableResult<U>& result)
+        {
+            std::shared_ptr<U> returnValue = result.getReturnValue();
+            if(returnValue != nullptr)
+            {
+                Mutator<U> mutator = TypeMapping::getMutator<U>();
+                mutator.setPackagePayload(*package, *returnValue);
+            }
+        }
+
+        template<typename U>
+        typename std::enable_if<std::is_same<U, void>::value>::type
+        setReturnPackagePayload(std::shared_ptr<DataPackage> package, RemoteFunctionRunnableResult<U>& result)
+        {
+            
         }
 };
 
