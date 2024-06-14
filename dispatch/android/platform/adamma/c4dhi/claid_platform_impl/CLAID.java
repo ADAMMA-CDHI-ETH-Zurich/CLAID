@@ -22,6 +22,8 @@
 package adamma.c4dhi.claid_platform_impl;
 
 import adamma.c4dhi.claid.JavaCLAIDBase;
+import adamma.c4dhi.claid.Module.Module;
+
 import adamma.c4dhi.claid.Module.ModuleFactory;
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid_android.CLAIDServices.ServiceManager;
@@ -86,6 +88,8 @@ import adamma.c4dhi.claid_android.UserFeedback.NotificationModule;
 import adamma.c4dhi.claid_android.UserFeedback.TextToSpeechModule;
 import adamma.c4dhi.claid_android.BatteryManagement.BatterySaverModule;
 import adamma.c4dhi.claid_android.Dialog.Dialog;
+import adamma.c4dhi.claid_android.Package.CLAIDPackage;
+import adamma.c4dhi.claid_android.Package.CLAIDPackageLoader;
 
 import android.app.ActivityManager;
 import android.content.ComponentName;
@@ -108,18 +112,13 @@ public class CLAID extends JavaCLAIDBase
     static
     {
         init("claid_capi_android");
+       // CLAIDPackageLoader.loadPackages();
     }
 
     private static Context context;
     private static AsyncRunnablesHelperThread asyncRunnablesHelperThread;
     
-    // ModuleFactory that is used when CLAID is started in an Android Service (e.g., the MaximumPermissionsPerpetualService).
-    // Since the Service can crash and be restarted, the ModuleFactory needs to survive a complete restart.
-    // For this, the ModuleFactory cannot be populated from an Activity, as the Activity will not be restarted automatically after the 
-    // service is restarted. The PersistentModuleFactory therefore has to be populated from the Application's onCreate function. 
-    // The PersistentModuleFactory can only be created by passing an instance of Application to the constructor, forcing the user 
-    // to register Modules only when a custom Application class is available.
-    private static PersistentModuleFactory persistentModuleFactory = null;
+    private static ModuleFactory claidGlobalModuleFactory = new ModuleFactory();
     
     private static PowerManager.WakeLock claidWakeLock;
 
@@ -127,12 +126,16 @@ public class CLAID extends JavaCLAIDBase
     
     private static Thread claidThread = null;
 
+    public static boolean registerModule(Class<? extends Module> clz)
+    {
+        return CLAID.claidGlobalModuleFactory.registerModule(clz);
+    }
 
     // Starts the middleware and attaches to it.
     // Volatile, as CLAID might only run as long as the App is in the foreground.
     public static boolean start(Context context, final String socketPath, 
         final String configFilePath, final String hostId, final String userId, 
-        final String deviceId, ModuleFactory moduleFactory, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
+        final String deviceId, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
     {
         CLAID.context = context;
         
@@ -163,7 +166,7 @@ public class CLAID extends JavaCLAIDBase
         }
 
         boolean result = startInternalWithEventTracker(socketPath, adjustedConfigPath, 
-            hostId, userId, deviceId, moduleFactory, CLAID.getMediaDirPath(context).toString());
+            hostId, userId, deviceId, CLAID.claidGlobalModuleFactory, CLAID.getMediaDirPath(context).toString());
 
         if(result) 
         {
@@ -180,9 +183,9 @@ public class CLAID extends JavaCLAIDBase
     // Volatile, as CLAID might only run as long as the App is in the foreground.
     public static boolean start(Context context, final String socketPath, 
         final String configFilePath, final String hostId, final String userId, 
-        final String deviceId, ModuleFactory moduleFactory)
+        final String deviceId)
     {
-        return start(context, socketPath, configFilePath, hostId, userId, deviceId, moduleFactory, null);
+        return start(context, socketPath, configFilePath, hostId, userId, deviceId, null);
     }
 
 
@@ -191,7 +194,7 @@ public class CLAID extends JavaCLAIDBase
     // Volatile, as CLAID might only run as long as the App is in the foreground.
     public static boolean start(Context context, final String configFilePath, 
         final String hostId, final String userId, final String deviceId, 
-        ModuleFactory moduleFactory, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
+        CLAIDSpecialPermissionsConfig specialPermissionsConfig)
     {
         CLAID.context = context;
 
@@ -215,29 +218,25 @@ public class CLAID extends JavaCLAIDBase
 
         String socketPath = "unix://" + appDataDirPath + "/claid_local.grpc";
 
-        return start(context, socketPath, configFilePath, hostId, userId, deviceId, moduleFactory, specialPermissionsConfig);
+        return start(context, socketPath, configFilePath, hostId, userId, deviceId, specialPermissionsConfig);
     }
 
     public static boolean startInPersistentService(Context context, final String configFilePath, 
         final String hostId, final String userId, final String deviceId, 
-        PersistentModuleFactory moduleFactory, CLAIDSpecialPermissionsConfig specialPermissionsConfig, CLAIDPersistanceConfig persistanceConfig)
+        CLAIDSpecialPermissionsConfig specialPermissionsConfig, CLAIDPersistanceConfig persistanceConfig)
     {
         String appDataDirPath = getAppDataDirectory(context);
 
         String socketPath = "unix://" + appDataDirPath + "/claid_local.grpc";
 
-        return startInPersistentService(context, socketPath, configFilePath, hostId, userId, deviceId, moduleFactory, specialPermissionsConfig, persistanceConfig);
+        return startInPersistentService(context, socketPath, configFilePath, hostId, userId, deviceId, specialPermissionsConfig, persistanceConfig);
     }
 
     public static boolean startInPersistentService(Context context, final String socketPath, 
         final String configFilePath, final String hostId, final String userId, 
-        final String deviceId, PersistentModuleFactory moduleFactory, CLAIDSpecialPermissionsConfig specialPermissionsConfig, CLAIDPersistanceConfig enduranceConfig)
+        final String deviceId, CLAIDSpecialPermissionsConfig specialPermissionsConfig, CLAIDPersistanceConfig enduranceConfig)
     {
-        if(moduleFactory != CLAID.persistentModuleFactory)
-        {
-            Logger.logError("Failed to start CLAID in persistent service. The provided PersistentModuleFactory has not been created with CLAID.getPersistentModuleFactory()." +
-            "Use CLAID.getPersistentModuleFactory() to retrieve a PersistentModuleFactory, and then pass ist to CLAID.startInPersistentService(...), after you have registered your Module classes.");
-        }
+
 
         if(ServiceManager.isServiceRunning())
         {
@@ -289,39 +288,12 @@ public class CLAID extends JavaCLAIDBase
         factory.registerModule(BatterySaverModule.class);
         factory.registerModule(LocationCollector.class);
         factory.registerModule(MicrophoneCollector.class);
-    factory.registerModule(AlarmBatteryCollector.class);
+        factory.registerModule(AlarmBatteryCollector.class);
 
         return factory;
     }
 
-    public static<T extends Application> PersistentModuleFactory getPersistentModuleFactory(T application)
-    {
-        if(CLAID.persistentModuleFactory != null)
-        {
-            if(CLAID.persistentModuleFactory.getApplication() != application)
-            {
-                Logger.logError("Failed to getPersistentModuleFactory. A PersistentModuleFactory was already registered for CLAID but using another instance of application.\n" + 
-                            "The original application instance was of class \"" + CLAID.persistentModuleFactory.getApplication().getClass().getName() + "\", instance " + CLAID.persistentModuleFactory.getApplication() + "." +
-                            "Afterward, getPersistentModuleFactory was called again with an application of class \"" + application.getClass().getName() + "\", instance " + application + ".\n" + 
-                            "Make sure to only retrieve the PersistentModuleFactory once, or use the exact same Application Object in both cases.");
-                System.exit(0);
-            }
-            return CLAID.persistentModuleFactory;
-        }
-
-        try
-        {
-            CLAID.persistentModuleFactory = new PersistentModuleFactory(application);
-        }
-        catch(IllegalArgumentException e)
-        {
-            Logger.logError(e.getMessage());
-            e.printStackTrace();
-            System.exit(0);
-        }
-
-        return CLAID.persistentModuleFactory;
-    }
+    
 
     // Attaches to the Middleware, but does not start it.
     // Assumes that the middleware is started in another language (e.g., C++ or Dart).
@@ -382,15 +354,7 @@ public class CLAID extends JavaCLAIDBase
     public static void onServiceStarted(CLAIDService service, final String socketPath, 
         final String configFilePath, final String hostId, final String userId, final String deviceId)
     {
-        if(CLAID.persistentModuleFactory == null)
-        {
-            Logger.logError("Failed to run CLAID in CLAIDService. PersistentModuleFactory is null, so CLAID.getPersistentModuleFactory() was not called before.\n" + 
-                            "In order to run CLAID in a Service, you need to call getPersistentModuleFactory() in your Application's (NOT Activity) onCreate function.\n" +
-                            "This is necessary to ensure that the PersistentModuleFactory is populated before the Service is started.");
-            System.exit(0);
-        }
-
-        if(!CLAID.start((Context) service, socketPath, configFilePath, hostId, userId, deviceId, CLAID.persistentModuleFactory))
+        if(!CLAID.start((Context) service, socketPath, configFilePath, hostId, userId, deviceId))
         {
             Logger.logError("Failed to start CLAID in CLAIDService. CLAID.start failed. Previous logs should indicate the reason.");
             System.exit(0);

@@ -35,13 +35,19 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.WindowManager;
 
+import java.io.IOException;
 import java.util.Calendar;
+import java.util.Enumeration;
 
 import adamma.c4dhi.claid.Module.ModuleFactory;
 import adamma.c4dhi.claid_android.Configuration.CLAIDPersistanceConfig;
 import adamma.c4dhi.claid_android.Configuration.CLAIDSpecialPermissionsConfig;
+import adamma.c4dhi.claid_android.Package.CLAIDPackageAnnotation;
+import adamma.c4dhi.claid_android.Package.CLAIDPackageLoader;
 import adamma.c4dhi.claid_platform_impl.CLAID;
 import adamma.c4dhi.claid_platform_impl.PersistentModuleFactory;
+import dalvik.system.DexFile;
+import dalvik.system.PathClassLoader;
 
 public class MainActivity extends Activity {
     PersistentModuleFactory factory;
@@ -52,10 +58,20 @@ public class MainActivity extends Activity {
         calendar.setTimeInMillis(System.currentTimeMillis()+ 5000);
         //noinspection ConstantConditions
 
+        CLAID.getAppDataDirectory(this);
+        CLAIDPackageLoader loader = new CLAIDPackageLoader();
+        loader.loadPackages();
+        try {
+            scan();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
 
-
-
-        factory = ((MyApplication) getApplication()).factory;
+/*        factory = ((MyApplication) getApplication()).factory;
         factory = (PersistentModuleFactory) CLAID.registerDefaultModulesToFactory((ModuleFactory) factory);
         factory.registerModule(RPCTestModule1.class);
         factory.registerModule(RPCTestModule2.class);
@@ -69,8 +85,33 @@ public class MainActivity extends Activity {
                 CLAIDSpecialPermissionsConfig.almightyCLAID(),
                 CLAIDPersistanceConfig.maximumPersistance());
 
-        CLAID.onStarted(() -> CLAID.enableKeepAppAwake(CLAID.getContext()));
+        CLAID.onStarted(() -> CLAID.enableKeepAppAwake(CLAID.getContext()));*/
 
 
+    }
+
+    void scan() throws IOException, ClassNotFoundException, NoSuchMethodException {
+        long timeBegin = System.currentTimeMillis();
+
+        PathClassLoader classLoader = (PathClassLoader) this.getClassLoader();
+        //PathClassLoader classLoader = (PathClassLoader) Thread.currentThread().getContextClassLoader();//This also works good
+        DexFile dexFile = new DexFile(this.getPackageCodePath());
+        Enumeration<String> classNames = dexFile.entries();
+        while (classNames.hasMoreElements()) {
+
+            String className = classNames.nextElement();
+            if(className.contains(".claid."))
+            {
+                Class<?> aClass = classLoader.loadClass(className);//tested on 魅蓝Note(M463C)_Android4.4.4 and Mi2s_Android5.1.1
+                if(aClass.isAnnotationPresent(CLAIDPackageAnnotation.class))
+                {
+                    System.out.println("Class " + className);
+
+                }
+            }
+        }
+
+        long timeEnd = System.currentTimeMillis();
+        long timeElapsed = timeEnd - timeBegin;
     }
 }

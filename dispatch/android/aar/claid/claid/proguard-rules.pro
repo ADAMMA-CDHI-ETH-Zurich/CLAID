@@ -19,3 +19,10 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-keep @interface adamma.c4dhi.claid_android.Package.CLAIDPackageAnnotation
+-keep @adamma.c4dhi.claid_android.Package.CLAIDPackageAnnotation class *
+
+# Keep the constructors of annotated classes
+-keepclassmembers class * {
+    @adamma.c4dhi.claid_android.Package.CLAIDPackageAnnotation <init>(...);
+}
