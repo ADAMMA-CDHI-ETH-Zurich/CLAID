@@ -97,7 +97,10 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       home: CLAIDView(title: 'My CLAID App',
         moduleFactory: moduleFactory,
-        claidLibraryPath: "/Users/planger/Development/CLAID/dispatch/dart/claid/blobs/libclaid_capi.dylib",),
+          configPath: "",
+          //claidLibraryPath: "/Users/planger/Development/CLAID/dispatch/dart/claid/blobs/libclaid_capi.dylib"
+          attachOnly: true,
+        ),
     );
   }
 }

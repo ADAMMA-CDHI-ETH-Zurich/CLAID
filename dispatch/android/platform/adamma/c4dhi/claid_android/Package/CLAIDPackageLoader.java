@@ -23,7 +23,7 @@ import dalvik.system.PathClassLoader;
 public class CLAIDPackageLoader 
 {
 
-    private List<String> supportedPackages = Arrays.asList(new String[]{"adamma.*", "*.claid.*"});
+    private List<String> supportedPackages = Arrays.asList(new String[]{"adamma.", ".claid."});
     private List<CLAIDPackage> loadedPackages = new ArrayList<>();
     private List<Class<? extends CLAIDPackage>> scannedPackages;
 
@@ -38,12 +38,28 @@ public class CLAIDPackageLoader
             scannedPackages = scanPackages(context);
         } catch (Exception e) {
             Logger.logFatal(e.getMessage());
+            return;
         } 
+
+        Logger.logInfo("Found " + scannedPackages.size() + " CLAID packages");
+        for(Class<? extends CLAIDPackage> packageClass : scannedPackages)
+        {
+            Logger.logInfo("Loading CLAID package " +  packageClass.getName());
+            try {
+                CLAIDPackage claidPackage = packageClass.getDeclaredConstructor().newInstance();
+                claidPackage.register();
+                this.loadedPackages.add(claidPackage);
+            } catch (Exception e) {
+                Logger.logFatal(e.getMessage());
+                return;
+            }
+        }
 
     }
 
    private List<Class<? extends CLAIDPackage>> scanPackages(Context context) throws IOException, ClassNotFoundException, NoSuchMethodException
    {
+        System.out.println("Scanning classes");
         List<Class<? extends CLAIDPackage>> foundPackages = new ArrayList<>();
         PathClassLoader classLoader = (PathClassLoader) context.getClassLoader();
         //PathClassLoader classLoader = (PathClassLoader) Thread.currentThread().getContextClassLoader();//This also works good
@@ -70,11 +86,13 @@ public class CLAIDPackageLoader
             Class<?> clz = classLoader.loadClass(className);
             if(clz.isAnnotationPresent(CLAIDPackageAnnotation.class))
             {
-                System.out.println("Class " + className);
+                System.out.println("Found class " + className);
                 foundPackages.add((Class<? extends CLAIDPackage>) clz);
+                Logger.logInfo("Found packages size: " + foundPackages);
+
             }
         }
-
+        Logger.logInfo("Found packages size: " + foundPackages);
         return foundPackages;
    }
 }

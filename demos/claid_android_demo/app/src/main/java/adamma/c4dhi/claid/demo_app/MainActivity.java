@@ -60,16 +60,8 @@ public class MainActivity extends Activity {
 
         CLAID.getAppDataDirectory(this);
         CLAIDPackageLoader loader = new CLAIDPackageLoader();
-        loader.loadPackages();
-        try {
-            scan();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
+        loader.loadPackages(getApplicationContext());
+
 
 /*        factory = ((MyApplication) getApplication()).factory;
         factory = (PersistentModuleFactory) CLAID.registerDefaultModulesToFactory((ModuleFactory) factory);

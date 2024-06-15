@@ -17,7 +17,7 @@ import 'CLAIDModuleViewToClassMap.dart';
 
 class CLAIDView extends StatefulWidget {
   const CLAIDView({super.key,
-    required this.title, required this.moduleFactory, this.attachOnly = false, this.claidLibraryPath = ""});
+    required this.title, required this.configPath, required this.moduleFactory, this.attachOnly = false, this.claidLibraryPath = ""});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -30,6 +30,7 @@ class CLAIDView extends StatefulWidget {
 
   final String title;
 
+  final String configPath;
   final ModuleFactory moduleFactory;
 
   final bool attachOnly;
@@ -111,7 +112,7 @@ class _CLAIDViewState extends State<CLAIDView>
     if(!this.widget.attachOnly)
     {
       await CLAID.start(socketPath,
-      "assets/claid_test.json", "test_host", "test_user", "test_id",
+      this.widget.configPath, "test_host", "test_user", "test_id",
         this.widget.moduleFactory, libraryPath: this.widget.claidLibraryPath    //CLAID.attachDartRuntime("unix://" + socketPath, moduleFactory);
       );
     }
