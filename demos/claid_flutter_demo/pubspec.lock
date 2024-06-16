@@ -311,6 +311,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
+  smart_inhaler:
+    dependency: "direct main"
+    description:
+      path: "../../../CLAIDPackageTemplate/src/flutter/my_package"
+      relative: true
+    source: path
+    version: "0.0.5"
   source_span:
     dependency: transitive
     description:

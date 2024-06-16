@@ -39,6 +39,9 @@ dependencies:
   claid:
     path: ../../dispatch/dart/claid/
 
+  smart_inhaler:
+    path: ../../../CLAIDPackageTemplate/src/flutter/my_package
+
   path_provider: ^2.1.1
 
 
