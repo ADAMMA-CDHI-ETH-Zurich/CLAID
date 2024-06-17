@@ -314,7 +314,7 @@ packages:
   smart_inhaler:
     dependency: "direct main"
     description:
-      path: "../../../CLAIDPackageTemplate/src/flutter/my_package"
+      path: "../../../CLAIDPackageTemplate/src/flutter/claid_package"
       relative: true
     source: path
     version: "0.0.5"

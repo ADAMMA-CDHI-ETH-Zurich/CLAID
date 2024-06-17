@@ -23,6 +23,8 @@
 import argparse
 
 from claid import CLAID
+from claid.claid_cli.create_package import create_package_prompt
+
 import platform
 def hello_world(args):
     print("Instantiating PyCLAID")
@@ -50,8 +52,7 @@ def device_info(args):
     print(f"Architecture: {architecture}")
     print(f"Additional Info: {additional_info}")
 
-def install(args):
-    print('Installing...')
+
 
 def main():
     parser = argparse.ArgumentParser(description='Command-line tool for claid')
@@ -62,7 +63,7 @@ def main():
     device_info_parser = subparsers.add_parser('device_info', help='Get device info (use this to report errors to the CLAID team).')
 
     # Create parser for the 'install' command
-    install_parser = subparsers.add_parser('install', help='Install something')
+    install_parser = subparsers.add_parser('create_package', help='Create a new CLAID package')
 
     args = parser.parse_args()
 
@@ -71,8 +72,8 @@ def main():
         hello_world(args)
     elif args.command == 'device_info':
         device_info(args)
-    elif args.command == 'install':
-        install(args)
+    elif args.command == 'create_package':
+        create_package_prompt(args)
     else:
         print('Unknown command')
 
