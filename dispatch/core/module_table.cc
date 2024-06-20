@@ -192,7 +192,7 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
             if(entry->getPayloadType() != "claidservice.CLAIDANY")
             {
                 return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid packet type for channel '",chanPkt.channel(), "' : ",
-                messageToString(chanPkt), "Payload type is ", entry->getPayloadType(), " but expected ", chanPkt.payload().message_type()));
+                "Payload type is ", entry->getPayloadType(), " but expected ", chanPkt.payload().message_type()));
             }
         }
 

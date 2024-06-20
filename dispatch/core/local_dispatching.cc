@@ -289,6 +289,7 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
         // Add the channels for this module
         Status status = moduleTable.setChannelTypes(moduleId, modChanIt.channel_packets());
         if (!status.ok()) {
+            Logger::logError("%s", status.error_message().c_str());
             return status;
         }
     }
