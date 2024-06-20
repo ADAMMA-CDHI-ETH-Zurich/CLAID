@@ -39,11 +39,12 @@ class CLAID
   static ModuleDispatcher? _dispatcher;
   static MiddleWareBindings? _middleWare;
   static ModuleManager? _moduleManager;
+  static ModuleFactory _moduleFactory = ModuleFactory();
 
 
   static Future<void> start(final String socketPath, 
     final String configFilePath, final String hostId, 
-    final String userId, final String deviceId, final ModuleFactory moduleFactory, {String libraryPath = ""}) async
+    final String userId, final String deviceId, {String libraryPath = ""}) async
   {
     // Creating the ModuleDispatcher loads the Middleware and starts the Claid core, as of now.
 
@@ -64,15 +65,15 @@ class CLAID
 
     }
 
-    return attachDartRuntime(socketPath, moduleFactory);
+    return attachDartRuntime(socketPath);
   }
 
-  static Future<void> attachDartRuntime(final String socketPath, final ModuleFactory moduleFactory) async
+  static Future<void> attachDartRuntime(final String socketPath) async
   {
     _dispatcher = ModuleDispatcher(socketPath);
 
 
-    final factories = moduleFactory.getFactories();
+    final factories = _moduleFactory.getFactories();
 
     _moduleManager = ModuleManager(_dispatcher!, factories);
     return _moduleManager!.start();
@@ -119,5 +120,10 @@ class CLAID
                 Map<String, String>(), []);
 
     return (mappedFunction!.execute([]))!;
+  }
+
+  static void registerModule<T extends Module>(String name, FactoryFunc factoryFunc) 
+  {
+    CLAID._moduleFactory.registerClass<T>(name, factoryFunc);
   }
 }

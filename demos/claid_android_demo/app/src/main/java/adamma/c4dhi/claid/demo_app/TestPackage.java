@@ -4,7 +4,7 @@ import adamma.c4dhi.claid_android.Package.CLAIDPackage;
 import adamma.c4dhi.claid_android.Package.CLAIDPackageAnnotation;
 
 @CLAIDPackageAnnotation(authors = {}, date = "", description = "", version = "")
-public class TestPackage implements CLAIDPackage
+public class TestPackage extends CLAIDPackage
 {
 
     @Override

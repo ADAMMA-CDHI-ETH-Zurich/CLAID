@@ -11,13 +11,16 @@ import 'package:path_provider/path_provider.dart';
 import 'CLAIDModuleListView.dart';
 import 'CLAIDModuleView.dart';
 import 'CLAIDModuleViewToClassMap.dart';
-
+import 'package:claid/package/CLAIDPackage.dart';
+import 'package:claid/package/CLAIDPackageLoader.dart';
 
 
 
 class CLAIDView extends StatefulWidget {
   const CLAIDView({super.key,
-    required this.title, required this.moduleFactory, this.attachOnly = false, this.claidLibraryPath = ""});
+    required this.title, required this.configPath, 
+    this.attachOnly = false, this.claidLibraryPath = "",
+    this.claidPackages });
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -30,10 +33,12 @@ class CLAIDView extends StatefulWidget {
 
   final String title;
 
-  final ModuleFactory moduleFactory;
+  final String configPath;
 
   final bool attachOnly;
   final String claidLibraryPath;
+
+  final List<CLAIDPackage>? claidPackages;
 
   @override
   State<CLAIDView> createState() => _CLAIDViewState();
@@ -63,7 +68,7 @@ class _CLAIDViewState extends State<CLAIDView>
 
     if(!_claidStarted)
     {
-      startCLAID();
+      startCLAID(this.widget.claidPackages);
       _claidStarted = true;
       return CircularProgressIndicator();
     }
@@ -92,8 +97,17 @@ class _CLAIDViewState extends State<CLAIDView>
 
   }
 
-  void startCLAID() async
+  void startCLAID(List<CLAIDPackage>? packages) async
   {
+    if(packages != null)
+    {
+      for(CLAIDPackage package in packages!)
+      {
+        CLAIDPackageLoader.loadPackage(package);
+      }
+    }
+
+
     Directory? appDocDir = await getApplicationDocumentsDirectory();
 
     // Construct the path to the Android/media directory
@@ -111,13 +125,13 @@ class _CLAIDViewState extends State<CLAIDView>
     if(!this.widget.attachOnly)
     {
       await CLAID.start(socketPath,
-      "assets/claid_test.json", "test_host", "test_user", "test_id",
-        this.widget.moduleFactory, libraryPath: this.widget.claidLibraryPath    //CLAID.attachDartRuntime("unix://" + socketPath, moduleFactory);
+      this.widget.configPath, "test_host", "test_user", "test_id",
+        libraryPath: this.widget.claidLibraryPath    //CLAID.attachDartRuntime("unix://" + socketPath, moduleFactory);
       );
     }
     else
     {
-      await CLAID.attachDartRuntime(socketPath, this.widget.moduleFactory);
+      await CLAID.attachDartRuntime(socketPath);
     }
 
     CLAID.getRunningModules().then((modules) => _createDeviceView(modules!));
