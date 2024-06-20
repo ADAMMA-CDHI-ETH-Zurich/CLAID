@@ -204,7 +204,7 @@ class Module(ABC):
             )
         )       
         while self.__is_terminating:
-            pass
+            time.sleep(1)
 
 
         Logger.log_info("Runnable dispatcher stop 1")
@@ -214,8 +214,11 @@ class Module(ABC):
         Logger.log_info("Runnable dispatcher stop 3")
 
     def terminate_internal(self):
+        Logger.log_info("Unregistering all periodic functions")
         self.unregister_all_periodic_functions()
+        Logger.log_info("Calling terminate")
         self.terminate()
+        Logger.log_info("Terminated")
         self.__is_terminating = False
 
     def terminate(self):

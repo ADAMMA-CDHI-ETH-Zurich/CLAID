@@ -136,7 +136,10 @@ class ModuleDispatcher:
 
 
     def send_receive_packages(self):
-
+        self.__ping_package_ready = False
+        self.__ping_package_acknowledged = False
+        self.__ping_package = None
+        
         self.__running = True
         self.__from_middleware_queue = self.stub.SendReceivePackages(self.to_middleware_queue_get())
 
@@ -150,7 +153,6 @@ class ModuleDispatcher:
         self.__ping_package = self.make_control_runtime_ping()
         self.__ping_package_acknowledged = False
         self.__ping_package_ready = True
-
         ping_resp = self.await_ping_package()
 
         if(ping_resp.control_val.ctrl_type != CtrlType.CTRL_RUNTIME_PING):

@@ -232,9 +232,9 @@ class ModuleManager():
             
             self.__on_disconnected_from_remote_server()
         elif packet.control_val.ctrl_type == CtrlType.CTRL_UNLOAD_MODULES:
+            Logger.log_info("Python ModuleManager received CTRL_UNLOAD_MODULES")
             self.shutdown_modules()
 
-            Logger.log_info("Python ModuleManager received CTRL_UNLOAD_MODULES")
 
             response = DataPackage()
             ctrl_package = response.control_val

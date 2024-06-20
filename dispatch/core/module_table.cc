@@ -49,11 +49,32 @@ bool claid::compPacketType(const DataPackage& ref, const DataPackage& val)
 //    - the payload is not a control package
 //    - the source or the target are set (exclusive or)
 //
-bool claid::validPacketType(const DataPackage& ref) {
-    return !(ref.channel().empty() ||
-        (ref.source_module().empty() && ref.target_module().empty()) ||
-        (!ref.source_module().empty() && !ref.target_module().empty()) ||
-        ref.has_control_val());
+bool claid::validPacketType(const DataPackage& ref) 
+{
+    if(ref.channel().empty())
+    {
+        Logger::logError("Invalid packet type, channel is empty");
+        return false;
+    }
+
+    if(ref.source_module().empty() && ref.target_module().empty())
+    {
+        Logger::logError("Invalid packet type, both source and target module are empty.");
+        return false;
+    }
+
+    if(!ref.source_module().empty() && !ref.target_module().empty())
+    {
+        Logger::logError("Invalid packet type, both source and target module are set: %s and %s", ref.source_module().c_str(), ref.target_module().c_str());
+        return false;
+    }
+
+    if(ref.has_control_val() && ref.control_val().ctrl_type() != CtrlType::CTRL_UNSPECIFIED)
+    {
+        Logger::logError("Invalid packet type, packet has control val %s %s", messageToString(ref.control_val()).c_str(), CtrlType_Name(ref.control_val().ctrl_type()).c_str());
+        return false;
+    }
+    return true;
 }
 
 SharedQueue<DataPackage>* ModuleTable::lookupOutputQueue(const string& moduleId) {
@@ -191,7 +212,7 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
             // If subscribed channel is of type claid.CLAIDANY, we make an exception.s
             if(entry->getPayloadType() != "claidservice.CLAIDANY")
             {
-                return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid packet type for channel '",chanPkt.channel(), "' : ",
+                return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid packet type for channel '",chanPkt.channel(), "': ",
                 "Payload type is ", entry->getPayloadType(), " but expected ", chanPkt.payload().message_type()));
             }
         }

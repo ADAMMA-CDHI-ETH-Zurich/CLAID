@@ -62,8 +62,12 @@ public class TypeMapping {
                     .setSourceUserToken(p.getSourceUserToken())
                     .setTargetUserToken(p.getTargetUserToken())
                     .setUnixTimestampMs(p.getUnixTimestampMs())
-                    .setDeviceId(p.getDeviceId())
-                    .setControlVal(p.getControlVal());
+                    .setDeviceId(p.getDeviceId());
+
+        if(p.hasControlVal())
+        {
+            builder.setControlVal(p.getControlVal());
+        }
 
         List<TracePoint> tracePoints = p.getTracePointsList();
         for(int i = 0; i < tracePoints.size(); i++)

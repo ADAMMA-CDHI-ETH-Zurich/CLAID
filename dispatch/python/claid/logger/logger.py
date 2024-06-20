@@ -36,7 +36,7 @@ class Logger:
 
     @staticmethod
     def log(level, message, log_message_entity_type = LogMessageEntityType.MIDDLEWARE, log_message_entity = "PYTHON_RUNTIME"):
-        output = f"[{Logger.get_time_string()} | CLAID - {LogMessageSeverityLevel.Name(level)}] {message}\n"
+        output = f"[{Logger.get_time_string()} | CLAID Python {LogMessageSeverityLevel.Name(level)}] {message}\n"
 
         if not isinstance(message, str):
             try:
