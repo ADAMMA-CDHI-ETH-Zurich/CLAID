@@ -112,7 +112,6 @@ public class CLAID extends JavaCLAIDBase
     static
     {
         init("claid_capi_android");
-       // CLAIDPackageLoader.loadPackages();
     }
 
     private static Context context;
@@ -164,6 +163,8 @@ public class CLAID extends JavaCLAIDBase
 
             adjustedConfigPath = tmpConfigPath;
         }
+
+        CLAIDPackageLoader.loadPackages(context);
 
         boolean result = startInternalWithEventTracker(socketPath, adjustedConfigPath, 
             hostId, userId, deviceId, CLAID.claidGlobalModuleFactory, CLAID.getMediaDirPath(context).toString());

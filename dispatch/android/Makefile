@@ -20,6 +20,15 @@ aar_package: build_android_libs
 	cd aar/claid && ./gradlew build
 
 
+.PHONY: gradle_build
+gradle_build: 
+	cd aar/claid && ./gradlew build
+
+.PHONY: maven_publish
+maven_publish: aar_package
+	cd aar/claid && ./gradlew publishToMavenLocal
+
+
 .PHONY: publish_maven
 publish_maven: aar_package
 	cd aar/claid && ./gradlew publishToMavenLocal 

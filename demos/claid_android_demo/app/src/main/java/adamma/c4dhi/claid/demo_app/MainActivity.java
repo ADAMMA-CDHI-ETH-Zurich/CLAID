@@ -59,25 +59,22 @@ public class MainActivity extends Activity {
         //noinspection ConstantConditions
 
         CLAID.getAppDataDirectory(this);
-        CLAIDPackageLoader loader = new CLAIDPackageLoader();
-        loader.loadPackages(getApplicationContext());
 
 
-/*        factory = ((MyApplication) getApplication()).factory;
-        factory = (PersistentModuleFactory) CLAID.registerDefaultModulesToFactory((ModuleFactory) factory);
-        factory.registerModule(RPCTestModule1.class);
-        factory.registerModule(RPCTestModule2.class);
+
+
+        CLAID.registerModule(RPCTestModule1.class);
+        CLAID.registerModule(RPCTestModule2.class);
 
         CLAID.startInPersistentService(getApplicationContext(),
                 "assets://RPCTest.json",
                 "Smartphone",
                 "device",
                 "user",
-                factory,
                 CLAIDSpecialPermissionsConfig.almightyCLAID(),
                 CLAIDPersistanceConfig.maximumPersistance());
 
-        CLAID.onStarted(() -> CLAID.enableKeepAppAwake(CLAID.getContext()));*/
+        CLAID.onStarted(() -> CLAID.enableKeepAppAwake(CLAID.getContext()));
 
 
     }
