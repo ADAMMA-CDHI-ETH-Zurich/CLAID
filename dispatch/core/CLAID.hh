@@ -52,7 +52,7 @@ namespace claid
 
         // Starts the middleware and attaches to it.
         bool start(const std::string& socketPath, const std::string& configFilePath, const std::string& hostId, 
-            const std::string& userId, const std::string& deviceId, std::string commonDataPath);
+            const std::string& userId, const std::string& deviceId, std::string commonDataPath="");
         
         bool shutdown();
 

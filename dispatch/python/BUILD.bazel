@@ -1,56 +1,10 @@
-filegroup(
-    name = "test_configs",
-    srcs = [
-        "test_config.json",
-    ],
-)
-
 
 py_binary(
-    name = "py_claid",
-    srcs = glob(["**/*.py"]),
+    name = "py_test",
+    srcs = ["py_test.py"],
     deps = [
-
+        "//dispatch/python/claid:py_claid"
     ],
-    data = [
-        "//dispatch/core:claid_capi",
-        ":test_configs",
-        "//dispatch/proto:claidservice_py_proto",
-        "//dispatch/proto:claidservice_py_grpc"
-    ],
-)
-
-
-py_binary(
-    name = "config_reload_test",
-    srcs = glob(["data_collection/**/*.py", "helpers/**/*.py", 
-            "local_dispatching/**/*.py", "logger/**/*.py", "module/**/*.py", "CLAID.py",
-            "config_reload_test.py"]),
-    deps = [
-
-    ],
-    data = [
-        "//dispatch/core:claid_capi",
-        ":test_configs",
-        "//dispatch/proto:claidservice_py_proto",
-        "//dispatch/proto:claidservice_py_grpc"
-    ],
-)
-
-
-
-py_binary(
-    name = "module_injection_test",
-    srcs = glob(["data_collection/**/*.py", "helpers/**/*.py", 
-            "local_dispatching/**/*.py", "logger/**/*.py", "module/**/*.py", "CLAID.py",
-            "module_injection_test.py"]),
-    deps = [
-
-    ],
-    data = [
-        "//dispatch/core:claid_capi",
-        ":test_configs",
-        "//dispatch/proto:claidservice_py_proto",
-        "//dispatch/proto:claidservice_py_grpc"
-    ],
+    
+   
 )

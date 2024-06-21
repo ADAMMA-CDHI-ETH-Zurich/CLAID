@@ -39,8 +39,11 @@ import adamma.c4dhi.claid.TracePoint;
 import adamma.c4dhi.claid.StringArray;
 import adamma.c4dhi.claid.NumberArray;
 import adamma.c4dhi.claid.NumberMap;
+import adamma.c4dhi.claid.NumberVal;
+import adamma.c4dhi.claid.BoolVal;
+import adamma.c4dhi.claid.StringVal;
 import adamma.c4dhi.claid.StringMap;
-
+import adamma.c4dhi.claid.Logger.Logger;
 
 import com.google.protobuf.GeneratedMessageV3;
 
@@ -60,6 +63,11 @@ public class TypeMapping {
                     .setTargetUserToken(p.getTargetUserToken())
                     .setUnixTimestampMs(p.getUnixTimestampMs())
                     .setDeviceId(p.getDeviceId());
+
+        if(p.hasControlVal())
+        {
+            builder.setControlVal(p.getControlVal());
+        }
 
         List<TracePoint> tracePoints = p.getTracePointsList();
         for(int i = 0; i < tracePoints.size(); i++)
@@ -236,6 +244,36 @@ public class TypeMapping {
       return protoCodecMap.get(fullName);
     }
     
+    private static <T extends GeneratedMessageV3> DataPackage.Builder setProtoPayload(DataPackage.Builder packetBuilder, T protoValue)
+    {
+        ProtoCodec protoCodec = getProtoCodec((GeneratedMessageV3)protoValue);
+
+        Blob blob = protoCodec.encode((GeneratedMessageV3)protoValue);
+
+        packetBuilder.setPayload(blob);
+
+        return packetBuilder;
+    }
+
+    private static <T extends GeneratedMessageV3> T getProtoPayload(DataPackage packet, T instance)
+    {
+        ProtoCodec protoCodec = getProtoCodec(instance);
+
+        if(packet.getPayload().getMessageType() == "")
+        {
+            Logger.logError("Invalid package, unknown payload! Expected payload type to be specified in message_type of Blob, but got \"\"");
+            Logger.logFatal("ProtoCodec.decode failed. Wrong payload type.");
+            return null;
+        }
+        
+        GeneratedMessageV3 decodedData = protoCodec.decode(packet.getPayload());
+        if(decodedData == null)
+        {
+            Logger.logFatal("ProtoCodec.decode failed. Wrong payload type.");
+            return null;
+        }
+        return (T) decodedData;
+    }
 
     public static <T> Mutator<T> getMutator(DataType dataType) 
     {
@@ -244,28 +282,65 @@ public class TypeMapping {
         if (dataTypeClass == Double.class || dataTypeClass == Float.class || 
         dataTypeClass == Integer.class || dataTypeClass == Short.class || dataTypeClass == Long.class) {
             return new Mutator<T>(
-                (p, v) -> dataPackageBuilderCopy(p)
-                    .setNumberVal((Double) v)
-                    .build(),
-                p -> (T) Double.valueOf(p.getNumberVal())
+                (p, v) -> 
+                {
+                    DataPackage.Builder builderCopy = dataPackageBuilderCopy(p);
+                    Number numberValue = (Number) v;
+                    NumberVal val = NumberVal.newBuilder().setVal(numberValue.doubleValue()).build();
+
+                    builderCopy = setProtoPayload(builderCopy, val);
+
+                    return builderCopy.build();
+                },
+                p -> 
+                {
+                    NumberVal val = NumberVal.newBuilder().build();
+                    val = getProtoPayload(p, val);
+
+                    return (T) Double.valueOf(val.getVal());
+                }
             );
         }
 
         if (dataTypeClass == Boolean.class) {
             return new Mutator<T>(
-                (p, v) -> dataPackageBuilderCopy(p)
-                    .setBoolVal((Boolean) v)
-                    .build(),
-                p -> (T) Boolean.valueOf(p.getBoolVal())
+                (p, v) -> 
+                {
+                    DataPackage.Builder builderCopy = dataPackageBuilderCopy(p);
+                    BoolVal val = BoolVal.newBuilder().setVal((Boolean) v).build();
+
+                    builderCopy = setProtoPayload(builderCopy, val);
+
+                    return builderCopy.build();
+                },
+                p -> 
+                {
+                    BoolVal val = BoolVal.newBuilder().build();
+                    val = getProtoPayload(p, val);
+
+                    return (T) Boolean.valueOf(val.getVal());
+                }
             );
         }
 
         if (dataTypeClass == String.class) {
             return new Mutator<T>(
-                (p, v) -> dataPackageBuilderCopy(p)
-                    .setStringVal((String) v)
-                    .build(),
-                p -> (T) p.getStringVal()
+                (p, v) -> 
+                {
+                    DataPackage.Builder builderCopy = dataPackageBuilderCopy(p);
+                    StringVal val = StringVal.newBuilder().setVal((String) v).build();
+
+                    builderCopy = setProtoPayload(builderCopy, val);
+
+                    return builderCopy.build();
+                },
+                p -> 
+                {
+                    StringVal val = StringVal.newBuilder().build();
+                    val = getProtoPayload(p, val);
+
+                    return (T) val.getVal();
+                }
             );
         }
         
@@ -280,7 +355,8 @@ public class TypeMapping {
             if (genericName.equals("ArrayList<Short>")) 
             {
                 return new Mutator<T>(
-                    (p, v) -> {
+                    (p, v) -> 
+                    {
                         ArrayList<Short> data = (ArrayList<Short>) v;
                         DataPackage.Builder builder = dataPackageBuilderCopy(p);
             
@@ -288,13 +364,14 @@ public class TypeMapping {
                         for (Short value : data) {
                             numberArrayBuilder.addVal(value.doubleValue());
                         }
-            
-                        builder.setNumberArrayVal(numberArrayBuilder.build());
+                        
+                        builder = setProtoPayload(builder, numberArrayBuilder.build());
                         return builder.build();
                     },
                     p -> {
                         ArrayList<Short> array = new ArrayList<>();
-                        NumberArray numberArray = p.getNumberArrayVal();
+                        NumberArray numberArray = NumberArray.newBuilder().build();
+                        numberArray = getProtoPayload(p, numberArray);
             
                         for (Double value : numberArray.getValList()) {
                             array.add(value.shortValue());
@@ -316,12 +393,13 @@ public class TypeMapping {
                             numberArrayBuilder.addVal(value.doubleValue());
                         }
             
-                        builder.setNumberArrayVal(numberArrayBuilder.build());
+                        builder = setProtoPayload(builder, numberArrayBuilder.build());
                         return builder.build();
                     },
                     p -> {
                         ArrayList<Integer> array = new ArrayList<>();
-                        NumberArray numberArray = p.getNumberArrayVal();
+                        NumberArray numberArray = NumberArray.newBuilder().build();
+                        numberArray = getProtoPayload(p, numberArray);
             
                         for (Double value : numberArray.getValList()) {
                             array.add(value.intValue());
@@ -343,13 +421,14 @@ public class TypeMapping {
                             numberArrayBuilder.addVal(value);
                         }
             
-                        builder.setNumberArrayVal(numberArrayBuilder.build());
+                        builder = setProtoPayload(builder, numberArrayBuilder.build());
                         return builder.build();
                     },
                     p -> {
                         ArrayList<Long> array = new ArrayList<>();
-                        NumberArray numberArray = p.getNumberArrayVal();
-            
+                        NumberArray numberArray = NumberArray.newBuilder().build();
+                        numberArray = getProtoPayload(p, numberArray);
+                                    
                         for (Double value : numberArray.getValList()) {
                             array.add(value.longValue());
                         }
@@ -366,17 +445,19 @@ public class TypeMapping {
                         DataPackage.Builder builder = dataPackageBuilderCopy(p);
             
                         NumberArray.Builder numberArrayBuilder = NumberArray.newBuilder();
+
                         for (Float value : data) {
                             numberArrayBuilder.addVal(value);
                         }
             
-                        builder.setNumberArrayVal(numberArrayBuilder.build());
+                        builder = setProtoPayload(builder, numberArrayBuilder.build());
                         return builder.build();
                     },
                     p -> {
                         ArrayList<Float> array = new ArrayList<>();
-                        NumberArray numberArray = p.getNumberArrayVal();
-            
+                        NumberArray numberArray = NumberArray.newBuilder().build();
+                        numberArray = getProtoPayload(p, numberArray);       
+
                         for (Double value : numberArray.getValList()) {
                             array.add(value.floatValue());
                         }
@@ -399,12 +480,13 @@ public class TypeMapping {
                             numberArrayBuilder.addVal(value);
                         }
 
-                        builder.setNumberArrayVal(numberArrayBuilder.build());
+                        builder = setProtoPayload(builder, numberArrayBuilder.build());
                         return builder.build();
                     },
                     p -> {
                         ArrayList<Double> array = new ArrayList<>();
-                        NumberArray numberArray = p.getNumberArrayVal();
+                        NumberArray numberArray = NumberArray.newBuilder().build();
+                        numberArray = getProtoPayload(p, numberArray);
 
                         return (T) new ArrayList<Double>(numberArray.getValList());
                     }
@@ -423,12 +505,13 @@ public class TypeMapping {
                             stringArrayBuilder.addVal(value);
                         }
 
-                        builder.setStringArrayVal(stringArrayBuilder.build());
+                        builder = setProtoPayload(builder, stringArrayBuilder.build());
                         return builder.build();
                     },
                     p -> {
                         ArrayList<String> array = new ArrayList<>();
-                        StringArray stringArray = p.getStringArrayVal();
+                        StringArray stringArray = StringArray.newBuilder().build();
+                        stringArray = getProtoPayload(p, stringArray);
 
                         return (T) new ArrayList<String>(stringArray.getValList());
                     }
@@ -456,12 +539,13 @@ public class TypeMapping {
                             numberMapBuilder.putVal(entry.getKey(), entry.getValue().doubleValue());
                         }
 
-                        builder.setNumberMap(numberMapBuilder.build());
+                        builder = setProtoPayload(builder, numberMapBuilder.build());
                         return builder.build();
                     },
                     p -> {
                         Map<String, Short> map = new HashMap<>();
-                        NumberMap numberMap = p.getNumberMap();
+                        NumberMap numberMap = NumberMap.newBuilder().build();
+                        numberMap = getProtoPayload(p, numberMap);
 
                         for (String key : numberMap.getValMap().keySet()) {
                             double value = numberMap.getValMap().get(key);
@@ -485,12 +569,13 @@ public class TypeMapping {
                             numberMapBuilder.putVal(entry.getKey(), entry.getValue().doubleValue());
                         }
 
-                        builder.setNumberMap(numberMapBuilder.build());
+                        builder = setProtoPayload(builder, numberMapBuilder.build());
                         return builder.build();
                     },
                     p -> {
                         Map<String, Integer> map = new HashMap<>();
-                        NumberMap numberMap = p.getNumberMap();
+                        NumberMap numberMap = NumberMap.newBuilder().build();
+                        numberMap = getProtoPayload(p, numberMap);
 
                         for (String key : numberMap.getValMap().keySet()) {
                             double value = numberMap.getValMap().get(key);
@@ -514,17 +599,20 @@ public class TypeMapping {
                             numberMapBuilder.putVal(entry.getKey(), entry.getValue().doubleValue());
                         }
 
-                        builder.setNumberMap(numberMapBuilder.build());
+                        builder = setProtoPayload(builder, numberMapBuilder.build());
                         return builder.build();
                     },
                     p -> {
                         Map<String, Long> map = new HashMap<>();
-                        NumberMap numberMap = p.getNumberMap();
+                        NumberMap numberMap = NumberMap.newBuilder().build();
+                        numberMap = getProtoPayload(p, numberMap);
 
                         for (String key : numberMap.getValMap().keySet()) {
                             double value = numberMap.getValMap().get(key);
                             map.put(key, (long) value);
                         }
+
+
 
                         return (T) map;
                     }
@@ -543,12 +631,13 @@ public class TypeMapping {
                             numberMapBuilder.putVal(entry.getKey(), entry.getValue().floatValue());
                         }
 
-                        builder.setNumberMap(numberMapBuilder.build());
+                        builder = setProtoPayload(builder, numberMapBuilder.build());
                         return builder.build();
                     },
                     p -> {
                         Map<String, Float> map = new HashMap<>();
-                        NumberMap numberMap = p.getNumberMap();
+                        NumberMap numberMap = NumberMap.newBuilder().build();
+                        numberMap = getProtoPayload(p, numberMap);
 
                         for (String key : numberMap.getValMap().keySet()) {
                             double value = numberMap.getValMap().get(key);
@@ -572,12 +661,13 @@ public class TypeMapping {
                             numberMapBuilder.putVal(entry.getKey(), entry.getValue());
                         }
 
-                        builder.setNumberMap(numberMapBuilder.build());
+                        builder = setProtoPayload(builder, numberMapBuilder.build());
                         return builder.build();
                     },
                     p -> {
                         Map<String, Double> map = new HashMap<>();
-                        NumberMap numberMap = p.getNumberMap();
+                        NumberMap numberMap = NumberMap.newBuilder().build();
+                        numberMap = getProtoPayload(p, numberMap);
 
                         for (String key : numberMap.getValMap().keySet()) {
                             double value = numberMap.getValMap().get(key);
@@ -600,12 +690,13 @@ public class TypeMapping {
                             stringMapBuilder.putVal(entry.getKey(), entry.getValue());
                         }
 
-                        builder.setStringMap(stringMapBuilder.build());
+                        builder = setProtoPayload(builder, stringMapBuilder.build());
                         return builder.build();
                     },
                     p -> {
                         Map<String, String> map = new HashMap<>();
-                        StringMap numberMap = p.getStringMap();
+                        StringMap numberMap = StringMap.newBuilder().build();
+                        numberMap = getProtoPayload(p, numberMap);
 
                         for (String key : numberMap.getValMap().keySet()) {
                             String value = numberMap.getValMap().get(key);
@@ -664,15 +755,29 @@ public class TypeMapping {
                     Blob blob = protoCodec.encode((GeneratedMessageV3)v);
 
                     return dataPackageBuilderCopy(p)
-                            .setBlobVal(blob)
+                            .setPayload(blob)
                             .build();
             },
             p -> {
                 GeneratedMessageV3 instance = (GeneratedMessageV3) getProtoMessageInstance((Class<T>) dataTypeClass);
                 final ProtoCodec protoCodec = getProtoCodec(instance);
                 
-                return (T) protoCodec.decode(p.getBlobVal());
+                return (T) protoCodec.decode(p.getPayload());
             });
+        }
+
+        if(dataTypeClass == Void.class)
+        {
+            return new Mutator<T>(
+                (p, v) -> 
+                {
+                    return p;
+                },
+                p -> 
+                {
+                    return null;
+                }
+            );
         }
         // Have to use NumberArray, StringArray, ..., since we cannot safely distinguish List<Double> and List<String>?
         // Java generics... best generics... not. Type erasure, great invention.

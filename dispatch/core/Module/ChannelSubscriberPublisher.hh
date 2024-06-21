@@ -152,22 +152,28 @@ public:
 
     bool isDataPackageCompatibleWithChannel(const DataPackage& dataPackage, const std::string& receiverModule)
     {
+
         const std::string& channelName = dataPackage.channel();
 
-        
+
         auto it = examplePackagesForEachModule.find(receiverModule);
         if(it != this->examplePackagesForEachModule.end())
         {
 
             for(const DataPackage& templatePackage : it->second)
             {
+
                 // Look for the first etmplate package of the Module for this channel.
                 // If the Module has subscribed/published the same Channel multiple times,
                 // then all the payload cases should be identical (checked by the Middleware during InitRuntime).
                 // What if this function is used before InitRuntime? Then it is not guaranteed that the payload cases are verified.
                 if(templatePackage.channel() == channelName)
-                {
-                    return templatePackage.payload_oneof_case() == dataPackage.payload_oneof_case();
+                {   
+                    if(templatePackage.payload().message_type() == "claidservice.CLAIDANY")
+                    {
+                        return true;
+                    }
+                    return compPacketType(templatePackage, dataPackage);
                 }
 
             }
@@ -176,7 +182,7 @@ public:
         return false;
     }
 
-    DataPackage::PayloadOneofCase getPayloadCaseOfChannel(const std::string& channelName, const std::string& receiverModule)
+    std::string getPayloadTypeNameOfChannel(const std::string& channelName, const std::string& receiverModule)
     {    
         auto it = examplePackagesForEachModule.find(receiverModule);
         if(it != this->examplePackagesForEachModule.end())
@@ -189,11 +195,11 @@ public:
                 // What if this function is used before InitRuntime? Then it is not guaranteed that the payload cases are verified.
                 if(templatePackage.channel() == channelName)
                 {
-                    return templatePackage.payload_oneof_case();
+                    return templatePackage.payload().message_type();
                 }
             }
         }
-        return DataPackage::PayloadOneofCase::PAYLOAD_ONEOF_NOT_SET;
+        return "";
     }
 
     void reset()

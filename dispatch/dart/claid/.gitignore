@@ -33,4 +33,5 @@ build/
 lib/generated/**
 test/generated/**
 blobs/**
+android/libs
 android/src/main/java/adamma/c4dhi/claid/

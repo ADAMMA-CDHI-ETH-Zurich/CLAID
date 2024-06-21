@@ -10,7 +10,7 @@ else
     endif
     ifeq ($(UNAME_S),Darwin)
         OUTPUT_LIB = bazel-bin/dispatch/core/libclaid_capi.dylib
-		TARGET_LIB = dispatch/dart/claid/blobs/libclaid_capi_linux.dylib
+		TARGET_LIB = dispatch/dart/claid/blobs/libclaid_capi.dylib
     endif
 endif
 
@@ -64,7 +64,13 @@ build_middleware:
 flutter_package:  build
 	rm -fr android/libs
 	mkdir android/libs
-	cd ../../android/; make aar_package && cp aar/claid/claid/build/outputs/aar/app-debug.aar ../dart/claid/android/libs/claid_debug.aar
+	cd ../../android/; make aar_package && cp aar/claid/claid/build/outputs/aar/claid-debug.aar ../dart/claid/android/libs/claid_debug.aar
+
+flutter_package_host_only:  build
+	rm -fr android/libs
+	
+
+
 
 
 

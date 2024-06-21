@@ -36,12 +36,11 @@ std::shared_ptr<AccelerationData> getAccelerationData(int seed = 1)
     // Hardcode 10 AccelerationSamples
     for (int i = 0; i < 10; ++i) {
         AccelerationSample accelerationSample;
-        accelerationSample.set_acceleration_x(seed * 1.0 * i);  // Replace with your hardcoded value
-        accelerationSample.set_acceleration_y(seed * 2.0 * i);  // Replace with your hardcoded value
-        accelerationSample.set_acceleration_z(seed * 3.0 * i);  // Replace with your hardcoded value
+        accelerationSample.set_acceleration_x(seed * 1.0 * i);  
+        accelerationSample.set_acceleration_y(seed * 2.0 * i);  
+        accelerationSample.set_acceleration_z(seed * 3.0 * i);  
         accelerationSample.set_sensor_body_location("left_wrist");
-        accelerationSample.set_unix_timestamp_in_ms(static_cast<uint64_t>(std::time(0)));  // Use a proper timestamp
-
+        accelerationSample.set_unix_timestamp_in_ms(static_cast<uint64_t>(std::time(0)));  
         accelerationData.add_samples()->CopyFrom(accelerationSample);
     }
 
@@ -55,7 +54,7 @@ class TestSenderModule : public Module
 {
     int ctr = 0;
     Channel<AccelerationData> outputChannel;
-    void initialize(const std::map<std::string, std::string>& properties)
+    void initialize(Properties properties)
     {
         this->outputChannel = this->publish<AccelerationData>("Data");
         this->registerPeriodicFunction("DataGenerator", &TestSenderModule::periodicFunction, this, Duration::milliseconds(100));

@@ -41,7 +41,7 @@ namespace claid {
     
 
     bool CLAID::start(const std::string& socketPath, const std::string& configFilePath, 
-        const std::string& hostId, const std::string& userId, const std::string& deviceId, std::string commonDataPath="")
+        const std::string& hostId, const std::string& userId, const std::string& deviceId, std::string commonDataPath)
     {
         Logger::logInfo("CLAID start");
 
@@ -112,7 +112,8 @@ namespace claid {
         Logger::logInfo("Attach cpp runtime 3");
 
         moduleDispatcher = make_unique<DispatcherClient>(socketPath, fromModuleDispatcherQueue, toModuleDispatcherQueue, registeredModuleClasses, moduleAnnotations);
-        moduleManager = make_unique<ModuleManager>(*moduleDispatcher, fromModuleDispatcherQueue, toModuleDispatcherQueue, middleware->getEventTracker());
+        moduleManager = make_unique<ModuleManager>(
+                *moduleDispatcher, fromModuleDispatcherQueue, toModuleDispatcherQueue, middleware->getEventTracker());
         Logger::logInfo("Attach cpp runtime 4");
 
         absl::Status status = moduleManager->start();

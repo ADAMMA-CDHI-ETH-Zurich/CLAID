@@ -45,6 +45,8 @@
 #include "dispatch/core/EventTracker/EventTracker.hh"
 #include "dispatch/core/Logger/LogSinkConfiguration.hh"
 
+#include "dispatch/core/RemoteFunction/RemoteFunctionRunnableHandler.hh"
+
 using claidservice::ConfigUploadPayload;
 
 namespace claid
@@ -90,6 +92,10 @@ namespace claid
 
             virtual ~MiddleWare();
 
+            // RPCs
+            std::map<std::string, std::string> getAllRunningModulesOfAllRuntimes();
+            bool addLooseDirectSubscription(claidservice::LooseDirectChannelSubscription subscription);
+            void removeLooseDirectSubscription(claidservice::LooseDirectChannelSubscription subscription); 
 
         private:
 
@@ -151,6 +157,8 @@ namespace claid
 
             std::unique_ptr<std::thread> controlPackageHandlerThread = nullptr; 
 
+            RemoteFunctionRunnableHandler remoteFunctionRunnableHandler;
+
             // Thread needed to load a new config if a message CTRL_UPLOAD_CONFIG_AND_DATA is received.
             // Loading a new config blocks the thread that calls loadNewConfig until the new config is loaded successfully.
             // Normally, this is fine and expected, since the thread calling loadNewConfig is not the same thread that processes control messages.
@@ -192,6 +200,9 @@ namespace claid
             void handleControlPackage(std::shared_ptr<DataPackage> controlPackage);
             void forwardControlPackageToAllRuntimes(std::shared_ptr<DataPackage> package);
             void forwardControlPackageToTargetRuntime(std::shared_ptr<DataPackage> package);
+            void forwardControlPackageToSpecificRuntime(std::shared_ptr<DataPackage> package, Runtime runtime);
+
+            void handleRPCModuleNotFoundError(std::shared_ptr<DataPackage> rpcRequestPackage);
 
             void readLocalLogMessages();
             void handleLocalLogMessage(std::shared_ptr<LogMessage> logMessage);

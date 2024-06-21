@@ -22,12 +22,19 @@
 
 
 import 'dart:async';
+import 'package:claid/module/type_mapping.dart';
+import 'package:claid/generated/claidservice.pb.dart';
 
 import 'package:claid/dispatcher.dart';
 import 'package:claid/mocks.dart';
-import 'package:claid/module.dart';
+import 'package:claid/module/module.dart';
+import 'package:claid/module/channel.dart';
+import 'package:claid/module/channel_data.dart';
 
 import 'package:test/test.dart';
+import 'package:claid/module/properties.dart';
+
+import 'package:claid/generated/google/protobuf/struct.pb.dart';
 
 // ModuleClassName, module ids and channel ids
 //
@@ -54,6 +61,14 @@ const triggerReadChannel = 'trigger_read';
 const sensorChannel = 'sensor_value';
 const dailySensorChannel = 'daily_sensor_value';
 
+Map<String, String> propertiesMap = {
+      'interval': '200',
+      'max_count': '10',
+      'schedule_in': '500',
+    };
+
+
+
 // Set up a module environment.
 final moduleEnv = MockModuleEnv(modules: <EnvModule>[
   MockModule(id: 'inputModule'),
@@ -61,11 +76,11 @@ final moduleEnv = MockModuleEnv(modules: <EnvModule>[
   UnderTest(
     id: moduleInstanceId,
     moduleClass: moduleClassName,
-    properties: <String, String>{
-      'interval': '200',
-      'max_count': '10',
-      'schedule_in': '500',
-    },
+    properties: 
+      Struct(fields: {
+        for (var entry in propertiesMap.entries) 
+          entry.key: Value()..stringValue = entry.value
+      }),
   ),
 ], channels: <MockChannel>[
   MockChannel<bool>(
@@ -98,6 +113,7 @@ void main() {
       'MyTestModuleOne': () => myMod = MyTestModuleOne(completer),
     };
 
+    print("dbg 1 1");
     // Initialize the module system.
     ModuleDispatcher? dispatcher;
     dispatcher =
@@ -105,9 +121,11 @@ void main() {
     await initModules(
         dispatcher: dispatcher,
         moduleFactories: moduleEnv.combinedFactories(factories));
+    print("dbg 1 2");
 
     // Wait for a while for the events to trigger
     await completer.future;
+    print("dbg 1 3");
 
     // Check if we have received the events in this order
     expect(myMod.allEvents.length, 13);
@@ -115,14 +133,21 @@ void main() {
         [for (var i = 0; i < 13; i++) 42.0 + i]);
     expect(myMod.triggeredEvents.length, 3);
     expect(myMod.scheduledEvents.length, 2);
+    print("dbg 1 4");
+
+    final tm = TypeMapping();
+
+    final mutBoolVal = tm.getMutator<BoolVal>(BoolVal());
+    print("dbg 1 5");
 
     // sensor events received by the output module
     expect(
         moduleEnv
             .getEventsForChannel(triggerReadChannel)
-            ?.map<bool>((e) => e.boolVal)
+            ?.map<bool>((e) => mutBoolVal.getter(e).val)
             .toList(),
         <bool>[true, true, true]);
+    print("dbg 1 6");
 
     // Compare if the results are correct.
   });
@@ -156,9 +181,9 @@ class MyTestModuleOne extends Module {
   int _periodicCount = 0;
 
   // channels
-  late SubscribeChannel<bool> _inputChannel;
-  late PublishChannel<double> _outputChannel;
-  late PublishChannel<List<double>> _dailyOutputChannel;
+  late Channel<bool> _inputChannel;
+  late Channel<double> _outputChannel;
+  late Channel<List<double>> _dailyOutputChannel;
 
   // captures daily values for publication.
   final _dailyValues = <double>[];
@@ -174,22 +199,31 @@ class MyTestModuleOne extends Module {
   MyTestModuleOne(this._countReached);
 
   @override
-  void initialize(Map<String, String> props) {
+  void initialize(Properties props) {
     // Parse the properties
-    _intervalMs = parseInt(props['interval']);
-    _maxSensorCount = parseInt(props['max_count']);
-    _scheduleMs = parseInt(props['schedule_in']);
+    print("MyTestModule 1");
+    _intervalMs = props.getNumberProperty("interval").toInt();
+    _maxSensorCount = props.getNumberProperty("max_count").toInt();
+    _scheduleMs = props.getNumberProperty("schedule_in").toInt();
+    print("MyTestModule 2");
+
+    double val = props.getNumberProperty("schedule_in");
+    print('The value of scheduleMs is: $val');
+    print("MyTestModule 3");
 
     // register periodic functions
     registerPeriodicFunction(periodicName, Duration(milliseconds: _intervalMs),
         () async {
       periodicEvents.add(await _readSensor());
       _periodicCount++;
+        print("MyTestModule ${_periodicCount} ${_maxSensorCount}");
+
       if (_periodicCount >= _maxSensorCount) {
         unregisterPeriodicFunction(periodicName);
         _countReached.complete();
       }
     });
+    print("MyTestModule 4");
 
     // register a scheduled function
     final targetTime = DateTime.now().add(Duration(milliseconds: _scheduleMs));
@@ -202,14 +236,17 @@ class MyTestModuleOne extends Module {
     registerPeriodicFunction(
         unusedScheduleName, const Duration(milliseconds: 42), () {});
     unregisterPeriodicFunction(unusedScheduleName);
+    print("MyTestModule 5");
 
     // Set up a subscription.
-    _inputChannel = subscribe<bool>(triggerReadChannel, true)
-      ..onMessage(_triggerRead);
+    _inputChannel = subscribe<bool>(triggerReadChannel, true, _triggerRead);
+    print("MyTestModule 6");
 
     // Set up a publish channel.
     _outputChannel = publish<double>(sensorChannel, 1.0);
     _dailyOutputChannel = publish<List<double>>(dailySensorChannel, <double>[]);
+    print("MyTestModule 7");
+
   }
 
   Future<TestEvent<double>> _readSensor() async {
@@ -219,7 +256,11 @@ class MyTestModuleOne extends Module {
     double sensorVal = 42.0 + allEvents.length;
     _dailyValues.add(sensorVal);
     await Future.delayed(const Duration(milliseconds: 5));
+        print("MyTestModule 8");
+
     await _outputChannel.post(sensorVal);
+       print("MyTestModule 9");
+
     final ret = TestEvent(sensorVal, now);
     allEvents.add(ret);
     return ret;
@@ -241,6 +282,9 @@ class MyTestModuleOne extends Module {
 
   Future<void> _triggerRead(ChannelData<bool> payload) async {
     // fire and forget by ignoring the future.
+    print("Trigger read!");
     triggeredEvents.add(await _readSensor());
+        print("Trigger read done!");
+
   }
 }

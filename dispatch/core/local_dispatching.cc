@@ -174,7 +174,8 @@ void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
         Logger::logInfo("RunTimeDispatcher processPacket 4");
 
 
-        moduleTable.addOutputPackets(pkt, chanEntry, incomingQueue);
+        moduleTable.forwardPackageToAllSubscribers(pkt, chanEntry, incomingQueue);
+        moduleTable.forwardPackageOfModuleToAllLooseDirectSubscribers(pkt, incomingQueue);
         Logger::logInfo("RunTimeDispatcher processPacket 5");
 
         // Make a copy of the package and augment it with the
@@ -288,6 +289,7 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
         // Add the channels for this module
         Status status = moduleTable.setChannelTypes(moduleId, modChanIt.channel_packets());
         if (!status.ok()) {
+            Logger::logError("Error in setChannelTyes: %s", status.error_message().c_str());
             return status;
         }
     }
@@ -360,13 +362,16 @@ void ServiceImpl::shutdown() {
     }
 }
 
-RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& status) {
+RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& status) 
+{
     status = Status::OK;
     auto runTime = pkt.control_val().runtime();
 
+    Logger::logInfo("Got message %s", messageToString(pkt).c_str());
+
     // Make sure we got a control package with a CTRL_RUNTIME_PING message.
     if (!validCtrlRuntimePingPkt(pkt)) {
-        status = Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid control type or unspecified runtime %s %s", Runtime_Name(pkt.control_val().runtime()).c_str(), CtrlType_Name(pkt.control_val().ctrl_type())).c_str());
+        status = Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid control type or unspecified runtime ", Runtime_Name(pkt.control_val().runtime()).c_str(), " ", CtrlType_Name(pkt.control_val().ctrl_type())).c_str());
         return nullptr;
     }
 
@@ -407,6 +412,7 @@ void ServiceImpl::removeRuntimeDispatcher(Runtime rt) {
     Logger::logInfo("Removing runtime dispatcher");
     lock_guard<mutex> lock(adMutex);
     activeDispatchers.erase(rt);
+    moduleTable.removeAllLooseDirectSubscriptionsOfRuntime(rt);
     Logger::logInfo("Removed runtime dispatcher");
 
 }

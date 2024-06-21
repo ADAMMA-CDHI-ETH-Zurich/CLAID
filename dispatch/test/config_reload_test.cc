@@ -34,12 +34,13 @@ bool testModule4Started = false;
 
 class TestModule1 : public Module
 {
-    void initialize(const std::map<std::string, std::string>& propertiesMap)
+    void initialize(Properties properties)
     {
-        auto it = propertiesMap.find("TestModule1Data");
-        if(it != propertiesMap.end())
+        std::string prop; 
+
+        if(properties.getStringProperty("TestModule1Data", prop))
         {
-            if(it->second == "42")
+            if(prop == "42")
             {
                 testModule1Started = true;
             }
@@ -55,12 +56,13 @@ REGISTER_MODULE(TestModule1, TestModule1);
 
 class TestModule2 : public Module
 {
-    void initialize(const std::map<std::string, std::string>& propertiesMap)
+    void initialize(Properties properties)
     {
-        auto it = propertiesMap.find("TestModule2Data");
-        if(it != propertiesMap.end())
+        std::string prop; 
+
+        if(properties.getStringProperty("TestModule2Data", prop))
         {
-            if(it->second == "1337")
+            if(prop == "1337")
             {
                 testModule2Started = true;
             }
@@ -77,13 +79,13 @@ REGISTER_MODULE(TestModule2, TestModule2);
 
 class TestModule3 : public Module
 {
-    void initialize(const std::map<std::string, std::string>& propertiesMap)
+    void initialize(Properties properties)
     {
-        auto it = propertiesMap.find("TestModule3Data");
+        std::string prop;
         Logger::logInfo("TestModule 3 initialize");
-        if(it != propertiesMap.end())
+        if(properties.getStringProperty("TestModule3Data", prop))
         {
-            if(it->second == "420")
+            if(prop == "420")
             {
                 testModule3Started = true;
             }
@@ -100,12 +102,12 @@ REGISTER_MODULE(TestModule3, TestModule3);
 
 class TestModule4 : public Module
 {
-    void initialize(const std::map<std::string, std::string>& propertiesMap)
+    void initialize(Properties properties)
     {
-        auto it = propertiesMap.find("TestModule4Data");
-        if(it != propertiesMap.end())
+        std::string prop;
+        if(properties.getStringProperty("TestModule4Data", prop))
         {
-            if(it->second == "96")
+            if(prop == "96")
             {
                 testModule4Started = true;
             }
@@ -142,7 +144,7 @@ TEST(ConfigReloadTestTestSuite, ConfigReloadTest)
     ASSERT_TRUE(testModule1Started) << "TestModule1 did not start as expected";
     ASSERT_TRUE(testModule2Started) << "TestModule2 did not start as expected";
 
-    claid.loadNewConfig("dispatch/test/config_reload_test_2.json");
+    ASSERT_TRUE(claid.loadNewConfig("dispatch/test/config_reload_test_2.json").ok());
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     testModule1Started = false;
     testModule2Started = false;

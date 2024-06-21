@@ -120,6 +120,7 @@ namespace claid
 
 			std::shared_ptr<DataSerializer> getSerializerForDataType(const std::string& dataType)
 			{
+				Logger::logInfo("Num serializers: %d\n", this->dataTypeToSerializerMap.size());
 				auto it = this->dataTypeToSerializerMap.find(dataType);
 				if(it == this->dataTypeToSerializerMap.end())
 				{

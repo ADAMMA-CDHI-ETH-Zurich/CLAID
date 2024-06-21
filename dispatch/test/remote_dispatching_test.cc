@@ -55,7 +55,7 @@ class SenderModule : public claid::Module
 {
     Channel<std::string> sendChannel;
 
-    void initialize(const std::map<std::string, std::string>& properties)
+    void initialize(Properties properties)
     {
         Logger::logInfo("Initialize called");
         sendChannel = this->publish<std::string>("TestChannel");
@@ -84,7 +84,7 @@ class ReceiverModule : public claid::Module
 {
     Channel<std::string> receiveChannel;
 
-    void initialize(const std::map<std::string, std::string>& properties)
+    void initialize(Properties properties)
     {
         receiveChannel = this->subscribe<std::string>("TestChannel", &ReceiverModule::onData, this);
     }

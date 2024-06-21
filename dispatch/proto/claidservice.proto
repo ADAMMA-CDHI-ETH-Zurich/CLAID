@@ -49,18 +49,10 @@ message DataPackage {
   repeated TracePoint trace_points = 10;
   uint64 unix_timestamp_ms = 11; // unix timestamp in milliseconds of when the package was created
 
-  // To add another message type add it below.
-  oneof payload_oneof {
-    ControlPackage control_val = 30;
-    double number_val = 31;
-    string string_val = 32;
-    bool bool_val = 33;
-    NumberArray number_array_val = 34;
-    StringArray string_array_val = 35;
-    NumberMap number_map = 36;
-    StringMap string_map = 37;
-    Blob blob_val = 38;
-  }
+  // Blob stores a payload in binary representation alongside a corresponding header.
+  
+  Blob payload = 12;
+  ControlPackage control_val = 13;
 }
 
 enum CtrlType {
@@ -93,6 +85,9 @@ enum CtrlType {
   CTRL_ADJUST_POWER_PROFILE                           = 26; // Can be used by local Runtimes to change the PowerProfile of Modules running on the same host. Only works if a Module supports power profiles.
   CTRL_ACTIVATE_NETWORK_CONNECTIONS                   = 27; // Can be used to activate network connections after they have been activated by CTRL_DEACTIVATE_NETWORK_CONNECTIONS.
   CTRL_DEACTIVATE_NETWORK_CONNECTIONS                 = 28; // Can be used to deactivate all RemoteDispatcherClient and Servers, i.e., cutting all external connections.
+  CTRL_REMOTE_FUNCTION_REQUEST                        = 29; // Can be used to execute a remote function (RPC call, e.g., a registered function of a Module).
+  CTRL_REMOTE_FUNCTION_RESPONSE                       = 30; // Response to a remote function request (upon successful or unsuccessful execution of a remote function), if function has return type, this type might be contained in payload of DataPackage
+  CTRL_DIRECT_SUBSCRIPTION_DATA                 = 31; // To forward data via a loose direct subscription.
   //CTRL_ADD_MODULE                         = 11; // Can be used to add a new Module at runtime (requires Module name, properties, channels). This package will be forwarded by the LocalRouter to the Middleware that can handle this Module.
   //CTRL_REMOVE_MODULE                      = 12; // Can be used to remove a Module at runtime.
   //CTRL_ADD_MODULE_SUCCESS                 = 13; // Sent as response to CTRL_ADD_MODULE the Module was added successfully.
@@ -118,6 +113,9 @@ message ControlPackage {
   ConfigUploadPayload config_upload_payload        = 8; // CTRL_UPLOAD_CONFIG_AND_DATA and CTRL_ON_NEW_CONFIG_PAYLOAD_DATA
   LogMessage log_message                           = 9; // CTRL_LOCAL_LOG_MESSAGE and CTRL_LOG_MESSAGE_STREAM_TO_LOG_SINK
   PowerProfile power_profile                       = 10; // CTRL_ADJUST_POWER_PROFILE, can be used to tell Modules to enter power saving mode.
+  RemoteFunctionRequest remote_function_request    = 11; // CTRL_REMOTE_FUNCTION_REQUEST
+  RemoteFunctionReturn remote_function_return      = 12; // CTRL_REMOTE_FUNCTION_RESPONSE
+  LooseDirectChannelSubscription loose_direct_subscription = 13; // CTRL_DIRECT_SUBSCRIPTION_DATA
 }
 
 message AccumulatedStatus {
@@ -140,8 +138,23 @@ message ActionRequest {
   map<string, string> action_params = 1;
 }
 
+message NumberVal
+{
+  double val = 1;
+}
+
 message NumberArray {
   repeated double val = 1;
+}
+
+message BoolVal 
+{
+  bool val = 1;
+}
+
+message StringVal
+{
+  string val = 1;
 }
 
 message StringArray {
@@ -162,14 +175,13 @@ message Blob {
   // The byte blob containing the payload data.
   bytes payload = 2;
 
-  string name = 3;  // local name of the blob (e.g. file name)
 
   // type and subtype contains meta information to decode the bytes contained above.
   // See this list of common mime types
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
   //
-  string message_type = 4;  // mime type, protobuf type (to decode payload)
-  string sub_type = 5;      // mime subtype, etc.
+  string message_type = 3;  // protobuf type (to decode payload)
+  //string sub_type = 4;      // subtype, etc.
 }
 
 enum Codec {
@@ -283,10 +295,11 @@ message ModuleAnnotation
 
 enum Runtime {
   RUNTIME_UNSPECIFIED = 0;
-  RUNTIME_CPP = 1;
-  RUNTIME_DART = 2;
-  RUNTIME_JAVA = 3;
-  RUNTIME_PYTHON = 4;
+  MIDDLEWARE_CORE = 1;
+  RUNTIME_CPP = 2;
+  RUNTIME_DART = 3;
+  RUNTIME_JAVA = 4;
+  RUNTIME_PYTHON = 5;
 }
 
 enum LogMessageSeverityLevel
@@ -420,4 +433,63 @@ message PowerSavingStrategy
 message PowerSavingStrategyList
 {
     repeated PowerSavingStrategy strategies = 1;
+}
+
+// Used by claid::AnyProtoType 
+message CLAIDANY
+{
+
+}
+
+message RemoteFunctionIdentifier
+{
+  string function_name = 1;
+  // Is it a function of a Runtime (e.g., of the C++ or Java runtime)?
+  // Or is it a function of a Module?
+  oneof function_type 
+  {
+    Runtime runtime = 2;
+    string module_id = 3;
+  }
+}
+
+
+
+message RemoteFunctionRequest
+{
+  RemoteFunctionIdentifier remote_function_identifier = 1;
+  string remote_future_identifier = 2; // Unique identifier for the future which is waiting for the response of the function.
+  repeated Blob parameter_payloads = 3;
+}
+
+enum RemoteFunctionStatus
+{
+  UNDEFINED                                       = 0;
+  STATUS_OK                                       = 1;
+  FAILED_FUNCTION_NOT_FOUND_OR_FAILED_TO_EXECUTE  = 2;
+  FAILED_INVALID_NUMBER_OF_PARAMETERS             = 3;
+  FAILED_MISMATCHING_PARAMETERS                   = 4;
+  FAILED_MODULE_NOT_FOUND                         = 5;
+  REMOTE_FUNCTION_REQUEST_INVALID                 = 6;
+}
+
+message RemoteFunctionReturn
+{
+  RemoteFunctionStatus execution_status = 1;
+  RemoteFunctionIdentifier remote_function_identifier = 2;
+  string remote_future_identifier = 3; // Unique identifier for the future which is waiting for the response of the function.
+}
+
+// Can be used for non-Module entities to subscribe directly to the data posted to a channel by a certain Module.
+// In regular subscriptions, data is forwarded to all subscribers to a channel, no matter what Module posted the data.
+// In loose direct subscriptions, data is forwarded directly to separate non-module subscribers to a channel, but only if the data 
+// was posted by the Module that the non-module subscriber explicitly subscribed to.
+// This typically is used for UI visualizations, allowing UI widgets to subscribe to data posted by a certain Module.
+// For example, check out CLAIDModuleView of FlutterCLAID.
+message LooseDirectChannelSubscription
+{
+  Runtime subscriber_runtime = 1; 
+  string subscriber_entity = 2;
+  string subscribed_module = 3;
+  string subscribed_channel = 4; 
 }

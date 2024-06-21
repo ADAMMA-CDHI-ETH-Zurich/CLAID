@@ -25,9 +25,11 @@ import adamma.c4dhi.claid.Module.ChannelSubscriberPublisher;
 import adamma.c4dhi.claid.Module.Module;
 import adamma.c4dhi.claid.Module.ModuleAnnotator;
 import adamma.c4dhi.claid.Module.ModuleFactory;
+import adamma.c4dhi.claid.Module.Properties;
 import adamma.c4dhi.claid.Module.ThreadSafeChannel;
 import adamma.c4dhi.claid.LocalDispatching.ModuleInstanceKey;
 import adamma.c4dhi.claid.Logger.Logger;
+
 import adamma.c4dhi.claid.LogMessageSeverityLevel;
 import adamma.c4dhi.claid.EventTracker.EventTracker;
 
@@ -54,6 +56,9 @@ import adamma.c4dhi.claid.ModuleListResponse.ModuleDescriptor;
 import adamma.c4dhi.claid.ControlPackage;
 import adamma.c4dhi.claid.CtrlType;
 import adamma.c4dhi.claid.LogMessage;
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionHandler;
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionRunnableHandler;
+import adamma.c4dhi.claid.RemoteFunctionRequest;
 
 import io.grpc.stub.StreamObserver;
 
@@ -83,19 +88,23 @@ public class ModuleManager
     private DataPackage restartControlPackage;
 
     ChannelSubscriberPublisher subscriberPublisher;
+    RemoteFunctionHandler remoteFunctionHandler; 
+    RemoteFunctionRunnableHandler remoteFunctionRunnableHandler;
 
     EventTracker eventTracker = new EventTracker();
-
-    
 
     ThreadSafeChannel<DataPackage> fromModulesChannel = new ThreadSafeChannel<>();
     Thread readFromModulesThread;
     boolean running = false;
 
+
+
     public ModuleManager(ModuleDispatcher dispatcher, ModuleFactory moduleFactory)
     {
         this.dispatcher = dispatcher;
         this.moduleFactory = moduleFactory;
+        this.remoteFunctionHandler = new RemoteFunctionHandler(fromModulesChannel);
+        this.remoteFunctionRunnableHandler = new RemoteFunctionRunnableHandler("RUNTIME_JAVA", fromModulesChannel);
     }
 
     private boolean instantiateModule(String moduleId, String moduleClass)
@@ -158,9 +167,8 @@ public class ModuleManager
             // Hence, once all Modules have been initialized, we know the available Channels.
             Logger.logInfo("Calling module.start() for Module \"" + module.getId() + "\".");
             Properties properties = new Properties(descriptor.getProperties());
-            module.start(subscriberPublisher, properties);
+            module.start(subscriberPublisher, remoteFunctionHandler, properties);
             Logger.logInfo("Module \"" + module.getId() + "\" has started.");
-
         }
         return true;
     }
@@ -303,7 +311,7 @@ public class ModuleManager
             + "Unable to split the address into host:module");
         }*/
 
-        if(dataPackage.hasControlVal())
+        if(dataPackage.hasControlVal() && dataPackage.getControlVal().getCtrlType() != CtrlType.CTRL_UNSPECIFIED)
         {
            // Logger.logError("ModuleManager received DataPackage with controlVal. The controlVal should have been handled by ModuleDispatcher");
            handlePackageWithControlVal(dataPackage); 
@@ -328,22 +336,18 @@ public class ModuleManager
     
         if(!subscriberPublisher.isDataPackageCompatibleWithChannel(dataPackage))
         {
-            if(subscriberPublisher.getPayloadCaseOfChannel(channelName).name().equals(DataPackage.PayloadOneofCase.PAYLOADONEOF_NOT_SET.name()))
+            if(subscriberPublisher.getDataTypeNameOfChannel(channelName).equals(""))
             {
                 Logger.logError("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n"
-                + "however the Module has never subscribed to that channel (payload type is \"" + DataPackage.PayloadOneofCase.PAYLOADONEOF_NOT_SET + "\").");
+                + "however the Module has never subscribed to that channel (payload type is \"\").");
             }
             else
             {
-               String dataPackageDataTypeName = dataPackage.getPayloadOneofCase().name();
-               if(dataPackageDataTypeName.equals("blob_val"))
-               {
-                dataPackageDataTypeName = dataPackage.getBlobVal().getName();
-               }
+               String dataPackageDataTypeName = dataPackage.getPayload().getMessageType();
 
                 Logger.logInfo("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n"
-            + "however the data type of payload of the package did not match the data type of the Channel.\n"
-            + "Expected payload type \"" + subscriberPublisher.getDataTypeNameOfChannel(channelName) + "\" but got \"" + dataPackageDataTypeName);
+                + "however the data type of payload of the package did not match the data type of the Channel.\n"
+                + "Expected payload type \"" + subscriberPublisher.getDataTypeNameOfChannel(channelName) + "\" but got \"" + dataPackageDataTypeName);
             }
             return;
         }
@@ -443,7 +447,14 @@ public class ModuleManager
                 this.runningModules.get(targetModule).adjustPowerProfile(packet.getControlVal().getPowerProfile());
             }
         }
-        
+        else if(packet.getControlVal().getCtrlType() == CtrlType.CTRL_REMOTE_FUNCTION_REQUEST)
+        {
+            handleRemoteFunctionRequest(packet);
+        }
+        else if(packet.getControlVal().getCtrlType() == CtrlType.CTRL_REMOTE_FUNCTION_RESPONSE)
+        {
+            handleRemoteFunctionResponse(packet);
+        }
         else
         {
             Logger.logWarning("ModuleManager received package with unsupported control val " + packet.getControlVal().getCtrlType());
@@ -463,14 +474,14 @@ public class ModuleManager
             }
             else
             {
-                System.out.println("Read from modules null");
+                Logger.logError("Read from modules null");
             }
         }
     }
 
     public void onDataPackageFromModule(DataPackage dataPackage)
     {
-        Logger.logInfo("ModuleManager received local package from Module \"" + dataPackage.getSourceModule() + "\".");
+        Logger.logInfo("ModuleManager received local package from Module \"" + dataPackage.getSourceModule() + "\": " + dataPackage);
         this.dispatcher.postPackage(dataPackage);
     }
 
@@ -523,5 +534,55 @@ public class ModuleManager
         DataPackage response = responseBuilder.build();
        // this.fromModulesChannel.add(response);
     }
+
+    private void handleRemoteFunctionRequest(DataPackage remoteFunctionRequest)
+    {
+        RemoteFunctionRequest request = remoteFunctionRequest.getControlVal().getRemoteFunctionRequest();
+
+        if(request.getRemoteFunctionIdentifier().hasRuntime())
+        {
+            handleRuntimeRemoteFunctionExecution(remoteFunctionRequest);
+        }
+        else
+        {
+            handleModuleRemoteFunctionExecution(remoteFunctionRequest);
+        }
+    }
+
+    private void handleRuntimeRemoteFunctionExecution(DataPackage request)
+    {
+        boolean result = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(this, request);
+
+        if(!result)
+        {
+            Logger.logError("Java runtime failed to execute RPC request");
+            return;
+        }
+
+    }
+
+
+    private void handleModuleRemoteFunctionExecution(DataPackage request)
+    {
+        RemoteFunctionRequest remoteFunctionRequest = request.getControlVal().getRemoteFunctionRequest();
+        String moduleId = remoteFunctionRequest.getRemoteFunctionIdentifier().getModuleId();
+
+
+        if(!this.runningModules.containsKey(moduleId))
+        {
+            Logger.logError("Failed to execute remote function request. Could not find Module \"" + moduleId + "\"");
+            return;
+        }
+
+        this.runningModules.get(moduleId).enqueueRPC(request);
+    }
+
+
+
+    private void handleRemoteFunctionResponse(DataPackage remoteFunctionResponse)
+    {
+        this.remoteFunctionHandler.handleResponse(remoteFunctionResponse);
+    }
+
 
 }

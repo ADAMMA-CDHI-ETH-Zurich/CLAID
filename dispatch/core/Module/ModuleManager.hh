@@ -29,6 +29,10 @@
 #include "dispatch/core/proto_util.hh"
 #include "dispatch/core/EventTracker/EventTracker.hh"
 #include "dispatch/core/Module/Properties.hh"
+#include "dispatch/core/RemoteFunction/RemoteFunctionHandler.hh"
+#include "dispatch/core/RemoteFunction/RemoteFunctionRunnableHandler.hh"
+#include "dispatch/core/module_table.hh"
+
 
 using claidservice::DataPackage;
 using claidservice::ControlPackage;
@@ -53,6 +57,9 @@ namespace claid {
             std::shared_ptr<EventTracker> eventTracker;
 
             ChannelSubscriberPublisher subscriberPublisher;
+
+            RemoteFunctionHandler remoteFunctionHandler;
+            RemoteFunctionRunnableHandler remoteFunctionRunnableHandler;
 
             // ModuleId, Module
             std::map<std::string, std::unique_ptr<Module>> runningModules;
@@ -79,9 +86,15 @@ namespace claid {
             void onPackageReceivedFromModulesDispatcher(std::shared_ptr<DataPackage> dataPackage);
             void handlePackageWithControlVal(std::shared_ptr<DataPackage> package);
 
+            void handleRemoteFunctionRequest(std::shared_ptr<DataPackage> remoteFunctionRequest);
+            void handleRuntimeRemoteFunctionExecution(std::shared_ptr<DataPackage> request);
+            void handleModuleRemoteFunctionExecution(std::shared_ptr<DataPackage> request);
+            void handleRemoteFunctionResponse(std::shared_ptr<DataPackage> remoteFunctionResponse);
+
             void shutdownModules();
 
             void restart();
+
 
         public:
             ModuleManager(DispatcherClient& dispatcher,

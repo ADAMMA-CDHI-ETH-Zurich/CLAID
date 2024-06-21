@@ -76,9 +76,9 @@ namespace claid
         this->subscriberPublisher->getToModuleDispatcherQueue().push_back(package);
     }
 
-    bool ManagerModule::start(ChannelSubscriberPublisher* subscriberPublisher, Properties properties) 
+    bool ManagerModule::start(ChannelSubscriberPublisher* subscriberPublisher, RemoteFunctionHandler* remoteFunctionHandler, Properties properties) 
     {
-        bool result = Module::start(subscriberPublisher, properties);
+        bool result = Module::start(subscriberPublisher, remoteFunctionHandler, properties);
         this->subscriberPublisher = subscriberPublisher;   
         return result;
     }

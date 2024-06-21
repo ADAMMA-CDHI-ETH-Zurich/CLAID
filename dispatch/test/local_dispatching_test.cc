@@ -91,14 +91,19 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
         auto desc = expResp.add_descriptors();
         desc->set_module_id(m.modId);
         desc->set_module_class(m.modClass);
-        desc->mutable_properties()->insert(m.props.begin(), m.props.end());
+
+        for(auto& entry: m.props.fields())
+        {
+            (*desc->mutable_properties()->mutable_fields())[entry.first] = entry.second;
+        }
     };
+    expResp.set_log_severity_level_for_host(LogMessageSeverityLevel::INFO);
 
     auto modListResponse = client.getModuleList();
 
     // ASSERT a certain module list
     auto diff = cmpMsg(expResp, *modListResponse);
-    ASSERT_TRUE(diff == "") << diff;
+    ASSERT_TRUE(diff == "") << "Diff is: " << diff;
 
     //   !google::protobuf::util::MessageDifferencer::Equals(
     //       *self->message, *reinterpret_cast<CMessage*>(other)->message)) {
@@ -135,13 +140,14 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
     ASSERT_TRUE(clientStarted.ok()) << clientStarted.error_message();
 
     auto pkt12 = make_shared<DataPackage>(*chan12Pkt);
-    pkt12->mutable_number_array_val()->add_val(101.0);
-    pkt12->mutable_number_array_val()->add_val(102.5);
-    pkt12->mutable_number_array_val()->add_val(12.3);
+    addValToNumberArray(*pkt12, 101.0);
+    addValToNumberArray(*pkt12, 102.5);
+    addValToNumberArray(*pkt12, 12.3);
+
     outQueue.push_back(pkt12);
 
     auto pkt13 =  make_shared<DataPackage>(*chan13NumPkt);
-    pkt13->set_number_val(pkt13->number_val()+100.0);
+    setNumberVal(*pkt13, getNumberVal(*pkt13) + 100.0);
     outQueue.push_back(pkt13);
 
     auto pkt23 =  make_shared<DataPackage>(*chan23ProtoPkt);
@@ -151,10 +157,10 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
     // senders and multiple receivers.
     map<tuple<string, string, string>, list<shared_ptr<DataPackage>>> receivePkts;
 
-    outQueue.push_back(makeChanPacket(chan12To45, mod1, receivePkts, testChannels, [](auto& p) { p.set_number_val(1001); }));
-    outQueue.push_back(makeChanPacket(chan12To45, mod2, receivePkts, testChannels, [](auto& p) { p.set_number_val(1002); }));
-    outQueue.push_back(makeChanPacket(chan12To45, mod1, receivePkts, testChannels, [](auto& p) { p.set_number_val(1003); }));
-    outQueue.push_back(makeChanPacket(chan12To45, mod2, receivePkts, testChannels, [](auto& p) { p.set_number_val(1004); }));
+    outQueue.push_back(makeChanPacket(chan12To45, mod1, receivePkts, testChannels, [](auto& p) { setNumberVal(p, 1001); }));
+    outQueue.push_back(makeChanPacket(chan12To45, mod2, receivePkts, testChannels, [](auto& p) { setNumberVal(p, 1002); }));
+    outQueue.push_back(makeChanPacket(chan12To45, mod1, receivePkts, testChannels, [](auto& p) { setNumberVal(p, 1003); }));
+    outQueue.push_back(makeChanPacket(chan12To45, mod2, receivePkts, testChannels, [](auto& p) { setNumberVal(p, 1004); }));
     Logger::logInfo("local_dispatching_test 3");
 
     std::this_thread::sleep_for(1000ms);
@@ -185,7 +191,7 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
     ASSERT_TRUE(diff == "") << diff;
 
     ExamplePayload gotExPayload;
-    ASSERT_TRUE(parseFromBlob(gotPkt23->blob_val(), gotExPayload));
+    ASSERT_TRUE(parseFromBlob(gotPkt23->payload(), gotExPayload));
 
     diff = cmpMsg(*examplePayload, gotExPayload);
     ASSERT_TRUE(diff == "") << diff;

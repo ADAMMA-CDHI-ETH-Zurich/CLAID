@@ -32,12 +32,16 @@ using namespace claidservice;
 
 // compPacketType compares whether the 'val' packet matches the
 // channel and payload in the 'ref' packet.
-bool claid::compPacketType(const DataPackage& ref, const DataPackage& val) {
-    return (ref.channel() == val.channel()) &&
-        // ((ref.source_module() == val.source_module()) ||
-        // (ref.target_module() == val.target_module())) &&
-        (ref.payload_oneof_case() == val.payload_oneof_case());
+bool claid::compPacketType(const DataPackage& ref, const DataPackage& val) 
+{
+    const Blob& refBlob = ref.payload();
+    const Blob& valBlob = val.payload();
+    auto a = refBlob.message_type() == valBlob.message_type();
+    Logger::logInfo("Dbg 1.8 %d %s %s", a, refBlob.message_type().c_str(), valBlob.message_type().c_str());
+
+    return a;
 }
+
 
 // Returns true if the packet from the client is valid.
 // A packet is considered valid when
@@ -45,21 +49,51 @@ bool claid::compPacketType(const DataPackage& ref, const DataPackage& val) {
 //    - the payload is not a control package
 //    - the source or the target are set (exclusive or)
 //
-bool claid::validPacketType(const DataPackage& ref) {
-    return !(ref.channel().empty() ||
-        (ref.source_module().empty() && ref.target_module().empty()) ||
-        (!ref.source_module().empty() && !ref.target_module().empty()) ||
-        (ref.payload_oneof_case() == DataPackage::PayloadOneofCase::PAYLOAD_ONEOF_NOT_SET) ||
-        ref.has_control_val());
+bool claid::validPacketType(const DataPackage& ref) 
+{
+    if(ref.channel().empty())
+    {
+        Logger::logError("Invalid packet type, channel is empty");
+        return false;
+    }
+
+    if(ref.source_module().empty() && ref.target_module().empty())
+    {
+        Logger::logError("Invalid packet type, both source and target module are empty.");
+        return false;
+    }
+
+    if(!ref.source_module().empty() && !ref.target_module().empty())
+    {
+        Logger::logError("Invalid packet type, both source and target module are set: %s and %s", ref.source_module().c_str(), ref.target_module().c_str());
+        return false;
+    }
+
+    if(ref.has_control_val() && ref.control_val().ctrl_type() != CtrlType::CTRL_UNSPECIFIED)
+    {
+        Logger::logError("Invalid packet type, packet has control val %s %s", messageToString(ref.control_val()).c_str(), CtrlType_Name(ref.control_val().ctrl_type()).c_str());
+        return false;
+    }
+    return true;
 }
 
 SharedQueue<DataPackage>* ModuleTable::lookupOutputQueue(const string& moduleId) {
+    for(auto& entry : moduleRuntimeMap)
+    {
+        Logger::logInfo("%s %d", entry.first.c_str(), entry.second);
+    }
     auto rt = moduleRuntimeMap[moduleId];
     if (rt != Runtime::RUNTIME_UNSPECIFIED) {
         auto outQueue = runtimeQueueMap[rt];
+            Logger::logWarning("Output queue size: %d", outQueue->size());
+
         if (outQueue) {
             return outQueue.get();
         }
+    }
+    else
+    {
+        Logger::logError("ModuleTable::lookupOutputQueue runtime is unspecified");
     }
     return nullptr;
 }
@@ -166,16 +200,21 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         }
 
         // Find the channel and verify and set the type.
-        auto entry = findChannel(channelId);
+        ChannelEntry* entry = findChannel(channelId);
         if (!entry) {
             Logger::logWarning("%s", absl::StrCat("Channel \"", channelId, "\" not known, did you specify it in the configuration file?").c_str());
             continue;
         }
 
-        // If the type was already set and the type doesn't match we return an error.
-        if ((entry->payloadType != DataPackage::PAYLOAD_ONEOF_NOT_SET) && (entry->payloadType != chanPkt.payload_oneof_case())) {
-            return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid packet type for channel '",chanPkt.channel(), "' : ",
-              messageToString(chanPkt), "Payload type is ", entry->payloadType, " but expected ", chanPkt.payload_oneof_case()));
+        // If the type doesn't match we return an error.
+        if (entry->isPayloadTypeSet() && entry->getPayloadType() != chanPkt.payload().message_type()) 
+        {
+            // If subscribed channel is of type claid.CLAIDANY, we make an exception.s
+            if(entry->getPayloadType() != "claidservice.CLAIDANY")
+            {
+                return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid packet type for channel '",chanPkt.channel(), "': ",
+                "Payload type is ", entry->getPayloadType(), " but expected ", chanPkt.payload().message_type()));
+            }
         }
 
         // Mark the source / target as matched by this module.
@@ -188,16 +227,16 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
                 isSource ? "output channel" : "input channel", " of Module \"", val,  "\" in the configuration file."
             ));
         }
-        Logger::logInfo("Setting channel %s %d", channelId.c_str(), chanPkt.payload_oneof_case());
+        Logger::logInfo("Setting channel %s %s", channelId.c_str(), chanPkt.payload().message_type().c_str());
 
-        if(chanPkt.payload_oneof_case() == DataPackage::PayloadOneofCase::PAYLOAD_ONEOF_NOT_SET)
-        {
-            return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
-                "Failed to set channel \"", channelId, "\". Payload type is not set."
-            ));
-        }
+        // if(chanPkt.payload_oneof_case() == DataPackage::PayloadOneofCase::PAYLOAD_ONEOF_NOT_SET)
+        // {
+        //     return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
+        //         "Failed to set channel \"", channelId, "\". Payload type is not set."
+        //     ));
+        // }
 
-        entry->payloadType = chanPkt.payload_oneof_case();
+        entry->setPayloadType(chanPkt.payload().message_type());
     }
     return Status::OK;
 }
@@ -215,14 +254,14 @@ bool ModuleTable::ready() const {
                 return false;
             }
         }
-        if (it.second.payloadType == DataPackage::PAYLOAD_ONEOF_NOT_SET) {
+        if (!it.second.isPayloadTypeSet()) {
             return false;
         }
     }
     return true;
 }
 
-const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt) const {
+const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt, bool ignorePayload /*= false*/) const {
 
     shared_lock<shared_mutex> lock(const_cast<shared_mutex&>(chanMapMutex));
 
@@ -238,8 +277,12 @@ const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt) const {
         return nullptr;
     }
 
-    if (entry->payloadType != pkt.payload_oneof_case()) {
-        Logger::logError("Invalid package, payload type mismatch! Expected \"%d\" but got \"%d\"", entry->payloadType, pkt.payload_oneof_case());
+    if(ignorePayload)
+    {
+        return entry;
+    }
+    if (entry->getPayloadType() != pkt.payload().message_type()) {
+        Logger::logError("Invalid package, payload type mismatch! Expected \"%s\" but got \"%s\"", entry->getPayloadType().c_str(), pkt.payload().message_type().c_str());
         return nullptr;
     }
 
@@ -247,7 +290,7 @@ const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt) const {
     return entry;
 }
 
-void ModuleTable::addOutputPackets(const claidservice::DataPackage pkt,
+void ModuleTable::forwardPackageToAllSubscribers(const claidservice::DataPackage& pkt,
                           const ChannelEntry* chanEntry,
                           SharedQueue<claidservice::DataPackage>& queue) const {
 
@@ -286,6 +329,42 @@ void ModuleTable::addOutputPackets(const claidservice::DataPackage pkt,
             }            
         }
     }
+}
+
+// The DataPackage pkt was posted to a Channel by a Module.
+// We forward the pkt to all non-module entities which have subscribed to all data posted to the particular
+// Module on that channel. This is different from regular channel subscriptions.
+// In regular subscriptions, data is forwarded to all subscribers to a channel, no matter what Module posted the data.
+// In loose direct subscriptions, data is forwarded directly to separate non-module subscribers to a channel, but only if the data 
+// was posted by the Module that the non-module subscriber explicitly subscribed to.
+// This typically is used for UI visualizations, allowing UI widgets to subscribe to data posted by a certain Module.
+// For example, check out CLAIDModuleView of FlutterCLAID.
+void ModuleTable::forwardPackageOfModuleToAllLooseDirectSubscribers(
+        const claidservice::DataPackage& pkt, SharedQueue<claidservice::DataPackage>& queue) const
+{
+    //     std::map<std::string, std::map<Runtime, std::vector<claidservice::LooseChannelSubscription>>> looseDirectChannelSubscriptions;
+    const std::string& channelName = pkt.channel();
+    auto it = this->looseDirectChannelSubscriptions.find(channelName);
+
+    if(it != this->looseDirectChannelSubscriptions.end())
+    {
+        for(const auto& runtimeSubscribers : it->second)
+        {
+            for(const claidservice::LooseDirectChannelSubscription& subscription : runtimeSubscribers.second)
+            {
+                if(pkt.source_module() == subscription.subscribed_module())
+                {
+                    std::shared_ptr<DataPackage> newPackage = std::make_shared<DataPackage>(pkt);
+                    ControlPackage* controlVal = newPackage->mutable_control_val();
+                    controlVal->set_ctrl_type(CtrlType::CTRL_DIRECT_SUBSCRIPTION_DATA);
+                    (*controlVal->mutable_loose_direct_subscription()) = subscription;
+                    controlVal->set_runtime(subscription.subscriber_runtime());
+                    queue.push_back(newPackage);
+                }
+            }
+        }
+    }
+
 }
 
 void ModuleTable::augmentFieldValues(claidservice::DataPackage& pkt) const {
@@ -333,7 +412,7 @@ const string ModuleTable::toString() const {
         }
         out << endl;
 
-        out << "         Type:" << it.second.payloadType << endl;
+        out << "         Type:" << it.second.getPayloadType() << endl;
     }
     return out.str();
 }
@@ -467,3 +546,78 @@ bool ModuleTable::getTypeOfModuleWithId(const std::string& moduleId, std::string
     return true;
 }
 
+
+const std::map<std::string, std::string>& ModuleTable::getModuleToClassMap()
+{
+    return this->moduleToClassMap;
+}
+
+
+void ModuleTable::addLooseDirectSubscription(claidservice::LooseDirectChannelSubscription& subscription)
+{
+    unique_lock<shared_mutex> lock(chanMapMutex);
+    const std::string& channel = subscription.subscribed_channel();
+    const claidservice::Runtime& runtime = subscription.subscriber_runtime();
+
+    this->looseDirectChannelSubscriptions[channel][runtime].push_back(subscription);
+}
+
+void ModuleTable::removeLooseDirectSubscription(claidservice::LooseDirectChannelSubscription& subscription)
+{
+    unique_lock<shared_mutex> lock(chanMapMutex);
+    const std::string& channel = subscription.subscribed_channel();
+    const claidservice::Runtime& runtime = subscription.subscriber_runtime();
+
+    std::vector<claidservice::LooseDirectChannelSubscription>& subscriptions = this->looseDirectChannelSubscriptions[channel][runtime];
+
+    std::vector<claidservice::LooseDirectChannelSubscription> subscriptionsToKeep;
+
+    for(const claidservice::LooseDirectChannelSubscription& existingSubscription : subscriptions)
+    {
+        // Runtime subscriber_runtime = 1; 
+        // string subscriber_entity = 2;
+        // string subscribed_module = 3;
+        // string subscribed_channel = 4; 
+        // Check if the subscription in the vector is not equal to the subscription to remove.
+        // If it is not equal, keep it by pushing it into the "subscriptionsToKeep" vector.
+        if(!(
+            existingSubscription.subscriber_runtime() == subscription.subscriber_runtime() &&
+            existingSubscription.subscriber_entity() == subscription.subscriber_entity() &&
+            existingSubscription.subscribed_module() == subscription.subscribed_module() && 
+            existingSubscription.subscribed_channel() == subscription.subscribed_channel()
+        ))
+        {
+            subscriptionsToKeep.push_back(existingSubscription);
+        }
+    }
+
+    subscriptions = subscriptionsToKeep;
+}
+
+void ModuleTable::removeAllLooseDirectSubscriptionsOfRuntime(claidservice::Runtime runtime)
+{
+    unique_lock<shared_mutex> lock(chanMapMutex);
+    // For each channel, check if the runtime has any direct subscribers.
+    // If so, erase the entry from the map.
+    for(auto& entry : this->looseDirectChannelSubscriptions)
+    {
+        std::map<Runtime, 
+            std::vector<LooseDirectChannelSubscription>>& channelRuntimeSubscriptions = entry.second;
+        
+        auto itRuntime = channelRuntimeSubscriptions.find(runtime);
+        if(itRuntime != channelRuntimeSubscriptions.end())
+        {
+            channelRuntimeSubscriptions.erase(itRuntime);
+        }
+
+    }
+}
+
+bool ModuleTable::isModulePublishingChannel(const std::string& moduleId, const std::string& channel)
+{
+    DataPackage package;
+    package.set_source_module(moduleId);
+    package.set_channel(channel);
+
+    return isValidChannel(package, true) != nullptr;
+}

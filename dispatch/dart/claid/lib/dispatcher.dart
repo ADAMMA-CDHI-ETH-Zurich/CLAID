@@ -28,6 +28,9 @@ import 'package:claid/generated/claidservice.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
 
 import 'middleware.dart';
+import 'package:claid/module/properties.dart';
+import 'package:claid/generated/google/protobuf/struct.pb.dart';
+import 'package:claid/logger/Logger.dart';
 
 class StreamingError implements Error {
   final String message;
@@ -41,7 +44,7 @@ class StreamingError implements Error {
 class ModDescriptor {
   final String moduleId;
   final String moduleClass;
-  final Map<String, String> properties;
+  final Struct properties;
   const ModDescriptor(this.moduleId, this.moduleClass, this.properties);
 }
 
@@ -58,6 +61,8 @@ class ModuleDispatcher {
   late ClientChannel _channel;
   ResponseStream<DataPackage>? _responseStream;
   StreamController<DataPackage>? _outputController;
+
+  Function? _onControlPackageFunction = null;
 
   ModuleDispatcher(this._socketPath)
   {
@@ -84,10 +89,13 @@ class ModuleDispatcher {
   Future<Stream<DataPackage>> initRuntime(
       Map<String, List<DataPackage>> modules,
       StreamController<DataPackage> outputController) async {
+    Logger.logInfo("Initruntime got modules: " + modules.toString());
     final req = InitRuntimeRequest(
         runtime: Runtime.RUNTIME_DART,
         modules: modules.entries.map((e) => InitRuntimeRequest_ModuleChannels(
             moduleId: e.key, channelPackets: e.value)));
+
+    Logger.logInfo("Runtime request: " + req.toString());
     await _stub.initRuntime(req);
 
     final listenCalled = Completer<void>();
@@ -134,10 +142,12 @@ class ModuleDispatcher {
       Stream<DataPackage> source, Completer<void> completer) async* {
     var first = false;
 
-    await for (var pkt in source) {
+    await for (var pkt in source) 
+    {
       // Always deal with errors first.
       if (pkt.hasControlVal() &&
-          pkt.controlVal.ctrlType == CtrlType.CTRL_ERROR) {
+          pkt.controlVal.ctrlType == CtrlType.CTRL_ERROR) 
+      {
         final ctrlMsg = pkt.controlVal;
         final err = ctrlMsg.errorMsg;
         if (err.cancel) {
@@ -159,9 +169,37 @@ class ModuleDispatcher {
         continue;
       }
 
-      // TODO: Here we could filter control packets and not pass them
-      // on to the business logic.
-      yield pkt;
+
+      if(pkt.hasControlVal())
+      {
+        print("handleControlPackage");
+        handleControlPackage(pkt);
+        continue;
+      }
+      else
+      {
+          yield pkt;
+      }
+      
     }
+  }
+
+  void setOnControlPackageFunction(Function function)
+  {
+    this._onControlPackageFunction = function;
+  }
+
+  void handleControlPackage(DataPackage package)
+  {
+    ControlPackage ctrlPackage = package.controlVal;
+    if(this._onControlPackageFunction != null)
+    {
+      this._onControlPackageFunction!(package);
+    }
+    // switch(ctrlPackage.ctrlType)
+    // {
+    //   case CtrlType.
+    // };
+
   }
 }

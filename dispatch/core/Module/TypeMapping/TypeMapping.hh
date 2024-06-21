@@ -32,17 +32,19 @@
 #include "dispatch/core/Module/TypeMapping/ProtoCodec.hh"
 #include "dispatch/core/Module/TypeMapping/AnyProtoType.hh"
 
-using claidservice::DataPackage;
-using claidservice::NumberMap;
-using claidservice::StringMap;
-using claidservice::NumberArray;
-using claidservice::StringArray;
+using namespace claidservice;
 
 namespace claid {
 
     class TypeMapping
     {
         static std::map<std::string, ProtoCodec> protoCodecMap;
+
+        template<typename T>
+        static std::shared_ptr<const google::protobuf::Message> makeMessage()
+        {
+            return std::static_pointer_cast<const google::protobuf::Message>(std::make_shared<T>());
+        }
 
         static ProtoCodec& getProtoCodec(const google::protobuf::Message* instance) 
         {
@@ -58,6 +60,34 @@ namespace claid {
 
             return it->second;
         }
+
+        template<typename T>
+        static bool setProtoPayload(DataPackage& packet, T& protoValue)
+        {
+            ProtoCodec& protoCodec = getProtoCodec(&protoValue);
+
+            Blob& blob = *packet.mutable_payload();
+
+            return protoCodec.encode(static_cast<const google::protobuf::Message*>(&protoValue), blob);
+        }
+
+        template<typename T>
+        static bool getProtoPayload(const DataPackage& packet, T& returnValue)
+        {
+            ProtoCodec& protoCodec = getProtoCodec(&returnValue);
+
+            if(packet.payload().message_type() == "")
+            {
+                Logger::logError("Invalid package, unknown payload! Expected payload type to be specified in message_type of Blob, but got \"\"");
+                throw std::invalid_argument("ProtoCodec.decode failed. Wrong payload type.");
+            }
+            
+            if(!protoCodec.decode(packet.payload(), static_cast<google::protobuf::Message*>(&returnValue)))
+            {
+                throw std::invalid_argument("ProtoCodec.decode failed");
+            }
+            return true;
+        }
         
 
     public:
@@ -68,8 +98,21 @@ namespace claid {
         static getMutator()
         {
             return Mutator<T>(
-                [](DataPackage& packet, const T& value) { packet.set_number_val(value); },
-                [](const DataPackage& packet, T& returnValue) { returnValue = packet.number_val(); }
+                makeMessage<NumberVal>(),
+                [](DataPackage& packet, const T& value) 
+                { 
+                    NumberVal protoVal;
+                    protoVal.set_val(static_cast<T>(value));
+                    
+                    setProtoPayload(packet, protoVal);
+                },
+                [](const DataPackage& packet, T& returnValue) 
+                {
+                    NumberVal protoVal;
+                    getProtoPayload(packet, protoVal); 
+
+                    returnValue = static_cast<T>(protoVal.val());
+                }
             );
         }
 
@@ -79,8 +122,21 @@ namespace claid {
         static getMutator()
         {
             return Mutator<bool>(
-                [](DataPackage& packet, const bool& value) { packet.set_bool_val(value); },
-                [](const DataPackage& packet, T& returnValue) { returnValue = packet.bool_val(); }
+                makeMessage<BoolVal>(),
+                [](DataPackage& packet, const bool& value) 
+                { 
+                    BoolVal protoVal;
+                    protoVal.set_val(value);
+
+                    setProtoPayload(packet, protoVal);
+                },
+                [](const DataPackage& packet, T& returnValue) 
+                { 
+                    BoolVal protoVal;
+                    getProtoPayload(packet, protoVal);
+
+                    returnValue = protoVal.val();
+                }
             );
         }
 
@@ -90,8 +146,21 @@ namespace claid {
         static getMutator()
         {
             return Mutator<std::string>(
-                [](DataPackage& packet, const std::string& value) { packet.set_string_val(value); },
-                [](const DataPackage& packet, T& returnValue) { returnValue = packet.string_val(); }
+                makeMessage<StringVal>(),
+                [](DataPackage& packet, const std::string& value) 
+                { 
+                    StringVal protoVal;
+                    protoVal.set_val(value);
+
+                    setProtoPayload(packet, protoVal);
+                },
+                [](const DataPackage& packet, T& returnValue) 
+                { 
+                    StringVal protoVal;
+                    getProtoPayload(packet, protoVal);
+
+                    returnValue = protoVal.val();               
+                }
             );
         }
 
@@ -103,25 +172,26 @@ namespace claid {
         static getMutator()
         {
             return Mutator<T>(
+                makeMessage<NumberArray>(),
                 [](DataPackage& packet, const T& array) 
                 { 
-                    NumberArray* numberArray = packet.mutable_number_array_val();
+                    NumberArray numberArray;
                     for(auto number : array)
                     {
-                        numberArray->add_val(number);
+                        numberArray.add_val(number);
                     }
+                    setProtoPayload(packet, numberArray);
                 },
                 [](const DataPackage& packet, T& returnValue) 
                 { 
-                    const NumberArray& numberArray = packet.number_array_val();
+                    NumberArray numberArray;
+                    getProtoPayload(packet, numberArray);
 
                     returnValue = T(numberArray.val_size());
                     for (int i = 0; i < numberArray.val_size(); i++) 
                     {
                         returnValue[i] = numberArray.val(i);
                     }
-
-                    
                 }
             );
         }
@@ -132,17 +202,20 @@ namespace claid {
         static getMutator()
         {
             return Mutator<T>(
+                makeMessage<StringArray>(),
                 [](DataPackage& packet, const T& array) 
                 { 
-                    StringArray* stringArray = packet.mutable_string_array_val();
+                    StringArray stringArray;
                     for(const auto& str : array)
                     {
-                        stringArray->add_val(str);
+                        stringArray.add_val(str);
                     }
+                    setProtoPayload(packet, stringArray);
                 },
                 [](const DataPackage& packet, T& returnValue) 
                 { 
-                    const StringArray& stringArray = packet.string_array_val();
+                    StringArray stringArray;
+                    getProtoPayload(packet, stringArray);
 
                     returnValue = T(stringArray.val_size());
                     for (int i = 0; i < stringArray.val_size(); i++) 
@@ -162,18 +235,21 @@ namespace claid {
         static getMutator()
         {
             return Mutator<T>(
+                makeMessage<NumberMap>(),
                 [](DataPackage& packet, const T& map) 
                 { 
-                    NumberMap* numberMap = packet.mutable_number_map();
+                    NumberMap numberMap;
                     for (const auto& pair : map) 
                     {
-                        (*numberMap->mutable_val())[pair.first] = pair.second;
+                        (*numberMap.mutable_val())[pair.first] = pair.second;
                     }
+                    setProtoPayload(packet, numberMap);
                 },
                 [](const DataPackage& packet, T& returnValue) 
                 { 
                     returnValue.clear();
-                    const NumberMap& numberMap = packet.number_map();
+                    NumberMap numberMap;
+                    getProtoPayload(packet, numberMap);
                     for (const auto& pair : numberMap.val()) 
                     {
                         returnValue[pair.first] = pair.second;
@@ -188,19 +264,23 @@ namespace claid {
         static getMutator()
         {
             return Mutator<T>(
+                makeMessage<StringMap>(),
                 [](DataPackage& packet, const T& map) 
                 { 
-                    StringMap* stringMap = packet.mutable_string_map();
+                    StringMap stringMap;
                     for (const auto& pair : map) 
                     {
-                        (*stringMap->mutable_val())[pair.first] = pair.second;
+                        (*stringMap.mutable_val())[pair.first] = pair.second;
                     }
+                    setProtoPayload(packet, stringMap);
                 },
                 [](const DataPackage& packet, T& returnValue) 
                 { 
                     returnValue.clear();
 
-                    const StringMap& stringMap = packet.string_map();
+                    StringMap stringMap;
+                    getProtoPayload(packet, stringMap);
+
                     for (const auto& pair : stringMap.val()) 
                     {
                         returnValue[pair.first] = pair.second;
@@ -210,6 +290,24 @@ namespace claid {
             );
         }
 
+        // // void
+        // template<typename T>
+        // typename std::enable_if<std::is_same<void, T>::value, Mutator<T>>::type
+        // static getMutator()
+        // {
+        //     return Mutator<T>(
+        //         makeMessage<google::protobuf::Empty>(),
+        //         [](DataPackage& packet, const T& map) 
+        //         { 
+                    
+        //         },
+        //         [](const DataPackage& packet, T& returnValue) 
+        //         { 
+                    
+        //         }
+        //     );
+        // }
+
         template<typename T>
         typename std::enable_if<std::is_base_of<google::protobuf::Message, T>::value, Mutator<T>>::type
         static getMutator()
@@ -217,30 +315,14 @@ namespace claid {
             Logger::logInfo("Is protobuf typ pe in typemapper");
         
             return Mutator<T>(
+                makeMessage<T>(),
                 [](DataPackage& packet, const T& value) 
                 { 
-
-                    ProtoCodec& protoCodec = getProtoCodec(&value);
-
-                    Blob& blob = *packet.mutable_blob_val();
-
-                    protoCodec.encode(static_cast<const google::protobuf::Message*>(&value), blob);
-
+                    setProtoPayload(packet, value);
                 },
                 [](const DataPackage& packet, T& returnValue) 
                 { 
-                    ProtoCodec& protoCodec = getProtoCodec(&returnValue);
-
-                    if(packet.payload_oneof_case() != DataPackage::PayloadOneofCase::kBlobVal)
-                    {
-                        Logger::logError("Invalid package, payload type mismatch! Expected \"%d\" but got \"%d\"", DataPackage::PayloadOneofCase::kBlobVal, packet.payload_oneof_case());
-                        throw std::invalid_argument("ProtoCodec.decode failed. Wrong payload type.");
-                    }
-                    
-                    if(!protoCodec.decode(packet.blob_val(), static_cast<google::protobuf::Message*>(&returnValue)))
-                    {
-                        throw std::invalid_argument("ProtoCodec.decode failed");
-                    }
+                    getProtoPayload(packet, returnValue);
                 }
             );
         }
@@ -253,6 +335,7 @@ namespace claid {
             Logger::logInfo("Is AnyProtoType in typemapper");
         
             return Mutator<T>(
+                makeMessage<claidservice::CLAIDANY>(),
                 [](DataPackage& packet, const T& value) 
                 { 
                     std::shared_ptr<const google::protobuf::Message> message = value.getMessage();
@@ -263,7 +346,7 @@ namespace claid {
 
                     ProtoCodec& protoCodec = getProtoCodec(message.get());
 
-                    Blob& blob = *packet.mutable_blob_val();
+                    Blob& blob = *packet.mutable_payload();
 
                     if(!protoCodec.encode(value.getMessage().get(), blob))
                     {
@@ -276,13 +359,13 @@ namespace claid {
                     
 
 
-                    if(packet.payload_oneof_case() != DataPackage::PayloadOneofCase::kBlobVal)
+                    if(packet.payload().message_type() == "")
                     {
-                        Logger::logError("Invalid package, payload type mismatch! Expected \"%d\" but got \"%d\"", DataPackage::PayloadOneofCase::kBlobVal, packet.payload_oneof_case());
+                        Logger::logError("Invalid package, unknown payload! Expected payload type to be specified in message_type of Blob, but got \"\"");
                         throw std::invalid_argument("ProtoCodec.decode failed. Wrong payload type.");
                     }
 
-                    const Blob& blob = packet.blob_val();
+                    const Blob& blob = packet.payload();
                     const std::string messageType = blob.message_type();
                     const google::protobuf::Descriptor* desc =
                         google::protobuf::DescriptorPool::generated_pool()
@@ -321,7 +404,7 @@ namespace claid {
 
                     std::shared_ptr<google::protobuf::Message> msg(protoType->New());
 
-                    if(!msg->ParseFromString(packet.blob_val().payload()))
+                    if(!msg->ParseFromString(packet.payload().payload()))
                     {
                         throw std::invalid_argument("ProtoCodec.decode failed for AnyProtoType");
                     }

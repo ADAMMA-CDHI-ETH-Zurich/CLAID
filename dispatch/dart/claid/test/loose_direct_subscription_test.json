@@ -1,0 +1,19 @@
+{
+	"hosts": [{
+			"hostname": "test_client",
+			"type": "linux",
+			"is_server": false,
+			"connect_to": "",
+			"modules": [
+				{
+					"type": "TestStreamer",
+					"id": "TestStreamer",
+					"output_channels" : {"TestStream" : "TestStream"},
+					"properties": {
+						
+					}
+				}
+			]
+		}
+	]
+}

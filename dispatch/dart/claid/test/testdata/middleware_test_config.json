@@ -8,8 +8,8 @@
 				{
 					"type": "TestModuleOne",
 					"id": "test_mod_1",
-					"input_channels": [],
-					"output_channels": ["RawNumber"],
+					"input_channels": {},
+					"output_channels": {"RawNumber": "RawNumber"},
 					"properties": {
 						"samplingRate": "44100",
 						"channels": "MONO",
@@ -21,8 +21,8 @@
 				{
 					"type": "TestModuleTwo",
 					"id": "test_mod_2",
-					"input_channels": ["RawNumber"],
-					"output_channels": [],
+					"input_channels": {"RawNumber": "RawNumber"},
+					"output_channels": {},
 					"properties": {
 						"samplingRate": "44100",
 						"channels": "MONO",

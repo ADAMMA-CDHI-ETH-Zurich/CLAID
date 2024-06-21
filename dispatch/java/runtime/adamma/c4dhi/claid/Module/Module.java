@@ -28,6 +28,9 @@ import adamma.c4dhi.claid.Module.Scheduling.RunnableDispatcher;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduleOnce;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduleRepeatedIntervall;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduledRunnable;
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunction;
+import adamma.c4dhi.claid.Runtime;
+
 import adamma.c4dhi.claid.EventTracker.EventTracker;
 
 import adamma.c4dhi.claid.TypeMapping.DataType;
@@ -35,9 +38,11 @@ import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.LogMessageSeverityLevel;
 import adamma.c4dhi.claid.LogMessageEntityType;
 import adamma.c4dhi.claid.PowerProfile;
+import adamma.c4dhi.claid.Module.Properties;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -50,6 +55,10 @@ import adamma.c4dhi.claid.Module.Scheduling.ConsumerRunnable;
 import adamma.c4dhi.claid.Module.Scheduling.RunnableDispatcher;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduleOnce;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduledRunnable;
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionRunnable;
+
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionHandler;
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionRunnableHandler;
 
 public abstract class Module
 {
@@ -58,7 +67,9 @@ public abstract class Module
     protected EventTracker eventTracker;
 
     protected ChannelSubscriberPublisher subscriberPublisher;
-    
+    protected RemoteFunctionHandler remoteFunctionHandler;
+    private RemoteFunctionRunnableHandler remoteFunctionRunnableHandler = null;
+
     private RunnableDispatcher runnableDispatcher = new RunnableDispatcher();
 
     private boolean isInitializing = false;
@@ -69,7 +80,8 @@ public abstract class Module
 
     Map<String, ScheduledRunnable> timers = new HashMap<>();
 
-
+    // Functions registered by this Module, which can be executed from other Modules or entities.
+    Map<String, RemoteFunctionRunnable> registeredRemoteFunctionRunnables = new HashMap<>();
 
     public Module(/*ThreadSafeChannel<DataPackage> moduleInputQueue,  
         ThreadSafeChannel<DataPackage> moduleOutputQueue*/)
@@ -108,7 +120,7 @@ public abstract class Module
         Logger.log(LogMessageSeverityLevel.WARNING, debugMsg, LogMessageEntityType.MODULE, this.id);
     }
 
-    public boolean start(ChannelSubscriberPublisher subscriberPublisher, Properties properties)
+    public boolean start(ChannelSubscriberPublisher subscriberPublisher, RemoteFunctionHandler remoteFunctionHandler, Properties properties)
     {
         if(this.isInitialized)
         {
@@ -116,6 +128,8 @@ public abstract class Module
             return false;
         }
         this.subscriberPublisher = subscriberPublisher;
+        this.remoteFunctionHandler = remoteFunctionHandler;
+        this.remoteFunctionRunnableHandler = new RemoteFunctionRunnableHandler("Module " + this.id, subscriberPublisher.getToModuleManagerQueue());
 
         if(!this.runnableDispatcher.start())
         {
@@ -123,6 +137,7 @@ public abstract class Module
             return false;
         }
  
+    
         // Publishing / subscribing is only allowed in initialize function.
         // Use booleans to guard the access to the publish/subscribe functions.
         this.isInitializing = true;
@@ -239,7 +254,6 @@ public abstract class Module
     private void enqueueRunnable(ScheduledRunnable runnable)
     {
         this.runnableDispatcher.addRunnable(runnable);
-
     }
 
     
@@ -632,14 +646,71 @@ public abstract class Module
         this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> onDisconnectedFromRemoteServer()));
     }
 
-    public void pauseModule() {
-        if (isPaused) {
+    public void enqueueRPC(DataPackage rpcRequest)
+    {
+
+        // Some entity requested for us to execute a remote function.
+        // Create a ConsumerRunnable and enqueue it to execute the remote function of the thread of the Module.
+        ConsumerRunnable<DataPackage> consumerRunnable = 
+            new ConsumerRunnable<DataPackage>(rpcRequest, (request) -> executeRPCRequest(request), ScheduleOnce.now());
+
+        ScheduledRunnable runnable = (ScheduledRunnable) consumerRunnable;
+
+        this.runnableDispatcher.addRunnable(runnable);
+
+    }
+
+
+
+    // 
+    private void executeRPCRequest(DataPackage rpcRequest)
+    {
+
+        if(!rpcRequest.getTargetModule().equals(this.id))
+        {
+            moduleError("Failed to execute RPC request. RPC is targeted for Module \"" + rpcRequest.getTargetModule() +
+                 "\", but we are Module \"" + this.id + "\".");
+            return;
+        }
+
+        boolean result = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(this, rpcRequest);
+        if(!result)
+        {
+            moduleError("Failed to execute rpcRequest");
+            return;
+        }
+
+    }
+
+    protected boolean registerRemoteFunction(String functionName, Class<?> returnType, Class<?>... parameters)
+    {
+        return this.remoteFunctionRunnableHandler.registerRunnable(this, functionName, returnType, parameters);
+    }
+
+    protected <T> RemoteFunction<T> mapRemoteFunctionOfModule(String moduleId, String functionName, Class<T> returnType, Class<?>... parameters)
+    {
+        if(moduleId.equals(this.id))
+        {
+            moduleFatal("Cannot map remote function. Module tried to map function \"" + functionName + "\" of itself, which is not allowed.");
+            return null;
+        }
+        return this.remoteFunctionHandler.mapModuleFunction(moduleId, functionName, returnType, parameters);
+    }
+
+    protected <T> RemoteFunction<T> mapRemoteFunctionOfRuntime(Runtime runtime, String functionName, Class<T> returnType, Class<?>... parameters)
+    {
+        return this.remoteFunctionHandler.mapRuntimeFunction(runtime, functionName, returnType, parameters);
+    }
+
+    public void pauseModule() 
+    {
+        if (isPaused) 
+        {
             // moduleWarning("Failed to pause Module. Module is already paused.");
             return;
         }
         moduleInfo("Pausing Module");
         this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> pauseInternal()));
-
 
         while (!isPaused) {
             try {
@@ -702,6 +773,8 @@ public abstract class Module
 
     protected void onPowerProfileChanged(PowerProfile powerProfile) {
     }
+
+
 
 //         String name, Duration period, RegisteredCallback callback) =>
 //     _scheduler.registerPeriodicFunction(_modId, name, period, callback);

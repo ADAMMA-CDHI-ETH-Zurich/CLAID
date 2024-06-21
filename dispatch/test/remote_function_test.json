@@ -1,0 +1,25 @@
+{
+	"hosts": [{
+			"hostname": "test_client",
+			"type": "linux",
+			"is_server": false,
+			"connect_to": "",
+			"modules": [
+				{
+					"type": "RPCCaller",
+					"id": "RPCCaller",
+					"properties": {
+						
+					}
+				},
+				{
+					"type": "RPCCallee",
+					"id": "RPCCallee",
+					"properties": {
+						
+					}
+				}
+			]
+		}
+	]
+}

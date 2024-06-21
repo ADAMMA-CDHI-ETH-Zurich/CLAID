@@ -22,11 +22,14 @@
 
 
 import 'dart:io';
+import 'dart:async';
 import 'dart:ffi' as ffi;
+import 'dart:isolate'; // Import Isolate class
+
 import 'package:ffi/ffi.dart';
-
+import "package:path/path.dart" show dirname;
 import 'claid_core_bindings_generated.dart';
-
+import 'dart:io' show Platform;
 const String _libName = 'claid_capi';
 final String _platform = Platform.isAndroid ? 'android' : 'linux';
 
@@ -34,11 +37,14 @@ class MiddleWareBindings {
   var _coreHandle = ffi.Pointer<ffi.Void>.fromAddress(0);
   bool _ready = false;
   bool _wasMiddlewareStartedFromDart = false;
-
+  static String _libraryPath = "";
+  late ffi.DynamicLibrary _dyLib;
+  /// The bindings to the native functions in [_dylib].
+  late ClaidCoreBindings _bindings;
   
   MiddleWareBindings()
   {
-
+    loadCLAIDLibrary();
   }
 
   // Starts the CLAID middleware.
@@ -61,6 +67,11 @@ class MiddleWareBindings {
     return _ready;
   }
 
+  bool attachCppRuntime()
+  {
+    return _bindings.attach_cpp_runtime(_coreHandle) != null;
+  }
+
   void shutdown() {
     if (_ready && _wasMiddlewareStartedFromDart) {
       _bindings.shutdown_core(_coreHandle);
@@ -69,29 +80,71 @@ class MiddleWareBindings {
     }
   }
 
+  static void setLibraryPath(String path)
+  {
+    _libraryPath = path;
+  }
+
+  static String getLibraryPath(String path)
+  {
+    return _libraryPath;
+  }
+
+
+  /// The dynamic library in which the symbols for [ClaidCoreBindings] can be found.
+  void loadCLAIDLibrary()
+  {
+    ffi.DynamicLibrary? library;
+    if (Platform.isMacOS || Platform.isIOS)
+    {
+
+      String path = _libraryPath != "" ? _libraryPath : "../../dispatch/dart/claid/blobs/lib$_libName.dylib";
+        print("LibraryPath $path");
+
+      if(!File(path).existsSync())
+      {
+        path = "blobs/lib$_libName.dylib";
+      }
+      library = ffi.DynamicLibrary.open(path);
+    }
+    if (Platform.isLinux) 
+    {
+        String path = _libraryPath != "" ? _libraryPath : "../../dispatch/dart/claid/blobs/lib${_libName}_${_platform}.so";
+
+      if(!File(path).existsSync())
+      {
+        path = "blobs/lib${_libName}_${_platform}.so";
+      }
+      library = ffi.DynamicLibrary.open(path);
+    }
+    if (Platform.isAndroid)
+    {
+      library = ffi.DynamicLibrary.open('libclaid_capi_android.so');
+    }
+    if (Platform.isWindows) 
+    {
+      library = ffi.DynamicLibrary.open('$_libName.dll');
+    }
+
+    if(library != null)
+    {
+      _dyLib = library;
+      _bindings = ClaidCoreBindings(_dyLib);
+      return;
+    }
+    throw UnsupportedError('Unknown platform: ${Platform.operatingSystem}');
+  }
+
+
   bool get ready => _ready;
 }
 
-/// The dynamic library in which the symbols for [ClaidCoreBindings] can be found.
-final ffi.DynamicLibrary _dylib = () {
-  if (Platform.isMacOS || Platform.isIOS) {
-    return ffi.DynamicLibrary.open('$_libName.framework/$_libName');
-  }
-  if (Platform.isLinux) {
-    return ffi.DynamicLibrary.open('blobs/lib${_libName}_${_platform}.so');
-  }
-  if (Platform.isAndroid)
-  {
-    return ffi.DynamicLibrary.open('libclaid_capi_android.so');
-  }
-  if (Platform.isWindows) {
-    return ffi.DynamicLibrary.open('$_libName.dll');
-  }
-  throw UnsupportedError('Unknown platform: ${Platform.operatingSystem}');
-}();
 
-/// The bindings to the native functions in [_dylib].
-final ClaidCoreBindings _bindings = ClaidCoreBindings(_dylib);
+
+ 
+
+
+
 
 /// Helper function to get a char* pointer from a Dart string to pass
 /// it to c function.

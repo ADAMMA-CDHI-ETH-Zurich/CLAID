@@ -27,12 +27,13 @@ import java.util.function.Function;
 
 import adamma.c4dhi.claid.DataPackage;
 
-public class Mutator<T> 
+public class Mutator<T> extends AbstractMutator
 {
     // In Java, Protobuf types are immutable. 
     // Hence, the setter has to return a new DataPacke.
     private final BiFunction<DataPackage, T, DataPackage> setter;
     private final Function<DataPackage, T> getter;
+
 
     public Mutator(BiFunction<DataPackage, T, DataPackage> setter, Function<DataPackage, T> getter) {
         this.setter = setter;
@@ -46,5 +47,22 @@ public class Mutator<T>
 
     public T getPackagePayload(DataPackage packet) {
         return getter.apply(packet);
+    }
+
+    public T cast(Object o)
+    {
+        return (T) o;
+    }
+
+    @Override
+    public DataPackage setPackagePayloadFromObject(DataPackage packet, Object o)
+    {
+        return setPackagePayload(packet, (T) o);
+    }
+
+    @Override
+    public Object getPackagePayloadAsObject(DataPackage packet)
+    {
+        return (Object) getPackagePayload(packet);
     }
 }

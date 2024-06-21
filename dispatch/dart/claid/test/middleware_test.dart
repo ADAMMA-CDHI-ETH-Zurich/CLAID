@@ -78,11 +78,11 @@ void main() {
     final channels = <String, List<DataPackage>>{
       testModOne: <DataPackage>[
         DataPackage(
-            channel: channelID, sourceModule: testModOne, numberVal: 99),
+            channel: channelID, sourceModule: testModOne, /*numberVal: 99*/),
       ],
       testModTwo: <DataPackage>[
         DataPackage(
-            channel: channelID, targetModule: testModTwo, numberVal: 99),
+            channel: channelID, targetModule: testModTwo, /*numberVal: 99*/),
       ],
     };
 
@@ -122,7 +122,7 @@ void main() {
       final pkt = DataPackage(
         channel: channelID,
         sourceModule: testModOne,
-        numberVal: counter.toDouble(),
+        //numberVal: counter.toDouble(),
       );
       outGoingPkts.add(pkt);
       outputController.add(pkt);

@@ -58,7 +58,7 @@ typedef std::function<void(DataPackage&)> setterFn;
 typedef struct ModInfo {
     std::string modId;
     std::string modClass;
-    std::map<std::string, std::string> props;
+    google::protobuf::Struct props;
 } ModInfo;
 
 
@@ -80,6 +80,31 @@ void clearSrcTgt(DataPackage& pkt);
 void blobMsgFromProto(const google::protobuf::Message& msg, claidservice::Blob& targetBlob);
 bool parseFromBlob(const claidservice::Blob& srcBlob, google::protobuf::Message& msg);
 
+template<typename T>
+static void setPayload(DataPackage& packet, T& data)
+{
+    claidservice::Blob& blob = *packet.mutable_payload();
+    blobMsgFromProto(data, blob);
+}
+
+template<typename T> static void setNumberVal(DataPackage& packet, const T& number)
+{
+    claidservice::NumberVal val;
+    val.set_val(number);
+    setPayload(packet, val);
+}
+
+static void setStringVal(DataPackage& packet, const std::string& str)
+{
+    claidservice::StringVal val;
+    val.set_val(str);
+    setPayload(packet, val);
+}
+
+
+double getNumberVal(DataPackage& packet);
+std::string getStringVal(DataPackage& packet);
+
 // Definitino of the modules and channels.
 const std::string
     mod1 = "module_1",
@@ -99,27 +124,58 @@ const std::string
     modClass4 = "FourModuleClass",
     modClass5 = "FiveModuleClass";
 
-const std::map<std::string, std::string>
-    props_1 = {{"prop11", "val11"}, {"prop12", "val12"}},
-    props_2 = {{"prop21", "val21"}},
-    props_3 = {{"prop31", "val31"}},
-    props_4 = {{"prop41", "val41"}},
-    props_5 = {{"prop41", "val41"}};
+google::protobuf::Value createValue(const std::string& str);
 
+google::protobuf::Struct createStruct(const std::initializer_list<std::pair<const std::string, std::string>>& props);
+
+const google::protobuf::Struct
+    props_1 = createStruct({{"prop11", "val11"}, {"prop12", "val12"}}),
+    props_2 = createStruct({{"prop21", "val21"}}),
+    props_3 = createStruct({{"prop31", "val31"}}),
+    props_4 = createStruct({{"prop41", "val41"}}),
+    props_5 = createStruct({{"prop41", "val41"}});
+
+
+template<typename T>
+void addValToNumberArray(DataPackage& packet, const T& number)
+{
+    claidservice::NumberArray val;
+    parseFromBlob(packet.payload(), val);
+    val.add_val(number);
+    setPayload(packet, val);
+}
 // define the packets for the different channels.
 // Note: If multiple modules can send/receive on a channel we need a
 // packet for each in/out combination.
 const auto examplePayload = mkExamplePayload();
 const std::shared_ptr<DataPackage>
-    chan12Pkt = makePkt(chan12, mod1, mod2, [](auto& p) { p.mutable_number_array_val()->add_val(99); }),
-    chan13NumPkt = makePkt(chan13Num, mod1, mod3, [](auto& p) { p.set_number_val(42); }),
-    chan13StrPkt = makePkt(chan13Str, mod1, mod3, [](auto& p) { p.set_string_val("hitchhiker"); }),
-    chan23Pkt = makePkt(chan23, mod2, mod3, [](auto& p) { p.set_number_val(1042); }),
-    chan23ProtoPkt = makePkt(chan23Proto, mod2, mod3, [](auto& p) { blobMsgFromProto(*examplePayload, *p.mutable_blob_val()); }),
-    chan14Pkt = makePkt(chan12To45, mod1, mod4, [](auto& p) { p.set_number_val(42); }),
-    chan15Pkt = makePkt(chan12To45, mod1, mod5, [](auto& p) { p.set_number_val(43); }),
-    chan24Pkt = makePkt(chan12To45, mod2, mod4, [](auto& p) { p.set_number_val(44); }),
-    chan25Pkt = makePkt(chan12To45, mod2, mod5, [](auto& p) { p.set_number_val(45); });
+    chan12Pkt = makePkt(chan12, mod1, mod2, [](auto& p) 
+    { 
+        claidservice::NumberArray val;
+        val.add_val(99);
+        setPayload(p, val);
+    }),
+    chan13NumPkt = makePkt(chan13Num, mod1, mod3, [](auto& p) 
+    { 
+        claidservice::NumberVal val;
+        val.set_val(42);
+        setPayload(p, val);
+    }),
+    chan13StrPkt = makePkt(chan13Str, mod1, mod3, [](auto& p) 
+    {
+        claidservice::StringVal val;
+        val.set_val("hitchhiker"); 
+        setPayload(p, val);
+    }),
+    chan23Pkt = makePkt(chan23, mod2, mod3, [](auto& p) 
+    { 
+        setNumberVal(p, 1042);
+    }),
+    chan23ProtoPkt = makePkt(chan23Proto, mod2, mod3, [](auto& p) { blobMsgFromProto(*examplePayload, *p.mutable_payload()); }),
+    chan14Pkt = makePkt(chan12To45, mod1, mod4, [](auto& p) { setNumberVal(p, 42); }),
+    chan15Pkt = makePkt(chan12To45, mod1, mod5, [](auto& p) { setNumberVal(p, 43); }),
+    chan24Pkt = makePkt(chan12To45, mod2, mod4, [](auto& p) { setNumberVal(p, 44); }),
+    chan25Pkt = makePkt(chan12To45, mod2, mod5, [](auto& p) { setNumberVal(p, 45); });
 
 const std::vector<ModInfo> testModules = {
     ModInfo{mod1, modClass1, props_1},

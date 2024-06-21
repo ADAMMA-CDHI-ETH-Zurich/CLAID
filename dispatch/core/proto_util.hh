@@ -33,6 +33,7 @@ namespace claid {
   std::string messageToString(const google::protobuf::Message& msg);
 
   std::string dataPackagePayloadCaseToString(const DataPackage& dataPackage);
+  std::string dataPackageDataTypeName(const DataPackage& dataPackage);
 
 }  // namespace claid
 

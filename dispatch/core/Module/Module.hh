@@ -33,6 +33,10 @@
 #include "dispatch/core/Module/Subscriber.hh"
 #include "dispatch/core/Module/Properties.hh"
 #include "dispatch/core/EventTracker/EventTracker.hh"
+#include "dispatch/core/RemoteFunction/RemoteFunction.hh"
+#include "dispatch/core/RemoteFunction/RemoteFunctionHandler.hh"
+#include "dispatch/core/RemoteFunction/RemoteFunctionRunnableHandler.hh"
+
 namespace claid
 {
     class Module;
@@ -60,6 +64,8 @@ namespace claid
         std::map<std::string, ScheduledRunnable> timers;
 
         ChannelSubscriberPublisher* subscriberPublisher;
+        RemoteFunctionHandler* remoteFunctionHandler;
+        std::shared_ptr<RemoteFunctionRunnableHandler> remoteFunctionRunnableHandler;
 
         std::shared_ptr<EventTracker> eventTracker;
 
@@ -97,8 +103,28 @@ namespace claid
         void resumeModule();
         void adjustPowerProfile(PowerProfile powerProfile);
 
-        virtual bool start(ChannelSubscriberPublisher* subscriberPublisher, Properties properties);
+        virtual bool start(ChannelSubscriberPublisher* subscriberPublisher, RemoteFunctionHandler* remoteFunctionHandler, Properties properties);
 
+        void enqueueRPC(std::shared_ptr<DataPackage> rpcRequest)
+        {
+            std::function<void (std::shared_ptr<DataPackage>)> callback = 
+                std::bind(&Module::executeRPCRequest, this, std::placeholders::_1);
+
+            std::shared_ptr<
+                    FunctionRunnableWithParams<void, std::shared_ptr<DataPackage>>> functionRunnable =
+                            std::make_shared<FunctionRunnableWithParams<void, std::shared_ptr<DataPackage>>>(callback);
+
+            functionRunnable->setParams(rpcRequest);
+ 
+
+            std::shared_ptr<Runnable> runnable = std::static_pointer_cast<Runnable>(functionRunnable);
+            
+                
+            this->runnableDispatcher.addRunnable(
+                ScheduledRunnable(
+                    std::static_pointer_cast<Runnable>(functionRunnable), 
+                    ScheduleOnce(Time::now())));
+        }
 
     protected:
 
@@ -119,6 +145,15 @@ namespace claid
         void unregisterAllPeriodicFunctions();
 
         void registerScheduledFunction(const std::string& name, const Time& dateTime, std::function<void()> function);
+
+        template<typename Class>
+        void registerScheduledFunction(const std::string& name, const Time& dateTime,
+                        void (Class::*f)(), Class* obj)
+        {
+            std::function<void()> function = std::bind(f, obj);
+            registerScheduledFunction(name, dateTime, function);  
+        }
+
 
         template<typename T>
         Channel<T> publish(const std::string& channelName) 
@@ -172,6 +207,49 @@ namespace claid
         virtual void onPowerProfileChanged(PowerProfile powerProfile);
 
         std::string getCommonDataPath() const;
+
+    // 
+        void executeRPCRequest(std::shared_ptr<DataPackage> rpcRequest)
+        {
+            if(rpcRequest->target_module() != this->id)
+            {
+                moduleError("Failed to execute RPC request. RPC is targeted for Module \"" + rpcRequest->source_module() +
+                    "\", but we are Module \"" + this->id + "\".");
+                return;
+            }
+
+            bool result = this->remoteFunctionRunnableHandler->executeRemoteFunctionRunnable(rpcRequest);
+            if(!result)
+            {
+                moduleError("Failed to execute rpcRequest");
+                return;
+            }
+
+        }
+
+        template<typename Class, typename Return, typename... Parameters>
+        bool registerRemoteFunction(std::string functionName,  Return (Class::*f)(Parameters...), Class* obj)
+        {
+            return this->remoteFunctionRunnableHandler->registerRunnable(functionName, f, obj);
+        }
+
+        template<typename Return, typename... Parameters>
+        RemoteFunction<Return> mapRemoteFunctionOfModule(std::string moduleId, std::string functionName)
+        {
+            if(moduleId == this->id)
+            {
+                moduleFatal(absl::StrCat(
+                    "Cannot map remote function. Module tried to map function \"", functionName ,"\" of itself, which is not allowed."));
+                return RemoteFunction<Return>::InvalidRemoteFunction();
+            }
+            return this->remoteFunctionHandler->mapModuleFunction<Return, Parameters...>(moduleId, functionName);
+        }
+
+        template<typename Return, typename... Parameters>
+        RemoteFunction<Return> mapRemoteFunctionOfRuntime(Runtime runtime, std::string functionName)
+        {
+            return this->remoteFunctionHandler->mapRuntimeFunction<Return, Parameters...>(runtime, functionName);
+        }
     };
 
 }

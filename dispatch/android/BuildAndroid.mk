@@ -12,7 +12,7 @@ WORKSPACE_PATH = ../../../
 build_android: 
 	mkdir -p blobs
 	cd $(WORKSPACE_PATH); rm -rf $(TARGET_LIBS_ANDROID)
-	CC=gcc bazel build //dispatch/android:$(OUTPUT_APK_ANDROID_NAME) --fat_apk_cpu=arm64-v8a,armeabi-v7a,x86
+	CC=gcc bazel build //dispatch/android:$(OUTPUT_APK_ANDROID_NAME) --fat_apk_cpu=arm64-v8a,armeabi-v7a,x86,x86_64
 	cd $(WORKSPACE_PATH); rm -fr $(OUTPUT_APK_TMP_PATH_ANDROID)
 	cd $(WORKSPACE_PATH); mkdir $(OUTPUT_APK_TMP_PATH_ANDROID)
 	cd $(WORKSPACE_PATH); cp $(OUTPUT_APK_ANDROID_PATH)/$(OUTPUT_APK_ANDROID_NAME).apk $(OUTPUT_APK_TMP_PATH_ANDROID)/

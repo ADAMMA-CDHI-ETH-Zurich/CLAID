@@ -22,12 +22,12 @@
 
 
 import 'module.dart';
-
+import 'package:claid/properties.dart';
 // Sensor
 // Spirometer "Spirobank Smart™" (MIR company) will be used every day in the morning and in the evening to measure lung function of patients.
 class MockSpirometer extends Module {
   @override
-  void initialize(Map<String, String> properties) {
+  void initialize(Properties properties) {
     // TODO: implement initialize
   }
 }
@@ -36,7 +36,7 @@ class MockSpirometer extends Module {
 // “Vivatmo me" (Bosch Healthcare Solutions GmbH) will be used once a week to measure FeNO.
 class MockVivatmoMe extends Module {
   @override
-  void initialize(Map<String, String> properties) {
+  void initialize(Properties properties) {
     // TODO: implement initialize
   }
 }
@@ -45,7 +45,7 @@ class MockVivatmoMe extends Module {
 // Inhaler sensors or smart inhalers will to record the time and frequency of inhaler usage.
 class MockInhalerSensor extends Module {
   @override
-  void initialize(Map<String, String> properties) {
+  void initialize(Properties properties) {
     // TODO: implement initialize
   }
 }
@@ -54,7 +54,7 @@ class MockInhalerSensor extends Module {
 // Smartphone sensor data will include a microphone (for cough detection), GPS, connection status, and battery status, which are all collected continuously.
 class MockSmartphoneSensor extends Module {
   @override
-  void initialize(Map<String, String> properties) {
+  void initialize(Properties properties) {
     // TODO: implement initialize
   }
 }
@@ -63,7 +63,7 @@ class MockSmartphoneSensor extends Module {
 // Smartwatch sensor data will include heart rate, sleep duration, SpO2, breathing frequency, accelerometer, GPS, and battery status to collect data related to sleep quality.
 class MockSmartwatchSensor extends Module {
   @override
-  void initialize(Map<String, String> properties) {
+  void initialize(Properties properties) {
     // TODO: implement initialize
   }
 }

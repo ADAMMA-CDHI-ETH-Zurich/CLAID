@@ -29,7 +29,13 @@ import 'package:fixnum/fixnum.dart';
 
 import 'package:claid/generated/claidservice.pb.dart';
 import 'package:claid/generated/google/protobuf/timestamp.pb.dart';
-import 'module.dart';
+import 'package:claid/generated/google/protobuf/struct.pb.dart';
+
+import 'package:claid/module/properties.dart';
+import 'package:claid/module/module.dart';
+import 'package:claid/module/channel.dart';
+import 'package:claid/module/module_manager.dart';
+
 import 'dispatcher.dart';
 
 class MockModuleEnv {
@@ -165,7 +171,7 @@ abstract class EnvModule {}
 abstract class _BaseMockModule {
   final String id;
   final String? moduleClass;
-  final Map<String, String>? properties;
+  final Struct? properties;
 
   _BaseMockModule({required this.id, this.moduleClass, this.properties});
 
@@ -181,7 +187,7 @@ class MockModule extends _BaseMockModule implements EnvModule {
 
   @override
   ModDescriptor get descriptor =>
-      ModDescriptor(id, _moduleClass, <String, String>{});
+      ModDescriptor(id, _moduleClass, Struct());
 
   FactoryFunc getMockFactory(MockModuleEnv env) =>
       () => _MockModuleImpl(this, env);
@@ -276,21 +282,42 @@ class MockDispatcher implements ModuleDispatcher {
         Duration.zero, () => _mockRouterInputStream(outputController.stream));
   }
 
+  @override
+  void setOnControlPackageFunction(Function function)
+  {
+
+  }
+
+  @override
+  void handleControlPackage(DataPackage package)
+  {
+    
+  }
+
   Stream<DataPackage> _mockRouterInputStream(
       Stream<DataPackage> outputStream) async* {
     await onInit?.call();
     await for (var pkt in outputStream) {
+      print("Packet in outstream");
       // Simulate a transmission time !
       await Future<void>.delayed(const Duration(milliseconds: 10));
+      print("Packet in outstream 2");
 
       // Make sure we have a minimum of package information and augment it
       // as the real middleware would.
       _emulateMiddleware(pkt);
+      print("Packet in outstream 3");
 
       // notify that there is a package being sent.
       await onPacket?.call(pkt);
+        print("Packet in outstream 4");
+
       yield pkt;
+          print("Packet in outstream 5");
+
       env._addChannelEvent(pkt.channel, pkt);
+          print("Packet in outstream 6");
+
     }
   }
 
@@ -299,11 +326,13 @@ class MockDispatcher implements ModuleDispatcher {
   void _emulateMiddleware(DataPackage pkt) {
     // Check that the incoming package has at least the minimum information
     // necessary.
+    print("emulate middleware 1");
     if ((pkt.sourceModule.isEmpty) ||
         (pkt.channel.isEmpty) ||
-        (pkt.whichPayloadOneof() == DataPackage_PayloadOneof.notSet)) {
-      throw ArgumentError('Data packet nees a channel, a source and payload');
+        (pkt.payload.messageType == "")) {
+      throw ArgumentError('Data packet needs a channel, a source and payload');
     }
+    print("emulate middleware 2");
 
     // augment the fields like the router would in the middleware.
     final chanSrcTgt = _routerChannelMap[pkt.channel];
@@ -311,15 +340,21 @@ class MockDispatcher implements ModuleDispatcher {
     if (chanSrcTgt == null) {
       throw ArgumentError('provided channel ${pkt.channel} unknown');
     }
+    print("emulate middleware 3");
 
     if (chanSrcTgt.sourceModule != pkt.sourceModule) {
+          print("emulate middleware catch ${chanSrcTgt.sourceModule} ${pkt.sourceModule}");
+
       throw ArgumentError(
           'source modules "${chanSrcTgt.sourceModule}" and "${pkt.sourceModule}" do not match');
     }
+    print("emulate middleware 4");
 
     final now = DateTime.now();
     pkt.targetModule = chanSrcTgt.targetModule;
     pkt.tracePoints.add(TracePoint(timeStamp: timeStampFromDateTime(now)));
+        print("emulate middleware 5");
+
   }
 
   @override
@@ -342,16 +377,15 @@ class _MockModuleImpl extends Module {
   final MockModule _info;
   final MockModuleEnv env;
   final _received = <dynamic>[];
-  final _subs = <SubscribeChannel>[];
+  final _subs = <Channel>[];
 
   _MockModuleImpl(MockModule mockModule, this.env) : _info = mockModule;
 
   @override
-  void initialize(Map<String, String> properties) {
+  void initialize(Properties properties) {
     // Register the subscription channels
     for (var chan in env._incomingChannelsFor(_info.id)) {
-      _subs.add(subscribe(chan.id, chan.generator!())
-        ..onMessage((payload) => _received.add(payload)));
+      _subs.add(subscribe(chan.id, chan.generator!(),(payload) => _received.add(payload)));
     }
 
     final now = DateTime.now();
@@ -362,13 +396,14 @@ class _MockModuleImpl extends Module {
           () async {
         // Post the first message and set up periodic messaing
         var count = 1;
-        await pub.post(chan.generator!());
+         pub.post(chan.generator!());
 
         // Post messages periodically.
         registerPeriodicFunction(
             'outgoing_periodic', Duration(milliseconds: chan.periodMs),
             () async {
-          await pub.post(chan.generator!());
+            print("Posting");
+           pub.post(chan.generator!());
           count++;
           if (count >= chan.count) {
             unregisterPeriodicFunction('outgoing_periodic');

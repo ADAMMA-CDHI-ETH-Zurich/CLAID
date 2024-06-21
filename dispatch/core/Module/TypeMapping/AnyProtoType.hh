@@ -43,7 +43,7 @@ class AnyProtoType
             // Hence, in the case of the default constructor, we have to initialize message with a valid proto type.
             // The type itself does not matter, because all proto types are represented by DataPackage::PayloadOneOfCase::kBlobVal.
             // Therefore, we choose NumberArray here, because it is a small data type with only minimal overhead.
-            message = std::static_pointer_cast<google::protobuf::Message>(std::make_shared<google::protobuf::Empty>());
+            message = std::static_pointer_cast<google::protobuf::Message>(std::make_shared<claidservice::CLAIDANY>());
         }
 
         AnyProtoType(std::shared_ptr<google::protobuf::Message> message) : message(message)

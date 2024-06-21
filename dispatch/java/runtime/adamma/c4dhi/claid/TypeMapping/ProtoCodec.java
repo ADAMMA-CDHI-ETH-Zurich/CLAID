@@ -64,18 +64,14 @@ class ProtoCodec {
     {
         GeneratedMessageV3.Builder messageBuilder = (GeneratedMessageV3.Builder) this.msg.newBuilderForType();
 
-        
-           
-            try
-            {
-                return (GeneratedMessageV3) messageBuilder.mergeFrom(blob.getPayload().toByteArray()).build();
-            }
-            catch(InvalidProtocolBufferException e)
-            {
-                Logger.logError(e.getMessage());
-                return null;
-            }
-        
-        
+        try
+        {
+            return (GeneratedMessageV3) messageBuilder.mergeFrom(blob.getPayload().toByteArray()).build();
+        }
+        catch(InvalidProtocolBufferException e)
+        {
+            Logger.logError(e.getMessage());
+            return null;
+        }
     }
 }

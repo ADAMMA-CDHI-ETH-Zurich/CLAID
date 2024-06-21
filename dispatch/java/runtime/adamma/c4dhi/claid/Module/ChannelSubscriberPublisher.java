@@ -167,16 +167,16 @@ public class ChannelSubscriberPublisher
         return result;
     }
     
-    public DataPackage.PayloadOneofCase getPayloadCaseOfChannel(final String channelName)
+    public String getPayloadDataTypeNameOfChannel(final String channelName)
     {
         if(!this.channelDescriptions.containsKey(channelName))
         {
-            return DataPackage.PayloadOneofCase.PAYLOADONEOF_NOT_SET;
+            return "";
         }
 
         ChannelDescription description = this.channelDescriptions.get(channelName);
 
-        return description.getPayloadOneofCase();
+        return description.getPayloadDataTypeName();
     }
 
     public String getDataTypeNameOfChannel(final String channelName)
@@ -187,14 +187,9 @@ public class ChannelSubscriberPublisher
         }
         ChannelDescription description = this.channelDescriptions.get(channelName);
 
-        String caseName = description.getPayloadOneofCase().name();
+        String caseName = description.getPayloadDataTypeName();
 
-        if(!caseName.equals("blob_val"))
-        {
-            return caseName;
-        }
-
-        return description.getBlobName();
+        return caseName;
     }
 
     public void reset()

@@ -25,7 +25,9 @@
 #include "dispatch/core/Logger/Logger.hh"
 
 #include "dispatch/proto/claidservice.grpc.pb.h"
-
+#include <google/protobuf/message.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/any.pb.h>
 using claidservice::DataPackage;
 
 namespace claid {
@@ -33,8 +35,7 @@ namespace claid {
 template<typename T>
 class Mutator
 {
-    // In Java, Protobuf types are immutable. 
-    // Hence, the setter has to return a new DataPacke.
+    std::shared_ptr<const google::protobuf::Message> mappedProtoType;
 
     std::function<void(DataPackage&, const T&)> setter;
     std::function<void (const DataPackage&, T& )> getter;
@@ -45,8 +46,9 @@ public:
         
     }
 
-    Mutator(std::function<void(DataPackage&, const T&)> setter, 
-        std::function<void (const DataPackage&, T& )> getter) : setter(setter), getter(getter)
+    Mutator(std::shared_ptr<const google::protobuf::Message> mappedProtoType,
+        std::function<void(DataPackage&, const T&)> setter, 
+        std::function<void (const DataPackage&, T& )> getter) : mappedProtoType(mappedProtoType), setter(setter), getter(getter)
     {
 
     }
@@ -59,6 +61,16 @@ public:
     void getPackagePayload(const DataPackage& packet, T& returnValue) 
     {
         getter(packet, returnValue);
+    }
+
+    std::string getMessageTypeName()
+    {
+        if(this->mappedProtoType != nullptr)
+        {
+            return this->mappedProtoType->GetDescriptor()->full_name();
+        }
+
+        return "Unknown";
     }
 };
 

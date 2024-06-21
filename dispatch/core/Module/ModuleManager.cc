@@ -30,10 +30,14 @@ ModuleManager::ModuleManager(DispatcherClient& dispatcher,
     std::shared_ptr<EventTracker> eventTracker) :   dispatcher(dispatcher), 
                                                     fromModuleDispatcherQueue(fromModuleDispatcherQueue), 
                                                     toModuleDispatcherQueue(toModuleDispatcherQueue),
+                                                    eventTracker(eventTracker),
                                                     subscriberPublisher(toModuleDispatcherQueue),
-                                                    eventTracker(eventTracker)
+                                                    remoteFunctionHandler(toModuleDispatcherQueue),
+                                                    remoteFunctionRunnableHandler("CPP_RUNTIME", toModuleDispatcherQueue)
 {
     Logger::logInfo("ModuleManager constructor event tracker %lu", eventTracker.get());
+
+    
 }
 
 ModuleManager::~ModuleManager()
@@ -118,7 +122,7 @@ absl::Status ModuleManager::initializeModules(const ModuleListResponse& moduleLi
         
         Properties properties = descriptor.properties();
 
-        if(!module->start(&subscriberPublisher, properties))
+        if(!module->start(&subscriberPublisher, &this->remoteFunctionHandler, properties))
         {
             return absl::AbortedError(absl::StrCat(
                 "Failed to start Module \"", moduleId.c_str(), "\""
@@ -306,11 +310,12 @@ void ModuleManager::onPackageReceivedFromModulesDispatcher(std::shared_ptr<DataP
 
     if(!subscriberPublisher.isDataPackageCompatibleWithChannel(*dataPackage, moduleId))
     {
-        const std::string payloadCaseName = dataPackagePayloadCaseToString(*dataPackage);
-        Logger::logInfo("ModuleManager received package with target for Module \"%s\" on Channel \"%s\","
+        const std::string payloadCaseName = dataPackageDataTypeName(*dataPackage);
+        const std::string expectedPayloadCaseName = subscriberPublisher.getPayloadTypeNameOfChannel(channelName, moduleId);
+        Logger::logFatal("ModuleManager received package with target for Module \"%s\" on Channel \"%s\","
             "however the data type of payload of the package did not match the data type of the Channel."
             "Expected payload type \"%s\" but got \"%s\".",
-            moduleId.c_str(), channelName.c_str(), payloadCaseName.c_str(), payloadCaseName.c_str());
+            moduleId.c_str(), channelName.c_str(), expectedPayloadCaseName.c_str(), payloadCaseName.c_str());
 
         return;
     }
@@ -423,6 +428,16 @@ void ModuleManager::handlePackageWithControlVal(std::shared_ptr<DataPackage> pac
             it->second->adjustPowerProfile(package->control_val().power_profile());
             break;
         }
+        case CtrlType::CTRL_REMOTE_FUNCTION_REQUEST:
+        {
+            handleRemoteFunctionRequest(package);
+            break;
+        }
+        case CtrlType::CTRL_REMOTE_FUNCTION_RESPONSE:
+        {
+            handleRemoteFunctionResponse(package);
+            break;
+        }
         default:
         {
             Logger::logWarning("ModuleManager received package with unsupported control val %d", package->control_val().ctrl_type());
@@ -457,5 +472,52 @@ void ModuleManager::restart()
     toModuleDispatcherQueue.push_back(response);
     
 }
+
+    void ModuleManager::handleRemoteFunctionRequest(std::shared_ptr<DataPackage> remoteFunctionRequest)
+    {
+        RemoteFunctionRequest request = remoteFunctionRequest->control_val().remote_function_request();
+
+        if(request.remote_function_identifier().has_runtime())
+        {
+            handleRuntimeRemoteFunctionExecution(remoteFunctionRequest);
+        }
+        else
+        {
+            handleModuleRemoteFunctionExecution(remoteFunctionRequest);
+        }
+    }
+
+    void ModuleManager::handleRuntimeRemoteFunctionExecution(std::shared_ptr<DataPackage> request)
+    {
+        bool result = this->remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(request);
+
+        if(!result)
+        {
+            Logger::logError("C++ runtime failed to execute RPC request");
+            return;
+        }
+
+    }
+
+
+    void ModuleManager::handleModuleRemoteFunctionExecution(std::shared_ptr<DataPackage> request)
+    {
+        RemoteFunctionRequest remoteFunctionRequest = request->control_val().remote_function_request();
+        std::string moduleId = remoteFunctionRequest.remote_function_identifier().module_id();
+
+        auto it = this->runningModules.find(moduleId);
+        if(it == this->runningModules.end())
+        {
+            Logger::logError("Failed to execute remote function request. Could not find Module \"%s\"", moduleId.c_str());
+            return;
+        }
+
+        it->second->enqueueRPC(request);
+    }
+
+    void ModuleManager::handleRemoteFunctionResponse(std::shared_ptr<DataPackage> remoteFunctionResponse)
+    {
+        this->remoteFunctionHandler.handleResponse(remoteFunctionResponse);
+    }
 
 }
