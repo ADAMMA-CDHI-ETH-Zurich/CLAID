@@ -40,7 +40,7 @@ dependencies:
     path: ../../dispatch/dart/claid/
 
   smart_inhaler:
-    path: ../../../CLAIDPackageTemplate/src/flutter/claid_package
+    path: ../../../CLAIDSmartInhalerPackage/src/flutter/claid_package
 
   path_provider: ^2.1.1
 

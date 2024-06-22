@@ -1,7 +1,7 @@
 import 'package:claid/module/module_factory.dart';
 import 'package:claid/ui/CLAIDView.dart';
 import 'package:flutter/material.dart';
-import 'package:smart_inhaler/SmartInhalerPackage.dart';
+import 'package:smart_inhaler/smart_inhaler.dart';
 
 import 'TestStreamModule.dart';
 import 'TestStreamView.dart';
@@ -54,16 +54,12 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
 
     return MaterialApp(
-      title: 'CLAID Test App',
-      theme: ThemeData(
-
-      ),
       home: CLAIDView(title: 'My CLAID App',
 
           configPath: "",
           attachOnly: true,
           claidPackages: [
-            SmartInhalerPackage(),
+            smart_inhaler(),
           ],
         ),
     );

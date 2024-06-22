@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 
 import adamma.c4dhi.claid.Module.Module;
 import adamma.c4dhi.claid.Module.ModuleFactory;
-import adamma.c4dhi.claid.smart_inhaler.SmartInhalerPackage;
+import adamma.c4dhi.claid.smart_inhaler.smart_inhaler;
 import adamma.c4dhi.claid_android.Configuration.CLAIDPersistanceConfig;
 import adamma.c4dhi.claid_android.Configuration.CLAIDSpecialPermissionsConfig;
 import adamma.c4dhi.claid_android.Package.CLAIDPackageLoader;
@@ -18,7 +18,7 @@ public class MainActivity extends FlutterActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        CLAIDPackageLoader.loadPackage(new SmartInhalerPackage());
+        CLAIDPackageLoader.loadPackage(new smart_inhaler());
         CLAID.startInPersistentService(getApplicationContext(),
                 "assets://flutter_assets/assets/claid_test.json",
                 "test_host",

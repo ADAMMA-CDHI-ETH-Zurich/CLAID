@@ -88,23 +88,26 @@ class _CLAIDModuleListViewState extends State<CLAIDModuleListView>
   Widget build(BuildContext context)
   {
 
-
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-          title: Text(widget.title),
+          title: Text(widget.title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color:Colors.white),),
+          centerTitle: true,
+          backgroundColor: Color.fromARGB(255, 107, 180, 236),
           leading: Visibility(child:BackButton(onPressed: (){
             pageController.jumpToPage(0);
 
           } ), visible: _currentIndex > 0, )
       ),
-      body:
-      PageView(
-        children: _pages,
-        controller: pageController,
-        onPageChanged: onPageChanged,
-      ),
+      body: Padding(padding: const EdgeInsets.only(top: 10),
+          child: PageView(
+            children: _pages,
+            controller: pageController,
+            onPageChanged: onPageChanged,
+          ),)
 
 
 

@@ -79,9 +79,8 @@ class _CLAIDViewState extends State<CLAIDView>
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
 
-
-
     return moduleListView != null ? moduleListView! : CircularProgressIndicator();
+
   }
 
   void _createDeviceView(Map<String, String> modules)

@@ -28,7 +28,7 @@ class TestStreamView extends CLAIDModuleView {
         children: [
           Row(
             children: [
-              Text("Online", style:TextStyle(fontSize: 15)),
+              Text("Online", style:TextStyle(fontSize: 15, color: Colors.white)),
               SizedBox(width:5),
               Icon(Icons.circle,
                 size: 15,
@@ -36,7 +36,8 @@ class TestStreamView extends CLAIDModuleView {
               ),
             ],
           ),
-          Text("Last value received: 10 min ago", style:TextStyle(fontSize: 15))
+          Text("Last value received: 10 min ago",
+              style:TextStyle(fontSize: 15, color: Colors.white),)
         ]
     );
   }

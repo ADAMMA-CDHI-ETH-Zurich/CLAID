@@ -9,6 +9,21 @@
         "type": "TestStreamModule",
         "id": "TestStreamModule",
         "output_channels": {"MyData" :  "MyData"}
+      },
+      {
+        "type": "TestStreamModule",
+        "id": "Mod2",
+        "output_channels": {"MyData" :  "MyData"}
+      },
+      {
+        "type": "TestStreamModule",
+        "id": "Mod3",
+        "output_channels": {"MyData" :  "MyData"}
+      },
+      {
+        "type": "TestStreamModule",
+        "id": "Mod4",
+        "output_channels": {"MyData" :  "MyData"}
       }
     ]
   }

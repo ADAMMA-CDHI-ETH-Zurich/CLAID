@@ -47,7 +47,7 @@ packages:
       path: "../../dispatch/dart/claid"
       relative: true
     source: path
-    version: "0.0.5"
+    version: "0.6.1"
   clock:
     dependency: transitive
     description:
@@ -314,7 +314,7 @@ packages:
   smart_inhaler:
     dependency: "direct main"
     description:
-      path: "../../../CLAIDPackageTemplate/src/flutter/claid_package"
+      path: "../../../CLAIDSmartInhalerPackage/src/flutter/claid_package"
       relative: true
     source: path
     version: "0.0.5"

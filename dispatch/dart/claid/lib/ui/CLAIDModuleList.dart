@@ -54,21 +54,25 @@ class CLAIDModuleListState extends State<CLAIDModuleList> with AutomaticKeepAliv
   Widget build(BuildContext context) {
     print("CLAIDModuleList build " + this.widget.modules.toString());
 
-    int index = 0;
+    int index = -1;
     return
       RefreshIndicator(onRefresh: onRefresh,
 
         child: ListView(
           physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           children: this.widget.modules.map((widget) {
-            return SelectableDeviceViewWidget(
-            title: widget.getName(),  // Assuming 'title' is a property of 'widget'
-            deviceView: widget,
-            onPressed: () {
-              this.widget.onPressed(index);
-              index++;
-            },
-            );
+            index++;
+
+            return Padding(padding: const EdgeInsets.only(bottom: 7),
+              child:  SelectableDeviceViewWidget(
+                title: widget.getName(),  // Assuming 'title' is a property of 'widget'
+                buttonId: index,
+                numButtons: this.widget.modules.length,
+                deviceView: widget,
+                onPressed: () {
+                  this.widget.onPressed(index);
+                },
+            ));
           }).toList()
         ));
 
