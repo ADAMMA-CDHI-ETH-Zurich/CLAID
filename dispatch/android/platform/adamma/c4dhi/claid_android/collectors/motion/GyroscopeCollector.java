@@ -46,21 +46,39 @@ import adamma.c4dhi.claid_platform_impl.CLAID;
 
 import adamma.c4dhi.claid.Module.ModuleAnnotator;
 import adamma.c4dhi.claid.Module.Properties;
+import adamma.c4dhi.claid.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import adamma.c4dhi.claid.Logger.Logger;
+
+import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.List;
+import java.sql.Time;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 public class GyroscopeCollector extends Module implements SensorEventListener 
 {
-    private Channel<GyroscopeData> GyroscopeDataChannel;
+    private Channel<GyroscopeData> gyroscopeDataChannel;
 
     private ReentrantLock mutex = new ReentrantLock();
-      
-    // Volatile to be thread safe.
-    private volatile AtomicReference<GyroscopeSample> latestSample = new AtomicReference<>();
-    private ArrayList<GyroscopeSample> collectedGyroscopeSamples = new ArrayList<GyroscopeSample>();
+   
+   
 
     GyroscopeData oldGyroscopeData = null;
 
@@ -69,6 +87,13 @@ public class GyroscopeCollector extends Module implements SensorEventListener
 
     private Integer samplingFrequency;
     private String outputMode;
+
+    PowerProfile currentPowerProfile = null;
+
+    private boolean samplingIsRunning = false;
+
+    long lastSampleTime = 0;
+    GyroscopeData.Builder collectedSamples;
 
     public static void annotateModule(ModuleAnnotator annotator)
     {
@@ -109,68 +134,51 @@ public class GyroscopeCollector extends Module implements SensorEventListener
 
         moduleInfo("GyroscopeCollector init " + this.samplingFrequency + " " + this.outputMode);
 
+        this.collectedSamples = GyroscopeData.newBuilder();
+        this.gyroscopeDataChannel = this.publish("GyroscopeData", GyroscopeData.class);
 
-        this.GyroscopeDataChannel = this.publish("GyroscopeData", GyroscopeData.class);
-
-        sensorManager = (SensorManager) CLAID.getContext().getSystemService(Context.SENSOR_SERVICE); 
-        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE); 
-        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
-
-        int samplingPerioid = 1000/samplingFrequency;
-
-        registerPeriodicFunction("GyroscopeSampling", () -> sampleGyroscopeData(), Duration.ofMillis(samplingPerioid));
+        startSampling();
     }
 
 
-    public synchronized void sampleGyroscopeData()
+    public synchronized void onNewGyroscopeSample(GyroscopeSample sample)
     {
-        GyroscopeSample sample = latestSample.get();
-
-        if(sample == null)
-        {
-            return;
-        }
-
+        moduleInfo("On New sample");
         if(this.outputMode.toUpperCase().equals("STREAM"))
         {
-            GyroscopeData.Builder data = GyroscopeData.newBuilder();
-
-          
-            data.addSamples(sample);
+            this.collectedSamples.addSamples(sample);
         
-
-            this.GyroscopeDataChannel.post(data.build(), sample.getUnixTimestampInMs());
+            this.gyroscopeDataChannel.post(this.collectedSamples.build(), sample.getUnixTimestampInMs());
+            this.collectedSamples = GyroscopeData.newBuilder();
         }
         else
         {
-            collectedGyroscopeSamples.add(sample);
+            this.collectedSamples.addSamples(sample);
 
-            if(collectedGyroscopeSamples.size() == samplingFrequency)
+            if(this.collectedSamples.getSamplesList().size() >= samplingFrequency)
             {
-                GyroscopeData.Builder data = GyroscopeData.newBuilder();
 
-                for(GyroscopeSample collectedSample : collectedGyroscopeSamples)
-                {   
-                    data.addSamples(collectedSample);
-                }
-
-                this.GyroscopeDataChannel.post(data.build(), sample.getUnixTimestampInMs());
-                collectedGyroscopeSamples.clear();
+                this.gyroscopeDataChannel.post(collectedSamples.build(), sample.getUnixTimestampInMs());
+                this.collectedSamples = GyroscopeData.newBuilder();                
             }
         }
         
     }
-
-
+  
     @Override
     public synchronized void onSensorChanged(SensorEvent sensorEvent)
     {
         if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE)
         {
-            double x = sensorEvent.values[0];
-            double y = sensorEvent.values[1];
-            double z = sensorEvent.values[2];
+            if(System.currentTimeMillis() - lastSampleTime < 1000.0/this.samplingFrequency)
+            {
+                return;
+            }   
+            lastSampleTime = System.currentTimeMillis();
 
+            double x = sensorEvent.values[0] ;/// SensorManager.GRAVITY_EARTH;
+            double y = sensorEvent.values[1] ;/// SensorManager.GRAVITY_EARTH;
+            double z = sensorEvent.values[2] ;/// SensorManager.GRAVITY_EARTH;
             LocalDateTime currentTime = LocalDateTime.now();
 
             GyroscopeSample.Builder sample = GyroscopeSample.newBuilder();
@@ -184,12 +192,114 @@ public class GyroscopeCollector extends Module implements SensorEventListener
             String formattedString = currentTime.format(formatter);
             sample.setEffectiveTimeFrame(formattedString);
 
-            this.latestSample.set(sample.build());
+            onNewGyroscopeSample(sample.build());
+
+        
            // System.out.println("Sensor data " +  x + " " +  y + " " + z);
         }
     }
 
+    private static String getCurrentDateTime() {
+        // Get the current date and time in the desired format
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
+        Date currentDate = new Date();
+        return dateFormat.format(currentDate);
+    }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {}
+
+
+    public void startSampling()
+    {
+        if(samplingIsRunning)
+        {
+            return;
+        }
+        moduleInfo("Starting sampling");
+
+        sensorManager = (SensorManager) CLAID.getContext().getSystemService(Context.SENSOR_SERVICE); 
+
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE); 
+
+        boolean powerSavingMode = this.currentPowerProfile != null && this.currentPowerProfile.getPowerProfileType() == PowerProfileType.POWER_SAVING_MODE;
+        if(powerSavingMode)
+        {
+            moduleWarning("PowerSaving mode is active, throttling SensorManager");
+        }
+        sensorManager.registerListener(this, sensor, powerSavingMode ? SensorManager.SENSOR_DELAY_NORMAL : SensorManager.SENSOR_DELAY_FASTEST);
+
+        int samplingPerioid = 1000/this.samplingFrequency;
+
+        samplingIsRunning = true;
+    }
+
+    public void stopSampling()
+    {
+        if(!samplingIsRunning)
+        {
+            return;
+        }
+        moduleWarning("Stopping sampling");
+        sensorManager.unregisterListener(this, sensor);
+
+
+        sensorManager = null;
+        sensor = null;
+        samplingIsRunning = false;
+        samplingIsRunning = false;
+    }
+
+    public void restartSampling()
+    {
+        stopSampling();
+        startSampling();
+    }
+
+    @Override
+    protected void terminate()
+    {
+        moduleInfo("Terminate called");
+        stopSampling();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        moduleWarning("onPause called, unregistering from SensorManager");
+        stopSampling();
+    }
+
+    @Override 
+    protected void onResume()
+    {
+        moduleWarning("onResume called, registering at SensorManager");
+        startSampling();
+    }
+
+    @Override
+    protected void onPowerProfileChanged(PowerProfile profile)
+    {
+        moduleWarning("onPowerProfileChanged called, using profile: " + profile.toString().replace("\n", ""));
+
+        if(this.currentPowerProfile == null)
+        {
+            this.currentPowerProfile = profile;
+            this.samplingFrequency = (int) (this.currentPowerProfile.getFrequency());
+            restartSampling();
+            return;
+        }
+        else
+        {
+            if(this.currentPowerProfile.getPowerProfileType() != profile.getPowerProfileType() ||
+                this.currentPowerProfile.getFrequency() != profile.getFrequency())
+            {
+                moduleInfo("PowerProfile has changed, restarting");
+                this.currentPowerProfile = profile;
+                this.samplingFrequency = (int) (this.currentPowerProfile.getFrequency());
+                restartSampling();
+            }
+        }  
+
+    }
 }

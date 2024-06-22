@@ -38,6 +38,7 @@ import java.util.Map;
 import adamma.c4dhi.claid.Module.Channel;
 import adamma.c4dhi.claid.Module.ChannelData;
 import adamma.c4dhi.claid.Module.Module;
+import adamma.c4dhi.claid.Logger.Logger;
 
 import adamma.c4dhi.claid_sensor_data.AccelerationSample;
 import adamma.c4dhi.claid_sensor_data.AccelerationData;
@@ -73,7 +74,6 @@ import java.util.Locale;
 public class AccelerometerCollector extends Module implements SensorEventListener 
 {
     private Channel<AccelerationData> accelerationDataChannel;
-    private long lastWakelockTime = 0;
 
     private ReentrantLock mutex = new ReentrantLock();
    
@@ -143,6 +143,7 @@ public class AccelerometerCollector extends Module implements SensorEventListene
 
     public synchronized void onNewAccelerationSample(AccelerationSample sample)
     {
+        moduleInfo("On New sample");
         if(this.outputMode.toUpperCase().equals("STREAM"))
         {
             this.collectedSamples.addSamples(sample);
@@ -163,39 +164,10 @@ public class AccelerometerCollector extends Module implements SensorEventListene
         }
         
     }
-    private FileOutputStream fos = null;
-
-    void writeToLogFile(String data) 
-    {
-        
-        try {
-
-            if(fos == null)
-            {
-                // Create a new File instance
-                File file = new File(CLAID.getMediaDirPath(CLAID.getContext()) + "/log_acceleration.txt");
-
-                // Use FileOutputStream to open the file in append mode
-                fos = new FileOutputStream(file, true);
-            }
-            // Get the current date and time
-            String dateTime = getCurrentDateTime();
-
-            // Combine date, time, and data
-            String entry = dateTime + " - " + data + "\n";
-
-            // Write the data to the file
-            fos.write(entry.getBytes());
-
-            // Close the file output stream
-        } catch (IOException e) {
-            e.printStackTrace();
-        } 
-    }
+  
     @Override
     public synchronized void onSensorChanged(SensorEvent sensorEvent)
     {
-        writeToLogFile("On sensor change update");
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
         {
             if(System.currentTimeMillis() - lastSampleTime < 1000.0/this.samplingFrequency)
@@ -204,16 +176,10 @@ public class AccelerometerCollector extends Module implements SensorEventListene
             }   
             lastSampleTime = System.currentTimeMillis();
 
-        
-            // Dividing per g to uniform with iOS
             double x = sensorEvent.values[0] ;/// SensorManager.GRAVITY_EARTH;
             double y = sensorEvent.values[1] ;/// SensorManager.GRAVITY_EARTH;
             double z = sensorEvent.values[2] ;/// SensorManager.GRAVITY_EARTH;
             LocalDateTime currentTime = LocalDateTime.now();
-           /*  LocalDateTime currentTime = LocalDateTime.ofInstant(
-                Instant.ofEpochMilli(sensorEvent.timestamp),
-                ZoneId.systemDefault()
-        );*/
 
             AccelerationSample.Builder sample = AccelerationSample.newBuilder();
             sample.setAccelerationX((double) x);
@@ -228,13 +194,6 @@ public class AccelerometerCollector extends Module implements SensorEventListene
 
             onNewAccelerationSample(sample.build());
 
-            if(System.currentTimeMillis() - lastWakelockTime >= 1000)
-            {
-                
-               // CLAID.enableKeepAppAwake(CLAID.getContext());
-                //CLAID.disableKeepAppAwakeAfterMs(CLAID.getContext(), 200);
-                lastWakelockTime = System.currentTimeMillis();
-            }
         
            // System.out.println("Sensor data " +  x + " " +  y + " " + z);
         }
@@ -284,7 +243,6 @@ public class AccelerometerCollector extends Module implements SensorEventListene
         moduleWarning("Stopping sampling");
         sensorManager.unregisterListener(this, sensor);
 
-        this.unregisterPeriodicFunction("AccelerometerSampling");
 
         sensorManager = null;
         sensor = null;
@@ -296,6 +254,13 @@ public class AccelerometerCollector extends Module implements SensorEventListene
     {
         stopSampling();
         startSampling();
+    }
+
+    @Override
+    protected void terminate()
+    {
+        moduleInfo("Terminate called");
+        stopSampling();
     }
 
     @Override
