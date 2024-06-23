@@ -85,4 +85,6 @@ abstract class CLAIDModuleView extends StatefulWidget
   String getName() => mappedModuleId;
   Widget getSubCaptionWidget();
   Widget getImage(BuildContext context);
+  String getModuleType();
+  String getModuleSubType();
 }

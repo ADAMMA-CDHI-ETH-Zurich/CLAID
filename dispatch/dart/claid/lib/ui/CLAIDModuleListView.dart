@@ -108,10 +108,6 @@ class _CLAIDModuleListViewState extends State<CLAIDModuleListView>
             controller: pageController,
             onPageChanged: onPageChanged,
           ),)
-
-
-
-
     );
 
     /*return Scaffold(

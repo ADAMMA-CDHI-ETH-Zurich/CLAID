@@ -4,7 +4,75 @@ import 'package:flutter/material.dart';
 
 import 'CLAIDModuleView.dart';
 
+class RectanglePainter extends CustomPainter
+{
+  String firstLine;
+  String secondLine;
 
+  RectanglePainter(this.firstLine, this.secondLine)
+  {
+
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Color.fromARGB(175, 255, 255, 255)
+      ..style = PaintingStyle.fill;
+
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(10, 0, size.width, size.height),
+      Radius.circular(5),
+    );
+    canvas.drawRRect(rrect, paint);
+
+    final textSpan = TextSpan(
+      children: [
+        TextSpan(
+          text: firstLine + "\n",
+          style: TextStyle(
+            color: Color.fromARGB(255, 47, 110, 187),
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Sans Serif', // Change font family to Arial
+          ),
+        ),
+        TextSpan(
+          text: secondLine,
+          style: TextStyle(
+            color: Color.fromARGB(255, 47, 110, 187),
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Sans Serif', // Change font family to Arial
+          ),
+        ),
+      ],
+    );
+
+    final textPainter = TextPainter(
+      text: textSpan,
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+    );
+
+    textPainter.layout(
+      minWidth: 0,
+      maxWidth: size.width,
+    );
+
+    final offset = Offset(
+      (size.width - textPainter.width) / 2  + 10,
+      (size.height - textPainter.height) / 2,
+    );
+
+    textPainter.paint(canvas, offset);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+}
 class SelectableDeviceViewWidget extends StatelessWidget
 {
   final String title;
@@ -47,41 +115,52 @@ class SelectableDeviceViewWidget extends StatelessWidget
 
   // This widget is the root of your application.
   @override
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
-
       height: 75,
-      child:   ElevatedButton(
-        onPressed: () {
-          this.onPressed();
-        },
+      child: ElevatedButton(
+          onPressed: () {
+            this.onPressed();
+          },
         style: buttonStyle,
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              deviceView.getImage(context),
-              SizedBox(width: 20),
-
-              Column(
-                  crossAxisAlignment: CrossAxisAlignment.start, // for left side
-                  // crossAxisAlignment: CrossAxisAlignment.end, // for right side
-                  children: <Widget>[
-                    Padding(padding: EdgeInsets.only(top: 9)),
-                    Text(this.title, style: const TextStyle(color: Colors.white),),
-                    deviceView.getSubCaptionWidget(),
-
-                  ])
-
-
-
-            ],
-          ),
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  deviceView.getImage(context),
+                  SizedBox(width: 20),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Padding(padding: EdgeInsets.only(top: 9)),
+                      Text(
+                        title,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      deviceView.getSubCaptionWidget(),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              right: 0,
+              top: 12.5, // Center the rectangle vertically within the button
+              child: CustomPaint(
+                size: Size(60, 50),
+                painter: RectanglePainter(
+                    deviceView.getModuleType(),
+                    deviceView.getModuleSubType()),
+              ),
+            ),
+          ],
         ),
       ),
-
     );
 
   }

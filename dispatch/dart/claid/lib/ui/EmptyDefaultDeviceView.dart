@@ -54,6 +54,16 @@ class EmptyDefaultDeviceView extends CLAIDModuleView  {
     return super.mappedModuleId + " (" + super.moduleClass + ")";
   }
 
+  String getModuleType()
+  {
+    return "Example";
+  }
+
+  String getModuleSubType()
+  {
+    return "(internal)";
+  }
+
 }
 
 

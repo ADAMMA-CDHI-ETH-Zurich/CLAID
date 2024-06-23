@@ -65,7 +65,7 @@ class CLAIDModuleListState extends State<CLAIDModuleList> with AutomaticKeepAliv
 
             return Padding(padding: const EdgeInsets.only(bottom: 7),
               child:  SelectableDeviceViewWidget(
-                title: widget.getName(),  // Assuming 'title' is a property of 'widget'
+                title: widget.getName(),
                 buttonId: index,
                 numButtons: this.widget.modules.length,
                 deviceView: widget,

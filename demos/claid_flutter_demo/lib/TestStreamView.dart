@@ -54,7 +54,16 @@ class TestStreamView extends CLAIDModuleView {
 
   String getName()
   {
-    return super.mappedModuleId + " (" + super.moduleClass + ")";
+    return super.mappedModuleId;
+  }
+
+  String getModuleType()
+  {
+    return "Sensor";
+  }
+  String getModuleSubType()
+  {
+    return "(BLE)";
   }
 
 }
