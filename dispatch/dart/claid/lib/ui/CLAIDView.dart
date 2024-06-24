@@ -123,8 +123,9 @@ class _CLAIDViewState extends State<CLAIDView>
 
     if(!this.widget.attachOnly)
     {
-      await CLAID.start(socketPath,
+      await CLAID.startMiddleware(socketPath,
       this.widget.configPath, "test_host", "test_user", "test_id",
+        CLAIDSpecialPermissionsConfig.regularConfig(),
         libraryPath: this.widget.claidLibraryPath    //CLAID.attachDartRuntime("unix://" + socketPath, moduleFactory);
       );
     }

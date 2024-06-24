@@ -66,7 +66,7 @@ public class MainActivity extends Activity {
         CLAID.registerModule(RPCTestModule1.class);
         CLAID.registerModule(RPCTestModule2.class);
 
-        CLAID.startInPersistentService(getApplicationContext(),
+        CLAID.startInBackground(getApplicationContext(),
                 "assets://RPCTest.json",
                 "Smartphone",
                 "device",

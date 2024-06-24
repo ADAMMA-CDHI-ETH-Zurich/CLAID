@@ -132,7 +132,7 @@ public class CLAID extends JavaCLAIDBase
 
     // Starts the middleware and attaches to it.
     // Volatile, as CLAID might only run as long as the App is in the foreground.
-    public static boolean start(Context context, final String socketPath, 
+    private static boolean start(Context context, final String socketPath, 
         final String configFilePath, final String hostId, final String userId, 
         final String deviceId, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
     {
@@ -182,7 +182,7 @@ public class CLAID extends JavaCLAIDBase
 
     // Starts the middleware and attaches to it.
     // Volatile, as CLAID might only run as long as the App is in the foreground.
-    public static boolean start(Context context, final String socketPath, 
+    private static boolean start(Context context, final String socketPath, 
         final String configFilePath, final String hostId, final String userId, 
         final String deviceId)
     {
@@ -193,7 +193,7 @@ public class CLAID extends JavaCLAIDBase
 
     // Starts the middleware and attaches to it.
     // Volatile, as CLAID might only run as long as the App is in the foreground.
-    public static boolean start(Context context, final String configFilePath, 
+    private static boolean start(Context context, final String configFilePath, 
         final String hostId, final String userId, final String deviceId, 
         CLAIDSpecialPermissionsConfig specialPermissionsConfig)
     {
@@ -222,7 +222,21 @@ public class CLAID extends JavaCLAIDBase
         return start(context, socketPath, configFilePath, hostId, userId, deviceId, specialPermissionsConfig);
     }
 
-    public static boolean startInPersistentService(Context context, final String configFilePath, 
+    public static boolean startInForeground(Context context, String socketPath,
+        final String configFilePath, final String hostId, final String userId, 
+        final String deviceId, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
+    {
+        return CLAID.start(context, socketPath, configFilePath, hostId, userId, deviceId, specialPermissionsConfig);
+    }
+
+    public static boolean startInForeground(Context context, 
+        final String configFilePath, final String hostId, final String userId, 
+        final String deviceId, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
+    {
+        return CLAID.start(context, configFilePath, hostId, userId, deviceId, specialPermissionsConfig);
+    }
+
+    public static boolean startInBackground(Context context, final String configFilePath, 
         final String hostId, final String userId, final String deviceId, 
         CLAIDSpecialPermissionsConfig specialPermissionsConfig, CLAIDPersistanceConfig persistanceConfig)
     {
@@ -230,10 +244,10 @@ public class CLAID extends JavaCLAIDBase
 
         String socketPath = "unix://" + appDataDirPath + "/claid_local.grpc";
 
-        return startInPersistentService(context, socketPath, configFilePath, hostId, userId, deviceId, specialPermissionsConfig, persistanceConfig);
+        return startInBackground(context, socketPath, configFilePath, hostId, userId, deviceId, specialPermissionsConfig, persistanceConfig);
     }
 
-    public static boolean startInPersistentService(Context context, final String socketPath, 
+    public static boolean startInBackground(Context context, final String socketPath, 
         final String configFilePath, final String hostId, final String userId, 
         final String deviceId, CLAIDSpecialPermissionsConfig specialPermissionsConfig, CLAIDPersistanceConfig enduranceConfig)
     {
@@ -248,7 +262,7 @@ public class CLAID extends JavaCLAIDBase
 
         if(!CLAID.grantSpecialPermissions(context, specialPermissionsConfig))
         {
-            Logger.logWarning("CLAID.startInPersistentService() failed: CLAID.grantSpecialPermissions() not successfull.");
+            Logger.logWarning("CLAID.startInBackground() failed: CLAID.grantSpecialPermissions() not successfull.");
             return false;
         }
 

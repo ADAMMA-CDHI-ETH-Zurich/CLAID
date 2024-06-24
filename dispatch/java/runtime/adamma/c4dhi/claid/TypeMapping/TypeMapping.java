@@ -39,7 +39,10 @@ import adamma.c4dhi.claid.TracePoint;
 import adamma.c4dhi.claid.StringArray;
 import adamma.c4dhi.claid.NumberArray;
 import adamma.c4dhi.claid.NumberMap;
-import adamma.c4dhi.claid.NumberVal;
+import adamma.c4dhi.claid.IntVal;
+import adamma.c4dhi.claid.FloatVal;
+import adamma.c4dhi.claid.DoubleVal;
+
 import adamma.c4dhi.claid.BoolVal;
 import adamma.c4dhi.claid.StringVal;
 import adamma.c4dhi.claid.StringMap;
@@ -279,14 +282,13 @@ public class TypeMapping {
     {
         Class<?> dataTypeClass = dataType.getDataTypeClass();
 
-        if (dataTypeClass == Double.class || dataTypeClass == Float.class || 
-        dataTypeClass == Integer.class || dataTypeClass == Short.class || dataTypeClass == Long.class) {
+        if (dataTypeClass == Integer.class || dataTypeClass == Long.class) {
             return new Mutator<T>(
                 (p, v) -> 
                 {
                     DataPackage.Builder builderCopy = dataPackageBuilderCopy(p);
                     Number numberValue = (Number) v;
-                    NumberVal val = NumberVal.newBuilder().setVal(numberValue.doubleValue()).build();
+                    IntVal val = IntVal.newBuilder().setVal(numberValue.intValue()).build();
 
                     builderCopy = setProtoPayload(builderCopy, val);
 
@@ -294,7 +296,51 @@ public class TypeMapping {
                 },
                 p -> 
                 {
-                    NumberVal val = NumberVal.newBuilder().build();
+                    IntVal val = IntVal.newBuilder().build();
+                    val = getProtoPayload(p, val);
+
+                    return (T) Integer.valueOf(val.getVal());
+                }
+            );
+        }
+
+        if (dataTypeClass == Float.class) {
+            return new Mutator<T>(
+                (p, v) -> 
+                {
+                    DataPackage.Builder builderCopy = dataPackageBuilderCopy(p);
+                    Number numberValue = (Number) v;
+                    FloatVal val = FloatVal.newBuilder().setVal(numberValue.floatValue()).build();
+
+                    builderCopy = setProtoPayload(builderCopy, val);
+
+                    return builderCopy.build();
+                },
+                p -> 
+                {
+                    FloatVal val = FloatVal.newBuilder().build();
+                    val = getProtoPayload(p, val);
+
+                    return (T) Float.valueOf(val.getVal());
+                }
+            );
+        }
+
+        if (dataTypeClass == Double.class) {
+            return new Mutator<T>(
+                (p, v) -> 
+                {
+                    DataPackage.Builder builderCopy = dataPackageBuilderCopy(p);
+                    Number numberValue = (Number) v;
+                    DoubleVal val = DoubleVal.newBuilder().setVal(numberValue.doubleValue()).build();
+
+                    builderCopy = setProtoPayload(builderCopy, val);
+
+                    return builderCopy.build();
+                },
+                p -> 
+                {
+                    DoubleVal val = DoubleVal.newBuilder().build();
                     val = getProtoPayload(p, val);
 
                     return (T) Double.valueOf(val.getVal());

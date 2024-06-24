@@ -25,7 +25,7 @@ from google.protobuf.descriptor import Descriptor
 from google.protobuf.message_factory import MessageFactory
 from module.type_mapping.mutator import Mutator
 from module.type_mapping.proto_codec import ProtoCodec
-from dispatch.proto.claidservice_pb2 import DataPackage, NumberVal, BoolVal, StringVal, NumberMap, StringMap, NumberArray, StringArray, Blob
+from dispatch.proto.claidservice_pb2 import DataPackage, IntVal, FloatVal, DoubleVal, BoolVal, StringVal, NumberMap, StringMap, NumberArray, StringArray, Blob
 import numpy as np
 
 class TypeMapping:
@@ -65,11 +65,21 @@ class TypeMapping:
     def get_mutator(example_instance) -> Mutator:
         cls = type(example_instance)
         print("Clz ", cls)
-        if issubclass(cls, int) or issubclass(cls, float):
+        if cls == int:
+            
             return Mutator(
-                setter = lambda packet, value: TypeMapping.setProtoPayload(packet, NumberVal(val=value)),
-                getter = lambda packet: TypeMapping.getProtoPayload(packet, NumberVal()).val
+                setter = lambda packet, value: TypeMapping.setProtoPayload(packet, IntVal(val=value)),
+                getter = lambda packet: TypeMapping.getProtoPayload(packet, IntVal()).val
             )
+        
+        # Actually corresponds to double in C++ -> 64 bit floating point
+        if cls == float:
+            
+            return Mutator(
+                setter = lambda packet, value: TypeMapping.setProtoPayload(packet, DoubleVal(val=value)),
+                getter = lambda packet: TypeMapping.getProtoPayload(packet, DoubleVal()).val
+            )
+        
         elif cls == bool:
             return Mutator(
                 setter = lambda packet, value: TypeMapping.setProtoPayload(packet, BoolVal(val=value)),

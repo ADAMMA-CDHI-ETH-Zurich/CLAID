@@ -138,7 +138,17 @@ message ActionRequest {
   map<string, string> action_params = 1;
 }
 
-message NumberVal
+message IntVal
+{
+  int64 val = 1;
+}
+
+message FloatVal
+{
+  float val = 1;
+}
+
+message DoubleVal
 {
   double val = 1;
 }

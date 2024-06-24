@@ -27,12 +27,59 @@ import 'package:claid/middleware.dart';
 import 'package:claid/module/module.dart';
 import 'package:claid/module/module_factory.dart';
 import 'package:claid/module/module_manager.dart';
+import 'package:claid/logger/Logger.dart';
 import 'package:claid/RemoteFunction/RemoteFunctionHandler.dart';
 import 'package:claid/RemoteFunction/RemoteFunction.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:claid/logger/Logger.dart';
 
 import './src/module_impl.dart' as impl;
+
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart';
+import 'dart:io';
+
+class CLAIDSpecialPermissionsConfig
+{
+  String _configIdentifier;
+
+  CLAIDSpecialPermissionsConfig._(this._configIdentifier)
+  {
+
+  }
+
+  static CLAIDSpecialPermissionsConfig almightyCLAID()
+  {
+    return CLAIDSpecialPermissionsConfig._("almightyCLAID");
+
+  }
+
+  static CLAIDSpecialPermissionsConfig regularConfig()
+  {
+    return CLAIDSpecialPermissionsConfig._("regularConfig");
+  }
+
+  static allStorageAccessConfig()
+  {
+    return CLAIDSpecialPermissionsConfig._("allStorageAccessConfig");
+  }
+
+  String getIdentifier()
+  {
+    return this._configIdentifier;
+  }
+
+}
+
+class CLAIDPersistanceConfig
+{
+  String getIdentifier()
+  {
+    return "";
+  }
+}
 
 class CLAID
 {
@@ -40,11 +87,45 @@ class CLAID
   static MiddleWareBindings? _middleWare;
   static ModuleManager? _moduleManager;
   static ModuleFactory _moduleFactory = ModuleFactory();
+  static MethodChannel javaChannel = MethodChannel('adamma.c4dhi.claid/FLUTTERCLAID');
 
-
-  static Future<void> start(final String socketPath, 
+  static Future<bool> startInForeground(
     final String configFilePath, final String hostId, 
-    final String userId, final String deviceId, {String libraryPath = ""}) async
+    final String userId, final String deviceId, 
+    CLAIDSpecialPermissionsConfig specialPermissionsConfig
+  ) async
+  {
+    Directory? appDocDir = await getApplicationDocumentsDirectory();
+
+    // Construct the path to the Android/media directory
+    String mediaDirectoryPath = '${appDocDir!.path}';
+
+    mediaDirectoryPath = mediaDirectoryPath.replaceAll("app_flutter", "files");
+    String socketPath = mediaDirectoryPath + "/" + "claid_local.grpc";
+    return await _startCLAIDInForegroundFromNativeLanguage(socketPath, configFilePath, hostId, userId, deviceId, specialPermissionsConfig);
+  }
+
+  static Future<bool> startInBackground(
+    final String configFilePath, final String hostId, 
+    final String userId, final String deviceId, 
+    CLAIDSpecialPermissionsConfig specialPermissionsConfig,
+    CLAIDPersistanceConfig persistanceConfig,
+  ) async
+  {
+    Directory? appDocDir = await getApplicationDocumentsDirectory();
+
+    // Construct the path to the Android/media directory
+    String mediaDirectoryPath = '${appDocDir!.path}';
+
+    mediaDirectoryPath = mediaDirectoryPath.replaceAll("app_flutter", "files");
+    String socketPath = mediaDirectoryPath + "/" + "claid_local.grpc";
+    return false;
+  }
+
+  static Future<bool> startMiddleware(final String socketPath, 
+    final String configFilePath, final String hostId, 
+    final String userId, final String deviceId, 
+    CLAIDSpecialPermissionsConfig specialPermissionsConfig, {String libraryPath = ""}) async
   {
     // Creating the ModuleDispatcher loads the Middleware and starts the Claid core, as of now.
 
@@ -60,12 +141,13 @@ class CLAID
       if(_middleWare?.attachCppRuntime()! != true)
       {
           Logger.logError("Failed to attach CLAID C++ Runtime.");
-          return ;
+          return false;
       }
 
     }
 
-    return attachDartRuntime(socketPath);
+    await attachDartRuntime(socketPath);
+    return true;
   }
 
   static Future<void> attachDartRuntime(final String socketPath) async
@@ -79,28 +161,7 @@ class CLAID
     return _moduleManager!.start();
   }
 
-  static T? getModule<T extends Module>(final String moduleId)
-  {
-    if(_moduleManager == null)
-    {
-      return null;
-    }
-    Module? module = _moduleManager!.getModule(moduleId);
-
-    if(module == null)
-    {
-      return null;
-    }
-
-    if(module is T)
-    {
-      return module;
-    }
-    else
-    {
-      return null;
-    }
-  }
+ 
 
   static ModuleManager? getModuleManager()
   {
@@ -125,5 +186,45 @@ class CLAID
   static void registerModule<T extends Module>(String name, FactoryFunc factoryFunc) 
   {
     CLAID._moduleFactory.registerClass<T>(name, factoryFunc);
+  }
+
+  // Let a native language (e.g., Java on Android or Objective-C on iOS) start CLAID.
+  static Future<bool> _startCLAIDInForegroundFromNativeLanguage(
+        String socketPath, String configFilePath, String hostId, 
+        String userId, String deviceId,
+      CLAIDSpecialPermissionsConfig specialPermissionsConfig) async
+  {
+    try 
+    {
+      List<String> arguments = [socketPath, configFilePath, hostId, userId, deviceId, specialPermissionsConfig.getIdentifier()]; // Example list of strings
+
+      return await javaChannel.invokeMethod('startInForeground', arguments);
+      
+    } on PlatformException catch (e) {
+      // Handle exception
+      Logger.logFatal('Error: ${e.message}');
+      return false;
+    }
+  }
+
+  // Let a native language (e.g., Java on Android or Objective-C on iOS) start CLAID.
+  static Future<bool> _startCLAIDInBackgroundFromNativeLanguage(
+        String socketPath, String configFilePath, String hostId, 
+        String userId, String deviceId, 
+        CLAIDSpecialPermissionsConfig specialPermissionsConfig,
+        CLAIDPersistanceConfig persistanceConfig) async 
+  {
+    try 
+    {
+      List<String> arguments = [socketPath, configFilePath, hostId, 
+        userId, deviceId, specialPermissionsConfig.getIdentifier(), persistanceConfig.getIdentifier()]; // Example list of strings
+
+      return await javaChannel.invokeMethod('startInForeground', arguments);
+      
+    } on PlatformException catch (e) {
+      // Handle exception
+      Logger.logFatal('Error: ${e.message}');
+      return false;
+    }
   }
 }

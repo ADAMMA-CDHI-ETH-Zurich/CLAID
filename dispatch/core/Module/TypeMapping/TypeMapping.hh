@@ -92,23 +92,72 @@ namespace claid {
 
     public:
 
-        // Number
+        
+        // Int
         template<typename T>
-        typename std::enable_if<std::is_arithmetic<T>::value && !std::is_same<T, bool>::value, Mutator<T>>::type
+        typename std::enable_if<std::is_same<int32_t, T>::value || std::is_same<int64_t, T>::value, Mutator<T>>::type
         static getMutator()
         {
             return Mutator<T>(
-                makeMessage<NumberVal>(),
+                makeMessage<IntVal>(),
                 [](DataPackage& packet, const T& value) 
                 { 
-                    NumberVal protoVal;
+                    IntVal protoVal;
                     protoVal.set_val(static_cast<T>(value));
                     
                     setProtoPayload(packet, protoVal);
                 },
                 [](const DataPackage& packet, T& returnValue) 
                 {
-                    NumberVal protoVal;
+                    IntVal protoVal;
+                    getProtoPayload(packet, protoVal); 
+
+                    returnValue = static_cast<T>(protoVal.val());
+                }
+            );
+        }
+
+        // Float
+        template<typename T>
+        typename std::enable_if<std::is_same<float, T>::value, Mutator<T>>::type
+        static getMutator()
+        {
+            return Mutator<T>(
+                makeMessage<FloatVal>(),
+                [](DataPackage& packet, const T& value) 
+                { 
+                    FloatVal protoVal;
+                    protoVal.set_val(static_cast<T>(value));
+                    
+                    setProtoPayload(packet, protoVal);
+                },
+                [](const DataPackage& packet, T& returnValue) 
+                {
+                    FloatVal protoVal;
+                    getProtoPayload(packet, protoVal); 
+
+                    returnValue = static_cast<T>(protoVal.val());
+                }
+            );
+        }
+
+        // double
+        template<typename T>
+        typename std::enable_if<std::is_same<double, T>::value, Mutator<T>>::type
+        static getMutator()
+        {
+            return Mutator<T>(
+                makeMessage<DoubleVal>(),
+                [](DataPackage& packet, const T& value) 
+                { 
+                    DoubleVal protoVal;
+                    protoVal.set_val(static_cast<T>(value));
+                    
+                    setProtoPayload(packet, protoVal);
+                },
+                [](const DataPackage& packet, T& returnValue) 
+                {
+                    DoubleVal protoVal;
                     getProtoPayload(packet, protoVal); 
 
                     returnValue = static_cast<T>(protoVal.val());

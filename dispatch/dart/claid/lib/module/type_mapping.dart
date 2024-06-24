@@ -23,6 +23,8 @@
 
 import 'package:claid/generated/claidservice.pb.dart';
 import 'package:protobuf/protobuf.dart';
+import 'package:fixnum/src/int64.dart';
+import 'dart:ffi';
 
 typedef SetterFn<T> = void Function(DataPackage pkt, T val);
 typedef GetterFn<T> = T Function(DataPackage pkt);
@@ -91,18 +93,31 @@ class TypeMapping {
   }
 
 
-  Mutator<T> getMutator<T>(T inst) {
-    if (inst is double) {
-      return Mutator<T>(
-          (p, v) => _setProtoPayload(p, NumberVal()..val = v as double), 
-          (p) => (_getProtoPayload(p, NumberVal()) as NumberVal).val as T);
-    }
-
+  Mutator<T> getMutator<T>(T inst) 
+  {
     if (inst is int) {
       return Mutator<T>(
-          (p, v) => _setProtoPayload(p, NumberVal()..val = (v as int).toDouble()), 
-          (p) => (_getProtoPayload(p, NumberVal()) as NumberVal).val.toInt() as T);
+          (p, v) => _setProtoPayload(p, Int32Val()..val = v as int), 
+          (p) => (_getProtoPayload(p, Int32Val()) as Int32Val).val as T);
     }
+
+
+    // Can't do an automatic mutator for float in dart,
+    // as dart has no Float datatype.
+    // If users want to use Float (e.g., for RPCs into languages that do have a float data type),
+    // they have to use the FloatVal message directly.
+    // if (inst is Float) {
+    //   return Mutator<T>(
+    //       (p, v) => _setProtoPayload(p, FloatVal()..val = v as Float), 
+    //       (p) => (_getProtoPayload(p, FloatVal()) as FloatVal).val as T);
+    // }
+
+    if (inst is double) {
+      return Mutator<T>(
+          (p, v) => _setProtoPayload(p, DoubleVal()..val = v as double), 
+          (p) => (_getProtoPayload(p, DoubleVal()) as DoubleVal).val as T);
+    }
+
 
     if (inst is bool) 
     {
