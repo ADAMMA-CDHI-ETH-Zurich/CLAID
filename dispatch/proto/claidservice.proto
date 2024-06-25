@@ -143,11 +143,6 @@ message IntVal
   int64 val = 1;
 }
 
-message FloatVal
-{
-  float val = 1;
-}
-
 message DoubleVal
 {
   double val = 1;

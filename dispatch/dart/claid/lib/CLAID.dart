@@ -30,8 +30,9 @@ import 'package:claid/module/module_manager.dart';
 import 'package:claid/logger/Logger.dart';
 import 'package:claid/RemoteFunction/RemoteFunctionHandler.dart';
 import 'package:claid/RemoteFunction/RemoteFunction.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:claid/ui/CLAIDModuleViewToClassMap.dart';
 
+import 'package:path_provider/path_provider.dart';
 import 'package:claid/logger/Logger.dart';
 
 import './src/module_impl.dart' as impl;
@@ -75,9 +76,26 @@ class CLAIDSpecialPermissionsConfig
 
 class CLAIDPersistanceConfig
 {
+  String _configIdentifier;
+  
+  CLAIDPersistanceConfig._(this._configIdentifier)
+  {
+
+  }
+
+  static CLAIDPersistanceConfig maximumPersistance()
+  {
+    return CLAIDPersistanceConfig._("maximumPersistance");
+  }
+
+  static CLAIDPersistanceConfig minimumPersistance()
+  {
+    return CLAIDPersistanceConfig._("minimumPersistance");
+  }
+
   String getIdentifier()
   {
-    return "";
+    return this._configIdentifier;
   }
 }
 
@@ -95,14 +113,26 @@ class CLAID
     CLAIDSpecialPermissionsConfig specialPermissionsConfig
   ) async
   {
+    print("StartInForeground");
+
     Directory? appDocDir = await getApplicationDocumentsDirectory();
 
     // Construct the path to the Android/media directory
     String mediaDirectoryPath = '${appDocDir!.path}';
 
     mediaDirectoryPath = mediaDirectoryPath.replaceAll("app_flutter", "files");
-    String socketPath = mediaDirectoryPath + "/" + "claid_local.grpc";
-    return await _startCLAIDInForegroundFromNativeLanguage(socketPath, configFilePath, hostId, userId, deviceId, specialPermissionsConfig);
+    String socketPath = "unix://" + mediaDirectoryPath + "/" + "claid_local.grpc";
+    print("Calling platform function");
+    bool result = await _startCLAIDInForegroundFromNativeLanguage(socketPath,
+        configFilePath, hostId, userId, deviceId, specialPermissionsConfig);
+
+    if(!result)
+    {
+      Logger.logFatal("Failed to start CLAID in foreground");
+      return false;
+    }
+    await attachDartRuntime(socketPath);
+    return true;
   }
 
   static Future<bool> startInBackground(
@@ -118,8 +148,17 @@ class CLAID
     String mediaDirectoryPath = '${appDocDir!.path}';
 
     mediaDirectoryPath = mediaDirectoryPath.replaceAll("app_flutter", "files");
-    String socketPath = mediaDirectoryPath + "/" + "claid_local.grpc";
-    return false;
+    String socketPath = "unix://" + mediaDirectoryPath + "/" + "claid_local.grpc";
+    bool result = await _startCLAIDInBackgroundFromNativeLanguage(socketPath, configFilePath,
+      hostId, userId, deviceId, specialPermissionsConfig, persistanceConfig);
+
+    if(!result)
+    {
+      Logger.logFatal("Failed to start CLAID in background");
+      return false;
+    }
+    await attachDartRuntime(socketPath);
+    return true;
   }
 
   static Future<bool> startMiddleware(final String socketPath, 
@@ -140,7 +179,7 @@ class CLAID
     {
       if(_middleWare?.attachCppRuntime()! != true)
       {
-          Logger.logError("Failed to attach CLAID C++ Runtime.");
+          Logger.logFatal("Failed to attach CLAID C++ Runtime.");
           return false;
       }
 
@@ -152,6 +191,7 @@ class CLAID
 
   static Future<void> attachDartRuntime(final String socketPath) async
   {
+    Logger.logInfo("Attach runtime");
     _dispatcher = ModuleDispatcher(socketPath);
 
 
@@ -197,12 +237,12 @@ class CLAID
     try 
     {
       List<String> arguments = [socketPath, configFilePath, hostId, userId, deviceId, specialPermissionsConfig.getIdentifier()]; // Example list of strings
-
+      print("Waiting for platform functioN");
       return await javaChannel.invokeMethod('startInForeground', arguments);
       
     } on PlatformException catch (e) {
       // Handle exception
-      Logger.logFatal('Error: ${e.message}');
+      Logger.logFatal('CLAID platform error: ${e.message}');
       return false;
     }
   }
@@ -219,12 +259,17 @@ class CLAID
       List<String> arguments = [socketPath, configFilePath, hostId, 
         userId, deviceId, specialPermissionsConfig.getIdentifier(), persistanceConfig.getIdentifier()]; // Example list of strings
 
-      return await javaChannel.invokeMethod('startInForeground', arguments);
+      return await javaChannel.invokeMethod('startInBackground', arguments);
       
     } on PlatformException catch (e) {
       // Handle exception
       Logger.logFatal('Error: ${e.message}');
       return false;
     }
+  }
+
+  static void registerViewClassForModule(String moduleClass, ViewFactoryFunc factoryFunc)
+  {
+    CLAIDModuleViewToClassMap.registerModuleClass(moduleClass, factoryFunc);
   }
 }

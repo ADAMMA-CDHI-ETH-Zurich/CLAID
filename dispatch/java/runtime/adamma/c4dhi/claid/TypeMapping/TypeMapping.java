@@ -40,7 +40,6 @@ import adamma.c4dhi.claid.StringArray;
 import adamma.c4dhi.claid.NumberArray;
 import adamma.c4dhi.claid.NumberMap;
 import adamma.c4dhi.claid.IntVal;
-import adamma.c4dhi.claid.FloatVal;
 import adamma.c4dhi.claid.DoubleVal;
 
 import adamma.c4dhi.claid.BoolVal;
@@ -298,35 +297,22 @@ public class TypeMapping {
                 {
                     IntVal val = IntVal.newBuilder().build();
                     val = getProtoPayload(p, val);
+                    
+                    Long longVal = Long.valueOf(val.getVal());
 
-                    return (T) Integer.valueOf(val.getVal());
+                    if(dataTypeClass == Integer.class)
+                    {
+                        return (T) Integer.valueOf(longVal.intValue());
+                    }
+
+                    return (T) longVal;
                 }
             );
         }
 
-        if (dataTypeClass == Float.class) {
-            return new Mutator<T>(
-                (p, v) -> 
-                {
-                    DataPackage.Builder builderCopy = dataPackageBuilderCopy(p);
-                    Number numberValue = (Number) v;
-                    FloatVal val = FloatVal.newBuilder().setVal(numberValue.floatValue()).build();
+ 
 
-                    builderCopy = setProtoPayload(builderCopy, val);
-
-                    return builderCopy.build();
-                },
-                p -> 
-                {
-                    FloatVal val = FloatVal.newBuilder().build();
-                    val = getProtoPayload(p, val);
-
-                    return (T) Float.valueOf(val.getVal());
-                }
-            );
-        }
-
-        if (dataTypeClass == Double.class) {
+        if (dataTypeClass == Float.class || dataTypeClass == Double.class) {
             return new Mutator<T>(
                 (p, v) -> 
                 {

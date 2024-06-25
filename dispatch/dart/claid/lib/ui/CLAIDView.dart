@@ -43,10 +43,7 @@ class CLAIDView extends StatefulWidget {
   @override
   State<CLAIDView> createState() => _CLAIDViewState();
 
-  static void registerViewClassForModule(String moduleClass, ViewFactoryFunc factoryFunc)
-  {
-    CLAIDModuleViewToClassMap.registerModuleClass(moduleClass, factoryFunc);
-  }
+  
 }
 
 class _CLAIDViewState extends State<CLAIDView>
@@ -123,10 +120,9 @@ class _CLAIDViewState extends State<CLAIDView>
 
     if(!this.widget.attachOnly)
     {
-      await CLAID.startMiddleware(socketPath,
+      await CLAID.startInBackground(
       this.widget.configPath, "test_host", "test_user", "test_id",
-        CLAIDSpecialPermissionsConfig.regularConfig(),
-        libraryPath: this.widget.claidLibraryPath    //CLAID.attachDartRuntime("unix://" + socketPath, moduleFactory);
+        CLAIDSpecialPermissionsConfig.regularConfig(), CLAIDPersistanceConfig.maximumPersistance()
       );
     }
     else

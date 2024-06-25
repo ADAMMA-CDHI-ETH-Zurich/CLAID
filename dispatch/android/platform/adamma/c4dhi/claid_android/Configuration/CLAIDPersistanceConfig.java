@@ -42,8 +42,22 @@ public class CLAIDPersistanceConfig
 
     public boolean DISABLE_BATTERY_OPTIMIZATIONS = false;
 
+    public static CLAIDPersistanceConfig fromIdentifier(String identifier)
+    {
+        if(identifier.equals("maximumPersistance"))
+        {
+            return maximumPersistance();
+        }
+        else if(identifier.equals("minimumPersistance"))
+        {
+            return minimumPersistance();
+        }
+        else
+        {
+            return null;
+        }
+    }
 
-    
     // A configuration that tells CLAID to try everything that's possible
     // to keep the service running as long as possible. 
     // Might require additional permissions that will be requested by CLAID automatically.

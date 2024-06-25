@@ -117,33 +117,9 @@ namespace claid {
             );
         }
 
-        // Float
+        // Float, Double
         template<typename T>
-        typename std::enable_if<std::is_same<float, T>::value, Mutator<T>>::type
-        static getMutator()
-        {
-            return Mutator<T>(
-                makeMessage<FloatVal>(),
-                [](DataPackage& packet, const T& value) 
-                { 
-                    FloatVal protoVal;
-                    protoVal.set_val(static_cast<T>(value));
-                    
-                    setProtoPayload(packet, protoVal);
-                },
-                [](const DataPackage& packet, T& returnValue) 
-                {
-                    FloatVal protoVal;
-                    getProtoPayload(packet, protoVal); 
-
-                    returnValue = static_cast<T>(protoVal.val());
-                }
-            );
-        }
-
-        // double
-        template<typename T>
-        typename std::enable_if<std::is_same<double, T>::value, Mutator<T>>::type
+        typename std::enable_if<std::is_same<float, T>::value || std::is_same<double, T>::value, Mutator<T>>::type
         static getMutator()
         {
             return Mutator<T>(

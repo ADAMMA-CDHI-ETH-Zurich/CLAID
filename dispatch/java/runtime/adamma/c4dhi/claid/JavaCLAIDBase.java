@@ -242,4 +242,9 @@ public abstract class JavaCLAIDBase
 
         moduleManager.postLogMessage(logMessage);        
     }
+
+    public static boolean isRunning()
+    {
+        return JavaCLAIDBase.started;
+    }
 }

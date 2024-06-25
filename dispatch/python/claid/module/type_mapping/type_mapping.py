@@ -25,7 +25,7 @@ from google.protobuf.descriptor import Descriptor
 from google.protobuf.message_factory import MessageFactory
 from module.type_mapping.mutator import Mutator
 from module.type_mapping.proto_codec import ProtoCodec
-from dispatch.proto.claidservice_pb2 import DataPackage, IntVal, FloatVal, DoubleVal, BoolVal, StringVal, NumberMap, StringMap, NumberArray, StringArray, Blob
+from dispatch.proto.claidservice_pb2 import DataPackage, IntVal, DoubleVal, BoolVal, StringVal, NumberMap, StringMap, NumberArray, StringArray, Blob
 import numpy as np
 
 class TypeMapping:
@@ -72,7 +72,7 @@ class TypeMapping:
                 getter = lambda packet: TypeMapping.getProtoPayload(packet, IntVal()).val
             )
         
-        # Actually corresponds to double in C++ -> 64 bit floating point
+        # Actually corresponds to double in C++ -> 64 bit floating point, no separate double type.
         if cls == float:
             
             return Mutator(

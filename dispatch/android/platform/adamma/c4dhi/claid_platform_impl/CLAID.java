@@ -226,6 +226,7 @@ public class CLAID extends JavaCLAIDBase
         final String configFilePath, final String hostId, final String userId, 
         final String deviceId, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
     {
+        ServiceManager.stopService(context);
         return CLAID.start(context, socketPath, configFilePath, hostId, userId, deviceId, specialPermissionsConfig);
     }
 
@@ -233,6 +234,7 @@ public class CLAID extends JavaCLAIDBase
         final String configFilePath, final String hostId, final String userId, 
         final String deviceId, CLAIDSpecialPermissionsConfig specialPermissionsConfig)
     {
+        ServiceManager.stopService(context);
         return CLAID.start(context, configFilePath, hostId, userId, deviceId, specialPermissionsConfig);
     }
 

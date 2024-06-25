@@ -66,8 +66,14 @@ class ModuleDispatcher {
 
   ModuleDispatcher(this._socketPath)
   {
+      String adjustedSocketPath = _socketPath;
+
+      if(_socketPath.startsWith("unix://"))
+      {
+        adjustedSocketPath = adjustedSocketPath.replaceAll("unix://", "");
+      }
       _channel = ClientChannel(
-          InternetAddress(_socketPath, type: InternetAddressType.unix),
+          InternetAddress(adjustedSocketPath, type: InternetAddressType.unix),
           options:
               const ChannelOptions(credentials: ChannelCredentials.insecure()));
       _stub = ClaidServiceClient(_channel);

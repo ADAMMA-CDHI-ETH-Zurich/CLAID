@@ -97,20 +97,9 @@ class TypeMapping {
   {
     if (inst is int) {
       return Mutator<T>(
-          (p, v) => _setProtoPayload(p, Int32Val()..val = v as int), 
-          (p) => (_getProtoPayload(p, Int32Val()) as Int32Val).val as T);
+          (p, v) => _setProtoPayload(p, IntVal()..val = Int64(v as int)),
+          (p) => (_getProtoPayload(p, IntVal()) as IntVal).val.toInt() as T);
     }
-
-
-    // Can't do an automatic mutator for float in dart,
-    // as dart has no Float datatype.
-    // If users want to use Float (e.g., for RPCs into languages that do have a float data type),
-    // they have to use the FloatVal message directly.
-    // if (inst is Float) {
-    //   return Mutator<T>(
-    //       (p, v) => _setProtoPayload(p, FloatVal()..val = v as Float), 
-    //       (p) => (_getProtoPayload(p, FloatVal()) as FloatVal).val as T);
-    // }
 
     if (inst is double) {
       return Mutator<T>(
@@ -171,7 +160,7 @@ class TypeMapping {
       }, (p) => codec.decode(p.payload));
     }
 
-    if(T == _getType<T>())
+    if(T == null)
     {
       return Mutator<T>(
         (p, v) => {},

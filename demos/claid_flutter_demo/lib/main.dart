@@ -1,7 +1,8 @@
 import 'package:claid/module/module_factory.dart';
 import 'package:claid/ui/CLAIDView.dart';
+import 'package:claid/CLAID.dart';
+
 import 'package:flutter/material.dart';
-import 'package:smart_inhaler/smart_inhaler.dart';
 
 import 'TestStreamModule.dart';
 import 'TestStreamView.dart';
@@ -46,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
 
     moduleFactory.registerClass("TestStreamModule", () => TestStreamModule());
-    CLAIDView.registerViewClassForModule("TestStreamModule", TestStreamView.new);
+    CLAID.registerViewClassForModule("TestStreamModule", TestStreamView.new);
   }
 
 
@@ -56,10 +57,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return MaterialApp(
       home: CLAIDView(title: 'My CLAID App',
 
-          configPath: "",
-          attachOnly: true,
+          configPath: "assets://flutter_assets/assets/claid_test.json",
           claidPackages: [
-            smart_inhaler(),
           ],
         ),
     );

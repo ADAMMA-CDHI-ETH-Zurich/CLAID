@@ -47,6 +47,26 @@ public class CLAIDSpecialPermissionsConfig
     // are available for device owner apps. Device owner Apps can take major control over the OS.
     public boolean BE_DEVICE_OWNER = false;
 
+    public static CLAIDSpecialPermissionsConfig fromIdentifier(String identifier)
+    {
+        if(identifier.equals("almightyCLAID"))
+        {
+            return almightyCLAID();
+        }
+        else if(identifier.equals("regularConfig"))
+        {
+            return regularConfig();
+        }
+        else if(identifier.equals("allStorageAccessConfig"))
+        {
+            return allStorageAccessConfig();
+        }
+        else
+        {
+            return null;
+        }
+    }
+
     public static CLAIDSpecialPermissionsConfig almightyCLAID()
     {
         CLAIDSpecialPermissionsConfig config = new CLAIDSpecialPermissionsConfig();
