@@ -115,10 +115,15 @@ class SelectableDeviceViewWidget extends StatelessWidget
 
   // This widget is the root of your application.
   @override
-  @override
   Widget build(BuildContext context) {
+
+    final screenSize = MediaQuery.of(context).size;
+    final buttonHeight = screenSize.height * 0.09;
+    final typeRectHeight = buttonHeight * 0.8;
+    final typeRectOffsetTop = (buttonHeight - buttonHeight * 0.8) / 2;
+
     return SizedBox(
-      height: 75,
+      height: buttonHeight,
       child: ElevatedButton(
           onPressed: () {
             this.onPressed();
@@ -150,9 +155,9 @@ class SelectableDeviceViewWidget extends StatelessWidget
             ),
             Positioned(
               right: 0,
-              top: 12.5, // Center the rectangle vertically within the button
+              top: typeRectOffsetTop, // Center the rectangle vertically within the button
               child: CustomPaint(
-                size: Size(60, 50),
+                size: Size(60, typeRectHeight),
                 painter: RectanglePainter(
                     deviceView.getModuleType(),
                     deviceView.getModuleSubType()),
