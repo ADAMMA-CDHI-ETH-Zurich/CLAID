@@ -22,11 +22,12 @@
 # main.py
 import argparse
 
-from claid import CLAID
-from claid.claid_cli_utils.create_package import create_package_prompt
+from claid_cli_utils.create_package import create_package_prompt
 
 import platform
 def hello_world(args):
+    from claid import CLAID
+
     print("Instantiating PyCLAID")
     claid = CLAID()
     claid.hello_world()

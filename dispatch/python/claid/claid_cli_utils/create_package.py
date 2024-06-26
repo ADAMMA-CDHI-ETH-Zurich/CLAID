@@ -58,13 +58,31 @@ def create_package(package_name: str, namespace: str, output_path: str):
     if(os.path.exists(complete_path)):
         print("Error, cannot create package. Package already exists under \"" + complete_path + "\"")
         exit(0)
-    os.system(f"cd {output_path} && git clone https://github.com/ADAMMA-CDHI-ETH-Zurich/CLAIDPackageTemplate.git {package_name}")
     
-    files = ["src/android/claid_package/settings.gradle",
-             "src/android/claid_package/claid/build.gradle",
-             "src/android/claid_package/claid/src/main/cpp/CMakeLists.txt",
-             "src/flutter/claid_package/android/settings.gradle",
-             "src/flutter/claid_package/android/build.gradle",
+    shutil.copytree("/Users/planger/Development/CLAIDPackageTemplate", package_name)
+    #os.system(f"cd {output_path} && git clone https://github.com/ADAMMA-CDHI-ETH-Zurich/CLAIDPackageTemplate.git {package_name}")
+    
+    #### Create symlinks
+    print("Creating symlinks")
+    os.system(f"cd {output_path}/{package_name}/packaging/flutter/claid_package/android/src/main && ln -s ../../../../../../src/android/java java")
+    os.system(f"cd {output_path}/{package_name}/packaging/flutter/claid_package/android/src/main && ln -s ../../../../../../src/android/AndroidManifest.xml AndroidManifest.xml")
+    os.system(f"cd {output_path}/{package_name}/packaging/flutter/claid_package/android/src/main && ln -s ../../../../../../src/cpp cpp")
+    os.system(f"cd {output_path}/{package_name}/packaging/flutter/claid_package/android/src/main && ln -s ../../../../../../datatypes proto")
+    os.system(f"cd {output_path}/{package_name}/packaging/flutter/claid_package/ && ln -s ../../../src/dart lib")
+    os.system(f"cd {output_path}/{package_name}/packaging/flutter/claid_package/ && ln -s ../../../assets assets")
+
+    os.system(f"cd {output_path}/{package_name}/packaging/android/claid_package/claid/src/main && ln -s ../../../../../../src/android/java java")
+    os.system(f"cd {output_path}/{package_name}/packaging/android/claid_package/claid/src/main && ln -s ../../../../../../src/android/AndroidManifest.xml AndroidManifest.xml")
+    os.system(f"cd {output_path}/{package_name}/packaging/android/claid_package/claid/src/main && ln -s ../../../../../../src/cpp cpp")
+    os.system(f"cd {output_path}/{package_name}/packaging/android/claid_package/claid/src/main && ln -s ../../../../../../datatypes proto")
+    os.system(f"cd {output_path}/{package_name}/packaging/android/claid_package/claid/src/main && ln -s ../../../../../../assets assets")
+    
+
+    files = ["packaging/android/claid_package/settings.gradle",
+             "packaging/android/claid_package/claid/build.gradle",
+             "packaging/flutter/claid_package/android/settings.gradle",
+             "packaging/flutter/claid_package/android/build.gradle",
+            "src/cpp/CMakeLists.txt",
              "Makefile"]
     
     patches = {"${package_name}" : package_name, "${namespace}" : namespace}
@@ -76,7 +94,7 @@ def create_package(package_name: str, namespace: str, output_path: str):
     
     package_folders = namespace.split(".")
 
-    package_folder_path = f"{output_path}/{package_name}/src/android/claid_package/claid/src/main/java"
+    package_folder_path = f"{output_path}/{package_name}/packaging/android/claid_package/claid/src/main/java"
     for folder in package_folders:
         package_folder_path += "/" + folder 
         try:
@@ -122,14 +140,21 @@ public class $package_name extends CLAIDPackage
     package_file_name = namespace + "." + package_name
     package_file_name = package_file_name.replace(".", "_")
     package_file_name += ".claidpackage"
-    print("Creating " + f"{output_path}/{package_name}/src/android/claid_package/claid/src/main/assets/{package_file_name}")
-    android_claidpackage_file_path = f"{output_path}/{package_name}/src/android/claid_package/claid/src/main/assets/{package_file_name}"
+    print("Creating " + f"{output_path}/{package_name}/packaging/android/claid_package/claid/src/main/claid_package_assets/{package_file_name}")
+    android_claidpackage_file_path = f"{output_path}/{package_name}/packaging/android/claid_package/claid/src/main/claid_package_assets/{package_file_name}"
 
     with open(android_claidpackage_file_path, "w") as file:
         file.write(f"{namespace}.{package_name}")
 
 
-    dart_package_main_file = f"{output_path}/{package_name}/src/flutter/claid_package/lib/{package_name}.dart"
+    print("Creating " + f"{output_path}/{package_name}/packaging/flutter/claid_package/android/src/main/claid_package_assets/{package_file_name}")
+    flutter_claidpackage_file_path = f"{output_path}/{package_name}/packaging/flutter/claid_package/android/src/main/claid_package_assets/{package_file_name}"
+
+    with open(flutter_claidpackage_file_path, "w") as file:
+        file.write(f"{namespace}.{package_name}")
+
+
+    dart_package_main_file = f"{output_path}/{package_name}/packaging/flutter/claid_package/lib/{package_name}.dart"
     dart_code = """import 'package:claid/package/CLAIDPackage.dart';
 import 'package:claid/package/CLAIDPackageAnnotation.dart';
 import 'package:claid/ui/CLAIDView.dart';
@@ -156,7 +181,7 @@ class $package_name extends CLAIDPackage
         file.write(dart_code)
 
     try:
-        shutil.move(f"{output_path}/{package_name}/src/android/claid_package/claid", f"{output_path}/{package_name}/src/android/claid_package/{package_name}")
+        shutil.move(f"{output_path}/{package_name}/packaging/android/claid_package/claid", f"{output_path}/{package_name}/packaging/android/claid_package/{package_name}")
     except Exception as e:
         print(f"Error when moving folder: {str(e)}")
 
