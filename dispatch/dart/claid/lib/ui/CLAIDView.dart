@@ -16,34 +16,12 @@ import 'package:claid/package/CLAIDPackageLoader.dart';
 
 
 
-class CLAIDView extends StatefulWidget {
-  const CLAIDView({super.key,
-    required this.title, required this.configPath, 
-    this.attachOnly = false, this.claidLibraryPath = "",
-    this.claidPackages });
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  final String configPath;
-
-  final bool attachOnly;
-  final String claidLibraryPath;
-
-  final List<CLAIDPackage>? claidPackages;
+class CLAIDView extends StatefulWidget 
+{
+  const CLAIDView({super.key});
 
   @override
   State<CLAIDView> createState() => _CLAIDViewState();
-
-  
 }
 
 class _CLAIDViewState extends State<CLAIDView>
@@ -53,31 +31,11 @@ class _CLAIDViewState extends State<CLAIDView>
   CLAIDModuleListView? moduleListView = null;
 
   @override
-  void initState() {
-    super.initState();
-    print("CLAIDView InitState");
-  }
-
-  @override
-  Widget build(BuildContext context)
+  void initState() 
   {
+    super.initState();
 
-
-    if(!_claidStarted)
-    {
-      startCLAID(this.widget.claidPackages);
-      _claidStarted = true;
-      return CircularProgressIndicator();
-    }
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-
-    return moduleListView != null ? moduleListView! : CircularProgressIndicator();
-
+    CLAID.getRunningModules().then((modules) => _createDeviceView(modules!));
   }
 
   void _createDeviceView(Map<String, String> modules)
@@ -88,48 +46,11 @@ class _CLAIDViewState extends State<CLAIDView>
           runningModules: modules,
           moduleManager: CLAID.getModuleManager()!,);
     });
-
-
-
   }
 
-  void startCLAID(List<CLAIDPackage>? packages) async
+  @override
+  Widget build(BuildContext context)
   {
-    if(packages != null)
-    {
-      for(CLAIDPackage package in packages!)
-      {
-        CLAIDPackageLoader.loadPackage(package);
-      }
-    }
-
-
-    Directory? appDocDir = await getApplicationDocumentsDirectory();
-
-    // Construct the path to the Android/media directory
-    String mediaDirectoryPath = '${appDocDir!.path}';
-
-    mediaDirectoryPath = mediaDirectoryPath.replaceAll("app_flutter", "files");
-    String socketPath = mediaDirectoryPath + "/" + "claid_local.grpc";
-
-
-    print("ATTACHING DART RUNTIME " + socketPath + "\n");
-    //moduleFactory.registerClass("MyTestModuleOne", () => MyTestModuleOne());
-
-    print("Current ${Directory.current.path}");
-
-    if(!this.widget.attachOnly)
-    {
-      await CLAID.startInBackground(
-      this.widget.configPath, "test_host", "test_user", "test_id",
-        CLAIDSpecialPermissionsConfig.regularConfig(), CLAIDPersistanceConfig.maximumPersistance()
-      );
-    }
-    else
-    {
-      await CLAID.attachDartRuntime(socketPath);
-    }
-
-    CLAID.getRunningModules().then((modules) => _createDeviceView(modules!));
+    return moduleListView != null ? moduleListView! : CircularProgressIndicator();
   }
 }

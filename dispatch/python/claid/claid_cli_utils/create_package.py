@@ -109,9 +109,9 @@ def create_package(package_name: str, namespace: str, output_path: str):
 
     # Format the date as "14th June 2024" using strftime
     formatted_date = current_date.strftime("%dth %B %Y")
-    java_package_main_file = f"{package_folder_path}/{package_name}.java"
+    java_package_main_file = f"{package_folder_path}/{package_name}_package.java"
     
-    java_code = """package $namespace_name;
+    java_code = """package $namespace;
 
 import adamma.c4dhi.claid_android.Package.CLAIDPackageAnnotation;
 import adamma.c4dhi.claid_android.Package.CLAIDPackage;
@@ -122,7 +122,7 @@ import adamma.c4dhi.claid_android.Package.CLAIDPackage;
     description = "Package description",
     version = "0.1"
 )
-public class $package_name extends CLAIDPackage
+public class $package_name_package extends CLAIDPackage
 {
     public void register()
     {
@@ -132,6 +132,7 @@ public class $package_name extends CLAIDPackage
 }
 """
     java_code = java_code.replace("$package_name", package_name)
+    java_code = java_code.replace("$namespace", namespace)
     java_code = java_code.replace("$date", formatted_date)
 
     with open(java_package_main_file, 'w') as file:
@@ -144,17 +145,17 @@ public class $package_name extends CLAIDPackage
     android_claidpackage_file_path = f"{output_path}/{package_name}/packaging/android/claid_package/claid/src/main/claid_package_assets/{package_file_name}"
 
     with open(android_claidpackage_file_path, "w") as file:
-        file.write(f"{namespace}.{package_name}")
+        file.write(f"{namespace}.{package_name}_package")
 
 
     print("Creating " + f"{output_path}/{package_name}/packaging/flutter/claid_package/android/src/main/claid_package_assets/{package_file_name}")
     flutter_claidpackage_file_path = f"{output_path}/{package_name}/packaging/flutter/claid_package/android/src/main/claid_package_assets/{package_file_name}"
 
     with open(flutter_claidpackage_file_path, "w") as file:
-        file.write(f"{namespace}.{package_name}")
+        file.write(f"{namespace}.{package_name}_package")
 
 
-    dart_package_main_file = f"{output_path}/{package_name}/packaging/flutter/claid_package/lib/{package_name}.dart"
+    dart_package_main_file = f"{output_path}/{package_name}/packaging/flutter/claid_package/lib/{package_name}_package.dart"
     dart_code = """import 'package:claid/package/CLAIDPackage.dart';
 import 'package:claid/package/CLAIDPackageAnnotation.dart';
 import 'package:claid/ui/CLAIDView.dart';
@@ -166,7 +167,7 @@ import 'package:claid/ui/CLAIDView.dart';
     description: 'Package description.',
     version: '0.1',
 )
-class $package_name extends CLAIDPackage
+class $package_name_package extends CLAIDPackage
 {
     @override
     void register()
@@ -176,6 +177,7 @@ class $package_name extends CLAIDPackage
 }
 """
     dart_code = dart_code.replace("$package_name", package_name)
+    dart_code = dart_code.replace("$namespace", namespace)
     dart_code = dart_code.replace("$date", formatted_date)
     with open(dart_package_main_file, 'w') as file:
         file.write(dart_code)

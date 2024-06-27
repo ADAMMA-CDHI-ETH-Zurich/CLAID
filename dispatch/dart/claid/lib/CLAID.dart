@@ -35,6 +35,10 @@ import 'package:claid/ui/CLAIDModuleViewToClassMap.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:claid/logger/Logger.dart';
 
+import 'package:claid/package/CLAIDPackage.dart';
+import 'package:claid/package/CLAIDPackageLoader.dart';
+
+
 import './src/module_impl.dart' as impl;
 
 import 'package:flutter/material.dart';
@@ -110,11 +114,12 @@ class CLAID
   static Future<bool> startInForeground(
     final String configFilePath, final String hostId, 
     final String userId, final String deviceId, 
-    CLAIDSpecialPermissionsConfig specialPermissionsConfig
+    CLAIDSpecialPermissionsConfig specialPermissionsConfig,
+    {List<CLAIDPackage>? claidPackages = null},
   ) async
   {
-    print("StartInForeground");
-
+    Logger.logInfo("CLAID startInForeground called");
+    await loadPackages(claidPackages);
     Directory? appDocDir = await getApplicationDocumentsDirectory();
 
     // Construct the path to the Android/media directory
@@ -140,8 +145,12 @@ class CLAID
     final String userId, final String deviceId, 
     CLAIDSpecialPermissionsConfig specialPermissionsConfig,
     CLAIDPersistanceConfig persistanceConfig,
+    {List<CLAIDPackage>? claidPackages = null},
   ) async
   {
+    Logger.logInfo("CLAID startInBackground called");
+    await loadPackages(claidPackages);
+
     Directory? appDocDir = await getApplicationDocumentsDirectory();
 
     // Construct the path to the Android/media directory
@@ -271,5 +280,16 @@ class CLAID
   static void registerViewClassForModule(String moduleClass, ViewFactoryFunc factoryFunc)
   {
     CLAIDModuleViewToClassMap.registerModuleClass(moduleClass, factoryFunc);
+  }
+
+  static void loadPackages(List<CLAIDPackage>? packages) async
+  {
+    if(packages != null)
+    {
+      for(CLAIDPackage package in packages!)
+      {
+        CLAIDPackageLoader.loadPackage(package);
+      }
+    }
   }
 }

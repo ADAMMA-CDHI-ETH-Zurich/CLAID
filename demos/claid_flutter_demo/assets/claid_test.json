@@ -1,28 +1,12 @@
 {
   "hosts": [{
-    "hostname": "test_host",
-    "type": "linux",
+    "hostname": "Smartphone",
     "is_server": false,
     "connect_to": "",
     "modules": [
       {
         "type": "TestStreamModule",
-        "id": "TestStreamModule",
-        "output_channels": {"MyData" :  "MyData"}
-      },
-      {
-        "type": "TestStreamModule",
-        "id": "Mod2",
-        "output_channels": {"MyData" :  "MyData"}
-      },
-      {
-        "type": "TestStreamModule",
-        "id": "Mod3",
-        "output_channels": {"MyData" :  "MyData"}
-      },
-      {
-        "type": "TestStreamModule",
-        "id": "Mod4",
+        "id": "MyFirstModule",
         "output_channels": {"MyData" :  "MyData"}
       }
     ]
