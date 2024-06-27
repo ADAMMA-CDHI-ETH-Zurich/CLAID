@@ -40,8 +40,11 @@ dependencies:
     path: /home/lastchance/Desktop/CLAID/dispatch/dart/claid
 
   smart_inhaler:
-    path: /home/lastchance/StudioProjects/SmartInhalerCLAID/claid/packaging/flutter/claid_package
-
+    #path: /home/lastchance/StudioProjects/SmartInhalerCLAID/claid/packaging/flutter/claid_package
+    git:
+      url: https://github.com/ADAMMA-CDHI-ETH-Zurich/SmartInhalerCLAID.git
+      ref: main
+      path: claid/packaging/flutter/claid_package
   path_provider: ^2.1.1
 
 

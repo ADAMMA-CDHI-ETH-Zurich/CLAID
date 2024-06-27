@@ -60,6 +60,7 @@ class _MyHomePageState extends State<MyHomePage>
   Widget build(BuildContext context)
   {
     return  claidStarted ?
-      const CLAIDView(title: 'My CLAID App') : const CircularProgressIndicator();
+      const CLAIDView(title: 'My CLAID App') :
+      const CircularProgressIndicator();
   }
 }

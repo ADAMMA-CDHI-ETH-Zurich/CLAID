@@ -330,9 +330,11 @@ packages:
   smart_inhaler:
     dependency: "direct main"
     description:
-      path: "/home/lastchance/StudioProjects/SmartInhalerCLAID/claid/packaging/flutter/claid_package"
-      relative: false
-    source: path
+      path: "claid/packaging/flutter/claid_package"
+      ref: main
+      resolved-ref: d40f054b7ce6fe6e2ccced707986cc3e1bd2c7d3
+      url: "https://github.com/ADAMMA-CDHI-ETH-Zurich/SmartInhalerCLAID.git"
+    source: git
     version: "0.0.5"
   source_span:
     dependency: transitive
