@@ -21,8 +21,9 @@
 
 # main.py
 import argparse
-
+import os
 from claid_cli_utils.create_package import create_package_prompt
+from claid_cli_utils.check_protoc import *
 
 import platform
 def hello_world(args):
@@ -53,6 +54,36 @@ def device_info(args):
     print(f"Architecture: {architecture}")
     print(f"Additional Info: {additional_info}")
 
+def check_sdk(args):
+    print("Verifying CLAID SDK...")
+    path = ""
+    try:
+        path = os.environ["CLAID_SDK_HOME"]
+    except:
+        print("CLAID SDK not found! Environment variable \"CLAID_SDK_HOME\" is not set.")
+        exit(1)
+
+    print(f"Found CLAID_SDK_HOME pointing to {path}, checking files...")
+
+    if not os.path.isdir(path):
+        print(f"Invalid CLAID SDK or path! The folder {path} is not a directory")
+        exit(1)
+
+    if not os.path.isfile(f"{path}/bin/android/claid-debug.aar"):
+        print(f"Invalid CLAID SDK! Could not find android libraries under {path}")
+        exit(1)
+
+    print("Found valid CLAID SDK!")
+
+    print("Checking if protobuf compiler works for dart")
+    # Example usage
+    is_protoc_working, message = check_protoc_for_dart()
+
+    if not is_protoc_working:
+        print("Error! Protobuf compiler not working for dart: " + message)
+        exit(1)
+
+    print("Protobuf compiler works!")
 
 
 def main():
@@ -64,7 +95,7 @@ def main():
     device_info_parser = subparsers.add_parser('device_info', help='Get device info (use this to report errors to the CLAID team).')
 
     # Create parser for the 'install' command
-    install_parser = subparsers.add_parser('create_package', help='Create a new CLAID package')
+    check_sdk_parser = subparsers.add_parser('check_sdk', help='Check if the CLAID SDK is installed')
 
     args = parser.parse_args()
 
@@ -75,6 +106,8 @@ def main():
         device_info(args)
     elif args.command == 'create_package':
         create_package_prompt(args)
+    elif args.command == 'check_sdk':
+        check_sdk(args)
     else:
         print('Unknown command')
 

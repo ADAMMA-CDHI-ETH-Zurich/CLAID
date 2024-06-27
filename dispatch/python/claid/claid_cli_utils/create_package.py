@@ -59,8 +59,7 @@ def create_package(package_name: str, namespace: str, output_path: str):
         print("Error, cannot create package. Package already exists under \"" + complete_path + "\"")
         exit(0)
     
-    shutil.copytree("/Users/planger/Development/CLAIDPackageTemplate", package_name)
-    #os.system(f"cd {output_path} && git clone https://github.com/ADAMMA-CDHI-ETH-Zurich/CLAIDPackageTemplate.git {package_name}")
+    os.system(f"cd {output_path} && git clone https://github.com/ADAMMA-CDHI-ETH-Zurich/CLAIDPackageTemplate.git {package_name}")
     
     #### Create symlinks
     print("Creating symlinks")
