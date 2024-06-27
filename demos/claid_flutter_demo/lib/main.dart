@@ -44,10 +44,12 @@ class _MyHomePageState extends State<MyHomePage>
     super.initState();
 
     CLAID.startInBackground(
-        "assets://flutter_assets/assets/claid_test.json",
-        "test_host", "test_user", "test_id",
-        CLAIDSpecialPermissionsConfig.regularConfig(),
-        CLAIDPersistanceConfig.maximumPersistance(),
+        configFilePath: "assets://flutter_assets/assets/claid_test.json",
+        hostId: "Smartphone",
+        userId: "test_user",
+        deviceId: "test_id",
+        specialPermissionsConfig: CLAIDSpecialPermissionsConfig.regularConfig(),
+        persistanceConfig: CLAIDPersistanceConfig.maximumPersistance(),
         claidPackages: []
     ).then((value) => setState(() {
       claidStarted = true;

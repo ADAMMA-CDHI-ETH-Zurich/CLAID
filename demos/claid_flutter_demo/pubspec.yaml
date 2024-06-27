@@ -37,10 +37,10 @@ dependencies:
   cupertino_icons: ^1.0.6
 
   claid:
-    path: /Users/planger/Development/CLAIDFlutterPackage
+    path: /home/lastchance/Desktop/CLAID/dispatch/dart/claid
 
   smart_inhaler:
-    path: /Users/planger/Development/SmartInhalerCLAID/claid/packaging/flutter/claid_package
+    path: /home/lastchance/StudioProjects/SmartInhalerCLAID/claid/packaging/flutter/claid_package
 
   path_provider: ^2.1.1
 

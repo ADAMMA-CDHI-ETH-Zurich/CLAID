@@ -18,7 +18,9 @@ import 'package:claid/package/CLAIDPackageLoader.dart';
 
 class CLAIDView extends StatefulWidget 
 {
-  const CLAIDView({super.key});
+  const CLAIDView({super.key, required this.title});
+
+  final String title;
 
   @override
   State<CLAIDView> createState() => _CLAIDViewState();

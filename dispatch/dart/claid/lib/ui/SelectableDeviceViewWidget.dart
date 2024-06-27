@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-
+import 'package:claid/ui/FittedText.dart';
 import 'CLAIDModuleView.dart';
 
 class RectanglePainter extends CustomPainter
@@ -26,24 +26,27 @@ class RectanglePainter extends CustomPainter
     );
     canvas.drawRRect(rrect, paint);
 
+    final firstLineFontSize = calculateFontSize(firstLine, size.width*0.85);
+    final secondLineFontSize = calculateFontSize(secondLine, size.width*0.6);
+
     final textSpan = TextSpan(
       children: [
         TextSpan(
           text: firstLine + "\n",
           style: TextStyle(
             color: Color.fromARGB(255, 47, 110, 187),
-            fontSize: 16,
+            fontSize: firstLineFontSize,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Sans Serif', // Change font family to Arial
+            fontFamily: 'Sans Serif',
           ),
         ),
         TextSpan(
           text: secondLine,
           style: TextStyle(
             color: Color.fromARGB(255, 47, 110, 187),
-            fontSize: 10,
+            fontSize: secondLineFontSize,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Sans Serif', // Change font family to Arial
+            fontFamily: 'Sans Serif',
           ),
         ),
       ],
@@ -61,13 +64,33 @@ class RectanglePainter extends CustomPainter
     );
 
     final offset = Offset(
-      (size.width - textPainter.width) / 2  + 10,
+      (size.width - textPainter.width) / 2 + 10,
       (size.height - textPainter.height) / 2,
     );
 
     textPainter.paint(canvas, offset);
   }
 
+  double calculateFontSize(String text, double maxWidth, {double minFontSize = 8, double maxFontSize = 100}) {
+    double fontSize = maxFontSize;
+    final textPainter = TextPainter(
+      text: TextSpan(text: text, style: TextStyle(fontSize: fontSize)),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    );
+
+    while (fontSize > minFontSize) {
+      textPainter.text = TextSpan(text: text, style: TextStyle(fontSize: fontSize));
+      textPainter.layout();
+
+      if (textPainter.size.width <= maxWidth) {
+        break;
+      }
+      fontSize -= 1;
+    }
+
+    return fontSize;
+  }
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return false;
@@ -82,7 +105,7 @@ class SelectableDeviceViewWidget extends StatelessWidget
   Color interpolateColor(int index, int maxElements) {
     Color startColor = Color.fromARGB(255, 107, 180, 236);
     Color endColor = Color.fromARGB(255,  85, 148, 232);
-    double fraction = index.toDouble() / (maxElements.toDouble() - 1);
+    double fraction = (index.toDouble()) / (maxElements.toDouble());
     print("Fraction $fraction $index $maxElements");
     int red = startColor.red + ((endColor.red - startColor.red) * fraction).round();
     int green = startColor.green + ((endColor.green - startColor.green) * fraction).round();
@@ -112,15 +135,26 @@ class SelectableDeviceViewWidget extends StatelessWidget
       ));
   }
 
+  bool isLandscape(BuildContext context) {
+    return MediaQuery.of(context).orientation == Orientation.landscape;
+  }
+
+  bool isPortrait(BuildContext context) {
+    return MediaQuery.of(context).orientation == Orientation.portrait;
+  }
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
 
     final screenSize = MediaQuery.of(context).size;
-    final buttonHeight = screenSize.height * 0.09;
+    final buttonHeight = isPortrait(context) ? screenSize.height * 0.09 : screenSize.height * 0.2;
     final typeRectHeight = buttonHeight * 0.8;
     final typeRectOffsetTop = (buttonHeight - buttonHeight * 0.8) / 2;
+
+    double maxTextWidth = screenSize.width * 0.5;
+    double maxTextHeight = buttonHeight * 0.35;
+
 
     return SizedBox(
       height: buttonHeight,
@@ -143,9 +177,11 @@ class SelectableDeviceViewWidget extends StatelessWidget
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Padding(padding: EdgeInsets.only(top: 9)),
-                      Text(
-                        title,
+                      FittedText(
+                        text: this.title,
                         style: const TextStyle(color: Colors.white),
+                        maxWidth: maxTextWidth,
+                        maxHeight: maxTextHeight,
                       ),
                       deviceView.getSubCaptionWidget(),
                     ],

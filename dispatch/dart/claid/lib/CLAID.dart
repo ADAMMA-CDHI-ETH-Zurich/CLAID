@@ -111,15 +111,17 @@ class CLAID
   static ModuleFactory _moduleFactory = ModuleFactory();
   static MethodChannel javaChannel = MethodChannel('adamma.c4dhi.claid/FLUTTERCLAID');
 
-  static Future<bool> startInForeground(
-    final String configFilePath, final String hostId, 
-    final String userId, final String deviceId, 
-    CLAIDSpecialPermissionsConfig specialPermissionsConfig,
-    {List<CLAIDPackage>? claidPackages = null},
-  ) async
+  static Future<bool> startInForeground({
+    required String configFilePath,
+    required String hostId,
+    required String userId,
+    required String deviceId,
+    required CLAIDSpecialPermissionsConfig specialPermissionsConfig,
+    List<CLAIDPackage>? claidPackages = null,
+  }) async
   {
     Logger.logInfo("CLAID startInForeground called");
-    await loadPackages(claidPackages);
+    loadPackages(claidPackages);
     Directory? appDocDir = await getApplicationDocumentsDirectory();
 
     // Construct the path to the Android/media directory
@@ -140,16 +142,18 @@ class CLAID
     return true;
   }
 
-  static Future<bool> startInBackground(
-    final String configFilePath, final String hostId, 
-    final String userId, final String deviceId, 
-    CLAIDSpecialPermissionsConfig specialPermissionsConfig,
-    CLAIDPersistanceConfig persistanceConfig,
-    {List<CLAIDPackage>? claidPackages = null},
-  ) async
+  static Future<bool> startInBackground({
+    required String configFilePath,
+    required String hostId,
+    required String userId,
+    required String deviceId,
+    required CLAIDSpecialPermissionsConfig specialPermissionsConfig,
+    required CLAIDPersistanceConfig persistanceConfig,
+    List<CLAIDPackage>? claidPackages = null,
+  }) async
   {
     Logger.logInfo("CLAID startInBackground called");
-    await loadPackages(claidPackages);
+    loadPackages(claidPackages);
 
     Directory? appDocDir = await getApplicationDocumentsDirectory();
 

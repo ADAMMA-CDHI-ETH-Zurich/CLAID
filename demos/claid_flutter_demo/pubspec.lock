@@ -44,7 +44,7 @@ packages:
   claid:
     dependency: "direct main"
     description:
-      path: "/Users/planger/Development/CLAIDFlutterPackage"
+      path: "/home/lastchance/Desktop/CLAID/dispatch/dart/claid"
       relative: false
     source: path
     version: "0.6.1"
@@ -170,6 +170,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
+  intl:
+    dependency: transitive
+    description:
+      name: intl
+      sha256: "910f85bce16fb5c6f614e117efa303e85a1731bb0081edf3604a2ae6e9a3cc91"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.17.0"
   leak_tracker:
     dependency: transitive
     description:
@@ -306,6 +314,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.0"
+  simple_gesture_detector:
+    dependency: transitive
+    description:
+      name: simple_gesture_detector
+      sha256: ba2cd5af24ff20a0b8d609cec3f40e5b0744d2a71804a2616ae086b9c19d19a3
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -314,7 +330,7 @@ packages:
   smart_inhaler:
     dependency: "direct main"
     description:
-      path: "/Users/planger/Development/SmartInhalerCLAID/claid/packaging/flutter/claid_package"
+      path: "/home/lastchance/StudioProjects/SmartInhalerCLAID/claid/packaging/flutter/claid_package"
       relative: false
     source: path
     version: "0.0.5"
@@ -350,6 +366,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  table_calendar:
+    dependency: transitive
+    description:
+      name: table_calendar
+      sha256: d3770975b7da3f301b5e4a7c12b2159855259ecd83e26c779fb8ca015cca0b03
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.4"
   term_glyph:
     dependency: transitive
     description:
