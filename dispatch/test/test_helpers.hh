@@ -87,9 +87,9 @@ static void setPayload(DataPackage& packet, T& data)
     blobMsgFromProto(data, blob);
 }
 
-template<typename T> static void setNumberVal(DataPackage& packet, const T& number)
+template<typename T> static void setIntVal(DataPackage& packet, const T& number)
 {
-    claidservice::NumberVal val;
+    claidservice::IntVal val;
     val.set_val(number);
     setPayload(packet, val);
 }
@@ -102,7 +102,7 @@ static void setStringVal(DataPackage& packet, const std::string& str)
 }
 
 
-double getNumberVal(DataPackage& packet);
+double getIntVal(DataPackage& packet);
 std::string getStringVal(DataPackage& packet);
 
 // Definitino of the modules and channels.
@@ -157,7 +157,7 @@ const std::shared_ptr<DataPackage>
     }),
     chan13NumPkt = makePkt(chan13Num, mod1, mod3, [](auto& p) 
     { 
-        claidservice::NumberVal val;
+        claidservice::IntVal val;
         val.set_val(42);
         setPayload(p, val);
     }),
@@ -169,13 +169,13 @@ const std::shared_ptr<DataPackage>
     }),
     chan23Pkt = makePkt(chan23, mod2, mod3, [](auto& p) 
     { 
-        setNumberVal(p, 1042);
+        setIntVal(p, 1042);
     }),
     chan23ProtoPkt = makePkt(chan23Proto, mod2, mod3, [](auto& p) { blobMsgFromProto(*examplePayload, *p.mutable_payload()); }),
-    chan14Pkt = makePkt(chan12To45, mod1, mod4, [](auto& p) { setNumberVal(p, 42); }),
-    chan15Pkt = makePkt(chan12To45, mod1, mod5, [](auto& p) { setNumberVal(p, 43); }),
-    chan24Pkt = makePkt(chan12To45, mod2, mod4, [](auto& p) { setNumberVal(p, 44); }),
-    chan25Pkt = makePkt(chan12To45, mod2, mod5, [](auto& p) { setNumberVal(p, 45); });
+    chan14Pkt = makePkt(chan12To45, mod1, mod4, [](auto& p) { setIntVal(p, 42); }),
+    chan15Pkt = makePkt(chan12To45, mod1, mod5, [](auto& p) { setIntVal(p, 43); }),
+    chan24Pkt = makePkt(chan12To45, mod2, mod4, [](auto& p) { setIntVal(p, 44); }),
+    chan25Pkt = makePkt(chan12To45, mod2, mod5, [](auto& p) { setIntVal(p, 45); });
 
 const std::vector<ModInfo> testModules = {
     ModInfo{mod1, modClass1, props_1},

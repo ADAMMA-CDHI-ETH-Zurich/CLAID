@@ -191,6 +191,7 @@ namespace claid
             absl::Status startRouter(const std::string& currentHost, const HostDescriptionMap& hostDescriptions, const ModuleDescriptionMap& moduleDescriptions);
 
             void setupLogSink();
+            void assertAllModulesLoaded();
 
             absl::Status unloadAllModulesInAllLocalRuntimes();
             absl::Status loadNewConfigIntoModuleTableAndRouter(const Configuration& config);

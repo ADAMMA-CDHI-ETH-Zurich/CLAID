@@ -108,7 +108,7 @@ def create_package(package_name: str, namespace: str, output_path: str):
 
     # Format the date as "14th June 2024" using strftime
     formatted_date = current_date.strftime("%dth %B %Y")
-    java_package_main_file = f"{package_folder_path}/{package_name}_package.java"
+    java_package_main_file = f"{package_folder_path}/{package_name}.java"
     
     java_code = """package $namespace;
 
@@ -121,7 +121,7 @@ import adamma.c4dhi.claid_android.Package.CLAIDPackage;
     description = "Package description",
     version = "0.1"
 )
-public class $package_name_package extends CLAIDPackage
+public class $package_name extends CLAIDPackage
 {
     public void register()
     {
@@ -151,10 +151,10 @@ public class $package_name_package extends CLAIDPackage
     flutter_claidpackage_file_path = f"{output_path}/{package_name}/packaging/flutter/claid_package/android/src/main/claid_package_assets/{package_file_name}"
 
     with open(flutter_claidpackage_file_path, "w") as file:
-        file.write(f"{namespace}.{package_name}_package")
+        file.write(f"{namespace}.{package_name}")
 
 
-    dart_package_main_file = f"{output_path}/{package_name}/packaging/flutter/claid_package/lib/{package_name}_package.dart"
+    dart_package_main_file = f"{output_path}/{package_name}/packaging/flutter/claid_package/lib/{package_name}.dart"
     dart_code = """import 'package:claid/package/CLAIDPackage.dart';
 import 'package:claid/package/CLAIDPackageAnnotation.dart';
 import 'package:claid/ui/CLAIDView.dart';
@@ -166,7 +166,7 @@ import 'package:claid/ui/CLAIDView.dart';
     description: 'Package description.',
     version: '0.1',
 )
-class $package_name_package extends CLAIDPackage
+class $package_name extends CLAIDPackage
 {
     @override
     void register()

@@ -117,9 +117,9 @@ bool claidtest::parseFromBlob(const Blob& srcBlob, Message& msg) {
     return msg.ParseFromString(srcBlob.payload());
 }
 
-double claidtest::getNumberVal(DataPackage& packet)
+double claidtest::getIntVal(DataPackage& packet)
 {
-    claidservice::NumberVal val;
+    claidservice::IntVal val;
     parseFromBlob(packet.payload(), val);
     return val.val();
 }

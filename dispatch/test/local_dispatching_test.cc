@@ -147,7 +147,7 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
     outQueue.push_back(pkt12);
 
     auto pkt13 =  make_shared<DataPackage>(*chan13NumPkt);
-    setNumberVal(*pkt13, getNumberVal(*pkt13) + 100.0);
+    setIntVal(*pkt13, getIntVal(*pkt13) + 100.0);
     outQueue.push_back(pkt13);
 
     auto pkt23 =  make_shared<DataPackage>(*chan23ProtoPkt);
@@ -157,10 +157,10 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
     // senders and multiple receivers.
     map<tuple<string, string, string>, list<shared_ptr<DataPackage>>> receivePkts;
 
-    outQueue.push_back(makeChanPacket(chan12To45, mod1, receivePkts, testChannels, [](auto& p) { setNumberVal(p, 1001); }));
-    outQueue.push_back(makeChanPacket(chan12To45, mod2, receivePkts, testChannels, [](auto& p) { setNumberVal(p, 1002); }));
-    outQueue.push_back(makeChanPacket(chan12To45, mod1, receivePkts, testChannels, [](auto& p) { setNumberVal(p, 1003); }));
-    outQueue.push_back(makeChanPacket(chan12To45, mod2, receivePkts, testChannels, [](auto& p) { setNumberVal(p, 1004); }));
+    outQueue.push_back(makeChanPacket(chan12To45, mod1, receivePkts, testChannels, [](auto& p) { setIntVal(p, 1001); }));
+    outQueue.push_back(makeChanPacket(chan12To45, mod2, receivePkts, testChannels, [](auto& p) { setIntVal(p, 1002); }));
+    outQueue.push_back(makeChanPacket(chan12To45, mod1, receivePkts, testChannels, [](auto& p) { setIntVal(p, 1003); }));
+    outQueue.push_back(makeChanPacket(chan12To45, mod2, receivePkts, testChannels, [](auto& p) { setIntVal(p, 1004); }));
     Logger::logInfo("local_dispatching_test 3");
 
     std::this_thread::sleep_for(1000ms);

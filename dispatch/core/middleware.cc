@@ -26,6 +26,8 @@
 #include "dispatch/core/Router/RoutingTreeParser.hh"
 #include "dispatch/core/Utilities/Path.hh"
 #include "dispatch/core/Utilities/FileUtils.hh"
+#include "absl/strings/str_split.h"
+#include <stdexcept>
 
 using namespace claid;
 using namespace std;
@@ -155,6 +157,15 @@ absl::Status MiddleWare::start() {
     this->setupLogSink();
 
     this->eventTracker->onCLAIDStarted();
+
+    if(config.needToCheckIfAllModulesLoaded())
+    {
+        std::thread([=]() {
+            std::this_thread::sleep_for(std::chrono::milliseconds(config.getDeadlineForLoadingModulesInMs()));
+            assertAllModulesLoaded();
+        }).detach(); 
+    }
+    
     return absl::OkStatus();
 }
 
@@ -328,6 +339,28 @@ void MiddleWare::setupLogSink()
     Logger::setMinimumSeverityLevelToPrint(this->currentConfiguration.getMinLogSeverityLevelToPrint(this->hostId));
     currentConfiguration.getLogSinkConfiguration(this->logSinkConfiguration, this->logMessagesQueue);
     Logger::setLogSinkConfiguration(this->logSinkConfiguration);
+}
+
+void MiddleWare::assertAllModulesLoaded()
+{
+    std::vector<std::string> notLoadedModules;
+    moduleTable.getNotLoadedModules(notLoadedModules);
+
+    if(notLoadedModules.size() > 0)
+    {
+        std::string errorMessage = absl::StrCat(
+             "CLAID Middleware: Terminating as we have missing Modules.\n",
+             "The following Modules have not yet been loaded after a deadline of ", currentConfiguration.getDeadlineForLoadingModulesInMs(), " milliseconds",
+             "The following Modules are missing: "
+        );
+
+        for(const std::string& module : notLoadedModules)
+        {
+            errorMessage += absl::StrCat("Id: \"", module, "\"\tclass: \"", moduleTable.getClassOfModuleWithId(module), "\"");
+        }
+
+        throw std::runtime_error(errorMessage);
+    }
 }
 
 absl::Status MiddleWare::shutdown()

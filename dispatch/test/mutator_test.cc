@@ -36,14 +36,14 @@ using namespace claid;
 // Tests if all available Mutators can be implemented using the template specialization.
 TEST(MutatorTestSuite, MutatorTest) {
     // numberVal
-    auto mut = TypeMapping::getMutator<unsigned short>();
-    auto mut1 = TypeMapping::getMutator<signed short>();
-    auto mut2 = TypeMapping::getMutator<unsigned int>();
-    auto mut3 = TypeMapping::getMutator<signed int>();
-    auto mut4 = TypeMapping::getMutator<unsigned long>();
-    auto mut5 = TypeMapping::getMutator<signed long>();
-    auto mut6 = TypeMapping::getMutator<unsigned long long>();
-    auto mut7 = TypeMapping::getMutator<signed long long>();
+    // auto mut = TypeMapping::getMutator<unsigned short>();
+    // auto mut1 = TypeMapping::getMutator<signed short>();
+    // auto mut2 = TypeMapping::getMutator<unsigned int>();
+    auto mut3 = TypeMapping::getMutator<int32_t>();
+    // auto mut4 = TypeMapping::getMutator<unsigned long>();
+    auto mut5 = TypeMapping::getMutator<int64_t>();
+    // auto mut6 = TypeMapping::getMutator<unsigned long long>();
+    // auto mut7 = TypeMapping::getMutator<signed long long>();
     auto mut8 = TypeMapping::getMutator<float>();
     auto mut9 = TypeMapping::getMutator<double>();
     

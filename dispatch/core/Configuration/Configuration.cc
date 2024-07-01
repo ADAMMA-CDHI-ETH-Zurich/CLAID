@@ -286,6 +286,22 @@ namespace claid
         return LogMessageSeverityLevel::INFO;
     }
 
+    bool Configuration::needToCheckIfAllModulesLoaded() const
+    {
+        return config.milliseconds_deadline_to_load_modules() >= 0;
+    }
+
+    int Configuration::getDeadlineForLoadingModulesInMs() const
+    {
+        if(config.milliseconds_deadline_to_load_modules() == 0)
+        {
+            // Default value.
+            return 2500;
+        }
+        
+        return config.milliseconds_deadline_to_load_modules();
+    }
+
     // bool Configuration::isDesignerModeEnabled() const
     // {
     //     return config.designer_mode();

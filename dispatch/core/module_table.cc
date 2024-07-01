@@ -22,6 +22,7 @@
 #include "dispatch/core/module_table.hh"
 #include "dispatch/core/proto_util.hh"
 #include "dispatch/core/Logger/Logger.hh"
+#include <stdexcept>
 // #include <google/protobuf/text_format.h>
 
 using grpc::Status;
@@ -261,6 +262,41 @@ bool ModuleTable::ready() const {
     return true;
 }
 
+void ModuleTable::setModuleLoaded(const std::string& moduleId)
+{
+    if(loadedModules.find(moduleId) != loadedModules.end())
+    {
+        throw std::runtime_error(absl::StrCat("Module with Id \"", moduleId, "\" was loaded more than once!"));
+    }
+    loadedModules.insert(moduleId);
+}
+
+bool ModuleTable::allModulesLoaded() const
+{
+    for(const auto& entry : moduleToClassMap)
+    {
+        std::string expectedModuleId = entry.first;
+        if(loadedModules.find(expectedModuleId) == loadedModules.end())
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+void ModuleTable::getNotLoadedModules(std::vector<std::string>& modules) const
+{
+    modules.clear();
+    for(const auto& entry : moduleToClassMap)
+    {
+        std::string expectedModuleId = entry.first;
+        if(loadedModules.find(expectedModuleId) == loadedModules.end())
+        {
+            return modules.push_back(expectedModuleId);
+        }
+    }
+}
+
 const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt, bool ignorePayload /*= false*/) const {
 
     shared_lock<shared_mutex> lock(const_cast<shared_mutex&>(chanMapMutex));
@@ -285,8 +321,6 @@ const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt, bool ign
         Logger::logError("Invalid package, payload type mismatch! Expected \"%s\" but got \"%s\"", entry->getPayloadType().c_str(), pkt.payload().message_type().c_str());
         return nullptr;
     }
-
-
     return entry;
 }
 
@@ -510,7 +544,7 @@ void ModuleTable::clearLookupTables()
     moduleAnnotations.clear();
     moduleInputChannelsToConnectionMap.clear();
     moduleOutputChannelsToConnectionMap.clear();
-
+    loadedModules.clear();
 
 }
 
@@ -620,4 +654,15 @@ bool ModuleTable::isModulePublishingChannel(const std::string& moduleId, const s
     package.set_channel(channel);
 
     return isValidChannel(package, true) != nullptr;
+}
+
+std::string ModuleTable::getClassOfModuleWithId(const std::string& moduleId) const
+{
+    auto it = this->moduleToClassMap.find(moduleId);
+    if(it == this->moduleToClassMap.end())
+    {
+        return "";
+    }
+
+    return it->second;
 }

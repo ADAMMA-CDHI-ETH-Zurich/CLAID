@@ -70,6 +70,11 @@ namespace claid
 
             LogMessageSeverityLevel getMinLogSeverityLevelToPrint(const std::string& hostName) const;
 
+            // If deadlineForLoadingModulesInMs in the configuration is >= 0,
+            // then the Middleware has to assert that all Modules specified in the config are loaded,
+            // and if not throw an exception.
+            bool needToCheckIfAllModulesLoaded() const;
+            int getDeadlineForLoadingModulesInMs() const;
             // bool isDesignerModeEnabled() const;
     };
 

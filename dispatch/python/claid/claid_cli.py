@@ -75,6 +75,7 @@ def check_sdk(args):
 
     print("Found valid CLAID SDK!")
 
+def check_buildtools(args):
     print("Checking if protobuf compiler works for dart")
     # Example usage
     is_protoc_working, message = check_protoc_for_dart()
@@ -85,6 +86,16 @@ def check_sdk(args):
 
     print("Protobuf compiler works!")
 
+    print("Checking if Android Studio tools are installed")
+    android_home = ""
+    try:
+        android_home = os.environ["ANDROID_HOME"]
+    except:
+        print("Android Studio tools not found! Environment variable ANDROID_HOME is not set.")
+        exit(1)
+
+    print("All build tools set! Ready to build CLAID packages.")
+
 
 def main():
     parser = argparse.ArgumentParser(description='Command-line tool for claid')
@@ -94,8 +105,10 @@ def main():
     hello_parser = subparsers.add_parser('hello_world', help='Test the CLAID middleware on your device.')
     device_info_parser = subparsers.add_parser('device_info', help='Get device info (use this to report errors to the CLAID team).')
 
-    # Create parser for the 'install' command
     check_sdk_parser = subparsers.add_parser('check_sdk', help='Check if the CLAID SDK is installed')
+
+    check_buildtools_parser = subparsers.add_parser('check_buildtools', help='Check if the build tools (Android Studio, Protobuf, Flutter) are installed')
+
 
     args = parser.parse_args()
 
@@ -108,6 +121,8 @@ def main():
         create_package_prompt(args)
     elif args.command == 'check_sdk':
         check_sdk(args)
+    elif args.command == 'check_buildtools':
+        check_buildtools(args)
     else:
         print('Unknown command')
 

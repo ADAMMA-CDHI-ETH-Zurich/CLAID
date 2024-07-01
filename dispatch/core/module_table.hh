@@ -26,7 +26,7 @@
 // #include <set>
 #include <shared_mutex>
 #include <string>
-
+#include <set>
 #include <grpc/grpc.h>
 
 #include "dispatch/proto/claidservice.grpc.pb.h"
@@ -106,6 +106,9 @@ class ModuleTable {
     // any runtimes connect.
     void setExpectedChannel(const std::string& channelId, const std::string& source, const std::string& target);
 
+    // Marks a module (identified by it's id) as loaded
+    void setModuleLoaded(const std::string& moduleId);
+    
     // Verifies that the given channels are expected and sets their data types.
     // This is called as runtimes connect and verifies that the channels provided by the
     // runtimes are correct.
@@ -113,6 +116,10 @@ class ModuleTable {
             const google::protobuf::RepeatedPtrField<claidservice::DataPackage>& channels);
 
     bool ready() const;
+    bool allModulesLoaded() const;
+
+    // Returns the ids of all Modules which have not yet been loaded.
+    void getNotLoadedModules(std::vector<std::string>& modules) const;
 
     // Verifies that a given packet uses a previously verified channel and that the type
     // of the data is correct.
@@ -158,6 +165,7 @@ class ModuleTable {
     void removeAllLooseDirectSubscriptionsOfRuntime(claidservice::Runtime runtime);
 
     bool isModulePublishingChannel(const std::string& moduleId, const std::string& channel);
+    std::string getClassOfModuleWithId(const std::string& moduleId) const;
 
   private:
     void augmentFieldValues(claidservice::DataPackage& pkt) const;
@@ -188,6 +196,8 @@ class ModuleTable {
 
     // Populated during GetModuleList. Captures which module classes are provided by what runtime.
     std::map<std::string, claidservice::Runtime> moduleClassRuntimeMap; // maps moduleClasses to the runtime that provides the implementation
+
+    std::set<std::string> loadedModules;
 
     // The output queues for each runtime. These persist even if the runtime
     // is restarted otherwise they should not be stored here but with the corresponding

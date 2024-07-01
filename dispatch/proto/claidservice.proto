@@ -350,7 +350,6 @@ enum LogSinkTransferMode
 
 
 // Container for the central CLAID config file. 
-// TODO (patrick): change as you see fit, this just a starting point. 
 message CLAIDConfig {
   repeated HostConfig hosts = 1; 
   string log_sink_host = 2; // If specified, all CLAID instances will forward their log messages to this host. 
@@ -359,6 +358,9 @@ message CLAIDConfig {
   LogSinkTransferMode log_sink_transfer_mode = 4; // Method of transfering log messages to the log_sink_host. Check LogSingTransferMode definition for more details.
   string log_sink_log_storage_path = 5; // If tranfer mode is store and upload, then this path indicates where to store the temporary files.
   //bool designer_mode = 5;                         // If true, other hosts can upload a new config (alongside additional data like model files or python code) to the host.
+  int32 milliseconds_deadline_to_load_modules = 7;  // Deadline in milliseconds for when all Modules specified in the config need to be finished loading.
+                                            // If not all Modules are loaded after the deadline, an exception is thrown.
+
 }
 
 message HostConfig {

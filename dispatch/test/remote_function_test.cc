@@ -61,7 +61,7 @@ class RPCCaller : public claid::Module
     void testRuntimeRPC()
     {
         RemoteFunction<std::map<std::string, std::string>> function = 
-            mapRemoteFunctionOfRuntime<std::map<std::string, std::string>>(Runtime::RUNTIME_CPP, "get_all_running_modules_of_all_runtimes");
+            mapRemoteFunctionOfRuntime<std::map<std::string, std::string>>(Runtime::MIDDLEWARE_CORE, "get_all_running_modules_of_all_runtimes");
         
         runningModulesRPCResult = function.execute()->await();
     }

@@ -278,7 +278,7 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
         auto classRt = moduleTable.moduleClassRuntimeMap[modClassIt->second];
         if (classRt != rt) {
             return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Module \"", moduleId, "\" was registered at Runtime ", Runtime_Name(classRt),
-            "but now was requested to be loaded by Runtime ", Runtime_Name(rt), ". Runtime of Module does not the Runtime it was originally registered at."));
+            "but now was requested to be loaded by Runtime ", Runtime_Name(rt), ". Runtime of Module does not equal the Runtime it was originally registered at."));
         }
         moduleTable.moduleRuntimeMap[moduleId] = classRt;
         if (!moduleTable.runtimeQueueMap[classRt]) {
@@ -292,6 +292,8 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
             Logger::logError("Error in setChannelTyes: %s", status.error_message().c_str());
             return status;
         }
+
+        moduleTable.setModuleLoaded(moduleId);
     }
 
     return Status::OK;
