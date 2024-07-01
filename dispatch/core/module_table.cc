@@ -94,7 +94,7 @@ SharedQueue<DataPackage>* ModuleTable::lookupOutputQueue(const string& moduleId)
     }
     else
     {
-        Logger::logError("ModuleTable::lookupOutputQueue runtime is unspecified");
+        //Logger::logError("ModuleTable::lookupOutputQueue runtime is unspecified");
     }
     return nullptr;
 }
