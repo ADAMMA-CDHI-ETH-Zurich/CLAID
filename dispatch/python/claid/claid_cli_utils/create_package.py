@@ -103,39 +103,10 @@ def create_package(package_name: str, namespace: str, output_path: str):
             print(f"An error occurred: {str(e)}")
             exit(0)
 
-    # Get the current date
-    current_date = datetime.now()
-
-    # Format the date as "14th June 2024" using strftime
-    formatted_date = current_date.strftime("%dth %B %Y")
+    ### Writing java package main
     java_package_main_file = f"{package_folder_path}/{package_name}.java"
-    
-    java_code = """package $namespace;
-
-import adamma.c4dhi.claid_android.Package.CLAIDPackageAnnotation;
-import adamma.c4dhi.claid_android.Package.CLAIDPackage;
-
-@CLAIDPackageAnnotation (
-    authors = {"Your name"},
-    date = "$date",
-    description = "Package description",
-    version = "0.1"
-)
-public class $package_name extends CLAIDPackage
-{
-    public void register()
-    {
-        System.out.println("Loading $package_name");
-        loadNativeComponent("$package_name");
-    }
-}
-"""
-    java_code = java_code.replace("$package_name", package_name)
-    java_code = java_code.replace("$namespace", namespace)
-    java_code = java_code.replace("$date", formatted_date)
-
-    with open(java_package_main_file, 'w') as file:
-        file.write(java_code)
+    write_java_package_main(java_package_main_file, package_name, namespace)
+    ### Done writing java package main
 
     package_file_name = namespace + "." + package_name
     package_file_name = package_file_name.replace(".", "_")
@@ -153,8 +124,61 @@ public class $package_name extends CLAIDPackage
     with open(flutter_claidpackage_file_path, "w") as file:
         file.write(f"{namespace}.{package_name}")
 
-
+    ### Writing dart package main
     dart_package_main_file = f"{output_path}/{package_name}/packaging/flutter/claid_package/lib/{package_name}.dart"
+    write_dart_package_main(dart_package_main_file, package_name, namespace)
+    ### Done writing dart package main
+
+    proto_data_type_path = f"{output_path}/{package_name}/datatypes/{package_name}_datatypes.proto"
+    write_proto_data_type(proto_data_type_path, package_name, namespace)
+
+    try:
+        shutil.move(f"{output_path}/{package_name}/packaging/android/claid_package/claid", f"{output_path}/{package_name}/packaging/android/claid_package/{package_name}")
+    except Exception as e:
+        print(f"Error when moving folder: {str(e)}")
+
+    try: 
+        shutil.rmtree(f"{output_path}/{package_name}/.git")
+    except Exception as e:
+        print(f"Error when deleting folder: {str(e)}")
+
+
+    print(f"Package {package_name} created successfully!")
+
+def write_java_package_main(path, package_name, namespace):
+    java_code = """package $namespace;
+
+import adamma.c4dhi.claid.Logger.Logger;
+import adamma.c4dhi.claid_android.Package.CLAIDPackageAnnotation;
+import adamma.c4dhi.claid_android.Package.CLAIDPackage;
+
+@CLAIDPackageAnnotation (
+    authors = {"Your name"},
+    date = "$date",
+    description = "Package description",
+    version = "0.1"
+)
+public class $package_name extends CLAIDPackage
+{
+    public void register()
+    {
+        Logger.logInfo("Loading $package_name");
+        loadNativeComponent("$package_name");
+    }
+}
+"""
+    # Get current date
+    current_date = datetime.now()
+    formatted_date = current_date.strftime("%dth %B %Y")
+
+    java_code = java_code.replace("$package_name", package_name)
+    java_code = java_code.replace("$namespace", namespace)
+    java_code = java_code.replace("$date", formatted_date)
+
+    with open(path, 'w') as file:
+        file.write(java_code)
+
+def write_dart_package_main(path, package_name, namespace):
     dart_code = """import 'package:claid/package/CLAIDPackage.dart';
 import 'package:claid/package/CLAIDPackageAnnotation.dart';
 import 'package:claid/ui/CLAIDView.dart';
@@ -175,24 +199,29 @@ class $package_name extends CLAIDPackage
     }
 }
 """
+    # Get current date
+    current_date = datetime.now()
+    formatted_date = current_date.strftime("%dth %B %Y")
+
     dart_code = dart_code.replace("$package_name", package_name)
     dart_code = dart_code.replace("$namespace", namespace)
     dart_code = dart_code.replace("$date", formatted_date)
-    with open(dart_package_main_file, 'w') as file:
+    with open(path, 'w') as file:
         file.write(dart_code)
 
-    try:
-        shutil.move(f"{output_path}/{package_name}/packaging/android/claid_package/claid", f"{output_path}/{package_name}/packaging/android/claid_package/{package_name}")
-    except Exception as e:
-        print(f"Error when moving folder: {str(e)}")
-
-    try: 
-        shutil.rmtree(f"{output_path}/{package_name}/.git")
-    except Exception as e:
-        print(f"Error when deleting folder: {str(e)}")
+def write_proto_data_type(path, package_name, namespace):
+    proto_code = """syntax="proto3";
+package $package_name;
+option java_package = "$namespace";
+option java_outer_classname = "$package_name_datatypes";
+option java_multiple_files = true;
 
 
-    print(f"Package {package_name} created successfully!")
+"""
+    proto_code = proto_code.replace("$package_name", package_name)
+    proto_code = proto_code.replace("$namespace", namespace)
+    with open(path, 'w') as file:
+        file.write(proto_code)
 
 def create_package_prompt(args):
     package_name = ""
@@ -214,7 +243,6 @@ def create_package_prompt(args):
         output_path = input("Please enter the path where you want to create the package. If you want to create it in the current folder, use \"./\": ")
         if(not output_path_is_valid(output_path)):
             print("Invalid output path!")
-
     
     confirm = ""
     

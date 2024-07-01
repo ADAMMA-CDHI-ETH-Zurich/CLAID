@@ -105,6 +105,8 @@ def main():
     hello_parser = subparsers.add_parser('hello_world', help='Test the CLAID middleware on your device.')
     device_info_parser = subparsers.add_parser('device_info', help='Get device info (use this to report errors to the CLAID team).')
 
+    check_sdk_parser = subparsers.add_parser('create_package', help='Create a new CLAID package')
+
     check_sdk_parser = subparsers.add_parser('check_sdk', help='Check if the CLAID SDK is installed')
 
     check_buildtools_parser = subparsers.add_parser('check_buildtools', help='Check if the build tools (Android Studio, Protobuf, Flutter) are installed')
