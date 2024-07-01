@@ -362,7 +362,9 @@ void MiddleWare::assertAllModulesLoaded()
 
         for(const std::string& module : notLoadedModules)
         {
-            errorMessage += absl::StrCat("Id: \"", module, "\"\tclass: \"", moduleTable.getClassOfModuleWithId(module), "\"\n");
+            std::string moduleType;
+            moduleTable.getTypeOfModuleWithId(module, moduleType);
+            errorMessage += absl::StrCat("Id: \"", module, "\"\tclass: \"", moduleType, "\"");
         }
 
         throw std::runtime_error(errorMessage);
