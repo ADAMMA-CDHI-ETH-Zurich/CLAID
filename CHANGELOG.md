@@ -1,5 +1,5 @@
-## 0.6.0
-* First major release
+## 0.6.1
+* First major release of CLAID!
 * Added x86 support
 * Added remote configuration and config upload
 * Added various control messages for reconfiguration, pausing and unpausing Modules
@@ -7,14 +7,17 @@
 * Added adaptive battery management
 * Added more collectors 
 * Added packaging system
-* Reworked Dart API to be conform to Java, Python and C++ APIs
-* Added RPCs, allowing Modules and non-Module entities to remotely call functions of other Modules or Runtimes across languages.
+* Reworked Dart API to conform to Java, Python, and C++ APIs
+* Added RPCs, allowing Modules and non-module entities to call functions of other Modules or Runtimes across languages remotely.
 * Added more UI elements
+* Beautified CLAID Module widgets
 * Added matching of CLAIDModuleViews to corresponding Modules, enabling to register views for certain Modules (even if written in another language)
-* Added CLAIDView for simple setup of CLAID in flutter
-* Removed need for PersistentModuleFactory for CLAID in Android services. 
+* Added CLAIDView for simple visualization of all currently loaded CLAID Modules in Flutter
+* Removed the need for PersistentModuleFactory for CLAID in Android services. 
 * Added checks for battery exemptions and device management features
-* Added CLAIDDeviceOwnerFeatures, allowing to control Wifi and Bluetooth from the background without user intervention, if App is registered as device owner.
+* Added CLAIDDeviceOwnerFeatures, allowing to control Wifi and Bluetooth from the background without user intervention, if the App is registered as a device owner.
+* Added automatic timeout at startup, enabling the middleware to assert that all Modules specified in the config are loaded. Timeout can be set from the config file.
+  
 
 ## 0.0.5
 * Added ABI filters, because this flutter package currently does not support x86 and x86_64 devices.
