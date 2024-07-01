@@ -34,10 +34,9 @@ public class GenericPermission extends Permission {
             "to use this app. If you can't see the option you need to open Settings->" +
             "Apps->CLAIDDemo->Permissions.";
 
-    public GenericPermission(String[] manifestPermissionNames) {
+    public GenericPermission(String[] manifestPermissionNames, String userDialogBody) {
         this.permissionNames = manifestPermissionNames;
-        userDialogBody = String.format(userDialogBody,
-                String.join(" and ", manifestPermissionNames));
+        this.userDialogBody = userDialogBody;
     }
 
     @Override
@@ -54,7 +53,16 @@ public class GenericPermission extends Permission {
     public void blockingRequest() {
         if (!isGranted()) {
             super.startIntentWithExtras(permissionNames, GENERIC_REQUEST_CODE, userDialogTitle, userDialogBody);
-            while (!isGranted()) {};
+            while (!isGranted() || !isAppOnForeground())
+            {
+                try{
+                    Thread.sleep(200);
+                }
+                catch(InterruptedException e)
+                {
+    
+                }
+            }
         }
     }
 }

@@ -264,6 +264,7 @@ bool ModuleTable::ready() const {
 
 void ModuleTable::setModuleLoaded(const std::string& moduleId)
 {
+    unique_lock<shared_mutex> lock(loadedModulesSetMutex);
     if(loadedModules.find(moduleId) != loadedModules.end())
     {
         throw std::runtime_error(absl::StrCat("Module with Id \"", moduleId, "\" was loaded more than once!"));
@@ -273,6 +274,7 @@ void ModuleTable::setModuleLoaded(const std::string& moduleId)
 
 bool ModuleTable::allModulesLoaded() const
 {
+    unique_lock<shared_mutex> lock(loadedModulesSetMutex);
     for(const auto& entry : moduleToClassMap)
     {
         std::string expectedModuleId = entry.first;
@@ -286,6 +288,7 @@ bool ModuleTable::allModulesLoaded() const
 
 void ModuleTable::getNotLoadedModules(std::vector<std::string>& modules) const
 {
+    unique_lock<shared_mutex> lock(loadedModulesSetMutex);
     modules.clear();
     for(const auto& entry : moduleToClassMap)
     {
@@ -534,6 +537,9 @@ size_t ModuleTable::getNumberOfRunningRuntimes()
 void ModuleTable::clearLookupTables()
 {
     unique_lock<shared_mutex> lock(chanMapMutex);
+    unique_lock<shared_mutex> lock2(loadedModulesSetMutex);
+    unique_lock<shared_mutex> lock3(runtimeInitializingMapMutex);
+
     moduleClassRuntimeMap.clear();
     // Not necessary
     // RuntimeQueueMap.clear();
@@ -545,7 +551,7 @@ void ModuleTable::clearLookupTables()
     moduleInputChannelsToConnectionMap.clear();
     moduleOutputChannelsToConnectionMap.clear();
     loadedModules.clear();
-
+    isRuntimeInitializingMap.clear();
 }
 
 bool ModuleTable::lookupOutputConnectionForChannelOfModule(const std::string& sourceModule, const std::string& channelName, std::string& connectionName) const
@@ -570,6 +576,7 @@ bool ModuleTable::lookupOutputConnectionForChannelOfModule(const std::string& so
 
 bool ModuleTable::getTypeOfModuleWithId(const std::string& moduleId, std::string& moduleType)
 {
+    unique_lock<shared_mutex> lock(chanMapMutex);
     auto it = moduleToClassMap.find(moduleId);
     if(it == moduleToClassMap.end())
     {
@@ -656,13 +663,23 @@ bool ModuleTable::isModulePublishingChannel(const std::string& moduleId, const s
     return isValidChannel(package, true) != nullptr;
 }
 
-std::string ModuleTable::getClassOfModuleWithId(const std::string& moduleId) const
-{
-    auto it = this->moduleToClassMap.find(moduleId);
-    if(it == this->moduleToClassMap.end())
-    {
-        return "";
-    }
 
-    return it->second;
+void ModuleTable::setRuntimeIsInitializing(claidservice::Runtime runtime, bool initializing)
+{
+    unique_lock<shared_mutex> lock(runtimeInitializingMapMutex);
+
+    this->isRuntimeInitializingMap[runtime] = initializing;
+}
+
+bool ModuleTable::isAnyRuntimeStillInitializing() const
+{
+    unique_lock<shared_mutex> lock(runtimeInitializingMapMutex);
+    for(const auto& entry : this->isRuntimeInitializingMap)
+    {
+        if(entry.second == true)
+        {
+            return true;
+        }
+    }
+    return false;
 }

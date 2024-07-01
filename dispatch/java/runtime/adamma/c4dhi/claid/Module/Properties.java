@@ -56,57 +56,67 @@ public class Properties
         Logger.logInfo("getProperty " + properties);
         Value property = lookupProperty(key);
 
-        boolean correctCase = false;
-        String propertyValue = "";
 
-        if (property.getKindCase() == Value.KindCase.NUMBER_VALUE) 
+        if (property != null) 
         {
-            correctCase = true;
-            propertyValue = String.valueOf(property.getNumberValue());
-        } 
-        else if (property.getKindCase() == Value.KindCase.STRING_VALUE) 
-        {
-            correctCase = true;
-            propertyValue = property.getStringValue();
-        } 
-    
-        if (property != null && correctCase) 
-        {
+            Double propertyValue = 0.0;
+
+            if (property.getKindCase() == Value.KindCase.NUMBER_VALUE) 
+            {
+                propertyValue = property.getNumberValue();
+            } 
+            else if (property.getKindCase() == Value.KindCase.STRING_VALUE) 
+            {
+                propertyValue = Double.valueOf(property.getStringValue());
+            } 
             Logger.logInfo("Get property 1");
             Logger.logInfo("Get property 2");
 
             T value;
-            Logger.logInfo("Get property 3");
+            Logger.logInfo("Get property 3 ");
 
             try {
                 if (dataType.equals(Double.class)) 
                 {
-                    value = (T) Double.valueOf(propertyValue);
+                    Logger.logInfo("Get property 4");
+                    value = (T) propertyValue;
                 } 
                 else if (dataType.equals(Float.class)) 
                 {
-                    value = (T) Float.valueOf(propertyValue);
+                    Logger.logInfo("Get property 5");
+
+                    value = (T) Float.valueOf(propertyValue.floatValue());
                 } 
                 else if (dataType.equals(Long.class)) 
                 {
-                    value = (T) Long.valueOf(propertyValue);
+                    Logger.logInfo("Get property 6");
+
+                    value = (T) Long.valueOf(propertyValue.longValue());
                 } 
                 else if (dataType.equals(Integer.class)) 
                 {
-                    value = (T) Integer.valueOf(propertyValue);
+                    Logger.logInfo("Get property 7");
+
+                    value = (T) Integer.valueOf(propertyValue.intValue());
                 } 
                 else if (dataType.equals(Short.class)) 
                 {
-                    value = (T) Short.valueOf(propertyValue);
+                    Logger.logInfo("Get property 8");
+
+                    value = (T) Short.valueOf(propertyValue.shortValue());
                 } 
                 else if (dataType.equals(Byte.class)) 
                 {
-                    value = (T) Byte.valueOf(propertyValue);
+                    Logger.logInfo("Get property 9");
+
+                    value = (T) Byte.valueOf(propertyValue.byteValue());
                 } 
                 
                 
                 else 
                 {
+                    Logger.logInfo("Get property 10");
+
                     this.unknownProperties.add(key);
                     return null;
                 }
@@ -114,6 +124,7 @@ public class Properties
             } 
             catch (NumberFormatException e) 
             {
+                Logger.logError("Failed to parse property value \"" + key + "\": "+ e.getMessage());
                 this.unknownProperties.add(key);
                 return null;
             }

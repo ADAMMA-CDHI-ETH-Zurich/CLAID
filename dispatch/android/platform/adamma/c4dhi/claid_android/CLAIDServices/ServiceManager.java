@@ -41,6 +41,8 @@ import java.util.concurrent.TimeUnit;
 
 public class ServiceManager
 {
+    private static String UNIQUE_WORK_NAME = "CLAIDServiceWatchdog";
+
     public static void startMaximumPermissionsPerpetualService(Context context, 
         final String socketPath, final String configFilePath, final String hostId, 
         final String userId, final String deviceId, CLAIDPersistanceConfig persistanceConfig)
@@ -103,7 +105,6 @@ public class ServiceManager
             }
 
             WorkManager workManager = WorkManager.getInstance(context);
-            String UNIQUE_WORK_NAME = "CLAIDServiceWatchdog";
             // As per Documentation: The minimum repeat interval that can be defined is 15 minutes
             // (same as the JobScheduler API), but in practice 15 doesn't work. Using 16 here
             PeriodicWorkRequest request =
@@ -163,6 +164,7 @@ public class ServiceManager
         File description = new File(restartDescriptionPath);
         if(description.exists() && description.isFile())
         {
+            Logger.logInfo("Deleting service restart description");
             description.delete();
         }
     }
@@ -196,14 +198,13 @@ public class ServiceManager
 
     public static void stopService(Context context)
     {
-        if(!isServiceRunning())
+        if(isServiceRunning())
         {
-            return;
+            Intent stopServiceIntent = new Intent(context, MaximumPermissionsPerpetualService.class);
+            context.stopService(stopServiceIntent);
         }
 
-        Intent stopServiceIntent = new Intent(context, MaximumPermissionsPerpetualService.class);
-
-        context.stopService(stopServiceIntent);
+        WorkManager.getInstance(context).cancelUniqueWork(UNIQUE_WORK_NAME);
         deleteServiceRestartDescription(context);
     }
 }

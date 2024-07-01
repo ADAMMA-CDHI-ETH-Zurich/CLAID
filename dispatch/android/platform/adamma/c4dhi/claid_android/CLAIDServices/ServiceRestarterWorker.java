@@ -48,16 +48,23 @@ public class ServiceRestarterWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
+
+        Logger.logInfo("ServiceRestarterWorker woke up.");
+        if(!ServiceManager.shouldRestartMaximumPermissionsPerpetualServiceOnTermination(context))
+        {  
+            Logger.logInfo("ServiceRestarterWorker: Config says we shall not restart CLAID service if crashed. Going back to sleep.");
+            return Result.success();
+        }
         Logger.logInfo("doWork called for: " + this.getId());
         Logger.logInfo("Service Running: " + MaximumPermissionsPerpetualService.isRunning);
         if (!MaximumPermissionsPerpetualService.isRunning) 
         {
-            Logger.logInfo("Starting service from doWork");
+            Logger.logInfo("CLAID service is not active anymore. Maybe it crashed. Restarting it.");
             ServiceManager.restartMaximumPermissionsPerpetualServiceByIntent(context);
         }
         else
         {
-            Logger.logInfo("ServiceRestarterWorker service is running, going back to sleep zzzzZZZZzzz");
+            Logger.logInfo("ServiceRestarterWorker CLAID services is running, going back to sleep zzzzZZZZzzz");
         }
         return Result.success();
     }

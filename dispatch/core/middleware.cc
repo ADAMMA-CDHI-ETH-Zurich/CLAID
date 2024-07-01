@@ -161,7 +161,14 @@ absl::Status MiddleWare::start() {
     if(config.needToCheckIfAllModulesLoaded())
     {
         std::thread([=]() {
-            std::this_thread::sleep_for(std::chrono::milliseconds(config.getDeadlineForLoadingModulesInMs()));
+            do {
+                // Sleeps at least for the specified deadline.
+                // Continues to sleep if any runtime is currently still in initialization (i.e.,
+                // Runtime has called the getModuleList() function but not yet completed the InitRuntime() function).)
+                std::this_thread::sleep_for(std::chrono::milliseconds(config.getDeadlineForLoadingModulesInMs()));
+            }
+            while(moduleTable.isAnyRuntimeStillInitializing());
+
             assertAllModulesLoaded();
         }).detach(); 
     }
@@ -350,13 +357,14 @@ void MiddleWare::assertAllModulesLoaded()
     {
         std::string errorMessage = absl::StrCat(
              "CLAID Middleware: Terminating as we have missing Modules.\n",
-             "The following Modules have not yet been loaded after a deadline of ", currentConfiguration.getDeadlineForLoadingModulesInMs(), " milliseconds",
-             "The following Modules are missing: "
+             "The following Modules have not yet been loaded after a deadline of ", currentConfiguration.getDeadlineForLoadingModulesInMs(), " milliseconds\n"
         );
 
         for(const std::string& module : notLoadedModules)
         {
-            errorMessage += absl::StrCat("Id: \"", module, "\"\tclass: \"", moduleTable.getClassOfModuleWithId(module), "\"");
+            std::string moduleType;
+            moduleTable.getTypeOfModuleWithId(module, moduleType);
+            errorMessage += absl::StrCat("Id: \"", module, "\"\tclass: \"", moduleType, "\"");
         }
 
         throw std::runtime_error(errorMessage);

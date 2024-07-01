@@ -165,7 +165,9 @@ class ModuleTable {
     void removeAllLooseDirectSubscriptionsOfRuntime(claidservice::Runtime runtime);
 
     bool isModulePublishingChannel(const std::string& moduleId, const std::string& channel);
-    std::string getClassOfModuleWithId(const std::string& moduleId) const;
+
+    void setRuntimeIsInitializing(claidservice::Runtime runtime, bool initializing); 
+    bool isAnyRuntimeStillInitializing() const;
 
   private:
     void augmentFieldValues(claidservice::DataPackage& pkt) const;
@@ -197,6 +199,11 @@ class ModuleTable {
     // Populated during GetModuleList. Captures which module classes are provided by what runtime.
     std::map<std::string, claidservice::Runtime> moduleClassRuntimeMap; // maps moduleClasses to the runtime that provides the implementation
 
+    // A map that indicates whether a certain Runtime is currently initializing.
+    // Initializing means a Runtime has called the getModuleList() function but not yet the InitRuntime() function.
+    std::map<claidservice::Runtime, bool> isRuntimeInitializingMap;
+
+    // List of already loaded modules, identified by their ids.
     std::set<std::string> loadedModules;
 
     // The output queues for each runtime. These persist even if the runtime
@@ -214,7 +221,14 @@ class ModuleTable {
     ModuleTableProperties props;
 
     // Mutex to protect the channel map.
-    std::shared_mutex chanMapMutex;
+    mutable std::shared_mutex chanMapMutex;
+
+    // Mutex to protect loadedModules set.
+    mutable std::shared_mutex loadedModulesSetMutex;
+
+    // Mutex to protect isRuntimeInitializingMap.
+    mutable std::shared_mutex runtimeInitializingMapMutex;
+
 
     // TODO: rewrite doc
 

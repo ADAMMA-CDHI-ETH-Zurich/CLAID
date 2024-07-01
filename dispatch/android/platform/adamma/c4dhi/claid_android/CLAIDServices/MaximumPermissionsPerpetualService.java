@@ -267,13 +267,13 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
                 return false;
             }
         }
-        if(!CLAID.hasLocationPermission())
+       /* if(!CLAID.hasLocationPermission())
         {
             if(!CLAID.requestLocationPermission())
             {
                 return false;
             }
-        }
+        } */
 
         while(!CLAID.isAppOnForeground(context))
         {

@@ -253,8 +253,6 @@ public class CLAID extends JavaCLAIDBase
         final String configFilePath, final String hostId, final String userId, 
         final String deviceId, CLAIDSpecialPermissionsConfig specialPermissionsConfig, CLAIDPersistanceConfig enduranceConfig)
     {
-
-
         if(ServiceManager.isServiceRunning())
         {
             return true;
@@ -452,6 +450,29 @@ public class CLAID extends JavaCLAIDBase
         permission.blockingRequest();
 
         return permission.isGranted();
+    }
+
+    public static boolean requestPermissions(String[] manifestPermissionNames, String dialogMessage)
+    {
+        GenericPermission genericPermission = new GenericPermission(manifestPermissionNames, dialogMessage);
+        genericPermission.blockingRequest();
+
+        return genericPermission.isGranted();
+    }
+
+    public static boolean requestPermissionsSequential(String[] manifestPermissionNames, String dialogMessage)
+    {
+        for(String permissionName : manifestPermissionNames)
+        {
+            GenericPermission genericPermission = new GenericPermission(new String[]{permissionName}, dialogMessage);
+            genericPermission.blockingRequest();
+
+            if(!genericPermission.isGranted())
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static boolean hasStoragePermission()
@@ -762,7 +783,7 @@ public class CLAID extends JavaCLAIDBase
 
         public static void requestDeviceOwnership(Context context)
         {
-            String batteryOptmizationMessage = 
+            String deviceOwnershipMessage = 
                 "CLAID was started with option BE_DEVICE_OWNER in the MIGHTINESS configuration.\n" +
                 "In order to continue, the application needs to be registered as device owner, which allows it to have more control\n" +
                 "over the operating system and to have additional permissions (e.g., to disable or enable wifi from the background)\n." +
@@ -776,25 +797,8 @@ public class CLAID extends JavaCLAIDBase
 
                 
 
-                if(context instanceof android.app.Activity)
-                {
-                    android.app.Activity activity = (android.app.Activity) context;
-                    
-                    activity.runOnUiThread(() ->
-                        new AlertDialog.Builder(context)
-                        .setMessage(batteryOptmizationMessage)
-                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                System.exit(0);
-                            }
-                        })
-                        .show());
-                }
-                else
-                {
-                    Logger.logError("Failed to show message with instructions on how to enable device ownership to the user. The context is not an Activity.");
-                }
+            CLAID.displayAlertDialog("Enable device ownership", deviceOwnershipMessage);
+                
         }
     }
 

@@ -208,7 +208,7 @@ Status ServiceImpl::GetModuleList(ServerContext* context,
     if (req->runtime() == Runtime::RUNTIME_UNSPECIFIED) {
         return Status(grpc::INVALID_ARGUMENT, "Invalid runtime value provided");
     }
-
+    moduleTable.setRuntimeIsInitializing(req->runtime(), true);
     // {
     //     std::string jsonOutput = "";
     //     google::protobuf::util::JsonPrintOptions options;
@@ -272,11 +272,13 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
 
         map<string, string>::const_iterator modClassIt;
         if ((modClassIt = moduleTable.moduleToClassMap.find(moduleId))== moduleTable.moduleToClassMap.end()) {
+            moduleTable.setRuntimeIsInitializing(rt, false);
             return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Unknown module id \"", moduleId, "\" given in InitRuntime called by Runtime ", Runtime_Name(rt)));
         }
 
         auto classRt = moduleTable.moduleClassRuntimeMap[modClassIt->second];
         if (classRt != rt) {
+            moduleTable.setRuntimeIsInitializing(rt, false);
             return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Module \"", moduleId, "\" was registered at Runtime ", Runtime_Name(classRt),
             "but now was requested to be loaded by Runtime ", Runtime_Name(rt), ". Runtime of Module does not equal the Runtime it was originally registered at."));
         }
@@ -289,13 +291,14 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
         // Add the channels for this module
         Status status = moduleTable.setChannelTypes(moduleId, modChanIt.channel_packets());
         if (!status.ok()) {
+            moduleTable.setRuntimeIsInitializing(rt, false);
             Logger::logError("Error in setChannelTyes: %s", status.error_message().c_str());
             return status;
         }
 
         moduleTable.setModuleLoaded(moduleId);
     }
-
+    moduleTable.setRuntimeIsInitializing(rt, false);
     return Status::OK;
 }
 

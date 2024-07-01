@@ -51,6 +51,9 @@ def make_android_package():
     print(f"Copying {aar_path} to {package_output_path}/claid-debug.aar")
     shutil.copyfile(aar_path, package_output_path + "/claid-debug.aar")
 
+    shutil.copy(f"{current_file_path}/CHANGELOG.md", package_output_path)
+
+
     package_android_maven()
 
 def package_android_maven():
@@ -108,6 +111,7 @@ def make_python_package():
 
     print(f"Moving {python_path}/pip_package to {python_output_path}")
     shutil.move(os.path.join(python_path, "pip_package"), python_output_path)
+    shutil.copy(f"{current_file_path}/CHANGELOG.md", python_output_path)
 
 choice = ""
 while(choice != "y" and choice != "n"):
