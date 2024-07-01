@@ -350,13 +350,13 @@ void MiddleWare::assertAllModulesLoaded()
     {
         std::string errorMessage = absl::StrCat(
              "CLAID Middleware: Terminating as we have missing Modules.\n",
-             "The following Modules have not yet been loaded after a deadline of ", currentConfiguration.getDeadlineForLoadingModulesInMs(), " milliseconds",
-             "The following Modules are missing: "
+             "The following Modules have not yet been loaded after a deadline of ", currentConfiguration.getDeadlineForLoadingModulesInMs(), " milliseconds.\n",
+             "The following Modules are missing: \n"
         );
 
         for(const std::string& module : notLoadedModules)
         {
-            errorMessage += absl::StrCat("Id: \"", module, "\"\tclass: \"", moduleTable.getClassOfModuleWithId(module), "\"");
+            errorMessage += absl::StrCat("Id: \"", module, "\"\tclass: \"", moduleTable.getClassOfModuleWithId(module), "\"\n");
         }
 
         throw std::runtime_error(errorMessage);
