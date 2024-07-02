@@ -1,3 +1,5 @@
 bazel-*
 .vscode
-build_packages
+build_packages/android
+build_packages/python
+
