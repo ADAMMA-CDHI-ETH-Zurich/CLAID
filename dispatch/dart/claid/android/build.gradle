@@ -1,6 +1,6 @@
 // The Android Gradle Plugin builds the native code with the Android NDK.
 
-group 'ch.claid'
+group 'ch.claid.flutter'
 version '0.6.1'
 
 buildscript {
