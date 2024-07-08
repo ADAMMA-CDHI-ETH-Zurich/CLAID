@@ -81,6 +81,7 @@ def create_package(package_name: str, namespace: str, output_path: str):
              "packaging/android/claid_package/claid/build.gradle",
              "packaging/flutter/claid_package/android/settings.gradle",
              "packaging/flutter/claid_package/android/build.gradle",
+             "packaging/flutter/claid_package/pubspec.yaml",
             "src/cpp/CMakeLists.txt",
              "Makefile"]
     
