@@ -148,6 +148,10 @@ class CLAID():
 
         current_os = platform.system()
         architecture = platform.machine()
+        
+        if architecture == "aarch64":
+            architecture = "arm64"
+
         libname = os.path.join(current_directory, "dispatch/core/{}/{}/{}".format(current_os, architecture, CLAID.get_claid_clib_name()))
         return libname
 
