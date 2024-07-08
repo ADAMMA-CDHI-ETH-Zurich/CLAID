@@ -46,7 +46,7 @@ namespace claid
                 "For example, my_data_%H_%M.json would store data in one file per minute (e.g., my_data_12_30 for data recorded at 12:30).");
                
                 annotator.describeProperty("fileType", "Data format for storing the data. Typically available are json, binary, batch_json and batch_binary.", annotator.makeEnumProperty({"json", "binary"}));
-                annotator.describeProperty("overrideExistingFiles", "If set to \"true\", an existing output file will be written whenever there is new data which would be stored in that file.", annotator.makeEnumProperty({"true", "false"}));
+                annotator.describeProperty("overrideExistingFiles", "If set to \"true\", an existing output file will be written whenever there is new data which would be stored in that file.", annotator.makeEnumProperty({"false", "true"}));
                 annotator.describeSubscribeChannel<int>("DataChannel", "Input channel for the data");
             }
         private:
