@@ -62,6 +62,7 @@ class CLAIDModuleListState extends State<CLAIDModuleList> with AutomaticKeepAliv
           physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           children: this.widget.modules.map((widget) {
             index++;
+            int currentIndex = index;
 
             return Padding(padding: const EdgeInsets.only(bottom: 7),
               child:  SelectableDeviceViewWidget(
@@ -70,7 +71,7 @@ class CLAIDModuleListState extends State<CLAIDModuleList> with AutomaticKeepAliv
                 numButtons: this.widget.modules.length,
                 deviceView: widget,
                 onPressed: () {
-                  this.widget.onPressed(index);
+                  this.widget.onPressed(currentIndex);
                 },
             ));
           }).toList()

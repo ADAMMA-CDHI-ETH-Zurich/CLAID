@@ -25,6 +25,7 @@ import adamma.c4dhi.claid.LocalDispatching.ModuleDispatcher;
 import adamma.c4dhi.claid.LocalDispatching.ModuleManager;
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.Module.ModuleFactory;
+import adamma.c4dhi.claid.Module.Module;
 import adamma.c4dhi.claid.LogMessage;
 
 
@@ -246,5 +247,10 @@ public abstract class JavaCLAIDBase
     public static boolean isRunning()
     {
         return JavaCLAIDBase.started;
+    }
+
+    public Module getModuleById(String moduleId)
+    {
+        return JavaCLAIDBase.moduleManager.getModuleById(moduleId);
     }
 }

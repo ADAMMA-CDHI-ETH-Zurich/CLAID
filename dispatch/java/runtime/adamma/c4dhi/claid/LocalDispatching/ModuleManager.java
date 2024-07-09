@@ -584,5 +584,14 @@ public class ModuleManager
         this.remoteFunctionHandler.handleResponse(remoteFunctionResponse);
     }
 
+    public Module getModuleById(String moduleId)
+    {
+        if(!runningModules.containsKey(moduleId))
+        {
+            return null;
+        }
+
+        return runningModules.get(moduleId);
+    }
 
 }

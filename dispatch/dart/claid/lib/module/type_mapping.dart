@@ -95,6 +95,12 @@ class TypeMapping {
 
   Mutator<T> getMutator<T>(T inst) 
   {
+  if (inst is Int64) {
+      return Mutator<T>(
+          (p, v) => _setProtoPayload(p, IntVal()..val = v as Int64),
+          (p) => (_getProtoPayload(p, IntVal()) as IntVal).val as T);
+    }
+
     if (inst is int) {
       return Mutator<T>(
           (p, v) => _setProtoPayload(p, IntVal()..val = Int64(v as int)),

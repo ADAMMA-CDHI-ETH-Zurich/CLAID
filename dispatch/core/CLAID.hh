@@ -62,6 +62,7 @@ namespace claid
         bool attachCppRuntime(void* handle);
 
         bool isConnectedToRemoteServer() const;
+                
         absl::Status getStartStatus() const;
         absl::Status getRemoteClientStatus() const;
         

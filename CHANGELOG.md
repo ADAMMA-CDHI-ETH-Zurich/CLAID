@@ -1,3 +1,6 @@
+## 0.6.2
+* Fixed device view button not having the correct index
+
 ## 0.6.1
 * First major release of CLAID!
 * Added x86 support
