@@ -175,13 +175,12 @@ void runTest() async
 
 Future<void> startCLAID() async
 {
-    ModuleFactory moduleFactory = ModuleFactory();
-    moduleFactory.registerClass("RPCCaller", () => RPCCaller());
-    moduleFactory.registerClass("RPCCallee", () => RPCCallee());
+    CLAID.registerModule("RPCCaller", () => RPCCaller());
+    CLAID.registerModule("RPCCallee", () => RPCCallee());
 
-    CLAID.start("/tmp/remote_function_test_grpc_server.sock", 
+    CLAID.startMiddleware("/tmp/remote_function_test_grpc_server.sock", 
       "test/remote_function_test.json", "test_client",
-      "some_user", "some_device", moduleFactory);
+      "some_user", "some_device", CLAIDSpecialPermissionsConfig.regularConfig());
 
    
 }

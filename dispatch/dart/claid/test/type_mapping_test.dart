@@ -39,7 +39,7 @@ void main() {
   test('test basic type to message mapping', () async {
     final tm = TypeMapping();
 
-    final mutNumberVal = tm.getMutator<NumberVal>(NumberVal());
+    final mutNumberVal = tm.getMutator<IntVal>(IntVal());
     final mutBoolVal = tm.getMutator<BoolVal>(BoolVal());
     final mutStringVal = tm.getMutator<StringVal>(StringVal());
     final mutNumberArray = tm.getMutator<NumberArray>(NumberArray());

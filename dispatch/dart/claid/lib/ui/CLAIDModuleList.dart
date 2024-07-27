@@ -50,9 +50,9 @@ class CLAIDModuleListState extends State<CLAIDModuleList> with AutomaticKeepAliv
 
     });
   }
+  
   @override
   Widget build(BuildContext context) {
-    print("CLAIDModuleList build " + this.widget.modules.toString());
 
     int index = -1;
     return

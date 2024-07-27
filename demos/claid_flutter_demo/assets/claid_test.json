@@ -8,6 +8,16 @@
         "type": "TestStreamModule",
         "id": "MyFirstModule",
         "output_channels": {"MyData" :  "MyData"}
+      },
+      {
+        "type": "DataSaverModule",
+        "id": "NDataSaver",
+        "input_channels": {"Data" :  "MyData"},
+        "properties": {
+          "storagePath": "%media_dir/test",
+          "fileNameFormat": "%H_%M_%S.json",
+          "fileType": "json"
+        }
       }
     ]
   }

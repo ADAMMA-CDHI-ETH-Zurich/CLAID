@@ -1,5 +1,7 @@
 ## 0.6.2
 * Fixed device view button not having the correct index
+* Added onShown() and onHidden() to CLAIDModuleView. Will be called whenever a view is selected from the CLAIDModuleList.
+* Ensuring Modules are shown in sorted order in CLAIDModuleList.
 
 ## 0.6.1
 * First major release of CLAID!

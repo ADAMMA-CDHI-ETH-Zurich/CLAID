@@ -91,11 +91,13 @@ class RectanglePainter extends CustomPainter
 
     return fontSize;
   }
+
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return false;
   }
 }
+
 class SelectableDeviceViewWidget extends StatelessWidget
 {
   final String title;
