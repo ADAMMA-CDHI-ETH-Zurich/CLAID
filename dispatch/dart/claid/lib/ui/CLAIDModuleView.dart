@@ -59,7 +59,7 @@ abstract class CLAIDModuleView extends StatefulWidget
 
     _looseDirectSubscriptionCallbacks[id] = receiver;
 
-    return function.execute([subscription]);
+    return function.executeWithParameters([subscription]);
   }
 
   String _makeLooseDirectSubscriptionId(LooseDirectChannelSubscription subscription)

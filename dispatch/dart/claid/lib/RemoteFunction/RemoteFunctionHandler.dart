@@ -51,7 +51,82 @@ class RemoteFunctionHandler
         return function;
     }
 
-    RemoteFunction<T> mapModuleFunction<T>(String targetModule, 
+    RemoteFunctionWith1Parameter<T> mapModuleFunctionWith1Parameter<T>(String targetModule, 
+        String functionName, T returnType, dynamic parameter1)
+    {
+        RemoteFunctionWith1Parameter<T> function = RemoteFunctionWith1Parameter<T>(
+            this._futuresHandler, 
+            this._outputController, 
+            makeRemoteModuleFunctionIdentifier(targetModule, functionName), 
+            returnType, 
+            parameter1
+        );
+        return function;   
+    }
+
+    RemoteFunctionWith2Parameters<T> mapModuleFunctionWith2Parameters<T>(String targetModule, 
+        String functionName, T returnType, dynamic parameter1, dynamic parameter2)
+    {
+        RemoteFunctionWith2Parameters<T> function = RemoteFunctionWith2Parameters<T>(
+            this._futuresHandler, 
+            this._outputController, 
+            makeRemoteModuleFunctionIdentifier(targetModule, functionName), 
+            returnType, 
+            parameter1,
+            parameter2
+        );
+        return function;   
+    }
+
+    RemoteFunctionWith3Parameters<T> mapModuleFunctionWith3Parameters<T>(String targetModule, 
+        String functionName, T returnType, dynamic parameter1, dynamic parameter2, dynamic parameter3)
+    {
+        RemoteFunctionWith3Parameters<T> function = new RemoteFunctionWith3Parameters<T>(
+            this._futuresHandler, 
+            this._outputController, 
+            makeRemoteModuleFunctionIdentifier(targetModule, functionName), 
+            returnType, 
+            parameter1,
+            parameter2,
+            parameter3
+        );
+        return function;   
+    }
+
+    RemoteFunctionWith4Parameters<T> mapModuleFunctionWith4Parameters<T>(String targetModule, 
+        String functionName, T returnType, dynamic parameter1, dynamic parameter2, dynamic parameter3, dynamic parameter4)
+    {
+        RemoteFunctionWith4Parameters<T> function = new RemoteFunctionWith4Parameters<T>(
+            this._futuresHandler, 
+            this._outputController, 
+            makeRemoteModuleFunctionIdentifier(targetModule, functionName), 
+            returnType, 
+            parameter1,
+            parameter2,
+            parameter3,
+            parameter4
+        );
+        return function;   
+    }
+
+    RemoteFunctionWith5Parameters<T> mapModuleFunctionWith5Parameters<T>(String targetModule, 
+        String functionName, T returnType, dynamic parameter1, dynamic parameter2, dynamic parameter3, dynamic parameter4, dynamic parameter5)
+    {
+        RemoteFunctionWith5Parameters<T> function = new RemoteFunctionWith5Parameters<T>(
+            this._futuresHandler, 
+            this._outputController, 
+            makeRemoteModuleFunctionIdentifier(targetModule, functionName), 
+            returnType, 
+            parameter1,
+            parameter2,
+            parameter3,
+            parameter4,
+            parameter5
+        );
+        return function;   
+    }
+
+    RemoteFunction<T> mapModuleFunctionWithNParameters<T>(String targetModule, 
         String functionName, T returnType, List<dynamic> parameterDataTypes)
     {
         RemoteFunction<T> function = new RemoteFunction<T>(
@@ -84,7 +159,6 @@ class RemoteFunctionHandler
 
     void handleResponse(DataPackage remoteFunctionResponse)
     {
-        print("Handle response 1");
         if(!remoteFunctionResponse.controlVal.hasRemoteFunctionReturn())
         {
             Logger.logError("Failed to handle remote function response " + 
@@ -92,22 +166,17 @@ class RemoteFunctionHandler
             return;
         }
        
-        print("Handle response 2");
-
         RemoteFunctionReturn remoteFunctionReturn = remoteFunctionResponse.controlVal.remoteFunctionReturn;
         String futureIdentifier = remoteFunctionReturn.remoteFutureIdentifier;
         FutureUniqueIdentifier uniqueIdentifier = FutureUniqueIdentifier(futureIdentifier);
-        print("Handle response 3");
 
         AbstractRPCCompleter? future = this._futuresHandler.lookupFuture(uniqueIdentifier);
-        print("Handle response 4");
 
         if(future == null)
         {
             Logger.logError("Failed to forward result of remote function. Cannot find future with identifier \"" + futureIdentifier + "\".");
             return;
         }
-        print("Handle response 5");
 
         if(remoteFunctionReturn.executionStatus != RemoteFunctionStatus.STATUS_OK)
         {
@@ -117,7 +186,6 @@ class RemoteFunctionHandler
             return;
         }
         future.setResponse(remoteFunctionResponse);
-
     }
 }
 

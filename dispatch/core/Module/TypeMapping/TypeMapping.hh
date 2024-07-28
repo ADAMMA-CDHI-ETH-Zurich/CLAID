@@ -381,9 +381,6 @@ namespace claid {
                 },
                 [](const DataPackage& packet, T& returnValue) 
                 { 
-                    
-
-
                     if(packet.payload().message_type() == "")
                     {
                         Logger::logError("Invalid package, unknown payload! Expected payload type to be specified in message_type of Blob, but got \"\"");

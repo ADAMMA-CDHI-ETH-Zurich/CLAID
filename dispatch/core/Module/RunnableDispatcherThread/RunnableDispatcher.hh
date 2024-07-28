@@ -32,6 +32,12 @@
 #include "dispatch/core/Utilities/Time.hh"
 #include "dispatch/core/Logger/Logger.hh"
 #include "dispatch/core/Module/RunnableDispatcherThread/ScheduledRunnable.hh"
+#include "dispatch/core/Module/TypeMapping/Mutator.hh"
+#include "dispatch/core/Module/TypeMapping/TypeMapping.hh"
+
+#include "dispatch/core/RemoteFunction/RemoteFunction.hh"
+#include "dispatch/core/RemoteFunction/RemoteFunctionHandler.hh"
+
 namespace claid
 {
     class RunnableDispatcher
@@ -49,6 +55,15 @@ namespace claid
             bool stopped = false;
 
             std::thread thread;
+
+            // Allows the RunnableDispatcher to make calls into the Middleware, e.g.,
+            // to schedule device wake ups or request to keep the device awake.
+            RemoteFunctionHandler* remoteFunctionHandler;
+
+            RemoteFunction<void> middlewareLockKeepDeviceAwake;
+            RemoteFunction<void> middlewareUnlockKeepDeviceAwake;
+            RemoteFunction<void> scheduleDeviceWakeUpInMilliseconds;
+
 
             std::chrono::microseconds getWaitDurationUntilNextRunnableIsDue()
             {
@@ -89,6 +104,7 @@ namespace claid
                 // In any case, when we wake up, we see if we need to execute anything.
                 // wait_for will atomically release the mutex and sleep, and will atomically lock the mutex after waiting.
                 std::unique_lock<std::mutex> lock(this->mutex);
+                // Middleware: ScheduleWakeUpInMicroSeconds();
                 this->conditionVariable.wait_for(lock, waitTime, [&]{return this->rescheduleRequired || this->stopped;});    
             }
 
@@ -211,6 +227,7 @@ namespace claid
                 std::vector<ScheduledRunnable> dueRunnables;
                 while(!stopped)
                 {
+                    // Middleware: KeepAwake
                     do
                     {
 
@@ -223,10 +240,27 @@ namespace claid
                         processRunnables(dueRunnables);
                     }
                     while(dueRunnables.size() != 0);
+                    // Middleware: RemoveKeepAwake
+
                     rescheduleRequired = false;
                     waitUntilRunnableIsDueOrRescheduleIsRequired();
                 }
                 Logger::logInfo("RunnableDispatcher shutdown.");
+            }
+
+            void middlewareLockKeepApplicationAwake()
+            {
+
+            }
+
+            void middlewareUnlockKeepApplicationAwake()
+            {
+
+            }
+
+            void middlewareScheduleDeviceWakeupInMilliseconds()
+            {
+
             }
 
         public:
@@ -234,6 +268,18 @@ namespace claid
             RunnableDispatcher() : stopped(true)
             {
 
+            }
+
+            void setRemoteFunctionHandler(RemoteFunctionHandler* remoteFunctionHandler)
+            {
+                // this->middlewareLockKeepDeviceAwake = 
+                //     remoteFunctionHandler->mapRuntimeFunction<void>(Runtime::MIDDLEWARE_CORE, "lock_keep_device_awake");
+
+                // this->middlewareUnlockKeepDeviceAwake = 
+                //     remoteFunctionHandler->mapRuntimeFunction<void>(Runtime::MIDDLEWARE_CORE, "unlock_keep_device_awake");
+
+                // this->scheduleDeviceWakeUpInMilliseconds = 
+                //     remoteFunctionHandler->mapRuntimeFunction<void, int32_t>(Runtime::MIDDLEWARE_CORE, "schedule_device_wakeup_in_milliseconds");
             }
 
             bool start()
