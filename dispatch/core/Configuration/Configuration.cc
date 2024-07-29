@@ -296,7 +296,7 @@ namespace claid
         if(config.milliseconds_deadline_to_load_modules() == 0)
         {
             // Default value.
-            return 2500;
+            return 7500;
         }
         
         return config.milliseconds_deadline_to_load_modules();
