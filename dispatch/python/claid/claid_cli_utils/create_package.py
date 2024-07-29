@@ -116,7 +116,7 @@ def create_package(package_name: str, namespace: str, output_path: str):
     android_claidpackage_file_path = f"{output_path}/{package_name}/packaging/android/claid_package/claid/src/main/claid_package_assets/{package_file_name}"
 
     with open(android_claidpackage_file_path, "w") as file:
-        file.write(f"{namespace}.{package_name}_package")
+        file.write(f"{namespace}.{package_name}")
 
 
     print("Creating " + f"{output_path}/{package_name}/packaging/flutter/claid_package/android/src/main/claid_package_assets/{package_file_name}")
