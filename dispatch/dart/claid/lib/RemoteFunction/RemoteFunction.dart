@@ -49,9 +49,7 @@ class RemoteFunction<T>
 
     }
 
-   
-
-    Future<T?> execute(List<dynamic> parameters) async
+    Future<T?> executeWithParameters(List<dynamic> parameters) async
     {
         if(parameters.length != _parameterTypes.length)
         {
@@ -152,4 +150,44 @@ class RemoteFunction<T>
     }
 
     Type _getType<T>() => T;
+}
+
+class RemoteFunctionWith1Parameter<T> extends RemoteFunction<T>
+{
+    RemoteFunctionWith1Parameter(
+        FutureHandler futuresHandler,
+        StreamController<DataPackage> outputController,
+        RemoteFunctionIdentifier remoteFunctionIdentifier,
+        T returnType, dynamic parameter1
+    ) : super(
+            futuresHandler, outputController,
+            remoteFunctionIdentifier, returnType, [parameter1]
+    )
+    {
+    }
+
+    Future<T?> execute(dynamic parameter1) async
+    {
+        return super.executeWithParameters([parameter1]);
+    }
+}
+
+class RemoteFunctionWith2Parameters<T> extends RemoteFunction<T>
+{
+    RemoteFunctionWith2Parameters(
+        FutureHandler futuresHandler,
+        StreamController<DataPackage> outputController,
+        RemoteFunctionIdentifier remoteFunctionIdentifier,
+        T returnType, dynamic parameter1, dynamic parameter2
+        ) : super(
+        futuresHandler, outputController,
+        remoteFunctionIdentifier, returnType, [parameter1, parameter2]
+    )
+    {
+    }
+
+    Future<T?> execute(dynamic parameter1, dynamic parameter2) async
+    {
+        return super.executeWithParameters([parameter1, parameter2]);
+    }
 }

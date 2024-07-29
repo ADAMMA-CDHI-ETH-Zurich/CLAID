@@ -233,7 +233,7 @@ class CLAID
                 Runtime.MIDDLEWARE_CORE, "get_all_running_modules_of_all_runtimes",
                 Map<String, String>(), []);
 
-    return (mappedFunction!.execute([]))!;
+    return (mappedFunction!.executeWithParameters([]))!;
   }
 
   static void registerModule<T extends Module>(String name, FactoryFunc factoryFunc) 

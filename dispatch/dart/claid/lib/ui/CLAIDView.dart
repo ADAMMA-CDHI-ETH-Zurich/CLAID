@@ -42,11 +42,21 @@ class _CLAIDViewState extends State<CLAIDView>
 
   void _createDeviceView(Map<String, String> modules)
   {
+    List sortedEntries = modules.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+
+    // Create a new map from the sorted entries
+    Map<String, String> sortedModules = {
+      for (var entry in sortedEntries) entry.key: entry.value
+    };
+
     setState(() {
-      moduleListView = CLAIDModuleListView(title: this.widget.title,
+      moduleListView = CLAIDModuleListView(
+          title: this.widget.title,
           moduleViewClasses: CLAIDModuleViewToClassMap.getMap(),
-          runningModules: modules,
-          moduleManager: CLAID.getModuleManager()!,);
+          runningModules: sortedModules,
+          moduleManager: CLAID.getModuleManager()!
+        );
     });
   }
 

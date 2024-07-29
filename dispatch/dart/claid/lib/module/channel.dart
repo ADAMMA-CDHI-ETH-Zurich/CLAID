@@ -6,7 +6,7 @@ import 'type_mapping.dart';
 import 'module_manager.dart';
 import 'package:claid/generated/claidservice.pb.dart';
 import 'package:protobuf/protobuf.dart';
-
+import 'package:fixnum/fixnum.dart';
 typedef ChannelCallback<T> = FutureOr<void> Function(ChannelData<T> payload);
 
 class Channel<T> 
@@ -42,7 +42,7 @@ class Channel<T>
             throw AssertionError('Cannot post to channel ${_channelId}, Channel was not published.');
         }
         final pkt =
-            DataPackage(sourceModule: _moduleId, channel: _channelId);
+            DataPackage(sourceModule: _moduleId, channel: _channelId, unixTimestampMs: Int64(DateTime.now().millisecondsSinceEpoch));
 
         _mutator.setter(pkt, payload);
         await _manager.publish(pkt);

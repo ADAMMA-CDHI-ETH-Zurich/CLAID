@@ -260,13 +260,13 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
                 return false;
             }
         }
-        if(!CLAID.hasMicrophonePermission())
+        /*if(!CLAID.hasMicrophonePermission())
         {
             if(!CLAID.requestMicrophonePermission())
             {
                 return false;
             }
-        }
+        }*/
        /* if(!CLAID.hasLocationPermission())
         {
             if(!CLAID.requestLocationPermission())
@@ -288,7 +288,7 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
             CLAID.requestBatteryOptimizationExemption(context); 
         }
 
-
+        
         
         return true;
     }

@@ -4,9 +4,6 @@ import 'package:flutter/material.dart';
 
 import 'CLAIDModuleView.dart';
 
-
-
-
 class EmptyDefaultDeviceView extends CLAIDModuleView  {
 
   String imagePath = "assets/images/questionmark.png";
@@ -79,7 +76,7 @@ class _EmptyDefaultDeviceViewState extends State<EmptyDefaultDeviceView> with Au
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Galaxy Watch 5'),
+          title: const Text('Default View'),
         ),
         body:
         Column(

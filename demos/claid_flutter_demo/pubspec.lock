@@ -44,8 +44,8 @@ packages:
   claid:
     dependency: "direct main"
     description:
-      path: "/home/lastchance/Desktop/CLAID/build_packages/flutter"
-      relative: false
+      path: "../../dispatch/dart/claid"
+      relative: true
     source: path
     version: "0.6.1"
   clock:

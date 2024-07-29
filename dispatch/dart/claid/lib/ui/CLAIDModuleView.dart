@@ -59,7 +59,7 @@ abstract class CLAIDModuleView extends StatefulWidget
 
     _looseDirectSubscriptionCallbacks[id] = receiver;
 
-    return function.execute([subscription]);
+    return function.executeWithParameters([subscription]);
   }
 
   String _makeLooseDirectSubscriptionId(LooseDirectChannelSubscription subscription)
@@ -87,4 +87,18 @@ abstract class CLAIDModuleView extends StatefulWidget
   Widget getImage(BuildContext context);
   String getModuleType();
   String getModuleSubType();
+
+  // Called when the ModuleView is selected from the ModuleListView.
+  void onShown()
+  {
+    print("ModuleView shown!");
+  }
+
+  // Called when changing to another ModuleView as selected from the ModuleListView.
+  void onHidden()
+  {
+    print("ModuleView hidden!");
+
+  }
+
 }

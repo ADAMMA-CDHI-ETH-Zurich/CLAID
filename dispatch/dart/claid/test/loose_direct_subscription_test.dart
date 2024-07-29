@@ -45,7 +45,7 @@ class TestReceiver extends MappedModule
 {
     TestReceiver(String entityName, String mappedModuleId,
     String moduleClass, RemoteFunctionHandler remoteFunctionHandler, 
-    ModuleManager moduleManager) : super(entityName, mappedModuleId, moduleClass, remoteFunctionHandler, moduleManager)
+    ModuleManager moduleManager) : super(entityName, mappedModuleId, moduleClass, moduleManager)
     {
       subscribeModuleChannel("TestStream", "", onStreamData).then((data) => onSubscriptionResult);
     }
@@ -74,12 +74,11 @@ void runTest() async
 
 Future<void> startCLAID() async
 {
-    ModuleFactory moduleFactory = ModuleFactory();
-    moduleFactory.registerClass("TestStreamer", () => TestStreamer());
+    CLAID.registerModule("TestStreamer", () => TestStreamer());
 
-    await CLAID.start("/tmp/loose_direct_subscription_test_grpc_server.sock", 
+    await CLAID.startMiddleware("/tmp/loose_direct_subscription_test_grpc_server.sock", 
       "test/loose_direct_subscription_test.json", "test_client",
-      "some_user", "some_device", moduleFactory);
+      "some_user", "some_device", CLAIDSpecialPermissionsConfig.regularConfig());
 
    
 }

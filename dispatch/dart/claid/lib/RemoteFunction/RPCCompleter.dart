@@ -25,8 +25,6 @@ import 'FutureUniqueIdentifier.dart';
 import 'package:claid/generated/claidservice.pb.dart';
 import 'package:claid/module/type_mapping.dart';
 
-import 'package:flutter_test/flutter_test.dart';
-
 import 'dart:async';
 import 'dart:io';
 

@@ -103,6 +103,7 @@ namespace claid
             std::make_shared<RemoteFunctionRunnableHandler>("Module " + this->id, subscriberPublisher->getToModuleDispatcherQueue());
 
 
+        runnableDispatcher.setRemoteFunctionHandler(remoteFunctionHandler);
         if (!runnableDispatcher.start()) 
         {
             moduleError("Failed to start RunnableDispatcher.");

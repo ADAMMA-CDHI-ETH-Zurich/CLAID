@@ -37,7 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.6
 
   claid:
-    path: /home/lastchance/Desktop/CLAID/build_packages/flutter
+      path: ../../dispatch/dart/claid
 
   #smart_inhaler:
     #path: /home/lastchance/StudioProjects/SmartInhalerCLAID/claid/packaging/flutter/claid_package

@@ -3,11 +3,22 @@
     "hostname": "Smartphone",
     "is_server": false,
     "connect_to": "",
+    "min_log_severity_level": "INFO",
     "modules": [
       {
         "type": "TestStreamModule",
         "id": "MyFirstModule",
         "output_channels": {"MyData" :  "MyData"}
+      },
+      {
+        "type": "DataSaverModule",
+        "id": "NDataSaver",
+        "input_channels": {"DataChannel" :  "MyData"},
+        "properties": {
+          "storagePath": "%media_dir/test",
+          "fileNameFormat": "%d_%m_%y-%H_%M_%S.json",
+          "fileType": "json"
+        }
       }
     ]
   }

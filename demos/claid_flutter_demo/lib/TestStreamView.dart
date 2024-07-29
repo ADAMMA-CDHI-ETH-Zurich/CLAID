@@ -66,6 +66,17 @@ class TestStreamView extends CLAIDModuleView {
     return "(BLE)";
   }
 
+  @override
+  void onShown()
+  {
+    print("TestStreamView shown!\n");
+  }
+
+  @override
+  void onHidden()
+  {
+    print("TestStreamView hidden!\n");
+  }
 }
 
 
@@ -97,7 +108,7 @@ class _TestStreamViewState extends State<TestStreamView> with AutomaticKeepAlive
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Galaxy Watch 5'),
+          title: const Text('TestStreamModuleView'),
         ),
         body:
         Column(
