@@ -51,6 +51,10 @@ MiddleWare::MiddleWare(const string& socketPath, const string& configurationPath
 
         remoteFunctionRunnableHandler
             .registerRunnable(
+                "add_loose_direct_subscription_if_not_exists", &MiddleWare::addLooseDirectSubscriptionIfNotExists, this);
+
+        remoteFunctionRunnableHandler
+            .registerRunnable(
                 "remove_loose_direct_subscription", &MiddleWare::removeLooseDirectSubscription, this);
     }
 
@@ -1333,6 +1337,16 @@ bool MiddleWare::addLooseDirectSubscription(claidservice::LooseDirectChannelSubs
         return false;
     }
     this->moduleTable.addLooseDirectSubscription(subscription);
+    return true;
+}
+
+bool MiddleWare::addLooseDirectSubscriptionIfNotExists(claidservice::LooseDirectChannelSubscription subscription)
+{
+    if(!this->moduleTable.isModulePublishingChannel(subscription.subscribed_module(), subscription.subscribed_channel()))
+    {
+        return false;
+    }
+    this->moduleTable.addLooseDirectSubscriptionIfNotExists(subscription);
     return true;
 }
 

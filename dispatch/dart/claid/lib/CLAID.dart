@@ -286,6 +286,11 @@ class CLAID
     CLAIDModuleViewToClassMap.registerModuleClass(moduleClass, factoryFunc);
   }
 
+  static void setViewHiddenForModuleClass(String moduleClass, bool hidden)
+  {
+    CLAIDModuleViewToClassMap.setViewHiddenForModuleClass(moduleClass, hidden);
+  }
+
   static void loadPackages(List<CLAIDPackage>? packages) async
   {
     if(packages != null)

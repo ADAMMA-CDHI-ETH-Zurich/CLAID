@@ -166,8 +166,9 @@ class TypeMapping {
       }, (p) => codec.decode(p.payload));
     }
 
-    if(T == null)
+    if(inst == null)
     {
+      print("Is null");
       return Mutator<T>(
         (p, v) => {},
         (p) => null as T);

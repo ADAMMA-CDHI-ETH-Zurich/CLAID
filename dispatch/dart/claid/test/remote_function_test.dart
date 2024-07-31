@@ -53,7 +53,7 @@ class RPCCaller extends Module
     {
       RemoteFunction<int>? mappedFunction = mapRemoteFunctionOfModule<int>("RPCCallee", "calculate_sum", 42, ["", ""]);
       print("Scheduled function called");
-      int result = (await mappedFunction!.execute(["5", "42"]))!;
+      int result = (await mappedFunction!.executeWithParameters(["5", "42"]))!;
       print("Got result " + result.toString());
 
       if(result == 5 + 42)
@@ -71,9 +71,9 @@ class RPCCaller extends Module
     {
         print("Executing RuntimeRPCTest");
         RemoteFunction<Map<String, String>>? mappedFunction = 
-          mapRemoteFunctionOfRuntime<Map<String, String>>(Runtime.RUNTIME_CPP, "get_all_running_modules_of_all_runtimes", Map<String, String>(), []);
+          mapRemoteFunctionOfRuntime<Map<String, String>>(Runtime.MIDDLEWARE_CORE, "get_all_running_modules_of_all_runtimes", Map<String, String>(), []);
 
-        runningModulesRPCResult = (await mappedFunction!.execute([]))!;
+        runningModulesRPCResult = (await mappedFunction!.executeWithParameters([]))!;
     }
 
     void _voidRPCTest() async
@@ -87,15 +87,15 @@ class RPCCaller extends Module
       RemoteFunction<void> voidVoidFunction =
         mapRemoteFunctionOfModule("RPCCallee", "void_void_function", null, []);
 
-      (voidReturnFunction.execute([1337]))!;
+      (voidReturnFunction.executeWithParameters([1337]))!;
 
-      int result = (await voidParameterFunction.execute([]))!;
+      int result = (await voidParameterFunction.executeWithParameters([]))!;
       if(result == 1338)
       {
         voidRPCReturnCorrect = true;
       }
 
-      await voidVoidFunction.execute([]);
+      await voidVoidFunction.executeWithParameters([]);
     }
 
    

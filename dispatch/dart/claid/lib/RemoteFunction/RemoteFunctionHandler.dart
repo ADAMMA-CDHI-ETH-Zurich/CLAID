@@ -51,6 +51,33 @@ class RemoteFunctionHandler
         return function;
     }
 
+    RemoteFunction<T> mapModuleFunction<T>(String targetModule, 
+        String functionName, T returnType, List<dynamic> parameterDataTypes)
+    {
+        RemoteFunction<T> function = new RemoteFunction<T>(
+                this._futuresHandler, 
+                this._outputController, 
+                makeRemoteModuleFunctionIdentifier(targetModule, functionName), 
+                returnType, 
+                parameterDataTypes);
+
+        return function;
+    }
+
+
+
+    RemoteFunctionWithoutParameter<T> mapModuleFunctionWithoutParameter<T>(String targetModule, 
+        String functionName, T returnType)
+    {
+        RemoteFunctionWithoutParameter<T> function = RemoteFunctionWithoutParameter<T>(
+            this._futuresHandler, 
+            this._outputController, 
+            makeRemoteModuleFunctionIdentifier(targetModule, functionName), 
+            returnType
+        );
+        return function;   
+    }
+
     RemoteFunctionWith1Parameter<T> mapModuleFunctionWith1Parameter<T>(String targetModule, 
         String functionName, T returnType, dynamic parameter1)
     {
@@ -125,6 +152,26 @@ class RemoteFunctionHandler
         );
         return function;   
     }
+
+    RemoteFunctionWith6Parameters<T> mapModuleFunctionWith6Parameters<T>(String targetModule,
+        String functionName, T returnType, dynamic parameter1, dynamic parameter2, 
+        dynamic parameter3, dynamic parameter4, dynamic parameter5, dynamic parameter6)
+    {
+        RemoteFunctionWith6Parameters<T> function = new RemoteFunctionWith6Parameters<T>(
+            this._futuresHandler, 
+            this._outputController, 
+            makeRemoteModuleFunctionIdentifier(targetModule, functionName), 
+            returnType, 
+            parameter1,
+            parameter2,
+            parameter3,
+            parameter4,
+            parameter5,
+            parameter6
+        );
+        return function;   
+    }
+
 
     RemoteFunction<T> mapModuleFunctionWithNParameters<T>(String targetModule, 
         String functionName, T returnType, List<dynamic> parameterDataTypes)

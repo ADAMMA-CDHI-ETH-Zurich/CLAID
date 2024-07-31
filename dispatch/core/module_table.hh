@@ -161,6 +161,7 @@ class ModuleTable {
     const std::map<std::string, std::string>& getModuleToClassMap();
 
     void addLooseDirectSubscription(claidservice::LooseDirectChannelSubscription& subscription);
+    void addLooseDirectSubscriptionIfNotExists(claidservice::LooseDirectChannelSubscription& subscription);
     void removeLooseDirectSubscription(claidservice::LooseDirectChannelSubscription& subscription);
     void removeAllLooseDirectSubscriptionsOfRuntime(claidservice::Runtime runtime);
 

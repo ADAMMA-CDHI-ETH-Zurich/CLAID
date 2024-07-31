@@ -50,14 +50,20 @@ class _CLAIDModuleListViewState extends State<CLAIDModuleListView>
 
     print("CLAIDModuleListView InitState");
 
-    _deviceViews.addAll(this.widget.runningModules.entries.map((entry) {
-      return CLAIDModuleViewToClassMap().getView(entry.key, entry.value, this.widget.moduleManager);
-    }));
+    for(MapEntry<String, String> module in this.widget.runningModules.entries)
+    {
+      String moduleId = module.key;
+      String moduleClass = module.value;
+      if(!CLAIDModuleViewToClassMap.isViewHiddenForModuleClass(moduleClass))
+      {
+        CLAIDModuleView view = CLAIDModuleViewToClassMap.getView(moduleId, moduleClass, this.widget.moduleManager);
+        _deviceViews.add(view);
+      }
+    }
+
 
     claidModuleList = CLAIDModuleList(modules: _deviceViews, onPressed: (val){
       print("OnPressed ${val}");
-      
-      
       
       pageController.jumpToPage(val + 1);
 
@@ -70,8 +76,6 @@ class _CLAIDModuleListViewState extends State<CLAIDModuleListView>
     uiUpdateTimer = Timer.periodic(const Duration(seconds: 5), (Timer t) {
       claidModuleList!.update();
     });
-
-
   }
 
   int _currentIndex = 0;

@@ -52,7 +52,7 @@ abstract class MappedModule
 
     _looseDirectSubscriptionCallbacks[id] = receiver;
 
-    return function.execute([subscription]);
+    return function.executeWithParameters([subscription]);
   }
 
   String _makeLooseDirectSubscriptionId(LooseDirectChannelSubscription subscription)

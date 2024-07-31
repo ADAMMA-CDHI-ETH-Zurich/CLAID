@@ -6,7 +6,7 @@ import 'CLAIDModuleView.dart';
 
 class EmptyDefaultDeviceView extends CLAIDModuleView  {
 
-  String imagePath = "assets/images/questionmark.png";
+  String imagePath = "packages/claid/assets/images/questionmark.png";
 
 
   EmptyDefaultDeviceView(

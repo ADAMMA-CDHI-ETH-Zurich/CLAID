@@ -152,6 +152,26 @@ class RemoteFunction<T>
     Type _getType<T>() => T;
 }
 
+class RemoteFunctionWithoutParameter<T> extends RemoteFunction<T>
+{
+    RemoteFunctionWithoutParameter(
+        FutureHandler futuresHandler,
+        StreamController<DataPackage> outputController,
+        RemoteFunctionIdentifier remoteFunctionIdentifier,
+        T returnType
+    ) : super(
+            futuresHandler, outputController,
+            remoteFunctionIdentifier, returnType, []
+    )
+    {
+    }
+
+    Future<T?> execute() async
+    {
+        return super.executeWithParameters([]);
+    }
+}
+
 class RemoteFunctionWith1Parameter<T> extends RemoteFunction<T>
 {
     RemoteFunctionWith1Parameter(
@@ -189,5 +209,85 @@ class RemoteFunctionWith2Parameters<T> extends RemoteFunction<T>
     Future<T?> execute(dynamic parameter1, dynamic parameter2) async
     {
         return super.executeWithParameters([parameter1, parameter2]);
+    }
+}
+
+class RemoteFunctionWith3Parameters<T> extends RemoteFunction<T>
+{
+    RemoteFunctionWith3Parameters(
+        FutureHandler futuresHandler,
+        StreamController<DataPackage> outputController,
+        RemoteFunctionIdentifier remoteFunctionIdentifier,
+        T returnType, dynamic parameter1, dynamic parameter2, dynamic parameter3
+    ) : super(
+            futuresHandler, outputController,
+            remoteFunctionIdentifier, returnType, [parameter1, parameter2, parameter3]
+    )
+    {
+    }
+
+    Future<T?> execute(dynamic parameter1, dynamic parameter2, dynamic parameter3) async
+    {
+        return super.executeWithParameters([parameter1, parameter2, parameter3]);
+    }
+}
+
+class RemoteFunctionWith4Parameters<T> extends RemoteFunction<T>
+{
+    RemoteFunctionWith4Parameters(
+        FutureHandler futuresHandler,
+        StreamController<DataPackage> outputController,
+        RemoteFunctionIdentifier remoteFunctionIdentifier,
+        T returnType, dynamic parameter1, dynamic parameter2, dynamic parameter3, dynamic parameter4
+    ) : super(
+            futuresHandler, outputController,
+            remoteFunctionIdentifier, returnType, [parameter1, parameter2, parameter3, parameter4]
+    )
+    {
+    }
+
+    Future<T?> execute(dynamic parameter1, dynamic parameter2, dynamic parameter3, dynamic parameter4) async
+    {
+        return super.executeWithParameters([parameter1, parameter2, parameter3, parameter4]);
+    }
+}
+
+class RemoteFunctionWith5Parameters<T> extends RemoteFunction<T>
+{
+    RemoteFunctionWith5Parameters(
+        FutureHandler futuresHandler,
+        StreamController<DataPackage> outputController,
+        RemoteFunctionIdentifier remoteFunctionIdentifier,
+        T returnType, dynamic parameter1, dynamic parameter2, dynamic parameter3, dynamic parameter4, dynamic parameter5
+    ) : super(
+            futuresHandler, outputController,
+            remoteFunctionIdentifier, returnType, [parameter1, parameter2, parameter3, parameter4, parameter5]
+    )
+    {
+    }
+
+    Future<T?> execute(dynamic parameter1, dynamic parameter2, dynamic parameter3, dynamic parameter4, dynamic parameter5) async
+    {
+        return super.executeWithParameters([parameter1, parameter2, parameter3, parameter4, parameter5]);
+    }
+}
+
+class RemoteFunctionWith6Parameters<T> extends RemoteFunction<T>
+{
+    RemoteFunctionWith6Parameters(
+        FutureHandler futuresHandler,
+        StreamController<DataPackage> outputController,
+        RemoteFunctionIdentifier remoteFunctionIdentifier,
+        T returnType, dynamic parameter1, dynamic parameter2, dynamic parameter3, dynamic parameter4, dynamic parameter5, dynamic parameter6
+    ) : super(
+            futuresHandler, outputController,
+            remoteFunctionIdentifier, returnType, [parameter1, parameter2, parameter3, parameter4, parameter5, parameter6]
+    )
+    {
+    }
+
+    Future<T?> execute(dynamic parameter1, dynamic parameter2, dynamic parameter3, dynamic parameter4, dynamic parameter5, dynamic parameter6) async
+    {
+        return super.executeWithParameters([parameter1, parameter2, parameter3, parameter4, parameter5, parameter6]);
     }
 }

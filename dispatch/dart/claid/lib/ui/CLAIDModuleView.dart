@@ -29,19 +29,60 @@ abstract class CLAIDModuleView extends StatefulWidget
     moduleManager.registerDataReceiverEntity(entityName, this.onDataFromLooseDirectSubscription);
   }
 
-
-
   RemoteFunction<T> mapFunction<T>(String functionName, T returnType, List<dynamic> parameters)
   {
     return remoteFunctionHandler!.mapModuleFunction(mappedModuleId, functionName, returnType, parameters);
   }
 
+  RemoteFunctionWithoutParameter<T> mapFunctionWithoutParameter<T>(String functionName, T returnType)
+  {
+    return remoteFunctionHandler!.mapModuleFunctionWithoutParameter(mappedModuleId, functionName, returnType);
+  }
+
+  RemoteFunctionWith1Parameter<T> mapFunctionWith1Parameter<T>(String functionName, T returnType, dynamic parameter1)
+  {
+    return remoteFunctionHandler!.mapModuleFunctionWith1Parameter(mappedModuleId, functionName, returnType, [parameter1]);
+  }
+
+  RemoteFunctionWith2Parameters<T> mapModuleFunctionWith2Parameters<T>(String functionName, T returnType, dynamic parameter1, dynamic parameter2)
+  {
+    return remoteFunctionHandler!.mapModuleFunctionWith2Parameters(
+        mappedModuleId, functionName, returnType, parameter1, parameter2);
+  }
+
+  RemoteFunctionWith3Parameters<T> mapModuleFunctionWith3Parameters<T>(String functionName, T returnType, dynamic parameter1, dynamic parameter2, dynamic parameter3)
+  {
+    return remoteFunctionHandler!.mapModuleFunctionWith3Parameters(
+        mappedModuleId, functionName, returnType, parameter1, parameter2, parameter3);
+  }
+
+  RemoteFunctionWith4Parameters<T> mapModuleFunctionWith4Parameters<T>(
+    String functionName, T returnType, dynamic parameter1, dynamic parameter2, dynamic parameter3, dynamic parameter4) 
+  {
+    return remoteFunctionHandler!.mapModuleFunctionWith4Parameters(
+        mappedModuleId, functionName, returnType, parameter1, parameter2, parameter3, parameter4);
+  }
+
+  RemoteFunctionWith5Parameters<T> mapModuleFunctionWith5Parameters<T>(
+    String functionName, T returnType, dynamic parameter1, dynamic parameter2, dynamic parameter3, dynamic parameter4, dynamic parameter5) 
+  {
+    return remoteFunctionHandler!.mapModuleFunctionWith5Parameters(
+        mappedModuleId, functionName, returnType, parameter1, parameter2, parameter3, parameter4, parameter5);
+  }
+
+  RemoteFunctionWith6Parameters<T> mapModuleFunctionWith6Parameters<T>(
+      String functionName, T returnType, dynamic parameter1, dynamic parameter2, dynamic parameter3, 
+      dynamic parameter4, dynamic parameter5, dynamic parameter6) 
+  {
+    return remoteFunctionHandler!.mapModuleFunctionWith6Parameters(
+        mappedModuleId, functionName, returnType, parameter1, parameter2, parameter3, parameter4, parameter5, parameter6);
+  }
+
+
   RemoteFunction<T> mapMiddlewareFunction<T>(String functionName, T returnType, List<dynamic> parameters)
   {
     return remoteFunctionHandler!.mapRuntimeFunction(Runtime.MIDDLEWARE_CORE, functionName, returnType, parameters);
   }
-
-
 
   Future<bool?> subscribeModuleChannel<T>(String channelName, T dataType, DataReceiverCallback<T> callback) async
   {

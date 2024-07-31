@@ -95,6 +95,7 @@ namespace claid
             // RPCs
             std::map<std::string, std::string> getAllRunningModulesOfAllRuntimes();
             bool addLooseDirectSubscription(claidservice::LooseDirectChannelSubscription subscription);
+            bool addLooseDirectSubscriptionIfNotExists(claidservice::LooseDirectChannelSubscription subscription);
             void removeLooseDirectSubscription(claidservice::LooseDirectChannelSubscription subscription); 
 
         private:

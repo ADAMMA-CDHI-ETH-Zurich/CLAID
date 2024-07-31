@@ -593,6 +593,15 @@ const std::map<std::string, std::string>& ModuleTable::getModuleToClassMap()
     return this->moduleToClassMap;
 }
 
+bool isSameSubscription(
+        const claidservice::LooseDirectChannelSubscription firstSubscription, 
+        claidservice::LooseDirectChannelSubscription secondSubscription)
+{
+    return firstSubscription.subscriber_runtime() == secondSubscription.subscriber_runtime() &&
+            firstSubscription.subscriber_entity() == secondSubscription.subscriber_entity() &&
+            firstSubscription.subscribed_module() == secondSubscription.subscribed_module() && 
+            firstSubscription.subscribed_channel() == secondSubscription.subscribed_channel();
+}
 
 void ModuleTable::addLooseDirectSubscription(claidservice::LooseDirectChannelSubscription& subscription)
 {
@@ -600,8 +609,35 @@ void ModuleTable::addLooseDirectSubscription(claidservice::LooseDirectChannelSub
     const std::string& channel = subscription.subscribed_channel();
     const claidservice::Runtime& runtime = subscription.subscriber_runtime();
 
+    auto& subscriptionList = this->looseDirectChannelSubscriptions[channel][runtime];
     this->looseDirectChannelSubscriptions[channel][runtime].push_back(subscription);
 }
+
+void ModuleTable::addLooseDirectSubscriptionIfNotExists(claidservice::LooseDirectChannelSubscription& subscription)
+{
+    unique_lock<shared_mutex> lock(chanMapMutex);
+    const std::string& channel = subscription.subscribed_channel();
+    const claidservice::Runtime& runtime = subscription.subscriber_runtime();
+
+    auto& subscriptionList = this->looseDirectChannelSubscriptions[channel][runtime];
+
+    // Check if the subscription already exists. If yes, we do not add it again.
+    bool subscriptionExists = false;
+
+    for(const claidservice::LooseDirectChannelSubscription& existingSubscription : subscriptionList)
+    {
+        if(isSameSubscription(existingSubscription, subscription))
+        {
+            subscriptionExists = true;
+        }
+    }
+
+    if(!subscriptionExists)
+    {
+        this->looseDirectChannelSubscriptions[channel][runtime].push_back(subscription); 
+    }
+}
+
 
 void ModuleTable::removeLooseDirectSubscription(claidservice::LooseDirectChannelSubscription& subscription)
 {
@@ -621,12 +657,7 @@ void ModuleTable::removeLooseDirectSubscription(claidservice::LooseDirectChannel
         // string subscribed_channel = 4; 
         // Check if the subscription in the vector is not equal to the subscription to remove.
         // If it is not equal, keep it by pushing it into the "subscriptionsToKeep" vector.
-        if(!(
-            existingSubscription.subscriber_runtime() == subscription.subscriber_runtime() &&
-            existingSubscription.subscriber_entity() == subscription.subscriber_entity() &&
-            existingSubscription.subscribed_module() == subscription.subscribed_module() && 
-            existingSubscription.subscribed_channel() == subscription.subscribed_channel()
-        ))
+        if(!isSameSubscription(existingSubscription, subscription))
         {
             subscriptionsToKeep.push_back(existingSubscription);
         }

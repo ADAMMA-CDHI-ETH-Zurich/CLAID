@@ -102,7 +102,8 @@ namespace claid
 
     absl::Status FileSaver::onNewData(std::shared_ptr<const google::protobuf::Message> data, const Time& timestamp)
     {       
-        Logger::logInfo("FileSaver on new data %lu", timestamp.toUnixTimestampMilliseconds());
+        Logger::logInfo("FileSaver on new data %llu %s", timestamp.toUnixTimestampMilliseconds(), fileNameFormat.c_str());
+        std::cout << "File saver on new data " << timestamp.toUnixTimestampMilliseconds() << "\n";
         std::string pathStr = this->fileNameFormat;
         // This has to be done BEFORE calling strftime! Otherwise strftime will throw an exception, 
         // if any of custom %identifier values are present.
