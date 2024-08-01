@@ -314,7 +314,7 @@ TEST(RouterTestSuite, MasterRouterTest)
     moduleDescriptions[mod3] = ModuleDescription(mod3, "ModClass3", test_host, {});
 
 
-    MasterRouter masterRouter(test_host, hostDescriptions, moduleDescriptions, queue, localRouter);
+    MasterRouter masterRouter(test_host, "test_user", "test_device", hostDescriptions, moduleDescriptions, queue, localRouter);
 
     absl::Status status = masterRouter.start();
     if(status.ok())

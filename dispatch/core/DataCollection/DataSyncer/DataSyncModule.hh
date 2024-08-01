@@ -63,6 +63,8 @@ namespace claid
                     "Files can be synchronized based on a synchronization intervall (for example, every hour). Each file is tagged with the original host and user name, allowing you to\n"
                     "receive data from many different hosts and users and store it in separate folders."
                 ));               
+                annotator.describePublishChannel<DataSyncPackage>("ToReceiverModuleChannel", "Channel to send data to the DataReceiverModule. Data might include the list of available files as well as the files themselves.");
+                annotator.describeSubscribeChannel<DataSyncPackage>("FromReceiverModuleChannel", "Channel to receive data from the DataReceiverModule. Data might include requested files and acknowledgements.");
             }
 
         
@@ -140,7 +142,7 @@ namespace claid
                 moduleInfo("Sending file list");
             }
 
-            void sendRequestedFile(const DataSyncFileDescriptor& descriptor)
+            void sendRequestedFile(const DataSyncFileDescriptor& descriptor, const std::string& userId)
             {
                 const std::string& relativeFilePath = descriptor.relative_file_path();
                 printf("Requested file %s\n", relativeFilePath.c_str());
@@ -172,7 +174,7 @@ namespace claid
 
                 DataSyncFileDescriptorList* descriptorList = dataSyncPackage.mutable_file_descriptors();
                 *descriptorList->add_descriptors() = fileToSend;
-                this->toReceiverModuleChannel.post(dataSyncPackage);
+                this->toReceiverModuleChannel.postToUser(dataSyncPackage, userId);
             }
 
             void onPackageFromDataReceiver(ChannelData<DataSyncPackage> data)
@@ -180,7 +182,7 @@ namespace claid
                 const DataSyncPackage& pkg = data.getData();
                 if(pkg.package_type() == DataSyncPackageType::REQUESTED_FILES_LIST)
                 {
-                    this->onFileRequested(pkg.file_descriptors());
+                    this->onFileRequested(pkg.file_descriptors(), data.getUserId());
                 }
                 else if(pkg.package_type() == DataSyncPackageType::ACKNOWLEDGED_FILES)
                 {
@@ -188,14 +190,14 @@ namespace claid
                 }
             }
 
-            void onFileRequested(const DataSyncFileDescriptorList& requestedFiles)
+            void onFileRequested(const DataSyncFileDescriptorList& requestedFiles, const std::string& userId)
             {
                 printf("Requested file\n");   
                 this->lastMessageFromFileReceiver = Time::now();
 
                 for(const DataSyncFileDescriptor& fileDescriptor : requestedFiles.descriptors())
                 {
-                    sendRequestedFile(fileDescriptor);
+                    sendRequestedFile(fileDescriptor, userId);
                 }
                 
             }
@@ -325,8 +327,8 @@ namespace claid
                 //     #endif
                 // #endif
 
-                this->toReceiverModuleChannel = publish<DataSyncPackage>("ToReceiverChannel");
-                this->fromReceiverModuleChannel = this->subscribe<DataSyncPackage>("FromReceiverChannel", &DataSyncModule::onPackageFromDataReceiver, this);
+                this->toReceiverModuleChannel = this->publish<DataSyncPackage>("ToReceiverModuleChannel");
+                this->fromReceiverModuleChannel = this->subscribe<DataSyncPackage>("FromReceiverModuleChannel", &DataSyncModule::onPackageFromDataReceiver, this);
                                
                 this->lastMessageFromFileReceiver = Time::now();
                 this->registerPeriodicFunction("PeriodicSyncFunction", &DataSyncModule::periodicSync, this, Duration::milliseconds(this->syncingPeriodInMs));

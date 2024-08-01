@@ -49,17 +49,30 @@ namespace claid{
             this->mutator = TypeMapping::getMutator<T>();
         }
 
-        void post(const T& data)
+        void post(const T& data, const Time& timestamp = Time::now())
         {
             std::shared_ptr<DataPackage> package = std::make_shared<DataPackage>();
             package->set_source_module(this->moduleId);
             package->set_channel(this->channelName);
-            package->set_unix_timestamp_ms(Time::now().toUnixTimestampMilliseconds());
+            package->set_unix_timestamp_ms(timestamp.toUnixTimestampMilliseconds());
 
             this->mutator.setPackagePayload(*package, data);
 
             this->toModuleManagerQueue.push_back(package);
-        }        
+        }    
+
+        void postToUser(const T& data, const std::string& userId, const Time& timestamp = Time::now())
+        {
+            std::shared_ptr<DataPackage> package = std::make_shared<DataPackage>();
+            package->set_source_module(this->moduleId);
+            package->set_channel(this->channelName);
+            package->set_unix_timestamp_ms(timestamp.toUnixTimestampMilliseconds());
+            package->set_target_user_token(userId);
+
+            this->mutator.setPackagePayload(*package, data);
+
+            this->toModuleManagerQueue.push_back(package);
+        }     
     };
 
 }

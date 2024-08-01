@@ -332,7 +332,7 @@ absl::Status MiddleWare::startRouter(const std::string& currentHost, const HostD
         Logger::logInfo("%s %s", entry.second.id.c_str(), entry.second.host.c_str());
     }
 
-    this->masterRouter = std::make_unique<MasterRouter>(currentHost, hostDescriptions, moduleDescriptions, this->masterInputQueue, localRouter, clientRouter, serverRouter);
+    this->masterRouter = std::make_unique<MasterRouter>(currentHost, userId, deviceId, hostDescriptions, moduleDescriptions, this->masterInputQueue, localRouter, clientRouter, serverRouter);
 
     status = masterRouter->start();
     if(!status.ok())

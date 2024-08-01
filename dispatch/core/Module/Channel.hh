@@ -84,7 +84,7 @@ public:
         return Channel<T>(channelId);
     }
 
-    void post(T data) 
+    void post(T data, const Time& timestamp = Time::now()) 
     {
         if (!canWrite()) 
         {
@@ -93,7 +93,23 @@ public:
             parent.moduleError(msg);
             return;
         }
-        publisher->post(data);
+        publisher->post(data, timestamp);
+    }   
+
+    // Posts data to the Channel and set the target_user property of the DataPackage
+    // to the user as indicated by an user id.
+    // In case a Channel has multiple subscribers, this allows to send data only to a certain user.
+    // The Router will route the package accordingly.
+    void postToUser(T data, const std::string& userId, const Time& timestamp = Time::now())
+    {
+        if (!canWrite()) 
+        {
+            std::string msg = " tried to post data to channel \"" + channelId + "\", however\n"
+                "it did not publish this channel before.";
+            parent.moduleError(msg);
+            return;
+        }
+        publisher->postToUser(data, userId, timestamp);
     }
 };
 }

@@ -67,7 +67,9 @@ namespace claid
             bool active = false;
 
             const std::string currentHost;
-            
+            const std::string userId;
+            const std::string deviceId;
+
             HostDescriptionMap hostDescriptions;
             ModuleDescriptionMap moduleDescriptions;
 
@@ -90,10 +92,13 @@ namespace claid
             template<typename... RouterTypes>
             MasterRouter(
                 const std::string& currentHost,
+                const std::string& userId, 
+                const std::string& deviceId,
                 const HostDescriptionMap& hostDescriptions,
                 const ModuleDescriptionMap& moduleDescriptions,
                 SharedQueue<claidservice::DataPackage>& incomingQueue, 
                 std::shared_ptr<RouterTypes>... routersToRegister) : incomingQueue(incomingQueue), currentHost(currentHost), 
+                                                                    userId(userId), deviceId(deviceId),
                                                                     hostDescriptions(hostDescriptions), moduleDescriptions(moduleDescriptions)
             {
                 routers = {std::static_pointer_cast<Router>(routersToRegister)...};

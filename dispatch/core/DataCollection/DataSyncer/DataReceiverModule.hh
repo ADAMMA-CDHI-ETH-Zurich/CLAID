@@ -38,8 +38,9 @@
 #include "absl/strings/str_split.h"
 #include "absl/status/status.h"
 #include <queue>
+#include <map>
 
-using claidservice::DataFile;
+using namespace claidservice;
 
 namespace claid
 {
@@ -58,35 +59,23 @@ namespace claid
                     "Files can be synchronized based on a synchronization intervall (for example, every hour). Each file is tagged with the original host and user name, allowing you to\n"
                     "receive data from many different hosts and users and store it in separate folders."
                 ));
-
+                annotator.describePublishChannel<DataSyncPackage>("ToSyncModuleChannel", "Channel to send data to the DataSyncModule. Data might include requested files and acknowledgements.");
+                annotator.describeSubscribeChannel<DataSyncPackage>("FromSyncModuleChannel", "Channel to receive data from the DataSyncModule. Data might include the list of available files as well as the files themselves.");
                
             }
 
         private:
 
-            // On this channel, we receive all the files available
-            Channel<std::vector<std::string>> completeFileListChannel;
-
-            // On this channel, we post files that are missing.
-            // They will be send by the DataSyncModule.
-            Channel<std::string> requestedFileChannel;
-
-            // On this channel, we receive files from the DataSyncModule.
-            Channel<DataFile> dataFileChannel;
-
-            // On this channel, we acknowledge received files.
-            // If "deleteFilesAfterSync" is activated in DataSyncModule, it will delete the file locally.
-            Channel<std::string> receivedFilesAcknowledgementChannel;
+            Channel<DataSyncPackage> fromDataSyncModuleChannel;
+            Channel<DataSyncPackage> toDataSyncModuleChannel;
 
             std::string filePath;
-            std::string completeFileListChannelName;
-            std::string requestedFileChannelName;
-            std::string dataFileChannelName;
-            std::string receivedFilesAcknowledgementChannelName;
 
             // bool storeArrivalTimePerFile = false;
 
-            std::queue<std::string> missingFilesQueue;
+            // One queue per user that has a DataSyncModule connected.
+            // Indicates which files of the user we are missing.
+            std::map<std::string, std::queue<std::string>> missingFilesQueuePerUserPerUser;
 
             template<typename T>
             bool isElementContainedInVector(const std::vector<T>& vector, const T& element)
@@ -95,20 +84,43 @@ namespace claid
             }
 
             // Get elements that are contained in both lists.
-            void getMissingElements(
-                    const std::vector<std::string>& completeList, 
+            void getMissingFilesOfUser(
+                    const std::string& userId, 
+                    const DataSyncFileDescriptorList& descriptorList, 
                     std::vector<std::string>& missingList)
             {
                 missingList.clear();
                 std::string path;
-                for(const std::string& fileName : completeList)
+                for(const DataSyncFileDescriptor& descriptor : descriptorList)
                 {   
-                    path = this->filePath + std::string("/") + fileName;
+                    path = getUserStoragePath(userId) + std::string("/") + descriptor.relative_file_path();
+                    // If the file doesnt exist yet, we add it to the list of missing files.
                     if(!FileUtils::fileExists(path))
                     {
                         missingList.push_back(fileName);
+                        continue;
+                    }
+
+                    uint64_t fileSize;
+                    if(!FileUtils::getFileSize(fileSize))
+                    {
+                        moduleError(absl::StrCat("Unable to get file size of file \"", path, "\""));
+                        continue;
+                    }
+
+                    // If the file exists, but has a different file size, we also request it again.
+                    // The current file will then be replaced.
+                    if(fileSize != descriptor.file_size())
+                    {
+                        missingList.push_back(fileName);
+                        continue;
                     }
                 }
+            }
+
+            std::string getUserStoragePath(const std::string& userId)
+            {
+                return this->filePath + "/" + userId;
             }
 
             void makePathRelative(std::string& path)
@@ -124,9 +136,6 @@ namespace claid
                     path = path.substr(basePath.size(), path.size());   
                 }
             }
-
-
-            
 
             void getListOfFilesInTargetDirectory(std::vector<std::string>& output)
             {
@@ -147,10 +156,26 @@ namespace claid
                 }
             }
 
-            void onCompleteFileListReceived(ChannelData<std::vector<std::string>> data)
+            void onPackageFromDataReceiver(ChannelData<DataSyncPackage> data)
             {
-                const std::vector<std::string>& completeList = data.getData();
-                Logger::logInfo("Received complete file list");
+                const DataSyncPackage& pkg = data.getData();
+                if(pkg.package_type() == DataSyncPackageType::ALL_AVAILABLE_FILES_LIST)
+                {
+                    this->onCompleteFileListReceivedFromUser(pkg.file_descriptors(), data.getUserId());
+                }
+                else if(pkg.package_type() == DataSyncPackageType::FILES_DATA)
+                {
+                    this->onFileReceivedFromUser(pkg.file_descriptors(), data.getUserId());
+                }
+            }
+
+            void onCompleteFileListReceivedFromUser(const DataSyncFileDescriptorList& descriptorList, const std::string& userId)
+            {
+                for(const DataSyncFileDescriptor& descriptor : descriptorList)
+                {
+                    Logger::logInfo("Missing file %s", descriptor.relative_file_path().c_str());
+                }
+                Logger::logInfo("Received complete file list from user %s", userId);
 
                 for(const std::string& value : completeList)
                 {
@@ -158,82 +183,86 @@ namespace claid
                 }                
  
                 std::vector<std::string> missingFiles;
-                getMissingElements(completeList, missingFiles);
+                getMissingFilesOfUser(userId, descriptorList, missingFiles);
 
-                this->missingFilesQueue = std::queue<std::string>();
+                this->missingFilesQueuePerUser[userId] = std::queue<std::string>();
 
                 for(const std::string& value : missingFiles)
                 {
-                    this->missingFilesQueue.push(value);
+                    this->missingFilesQueuePerUser[userId].push(value);
                     Logger::logInfo("Missing %s", value.c_str());
                 }
                 
-                this->requestNextFile();
+                this->requestNextFileFromUser(userId);
             }
 
-            void requestNextFile()
+            void requestNextFileFromUser(const std::string& userId)
             {
-                printf("Requesting next file %d\n", this->missingFilesQueue.empty());
-                if(this->missingFilesQueue.empty())
+                std::queue<std::string>& filesQueue = this->missingFilesQueuePerUserPerUser[userId]; 
+                printf("Requesting next file %d\n", filesQueue);
+                if(filesQueue.empty())
                 {
                     return;
                 }
 
-                std::string file = this->missingFilesQueue.front();
+                std::string file = filesQueue.front();
                 printf("Requesting file %s\n", file.c_str());
-                this->missingFilesQueue.pop();
-                this->requestedFileChannel.post(file);
+                filesQueue.pop();
+
+                DataSyncPackage dataSyncPackage;
+                dataSyncPackage.set_package_type(DataSyncPackageType::REQUESTED_FILES_LIST);
+
+                DataSyncFileDescriptorList* descriptors = dataSyncPackage.mutable_file_descriptors();
+                descriptors->add_descriptors()->set_relative_file_path(file);
+
+                this->requestedFileChannel.postToUser(dataSyncPackage, userId);
             }
 
-            void onDataFileReceived(ChannelData<DataFile> data)
+            void onFileReceivedFromUser(const DataSyncFileDescriptorList& descriptorList, const std::string& userId)
             {
-                std::cout << "Received data file " << data.getData().relative_path() << "\n";
 
-                this->requestNextFile();
+                this->requestNextFileFromUser(userId);
                 const DataFile& dataFile = data.getData();
 
-                const std::string& relativePath = dataFile.relative_path();
-                std::string folderPath;
-                std::string filePath;
-                Path::splitPathIntoFolderAndFileName(relativePath, folderPath, filePath);
-                printf("folder file %s %s\n", folderPath.c_str(), filePath.c_str());
-                 
-                if(folderPath != "")
+                for(const DataSyncFileDescriptor& fileDescriptor : descriptorList.file_descriptors())
                 {
-                    std::string targetFolderPath = this->filePath + std::string("/") + folderPath;
-                    if(!FileUtils::dirExists(targetFolderPath))
+                    const std::string& relativePath = fileDescriptor.relative_file_path();
+                    std::string folderPath;
+                    std::string filePath;
+                    Path::splitPathIntoFolderAndFileName(relativePath, folderPath, filePath);
+                    printf("folder file %s %s\n", folderPath.c_str(), filePath.c_str());
+                    
+                    if(folderPath != "")
                     {
-                        if(!FileUtils::createDirectoriesRecursively(targetFolderPath))
+                        std::string targetFolderPath = getUserStoragePath(userId) + std::string("/") + folderPath;
+                        if(!FileUtils::dirExists(targetFolderPath))
                         {
-                            moduleError(absl::StrCat("Error in DataReceiverModule, cannot create target folder \"", targetFolderPath, "\"."));
-                            return;
+                            if(!FileUtils::createDirectoriesRecursively(targetFolderPath))
+                            {
+                                moduleError(absl::StrCat("Error in DataReceiverModule, cannot create target folder \"", targetFolderPath, "\"."));
+                                return;
+                            }
                         }
                     }
-                }
 
-                std::string targetFilePath = 
-                    this->filePath + std::string("/") + folderPath + std::string("/") + filePath;
-                
-                if(!saveDataFileToPath(dataFile, targetFilePath))
-                {
-                    return;
-                }
-
-                // if(this->storeArrivalTimePerFile)
-                // {
-                //     Time arrivalTime = Time::now();
-                //     std::string arrivalTimeStampPath = 
-                //         this->filePath + std::string("/") + folderPath + std::string("/") + filePath + std::string("_arrival.xml");
+                    std::string targetFilePath = 
+                        getUserStoragePath(userId) + std::string("/") + folderPath + std::string("/") + filePath;
                     
-                //     XMLSerializer serializer;
-                //     serializer.serialize("Data", arrivalTime);
+                    if(!saveDataFileToPath(dataFile, targetFilePath))
+                    {
+                        return;
+                    }
 
-                //     XMLDocument xmlDocument(serializer.getXMLNode());
-                //     xmlDocument.saveToFile(arrivalTimeStampPath);
-                // }
+                    // Send acknowledgement.
+                    DataSyncPackage dataSyncPackage;
+                    dataSyncPackage.set_package_type(DataSyncPackageType::ACKNOWLEDGED_FILES);
 
-                // Send acknowledgement.
-                this->receivedFilesAcknowledgementChannel.post(dataFile.relative_path());
+                    DataSyncFileDescriptorList* descriptors = dataSyncPackage.mutable_file_descriptors();
+                    descriptors->add_descriptors()->set_relative_file_path(relativePath);
+                    this->toDataSyncModuleChannel.postToUser(dataFile.relative_path(), userId);
+                }
+
+                
             }
 
             bool setupStorageFolder()
@@ -263,11 +292,6 @@ namespace claid
 
                 properties.getStringProperty("filePath", this->filePath);
 
-                completeFileListChannelName = "FileSyncer/CompleteFileList";
-                requestedFileChannelName = "FileSyncer/RequestedFileList";
-                dataFileChannelName = "FileSyncer/DataFiles";
-                receivedFilesAcknowledgementChannelName = "FileSyncer/ReceivedFilesAcknowledgement";
-
                 // Create output directory, if not exists.
                 if(!this->setupStorageFolder())
                 {
@@ -278,10 +302,9 @@ namespace claid
                 std::vector<std::string> output;
                 getListOfFilesInTargetDirectory(output);
 
-                this->completeFileListChannel = this->subscribe<std::vector<std::string>>(completeFileListChannelName, &DataReceiverModule::onCompleteFileListReceived, this);
-                this->requestedFileChannel = this->publish<std::string>(requestedFileChannelName);
-                this->dataFileChannel = this->subscribe<DataFile>(dataFileChannelName, &DataReceiverModule::onDataFileReceived, this);
-                this->receivedFilesAcknowledgementChannel = this->publish<std::string>(receivedFilesAcknowledgementChannelName);
+                this->toDataSyncModuleChannel = this->publish<DataSyncPackage>("ToDataSyncModuleChannel");
+                this->fromDataSyncModuleChannel = this->subscribe<DataSyncPackage>("FromDataSyncModuleChannel", &DataReceiverModule::onDataFromDataSyncModule, this);
+
                 Logger::logInfo("DataReceiverModule initialize done");
 
             }
@@ -297,12 +320,6 @@ namespace claid
 
                 file.write(dataFile.file_data().data(), dataFile.file_data().size());
                 return true;
-            }
-
-        public:
-
-     
-
-
+            }    
     };
 }

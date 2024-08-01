@@ -54,7 +54,6 @@ namespace claid{
             return ChannelData(sharedDataCopy, timestamp, userId);
         }
 
-
         const T& getData()
         {
             return *this->data.get();
