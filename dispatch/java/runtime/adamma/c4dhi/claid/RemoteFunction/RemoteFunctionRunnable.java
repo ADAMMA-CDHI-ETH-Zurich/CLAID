@@ -117,11 +117,9 @@ public class RemoteFunctionRunnable
 
     public static Method lookupMethod(Object object, String functionName, ArrayList<Class<?>> parameterTypes)
     {
-        Logger.logError("dbg 1");
         try 
         {        
             Class<?> myClass = object.getClass();
-            Logger.logError("dbg 2");
 
             Class<?>[] parameterTypesArray = null;
             if(parameterTypes.size() != 0)
@@ -130,10 +128,7 @@ public class RemoteFunctionRunnable
                 parameterTypesArray = parameterTypes.toArray(parameterTypesArray);
             }
 
-            Logger.logError("dbg 3");
-
             Method method = myClass.getMethod(functionName, parameterTypesArray);        
-            Logger.logError("dbg 4 " + method);
 
             return method;
         } 
@@ -149,7 +144,6 @@ public class RemoteFunctionRunnable
 
     public static boolean doesFunctionExist(Object object, String functionName, ArrayList<Class<?>> parameterTypes)
     {
-        Logger.logError("Dbg 0 " + parameterTypes.size());
         return RemoteFunctionRunnable.lookupMethod(object, functionName, parameterTypes) != null;
     }
 

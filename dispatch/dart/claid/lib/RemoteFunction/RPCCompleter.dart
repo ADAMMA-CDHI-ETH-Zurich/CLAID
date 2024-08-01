@@ -46,12 +46,16 @@ class RPCCompleter<T> extends AbstractRPCCompleter
         Future<DataPackage?> response = super.getResponseUntyped();
         response.then((dataPackage)
         {
+            print("Got response ${dataPackage!}");
+
             T? result = null;
             
             if(dataPackage != null)
             {
+                print("data package is not null");
                 result = _getReturnData(dataPackage!);
             }
+            print("Result is ${result}");
             _typedCompleter.complete(result);
         }).catchError((error){
             _typedCompleter.complete(null);
@@ -62,19 +66,27 @@ class RPCCompleter<T> extends AbstractRPCCompleter
 
     T? _getReturnData(DataPackage responsePackage)
     {
+        print("dbg 1");
         if(responsePackage == null)
         {
+            print("dbg 2");
+
             return null;
         }
         // For void functions.
         if(T == _getType<void>())
         {
+            print("dbg 3");
+
             return null;
         }
+        print("dbg 4 $_returnTypeExample");
 
         Mutator<T> mutator = TypeMapping().getMutator(this._returnTypeExample);
+        print("dbg 5 ${mutator.runtimeType.toString()}");
 
         T t = mutator.getter(responsePackage);
+        print("dbg 6 $t");
 
         return t;
     }

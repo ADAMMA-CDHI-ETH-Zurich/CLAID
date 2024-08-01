@@ -113,7 +113,6 @@ void main() {
       'MyTestModuleOne': () => myMod = MyTestModuleOne(completer),
     };
 
-    print("dbg 1 1");
     // Initialize the module system.
     ModuleDispatcher? dispatcher;
     dispatcher =
@@ -121,11 +120,9 @@ void main() {
     await initModules(
         dispatcher: dispatcher,
         moduleFactories: moduleEnv.combinedFactories(factories));
-    print("dbg 1 2");
 
     // Wait for a while for the events to trigger
     await completer.future;
-    print("dbg 1 3");
 
     // Check if we have received the events in this order
     expect(myMod.allEvents.length, 13);
@@ -133,12 +130,10 @@ void main() {
         [for (var i = 0; i < 13; i++) 42.0 + i]);
     expect(myMod.triggeredEvents.length, 3);
     expect(myMod.scheduledEvents.length, 2);
-    print("dbg 1 4");
-
+xxx
     final tm = TypeMapping();
 
     final mutBoolVal = tm.getMutator<BoolVal>(BoolVal());
-    print("dbg 1 5");
 
     // sensor events received by the output module
     expect(
@@ -147,7 +142,6 @@ void main() {
             ?.map<bool>((e) => mutBoolVal.getter(e).val)
             .toList(),
         <bool>[true, true, true]);
-    print("dbg 1 6");
 
     // Compare if the results are correct.
   });

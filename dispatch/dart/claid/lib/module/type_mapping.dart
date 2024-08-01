@@ -48,23 +48,22 @@ typedef ProtoDecoder = GeneratedMessage Function(Blob);
 class ProtoCodec {
   final String fullName;
   final GeneratedMessage _msg;
-  late ProtoEncoder encode;
-  late ProtoDecoder decode;
+
   ProtoCodec(this._msg) : fullName = _msg.info_.qualifiedMessageName {
-    encode = _buildEncoder();
-    decode = _buildDecoder();
+
   }
 
-  ProtoEncoder _buildEncoder() {
-    return (GeneratedMessage msg) => Blob(
+  Blob encode(GeneratedMessage msg) {
+    return Blob(
         codec: Codec.CODEC_PROTO,
         payload: msg.writeToBuffer().toList(),
         messageType: fullName);
   }
 
-  ProtoDecoder _buildDecoder() {
-    return (Blob blob) =>
-        _msg.info_.createEmptyInstance!()..mergeFromBuffer(blob.payload);
+  GeneratedMessage decode(Blob blob)
+  {
+    print("Decoding! $blob");
+    return _msg.info_.createEmptyInstance!()..mergeFromBuffer(blob.payload);
   }
 }
 
@@ -160,10 +159,11 @@ class TypeMapping {
 
     // Protobuf
     if (inst is GeneratedMessage) {
+      print("${inst.runtimeType.toString()} is GeneratedMessage");
       final codec = _getProtoCodec(inst);
-      return Mutator.wrap<T, GeneratedMessage>((p, v) {
-        p.payload = codec.encode(v);
-      }, (p) => codec.decode(p.payload));
+      return Mutator<T>((p, v) => {
+        p.payload = codec.encode(v as GeneratedMessage)
+      }, (p) => codec.decode(p.payload) as T);
     }
 
     if(inst == null)

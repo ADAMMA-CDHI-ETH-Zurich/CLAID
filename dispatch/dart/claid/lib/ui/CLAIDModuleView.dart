@@ -34,14 +34,14 @@ abstract class CLAIDModuleView extends StatefulWidget
     return remoteFunctionHandler!.mapModuleFunction(mappedModuleId, functionName, returnType, parameters);
   }
 
-  RemoteFunctionWithoutParameter<T> mapFunctionWithoutParameter<T>(String functionName, T returnType)
+  RemoteFunctionWithoutParameter<T> mapModuleFunctionWithoutParameter<T>(String functionName, T returnType)
   {
     return remoteFunctionHandler!.mapModuleFunctionWithoutParameter(mappedModuleId, functionName, returnType);
   }
 
-  RemoteFunctionWith1Parameter<T> mapFunctionWith1Parameter<T>(String functionName, T returnType, dynamic parameter1)
+  RemoteFunctionWith1Parameter<T> mapModuleFunctionWith1Parameter<T>(String functionName, T returnType, dynamic parameter1)
   {
-    return remoteFunctionHandler!.mapModuleFunctionWith1Parameter(mappedModuleId, functionName, returnType, [parameter1]);
+    return remoteFunctionHandler!.mapModuleFunctionWith1Parameter(mappedModuleId, functionName, returnType, parameter1);
   }
 
   RemoteFunctionWith2Parameters<T> mapModuleFunctionWith2Parameters<T>(String functionName, T returnType, dynamic parameter1, dynamic parameter2)
@@ -77,7 +77,6 @@ abstract class CLAIDModuleView extends StatefulWidget
     return remoteFunctionHandler!.mapModuleFunctionWith6Parameters(
         mappedModuleId, functionName, returnType, parameter1, parameter2, parameter3, parameter4, parameter5, parameter6);
   }
-
 
   RemoteFunction<T> mapMiddlewareFunction<T>(String functionName, T returnType, List<dynamic> parameters)
   {

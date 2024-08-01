@@ -45,6 +45,8 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
+import 'dart:convert';
+import 'package:protobuf/protobuf.dart';
 
 class CLAIDSpecialPermissionsConfig
 {
@@ -300,5 +302,42 @@ class CLAID
         CLAIDPackageLoader.loadPackage(package);
       }
     }
+  }
+
+  static Future<String> getMediaDirPath() async
+  {
+    Directory? appDocDir = await getExternalStorageDirectory();
+    // Construct the path to the Android/media directory
+    String storagePath = '${appDocDir!.path}';
+    storagePath = storagePath.replaceAll("/data/", "/media/");
+    return storagePath;
+  }
+
+  static Future<void> saveProtobufMessageToFileJSON(String filePath, GeneratedMessage message) async 
+  {
+    // Convert the protobuf message to JSON
+
+
+    var spaces = ' ' * 4;
+    var encoder = JsonEncoder.withIndent(spaces);
+
+    String jsonString = encoder.convert(message.toProto3Json());
+
+    // Write the JSON string to a file
+    File file = File(filePath);
+    await file.writeAsString(jsonString);
+
+  }
+
+  static Future<void> loadProtoMessageFromJson(String filePath, GeneratedMessage message) async 
+  {
+    File file = File(filePath);
+    String jsonString = await file.readAsString();
+
+    // Parse the JSON string
+    Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+
+    // Merge the JSON map into the protobuf message
+    message.mergeFromProto3Json(jsonMap);
   }
 }
