@@ -500,3 +500,30 @@ message LooseDirectChannelSubscription
   string subscribed_module = 3;
   string subscribed_channel = 4; 
 }
+
+message DataSyncFileDescriptor
+{
+  uint64 file_size = 1;
+  uint64 hash = 2;
+  string relative_file_path = 3;
+  bytes file_data = 4;
+}
+
+message DataSyncFileDescriptorList
+{
+  repeated DataSyncFileDescriptor descriptors = 1;
+}
+
+enum DataSyncPackageType
+{
+  ALL_AVAILABLE_FILES_LIST = 0;
+  REQUESTED_FILES_LIST = 1;
+  FILES_DATA = 2;
+  ACKNOWLEDGED_FILES = 3;
+}
+
+message DataSyncPackage
+{
+  DataSyncPackageType package_type = 1;
+  DataSyncFileDescriptorList file_descriptors = 2;
+}

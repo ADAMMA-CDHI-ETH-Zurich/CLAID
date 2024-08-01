@@ -525,4 +525,14 @@ namespace claid
 		return removeFile(source);
 	}
             
+	bool FileUtils::getFileSize(const std::string& path, uint64_t& size)
+	{
+		std::ifstream file(path, std::ios::binary | std::ios::ate);
+		if (!file.is_open()) {
+			return false;
+		}
+		size = file.tellg();
+		return true;
+	}
+
 }

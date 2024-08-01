@@ -38,7 +38,7 @@
 #include "absl/strings/str_split.h"
 #include "absl/status/status.h"
 
-using claidservice::DataFile;
+using namespace claidservice;
 
 namespace claid
 {
@@ -59,7 +59,7 @@ namespace claid
             {
                 annotator.setModuleCategory("DataCollection");
                 annotator.setModuleDescription(absl::StrCat(
-                    "The DataSyncModule is the counterpart to the DataSyncModule. Together, the two Modules allow to synchronize files stored on the file system between different hosts.\n"
+                    "The DataSyncModule is the counterpart to the DataReceiverModule. Together, the two Modules allow to synchronize files stored on the file system between different hosts.\n"
                     "Files can be synchronized based on a synchronization intervall (for example, every hour). Each file is tagged with the original host and user name, allowing you to\n"
                     "receive data from many different hosts and users and store it in separate folders."
                 ));               
@@ -68,25 +68,16 @@ namespace claid
         
         private:
             // On this channel, we post all the files available
-            Channel<std::vector<std::string>> completeFileListChannel;
+            Channel<DataSyncPackage> toReceiverModuleChannel;
 
             // On this channel, the FileReceiver can request files that we will send.
-            Channel<std::string> requestedFileChannel;
-
-            // On this channel, we post the actual files.
-            Channel<DataFile> dataFileChannel;
-
-            // On this channel, the FileReceiver sends the name of the file that it received (acknowledgement).
-            Channel<std::string> receivedFileAcknowledgementChannel;
+            Channel<DataSyncPackage> fromReceiverModuleChannel;
 
             std::string filePath;
 
             Time lastMessageFromFileReceiver;
         
-            std::string completeFileListChannelName;
-            std::string requestedFileChannelName;
-            std::string dataFileChannelName;
-            std::string receivedFilesAcknowledgementChannelName;
+
 
             int syncingPeriodInMs;
             bool deleteFileAfterSync;
@@ -105,11 +96,14 @@ namespace claid
                 }
             }
 
-            void buildFileList(std::vector<std::string>& fileList)
+            void buildFileList(DataSyncFileDescriptorList& descriptorList)
             {
-                fileList.clear();
+                descriptorList.clear_descriptors();
+
+                std::vector<std::string> fileList;
                 if(!FileUtils::getAllFilesInDirectoryRecursively(this->filePath, fileList))
                 {
+                    moduleWarning(absl::StrCat("Unable scan directory \"", this->filePath, "\" for files."));
                     return;
                     //CLAID_THROW(Exception, "Error in DataSyncModule, cannot scan directory \"" << this->filePath << "\" "
                     //<< "for files. Directory either does not exist or we do not have reading permissions.");
@@ -117,27 +111,45 @@ namespace claid
 
                 for(std::string& path : fileList)
                 {
+                    uint64_t fileSize;
+                    if(!FileUtils::getFileSize(path, fileSize))
+                    {
+                        moduleError(absl::StrCat("Failed to get size of file \"", path, "\""));
+                        return;
+                    }
+
                     makePathRelative(path);
+                    DataSyncFileDescriptor* descriptor = descriptorList.add_descriptors();
+                    descriptor->set_hash(0); // For now, we do not use any hashing.
+                    descriptor->set_file_size(fileSize);
+                    descriptor->set_relative_file_path(path);
+                    // No data for now, as we are only sending a list of files.
+                    // The actual data files will be sent once the DataReceiverModule tells us which files it wants.
                 }
 
             }
 
             void sendFileList()
             {
-                std::vector<std::string> fileList;
-                this->buildFileList(fileList);
-                this->completeFileListChannel.post(fileList);
-                Logger::logInfo("Sending file list");
+                DataSyncPackage dataSyncPackage;
+                dataSyncPackage.set_package_type(DataSyncPackageType::ALL_AVAILABLE_FILES_LIST);
+
+                DataSyncFileDescriptorList* descriptors = dataSyncPackage.mutable_file_descriptors();
+                this->buildFileList(*descriptors);
+                this->toReceiverModuleChannel.post(dataSyncPackage);
+                moduleInfo("Sending file list");
             }
 
-            void sendRequestedFile(const std::string& relativeFilePath)
+            void sendRequestedFile(const DataSyncFileDescriptor& descriptor)
             {
+                const std::string& relativeFilePath = descriptor.relative_file_path();
                 printf("Requested file %s\n", relativeFilePath.c_str());
 
-                DataFile file;
+                DataSyncFileDescriptor fileToSend;
+                uint64_t fileSize;
                 std::string path = this->filePath + std::string("/") + relativeFilePath;
                 
-                absl::Status status = this->loadDataFileFromPath(path, file);
+                absl::Status status = this->loadDataFileFromPath(path, fileToSend);
                 if(!status.ok())
                 {
                     moduleError(status);
@@ -145,27 +157,64 @@ namespace claid
                     // CLAID_THROW(Exception, "Error in DataSyncModule, file \"" << path << "\" was requested to be sent,\n"
                     // << "but it could not be loaded from the filesystem. Either the file does not exist or we do not have permission to read it.");
                 }
-                file.set_relative_path(relativeFilePath);
-                this->dataFileChannel.post(file);
+                if(!FileUtils::getFileSize(path, fileSize))
+                {
+                    moduleError(absl::StrCat("Failed to get size of file \"", path, "\", cannot send requested file."));
+                    return;
+                }
+                
+                fileToSend.set_relative_file_path(relativeFilePath);
+                fileToSend.set_hash(0); // Currently not using any hash.
+                // file size was already set in loadDataFileFromPath.
+
+                DataSyncPackage dataSyncPackage;
+                dataSyncPackage.set_package_type(DataSyncPackageType::FILES_DATA);
+
+                DataSyncFileDescriptorList* descriptorList = dataSyncPackage.mutable_file_descriptors();
+                *descriptorList->add_descriptors() = fileToSend;
+                this->toReceiverModuleChannel.post(dataSyncPackage);
             }
 
-            void onFileRequested(ChannelData<std::string> missingFileData)
+            void onPackageFromDataReceiver(ChannelData<DataSyncPackage> data)
+            {
+                const DataSyncPackage& pkg = data.getData();
+                if(pkg.package_type() == DataSyncPackageType::REQUESTED_FILES_LIST)
+                {
+                    this->onFileRequested(pkg.file_descriptors());
+                }
+                else if(pkg.package_type() == DataSyncPackageType::ACKNOWLEDGED_FILES)
+                {
+                    this->onFileReceivalAcknowledged(pkg.file_descriptors());
+                }
+            }
+
+            void onFileRequested(const DataSyncFileDescriptorList& requestedFiles)
             {
                 printf("Requested file\n");   
                 this->lastMessageFromFileReceiver = Time::now();
-                sendRequestedFile(missingFileData.getData());
+
+                for(const DataSyncFileDescriptor& fileDescriptor : requestedFiles.descriptors())
+                {
+                    sendRequestedFile(fileDescriptor);
+                }
+                
             }
 
-            void onFileReceivalAcknowledged(ChannelData<std::string> receivedFile)
+            void onFileReceivalAcknowledged(const DataSyncFileDescriptorList& acknowledgedFiles)
             {
                 this->lastMessageFromFileReceiver = Time::now();
-                if(this->deleteFileAfterSync)
+                for(const DataSyncFileDescriptor& fileDescriptor : acknowledgedFiles.descriptors())
                 {
-                    Logger::logInfo("Received acknowledgement of file received %s, deleting it.", receivedFile.getData().c_str());
-                    std::string path = this->filePath + std::string("/") + receivedFile.getData();
-                    Logger::logInfo("Deleting %s", path.c_str());
-                    FileUtils::removeFileIfExists(path);
+                    if(this->deleteFileAfterSync)
+                    {
+                        const std::string& relativePath = fileDescriptor.relative_file_path().c_str();
+                        Logger::logInfo("Received acknowledgement of file received %s, deleting it.", fileDescriptor.relative_file_path().c_str());
+                        std::string path = this->filePath + std::string("/") + relativePath;
+                        Logger::logInfo("Deleting %s", path.c_str());
+                        FileUtils::removeFileIfExists(path);
+                    }
                 }
+                
             }
 
             size_t millisecondsSinceLastMessageFromFileReceiver()
@@ -190,7 +239,7 @@ namespace claid
             // Get's called by the middleware once we connect to a remote server.
             void onConnectedToRemoteServer()
             {
-                if(millisecondsSinceLastMessageFromFileReceiver() >= this->syncingPeriodInMs)
+                if(millisecondsSinceLastMessageFromFileReceiver() >= size_t(this->syncingPeriodInMs))
                 {
                     // If we were not able to contact the DataReceiverModule for a while,
                     // we retry upon successfull connection to a remote server, assuming 
@@ -201,7 +250,7 @@ namespace claid
                 }
             }
 
-            absl::Status loadDataFileFromPath(const std::string& path, DataFile& dataFile)
+            absl::Status loadDataFileFromPath(const std::string& path, DataSyncFileDescriptor& dataFile)
             {
                 std::fstream file(path, std::ios::in | std::ios::binary);
                 if(!file.is_open())
@@ -211,10 +260,11 @@ namespace claid
                 }
 
                 file.seekg(0, std::ios::end);
-                int32_t numBytes = file.tellg();
+                uint64_t numBytes = file.tellg();
                 file.seekg(0, std::ios::beg);
 
                 dataFile.mutable_file_data()->resize(numBytes);
+                dataFile.set_file_size(numBytes);
                 // Read the binary data into the data field
                 if (!file.read(reinterpret_cast<char*>(dataFile.mutable_file_data()->data()), numBytes))
                 {
@@ -267,10 +317,7 @@ namespace claid
                 
            
 
-                this->completeFileListChannelName = "FileSyncer/CompleteFileList";
-                this->requestedFileChannelName = "FileSyncer/RequestedFileList";
-                this->dataFileChannelName = "FileSyncer/DataFiles";
-                this->receivedFilesAcknowledgementChannelName = "FileSyncer/ReceivedFilesAcknowledgement";
+            
 
                 // #ifdef __APPLE__
                 //     #if TARGET_OS_IPHONE
@@ -278,13 +325,9 @@ namespace claid
                 //     #endif
                 // #endif
 
-                this->completeFileListChannel = this->publish<std::vector<std::string>>(this->completeFileListChannelName);
-                this->requestedFileChannel = this->subscribe<std::string>(this->requestedFileChannelName, &DataSyncModule::onFileRequested, this);
-                this->dataFileChannel = this->publish<DataFile>(this->dataFileChannelName);
-
-                 
-                this->receivedFileAcknowledgementChannel = this->subscribe<std::string>(this->receivedFilesAcknowledgementChannelName, &DataSyncModule::onFileReceivalAcknowledged, this);
-                
+                this->toReceiverModuleChannel = publish<DataSyncPackage>("ToReceiverChannel");
+                this->fromReceiverModuleChannel = this->subscribe<DataSyncPackage>("FromReceiverChannel", &DataSyncModule::onPackageFromDataReceiver, this);
+                               
                 this->lastMessageFromFileReceiver = Time::now();
                 this->registerPeriodicFunction("PeriodicSyncFunction", &DataSyncModule::periodicSync, this, Duration::milliseconds(this->syncingPeriodInMs));
                 this->periodicSync();
