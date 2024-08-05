@@ -58,6 +58,8 @@ MiddleWare::MiddleWare(const string& socketPath, const string& configurationPath
         remoteFunctionRunnableHandler
             .registerRunnable(
                 "remove_loose_direct_subscription", &MiddleWare::removeLooseDirectSubscription, this);
+
+        createPlatformSpecificGlobalDeviceScheduler();
     }
 
 MiddleWare::~MiddleWare() {
@@ -117,7 +119,7 @@ absl::Status MiddleWare::start() {
     Logger::logInfo("Module Table:");
     Logger::logInfo("%s", moduleTable.toString().c_str());
 
-    localDispatcher = make_unique<DispatcherServer>(socketPath, moduleTable);
+    localDispatcher = make_unique<DispatcherServer>(socketPath, moduleTable, this->globalDeviceScheduler);
     if (!localDispatcher->start()) {
         return absl::InternalError("Error starting local dispatcher !");
     }
@@ -357,9 +359,11 @@ void MiddleWare::setupLogSink()
 void MiddleWare::createPlatformSpecificGlobalDeviceScheduler()
 {
     #ifdef __ANDROID__
-    this->globalDeviceScheduler = std::static_pointer_cast<GlobalDeviceScheduler>(std::make_shared<GlobalDeviceSchedulerAndroid>(this->moduleTable));
+    this->globalDeviceScheduler = std::static_pointer_cast<GlobalDeviceScheduler>(
+            std::make_shared<GlobalDeviceSchedulerAndroid>(this->remoteFunctionRunnableHandler, this->moduleTable, remoteFunctionHandler)
+        );
     #else
-    this->globalDeviceScheduler = std::make_shared<GlobalDeviceScheduler>(this->moduleTable);
+    this->globalDeviceScheduler = std::make_shared<GlobalDeviceScheduler>(this->remoteFunctionRunnableHandler, this->moduleTable);
     #endif
 }
 
@@ -545,12 +549,14 @@ void MiddleWare::readControlPackages()
 {
     while(this->running)
     {
+        Logger::logInfo("MiddleWare got control package");
         std::shared_ptr<DataPackage> controlPackage = this->moduleTable.controlPackagesQueue().interruptable_pop_front();
 
         if(controlPackage == nullptr)
         {
             continue;
         }
+
 
         this->handleControlPackage(controlPackage);
     }

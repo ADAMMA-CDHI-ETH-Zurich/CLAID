@@ -176,7 +176,7 @@ namespace claid
                 {
                     Logger::logInfo("Missing file %s", descriptor.relative_file_path().c_str());
                 }
-                Logger::logInfo("Received complete file list from user %s", userId);
+                Logger::logInfo("Received complete file list from user %s", userId.c_str());
 
           
  
@@ -197,7 +197,7 @@ namespace claid
             void requestNextFileFromUser(const std::string& userId)
             {
                 std::queue<std::string>& filesQueue = this->missingFilesQueuePerUser[userId]; 
-                printf("Requesting next file %ld\n", filesQueue.size());
+                printf("Requesting next file %u\n", filesQueue.size());
                 if(filesQueue.empty())
                 {
                     return;

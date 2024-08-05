@@ -200,8 +200,8 @@ void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
     // }
 }
 
-ServiceImpl::ServiceImpl(ModuleTable& modTable)
-    : moduleTable(modTable) {}
+ServiceImpl::ServiceImpl(ModuleTable& modTable, std::shared_ptr<GlobalDeviceScheduler> globalDeviceScheduler)
+    : moduleTable(modTable), globalDeviceScheduler(globalDeviceScheduler) {}
 
 Status ServiceImpl::GetModuleList(ServerContext* context,
         const ModuleListRequest* req, ModuleListResponse* resp) {
@@ -398,7 +398,7 @@ RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& s
 
 
     moduleTable.addRuntimeIfNotExists(runTime);
-    moduleTable.setRuntimeConnected(true);
+    moduleTable.setRuntimeConnected(runTime, true);
 
     shared_ptr<SharedQueue<DataPackage>> rtq = moduleTable.getOutputQueueOfRuntime(runTime);
 
@@ -420,7 +420,7 @@ void ServiceImpl::removeRuntimeDispatcher(Runtime rt) {
     activeDispatchers.erase(rt);
     moduleTable.removeAllLooseDirectSubscriptionsOfRuntime(rt);
     globalDeviceScheduler->releaseAllWakeLocksOfRuntime(rt);
-    moduleTable.setRuntimeConnected(false);
+    moduleTable.setRuntimeConnected(rt, false);
     Logger::logInfo("Removed runtime dispatcher");
 
 }
@@ -433,8 +433,8 @@ void ServiceImpl::dumpActiveDispatchers() {
     }
 }
 
-DispatcherServer::DispatcherServer(const string& addr, ModuleTable& modTable)
-    : addr(addr), serviceImpl(modTable) {}
+DispatcherServer::DispatcherServer(const string& addr, ModuleTable& modTable, std::shared_ptr<GlobalDeviceScheduler> globalDeviceScheduler)
+    : addr(addr), serviceImpl(modTable, globalDeviceScheduler) {}
 
 DispatcherServer::~DispatcherServer() {
     shutdown();

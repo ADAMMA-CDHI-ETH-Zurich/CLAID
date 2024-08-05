@@ -18,11 +18,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ***************************************************************************/
-
+#pragma once
 #include <map>
 #include "dispatch/proto/claidservice.grpc.pb.h"
 #include "dispatch/core/Utilities/Time.hh"
 #include "dispatch/core/module_table.hh"
+#include "dispatch/core/RemoteFunction/RemoteFunctionRunnableHandler.hh"
+
 namespace claid {
 
 /// The GlobalDeviceScheduler is a central component of the CLAID middleware.
@@ -76,6 +78,7 @@ class GlobalDeviceScheduler
 
     protected:
         const ModuleTable& moduleTable;
+        RemoteFunctionRunnableHandler& remoteFunctionRunnableHandler;
 
 
         virtual void acquirePlatformSpecificWakeLock() 
@@ -88,18 +91,19 @@ class GlobalDeviceScheduler
 
         }
         
-        virtual void schedulePlatformSpecificDeviceWakeup(const int64_t timestamp)
+        virtual void schedulePlatformSpecificDeviceWakeup(int64_t timestamp)
         {
 
         }
         
 
     public:
-        GlobalDeviceScheduler(const ModuleTable& moduleTable);
+        GlobalDeviceScheduler(RemoteFunctionRunnableHandler& remoteFunctionRunnableHandler, const ModuleTable& moduleTable);
 
-        void scheduleDeviceWakeupAt(Runtime runtime, int64_t unixTimestampMs);
-        void acquireWakeLockForRuntime(Runtime runtime);
-        void releaseWakeLockForRuntime(Runtime runtime);
+        void scheduleDeviceWakeupAt(RuntimeType runtime, int64_t unixTimestampMs);
+        void acquireWakeLockForRuntime(RuntimeType runtime);
+        void releaseWakeLockForRuntime(RuntimeType runtime);
+        
         void releaseAllWakeLocksOfRuntime(Runtime runtime);
 };
 }

@@ -33,7 +33,7 @@
 #include "dispatch/proto/claidservice.grpc.pb.h"
 #include "dispatch/core/shared_queue.hh"
 #include "dispatch/core/module_table.hh"
-
+#include "dispatch/core/DeviceScheduler/GlobalDeviceScheduler.hh"
 using claidservice::ModuleAnnotation;
 
 namespace claid {
@@ -64,7 +64,7 @@ class RuntimeDispatcher {
 
 class ServiceImpl final : public claidservice::ClaidService::Service {
   public:
-    explicit ServiceImpl(claid::ModuleTable& moduleTable);
+    explicit ServiceImpl(claid::ModuleTable& moduleTable, std::shared_ptr<GlobalDeviceScheduler> globalDeviceScheduler);
     // void shutdown();
     // virtual ~ServiceImpl() { shutdown(); };
     virtual ~ServiceImpl() { };
@@ -93,13 +93,14 @@ class ServiceImpl final : public claidservice::ClaidService::Service {
   // Data members
   private:
     claid::ModuleTable& moduleTable;
+    std::shared_ptr<GlobalDeviceScheduler> globalDeviceScheduler;
     std::mutex adMutex;    // protects activeDispatchers
     std::map<claidservice::Runtime, std::unique_ptr<RuntimeDispatcher>> activeDispatchers;
 };     // class ServiceImpl
 
 class DispatcherServer {
   public:
-    DispatcherServer(const std::string& addr, claid::ModuleTable& modTable);
+    DispatcherServer(const std::string& addr, claid::ModuleTable& modTable, std::shared_ptr<GlobalDeviceScheduler> globalDeviceScheduler);
     virtual ~DispatcherServer();
     bool start();
     void shutdown();

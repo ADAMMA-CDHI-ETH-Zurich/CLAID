@@ -131,6 +131,7 @@ public abstract class Module
         this.remoteFunctionHandler = remoteFunctionHandler;
         this.remoteFunctionRunnableHandler = new RemoteFunctionRunnableHandler("Module " + this.id, subscriberPublisher.getToModuleManagerQueue());
 
+        this.runnableDispatcher.setRemoteFunctionHandler(this.remoteFunctionHandler);
         if(!this.runnableDispatcher.start())
         {
             moduleError("Failed to start RunnableDispatcher.");

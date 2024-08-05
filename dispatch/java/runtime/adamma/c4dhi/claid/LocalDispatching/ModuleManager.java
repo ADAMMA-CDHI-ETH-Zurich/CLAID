@@ -58,6 +58,7 @@ import adamma.c4dhi.claid.CtrlType;
 import adamma.c4dhi.claid.LogMessage;
 import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionHandler;
 import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionRunnableHandler;
+import adamma.c4dhi.claid_platform_impl.GlobalDeviceSchedulerAndroid;
 import adamma.c4dhi.claid.RemoteFunctionRequest;
 
 import io.grpc.stub.StreamObserver;
@@ -80,6 +81,7 @@ public class ModuleManager
 {
     private ModuleDispatcher dispatcher;
     private ModuleFactory moduleFactory;
+    private GlobalDeviceSchedulerAndroid deviceScheduler;
 
     // ModuleId, Module
     private Map<String, Module> runningModules = new HashMap<>();
@@ -105,6 +107,7 @@ public class ModuleManager
         this.moduleFactory = moduleFactory;
         this.remoteFunctionHandler = new RemoteFunctionHandler(fromModulesChannel);
         this.remoteFunctionRunnableHandler = new RemoteFunctionRunnableHandler("RUNTIME_JAVA", fromModulesChannel);
+        this.deviceScheduler = new GlobalDeviceSchedulerAndroid(this.remoteFunctionRunnableHandler);
     }
 
     private boolean instantiateModule(String moduleId, String moduleClass)

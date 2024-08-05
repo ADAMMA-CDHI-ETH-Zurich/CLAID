@@ -2,6 +2,9 @@
 
 #include "dispatch/core/DeviceScheduler/GlobalDeviceScheduler.hh"
 #include "dispatch/core/module_table.hh"
+#include "dispatch/core/Module/TypeMapping/TypeMapping.hh"
+
+#include "dispatch/core/RemoteFunction/RemoteFunction.hh"
 #include "dispatch/core/RemoteFunction/RemoteFunctionHandler.hh"
 
 using namespace claidservice;
@@ -29,43 +32,68 @@ private:
 
 public:
     GlobalDeviceSchedulerAndroid(
-        RemoteFunctionHandler& remoteFunctionHandler, 
-        const ModuleTable& moduleTable
-    ) : GlobalDeviceScheduler(moduleTable), remoteFunctionHandler(remoteFunctionHandler)
+        RemoteFunctionRunnableHandler& remoteFunctionRunnableHandler, 
+        const ModuleTable& moduleTable,
+        RemoteFunctionHandler& remoteFunctionHandler
+    ) : GlobalDeviceScheduler(remoteFunctionRunnableHandler, moduleTable), remoteFunctionHandler(remoteFunctionHandler)
     {
-        androidAcquireWakeLock = remoteFunctionHandler.mapRuntimeFunction<void>(Runtime::RUNTIME_JAVA, "acquire_wake_lock");
-        androidReleaseWakeLock = remoteFunctionHandler.mapRuntimeFunction<void>(Runtime::RUNTIME_JAVA, "release_wake_lock");
-        androidScheduleDeviceWakeup = remoteFunctionHandler.mapRuntimeFunction<void, int64_t>(Runtime::RUNTIME_JAVA, "schedule_device_wakeup");
+        androidAcquireWakeLock = remoteFunctionHandler.mapRuntimeFunction<void>(Runtime::RUNTIME_JAVA, "android_acquire_wakelock");
+        androidReleaseWakeLock = remoteFunctionHandler.mapRuntimeFunction<void>(Runtime::RUNTIME_JAVA, "android_release_wakelock");
+        androidScheduleDeviceWakeup = remoteFunctionHandler.mapRuntimeFunction<void, int64_t>(Runtime::RUNTIME_JAVA, "android_schedule_device_wakeup");
     }
 
     void acquirePlatformSpecificWakeLock() override final
     {
+        Logger::logInfo("GlobalDeviceSchedulerAndroid (Cpp): acquirePlatformSpecificWakeLock");
         if(!assertJavaRuntimeConnected())
         {
             return;
         }
-        androidAcquireWakeLock.execute();
+        auto result = androidAcquireWakeLock.execute();
+
+        // Do not wait here! Will cause deadlock (some runtime requests MIDDLEWARE_CORE::acquireWakeLock, which is processed
+        // in Middleware's control package thread. If it then waits here, we can never receive CTRL_REMOTE_FUNCTION_RESPONSE, as response
+        // is also processed in Middleware's control package thread).
+        // result->await();
+        // if(!result->wasExecutedSuccessfully())
+        // {
+        //     Logger::logError("GlobalDeviceSchedulerAndroid::acquirePlatformSpecificWakeLock: Failed to acquire WakeLock, failed to execute RPC function in Android.");
+        // }
     }
     
     void releasePlatformSpecificWakeLock() override final
     {
+        Logger::logInfo("GlobalDeviceSchedulerAndroid (Cpp): releasePlatformSpecificWakeLock");
         if(!assertJavaRuntimeConnected())
         {
             return;
         }
-        androidReleaseWakeLock.execute();
-    }
-    
-    void schedulePlatformSpecificDeviceWakeup(const int64_t timestamp) override final
-    {
-        if(!assertJavaRuntimeConnected())
-        {
-            return;
-        }
-        androidScheduleDeviceWakeup.execute(timestamp);
-    }
-    
+        auto result = androidReleaseWakeLock.execute();
 
-}
+        // result->await();
+        // if(!result->wasExecutedSuccessfully())
+        // {
+        //     Logger::logError("GlobalDeviceSchedulerAndroid::releasePlatformSpecificWakeLock: Failed to release WakeLock, failed to execute RPC function in Android.");
+        // }
+    }
+    
+    void schedulePlatformSpecificDeviceWakeup(int64_t timestamp) override final
+    {
+        Logger::logInfo("GlobalDeviceSchedulerAndroid (Cpp): schedulePlatformSpecificDeviceWakeup");
+        if(!assertJavaRuntimeConnected())
+        {
+            return;
+        }
+        auto result = androidScheduleDeviceWakeup.execute(timestamp);
+
+        // result->await();
+        // if(!result->wasExecutedSuccessfully())
+        // {
+        //     Logger::logError("GlobalDeviceSchedulerAndroid::schedulePlatformSpecificDeviceWakeup: Failed to schedule device wakeup, failed to execute RPC function in Android.");
+        // }
+    }
+    
 
 };
+
+}

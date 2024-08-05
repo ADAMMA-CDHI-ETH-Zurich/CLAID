@@ -45,6 +45,7 @@
 #include "dispatch/core/EventTracker/EventTracker.hh"
 #include "dispatch/core/Logger/LogSinkConfiguration.hh"
 
+#include "dispatch/core/RemoteFunction/RemoteFunctionHandler.hh"
 #include "dispatch/core/RemoteFunction/RemoteFunctionRunnableHandler.hh"
 
 #include "dispatch/core/DeviceScheduler/GlobalDeviceScheduler.hh"

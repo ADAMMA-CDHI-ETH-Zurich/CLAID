@@ -16,7 +16,7 @@ long FutureUniqueIdentifier::currentId = 0;
         currentId++;
         mutex.unlock();
 
-        std::string identifier = std::string("CLAID_JAVA_") + std::to_string(idCopy) + std::string("_") +
+        std::string identifier = std::string("CLAID_CPP_") + std::to_string(idCopy) + std::string("_") +
              std::to_string(Time::now().toUnixTimestampMilliseconds());
 
         return FutureUniqueIdentifier(identifier);

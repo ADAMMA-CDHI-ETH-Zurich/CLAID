@@ -64,29 +64,45 @@ namespace claid {
         rescheduleNextWakeup();
     }
 
-    void GlobalDeviceScheduler::cleanupScheduledWakeups(const uint64_t currentTimestamp)
+    void GlobalDeviceScheduler::cleanupScheduledWakeups(const int64_t currentTimestamp)
     {
-        Logger::logInfo("Cleaning up scheduled wakeups.");
+        Logger::logInfo("Cleaning up scheduled wakeups. %d %lld %lld", scheduledWakeups.size(), currentTimestamp, scheduledWakeups.begin()->first);
         // Find the first element with a key not less than the current time;
         auto it = scheduledWakeups.lower_bound(currentTimestamp);
-        
+
+      
+
         // Erase all elements with scheduled times less than currentTimestamp.
         // Those are outdated.
         scheduledWakeups.erase(scheduledWakeups.begin(), it);
+        Logger::logInfo("Erased %d", scheduledWakeups.size());
     }
 
     void GlobalDeviceScheduler::rescheduleNextWakeup()
     {
-        const uint64_t currentTimestamp = Time::now().toUnixTimestampMilliseconds();
+        if(scheduledWakeups.size() == 0)
+        {
+            updateWakeLockState();
+            return;
+        }
+        int64_t currentTimestamp = Time::now().toUnixTimestampMilliseconds();
         
-        uint64_t nextScheduledWakeupTime = scheduledWakeups.begin()->first;
+        int64_t nextScheduledWakeupTime = scheduledWakeups.begin()->first;
 
         while(nextScheduledWakeupTime < currentTimestamp)
         {
             cleanupScheduledWakeups(currentTimestamp);
+
+            if(scheduledWakeups.size() == 0)
+            {
+                Logger::logInfo("Scheduled wakeup size is 0, skpping");
+                updateWakeLockState();
+                return;
+            }
+            int64_t currentTimestamp = Time::now().toUnixTimestampMilliseconds();
             nextScheduledWakeupTime = scheduledWakeups.begin()->first;
         }
-
+        Logger::logInfo("Found scheduled wakeup");
         if(runtimeWakeLock)
         {
             Logger::logInfo(
@@ -104,21 +120,25 @@ namespace claid {
                 "GlobalDeviceScheduler::rescheduleNextWakup: No wakeups scheduled and no wakelock acquired by any runtime! Device is going to sleep, "
                 "and might not wake up anytime soon. Device wakeup is now out of CLAID's hands."
             );
+            updateWakeLockState();
+            return;
         }
 
-
-        if(currentTimestamp - nextScheduledWakeupTime < REQUIRED_MILLISECONDS_UNTIL_NEXT_SCHEDULED_WAKEUP_TO_GO_TO_SLEEP)
+        if(nextScheduledWakeupTime - currentTimestamp < REQUIRED_MILLISECONDS_UNTIL_NEXT_SCHEDULED_WAKEUP_TO_GO_TO_SLEEP)
         {
             // The next scheduled wake up is too close.
             // It is not worth to go to sleep.
             // We hold a wakelock instead.
+            Logger::logInfo("Next device wakeup is in %d seconds which is less than %lld seconds. Keeping device awake", 
+            (nextScheduledWakeupTime - currentTimestamp), REQUIRED_MILLISECONDS_UNTIL_NEXT_SCHEDULED_WAKEUP_TO_GO_TO_SLEEP);
             schedulerWakeLock = true;
             return;
         }
         else
         {
+            Logger::logInfo("Scheduling device wakeup platform specific at %lld", nextScheduledWakeupTime);
             schedulerWakeLock = false;
-            schedulePlatformSpecificDeviceWakeup(currentTimestamp);
+            schedulePlatformSpecificDeviceWakeup(nextScheduledWakeupTime);
         }
         updateWakeLockState();
     }
@@ -160,31 +180,48 @@ namespace claid {
         }
     }
 
-    GlobalDeviceScheduler::GlobalDeviceScheduler(const ModuleTable& moduleTable) : moduleTable(moduleTable)
+    GlobalDeviceScheduler::GlobalDeviceScheduler(
+            RemoteFunctionRunnableHandler& remoteFunctionRunnableHandler,
+            const ModuleTable& moduleTable
+    ) : remoteFunctionRunnableHandler(remoteFunctionRunnableHandler), moduleTable(moduleTable)
     {
+        remoteFunctionRunnableHandler
+            .registerRunnable(
+                "acquire_wakelock", &GlobalDeviceScheduler::acquireWakeLockForRuntime, this);
 
+        remoteFunctionRunnableHandler
+            .registerRunnable(
+                "release_wakelock", &GlobalDeviceScheduler::releaseWakeLockForRuntime, this);
+
+        remoteFunctionRunnableHandler
+            .registerRunnable(
+                "schedule_device_wakeup_at", &GlobalDeviceScheduler::scheduleDeviceWakeupAt, this);
     }
 
-    void GlobalDeviceScheduler::scheduleDeviceWakeupAt(Runtime runtime, uint64_t unixTimestampMs)
+    void GlobalDeviceScheduler::scheduleDeviceWakeupAt(RuntimeType runtime, int64_t unixTimestampMs)
     {
-        scheduledWakeups[unixTimestampMs] = runtime;
+        Logger::logInfo("GlobalDeviceScheduler scheduleDeviceWakeupAt called.");
+        scheduledWakeups[unixTimestampMs] = runtime.runtime();
         rescheduleNextWakeup();
     }
 
-    void GlobalDeviceScheduler::acquireWakeLockForRuntime(Runtime runtime)
+    void GlobalDeviceScheduler::acquireWakeLockForRuntime(RuntimeType runtime)
     {
+        Logger::logInfo("GlobalDeviceScheduler acquireWakeLockForRuntime called.");
         increaseAcquiredWakeLocks(1);
-        acquiredWakeLocksPerRuntime[runtime]++;
+        acquiredWakeLocksPerRuntime[runtime.runtime()]++;
     }
 
-    void GlobalDeviceScheduler::releaseWakeLockForRuntime(Runtime runtime)
+    void GlobalDeviceScheduler::releaseWakeLockForRuntime(RuntimeType runtime)
     {
+        Logger::logInfo("GlobalDeviceScheduler releaseWakeLockForRuntime called.");
         decreaseAcquiredWakeLocks(1);
-        acquiredWakeLocksPerRuntime[runtime]--;
+        acquiredWakeLocksPerRuntime[runtime.runtime()]--;
     }
 
     void GlobalDeviceScheduler::releaseAllWakeLocksOfRuntime(Runtime runtime)
     {
+        Logger::logInfo("GlobalDeviceScheduler releaseWakeLockForRuntime called.");
         const int64_t numWakeLocksOfRuntime = acquiredWakeLocksPerRuntime[runtime];
         decreaseAcquiredWakeLocks(numWakeLocksOfRuntime);
         acquiredWakeLocksPerRuntime[runtime] = 0;

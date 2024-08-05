@@ -610,7 +610,7 @@ void ModuleTable::addLooseDirectSubscription(claidservice::LooseDirectChannelSub
     const claidservice::Runtime& runtime = subscription.subscriber_runtime();
 
     auto& subscriptionList = this->looseDirectChannelSubscriptions[channel][runtime];
-    this->looseDirectChannelSubscriptions[channel][runtime].push_back(subscription);
+    subscriptionList.push_back(subscription);
 }
 
 void ModuleTable::addLooseDirectSubscriptionIfNotExists(claidservice::LooseDirectChannelSubscription& subscription)

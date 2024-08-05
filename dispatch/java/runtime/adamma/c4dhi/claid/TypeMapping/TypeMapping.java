@@ -287,7 +287,7 @@ public class TypeMapping {
                 {
                     DataPackage.Builder builderCopy = dataPackageBuilderCopy(p);
                     Number numberValue = (Number) v;
-                    IntVal val = IntVal.newBuilder().setVal(numberValue.intValue()).build();
+                    IntVal val = IntVal.newBuilder().setVal(numberValue.longValue()).build();
 
                     builderCopy = setProtoPayload(builderCopy, val);
 

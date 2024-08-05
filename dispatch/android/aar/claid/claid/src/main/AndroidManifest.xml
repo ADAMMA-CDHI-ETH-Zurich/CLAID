@@ -60,6 +60,11 @@
             android:exported="true"
             />
 
+        <receiver android:name="adamma.c4dhi.claid_platform_impl.GlobalDeviceSchedulerWakeUpReceiver"
+        android:enabled="true"
+            android:exported="true"
+            />
+
          <receiver
             android:name="adamma.c4dhi.claid_android.Receivers.OnBootReceiver"
             android:enabled="true"

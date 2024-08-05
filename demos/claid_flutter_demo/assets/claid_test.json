@@ -6,18 +6,11 @@
     "min_log_severity_level": "INFO",
     "modules": [
       {
-        "type": "TestStreamModule",
+        "type": "BatteryCollector",
         "id": "MyFirstModule",
-        "output_channels": {"MyData" :  "MyData"}
-      },
-      {
-        "type": "DataSaverModule",
-        "id": "NDataSaver",
-        "input_channels": {"DataChannel" :  "MyData"},
-        "properties": {
-          "storagePath": "%media_dir/test",
-          "fileNameFormat": "%d_%m_%y-%H_%M_%S.json",
-          "fileType": "json"
+        "output_channels": {"BatteryData" :  "MyData"},
+        "properties" : {
+          "samplingPeriod" : 45000
         }
       }
     ]

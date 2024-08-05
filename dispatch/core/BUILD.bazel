@@ -27,6 +27,7 @@ cc_library(
         "DataCollection/**/*.cc",
         "DeviceScheduler/**/*.cc",
         "EventTracker/**/*.cc",
+        "RemoteFunction/**/*.cc",
         "CLAID.cc"]),
     hdrs = glob([
         "capi.h",
@@ -34,6 +35,7 @@ cc_library(
         "DataCollection/**/*.hh",
         "DeviceScheduler/**/*.hh",
         "EventTracker/**/*.hh",
+        "RemoteFunction/**/*.hh",
         "CLAID.hh"]),
     deps = [
         ":CLAID",
@@ -94,7 +96,7 @@ cc_library(
         "Utilities/**/*.cc",
         "Exception/**/*.cc",
         "EventTracker/**/*.cc",
-        "RemoteFunction/*.cc",
+        "RemoteFunction/**/*.cc",
     ]),
     hdrs = glob([
         "Module/**/*.hh",
@@ -104,7 +106,7 @@ cc_library(
         "module_table.hh",
         "Exception/**/*.hh",
         "EventTracker/**/*.hh",
-        "RemoteFunction/*.hh",
+        "RemoteFunction/**/*.hh",
     ]),
     deps = [
         ":proto_util",
@@ -117,13 +119,20 @@ cc_library(
 
 cc_library(
     name = "local_dispatching",
-    srcs = [
+    srcs = glob([
         "local_dispatching.cc",
-    ],
-    hdrs = [
+        "DeviceScheduler/**/*.cc",
+        "Module/TypeMapping/**/*.cc",
+        "RemoteFunction/**/*.cc",
+    ]),
+    hdrs = glob([
         "shared_queue.hh",
         "local_dispatching.hh",
-    ],
+        "DeviceScheduler/**/*.hh",
+        "Module/TypeMapping/**/*.hh",
+        "RemoteFunction/**/*.hh",
+        "Traits/**/*.hh",
+    ]),
     deps = [
         ":module_table",
         ":logger",

@@ -64,7 +64,7 @@ namespace claid
 
             RemoteFunction<void> middlewareFuncAcquireWakeLock;
             RemoteFunction<void> middlewareFuncReleaseLock;
-            RemoteFunction<void> middlewareFuncScheduleDeviceWakeUpInMilliseconds;
+            RemoteFunction<void> middlewareFuncScheduleDeviceWakeUpAt;
 
 
             std::chrono::microseconds getWaitDurationUntilNextRunnableIsDue()
@@ -107,6 +107,11 @@ namespace claid
                 // wait_for will atomically release the mutex and sleep, and will atomically lock the mutex after waiting.
                 std::unique_lock<std::mutex> lock(this->mutex);
                 // Middleware: ScheduleWakeUpInMicroSeconds();
+                int64_t timestampForDeviceWakeup = 
+                    Time::now().toUnixTimestampMilliseconds() + 
+                    std::chrono::duration_cast<std::chrono::milliseconds>(waitTime).count();
+
+                middlewareScheduleDeviceWakeupAt(timestampForDeviceWakeup);
                 this->conditionVariable.wait_for(lock, waitTime, [&]{return this->rescheduleRequired || this->stopped;});    
             }
 
@@ -229,10 +234,9 @@ namespace claid
                 std::vector<ScheduledRunnable> dueRunnables;
                 while(!stopped)
                 {
-                    // Middleware: KeepAwake
+                    middlewareAcquireWakeLock();
                     do
                     {
-
                         // While we process runnables, it is possible
                         // that another runnable becomes due in the meantime.
                         // Hence, we repeat this loop until there are no more
@@ -242,9 +246,9 @@ namespace claid
                         processRunnables(dueRunnables);
                     }
                     while(dueRunnables.size() != 0);
-                    // Middleware: RemoveKeepAwake
 
                     rescheduleRequired = false;
+                    middlewareReleaseWakeLock();
                     waitUntilRunnableIsDueOrRescheduleIsRequired();
                 }
                 Logger::logInfo("RunnableDispatcher shutdown.");
@@ -259,17 +263,29 @@ namespace claid
 
             void middlewareAcquireWakeLock()
             {
+                if(this->remoteFunctionHandler == nullptr)
+                {
+                    return;
+                }
                 middlewareFuncAcquireWakeLock.execute(getRuntimeType());
             }
 
             void middlewareReleaseWakeLock()
             {
+                if(this->remoteFunctionHandler == nullptr)
+                {
+                    return;
+                }
                 middlewareFuncReleaseLock.execute(getRuntimeType());
             }
 
-            void middlewareScheduleDeviceWakeupInMilliseconds(int32_t millieseconds)
+            void middlewareScheduleDeviceWakeupAt(int64_t milliseconds)
             {
-                middlewareFuncScheduleDeviceWakeUpInMilliseconds.execute(millieseconds, getRuntimeType());
+                if(this->remoteFunctionHandler == nullptr)
+                {
+                    return;
+                }
+                middlewareFuncScheduleDeviceWakeUpAt.execute(getRuntimeType(), milliseconds);
             }
 
         public:
@@ -287,8 +303,8 @@ namespace claid
                 this->middlewareFuncReleaseLock = 
                     remoteFunctionHandler->mapRuntimeFunction<void, RuntimeType>(Runtime::MIDDLEWARE_CORE, "release_wakelock");
 
-                this->middlewareFuncScheduleDeviceWakeUpInMilliseconds = 
-                    remoteFunctionHandler->mapRuntimeFunction<void, int32_t, RuntimeType>(Runtime::MIDDLEWARE_CORE, "schedule_device_wakeup_in_milliseconds");
+                this->middlewareFuncScheduleDeviceWakeUpAt = 
+                    remoteFunctionHandler->mapRuntimeFunction<void, RuntimeType, int64_t>(Runtime::MIDDLEWARE_CORE, "schedule_device_wakeup_at");
             }
 
             bool start()
@@ -316,8 +332,7 @@ namespace claid
             }
 
             void addRunnable(ScheduledRunnable runnable)
-            {
-                
+            {   
                 std::unique_lock<std::mutex> lock(this->mutex);
                 this->scheduledRunnables.insert(std::make_pair(runnable.schedule->getExecutionTime(), runnable));
                 Logger::logInfo("Added runnable to RunnableDispatcher, total runnables now: %d", scheduledRunnables.size());

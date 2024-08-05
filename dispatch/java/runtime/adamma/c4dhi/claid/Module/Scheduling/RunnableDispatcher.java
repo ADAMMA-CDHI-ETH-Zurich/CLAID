@@ -27,6 +27,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid_platform_impl.CLAID;
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionHandler;
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunction;
+import adamma.c4dhi.claid.RuntimeType;
+import adamma.c4dhi.claid.Runtime;
 
 import java.util.concurrent.TimeUnit;
 import java.util.Map;
@@ -55,6 +59,14 @@ public class RunnableDispatcher
     private boolean running = false;
 
     private Thread scheduleThread;
+
+    // Allows the RunnableDispatcher to make calls into the Middleware, e.g.,
+    // to schedule device wake ups or request to keep the device awake.
+    private RemoteFunctionHandler remoteFunctionHandler;
+
+    private RemoteFunction<Void> middlewareFuncAcquireWakeLock;
+    private RemoteFunction<Void> middlewareFuncReleaseLock;
+    private RemoteFunction<Void> middlewareFuncScheduleDeviceWakeUpAt;
 
     private long localDateTimeToMilliseconds(LocalDateTime localDateTime)
     {
@@ -98,6 +110,8 @@ public class RunnableDispatcher
         mutex.lock();
         try {
             writeToLogFile("condition variable waiting for "  + waitTime + " milliseconds");
+
+            middlewareScheduleDeviceWakeupAt(Long.valueOf(System.currentTimeMillis() + waitTime));
 
             conditionVariable.await(waitTime, TimeUnit.MILLISECONDS);
 
@@ -201,6 +215,19 @@ public class RunnableDispatcher
         return runnables;
     }
 
+    public void setRemoteFunctionHandler(RemoteFunctionHandler remoteFunctionHandler)
+    {
+        this.remoteFunctionHandler = remoteFunctionHandler;
+        this.middlewareFuncAcquireWakeLock = 
+            remoteFunctionHandler.mapRuntimeFunction(Runtime.MIDDLEWARE_CORE, "acquire_wakelock", Void.class, RuntimeType.class);
+
+        this.middlewareFuncReleaseLock = 
+            remoteFunctionHandler.mapRuntimeFunction(Runtime.MIDDLEWARE_CORE, "release_wakelock", Void.class, RuntimeType.class);
+
+        this.middlewareFuncScheduleDeviceWakeUpAt = 
+            remoteFunctionHandler.mapRuntimeFunction(Runtime.MIDDLEWARE_CORE, "schedule_device_wakeup_at", Void.class, RuntimeType.class, Long.class);
+    }
+
     public boolean start() 
     {
         if(running)
@@ -260,7 +287,7 @@ public class RunnableDispatcher
     public void runScheduling() {
         List<ScheduledRunnable> dueRunnables = new ArrayList<>();
         while (running) {
-
+            middlewareAcquireWakeLock();
             do {
                 writeToLogFile("Scheduler woke up.");
 
@@ -275,6 +302,7 @@ public class RunnableDispatcher
                 processRunnables(dueRunnables);
             } while (!dueRunnables.isEmpty());
             rescheduleRequired = false;
+            middlewareReleaseWakeLock();
             waitUntilRunnableIsDueOrRescheduleIsRequired();
         }
     }
@@ -314,5 +342,39 @@ public class RunnableDispatcher
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
         Date currentDate = new Date();
         return dateFormat.format(currentDate);
+    }
+
+    RuntimeType getRuntimeType()
+    {
+        RuntimeType.Builder type = RuntimeType.newBuilder();
+        type.setRuntime(Runtime.RUNTIME_JAVA);
+        return type.build();
+    }
+
+    private void middlewareAcquireWakeLock()
+    {
+        if(remoteFunctionHandler == null)
+        {
+            return;
+        }
+        middlewareFuncAcquireWakeLock.execute(getRuntimeType());
+    }
+
+    private void middlewareReleaseWakeLock()
+    {
+        if(remoteFunctionHandler == null)
+        {
+            return;
+        }
+        middlewareFuncReleaseLock.execute(getRuntimeType());
+    }
+
+    private void middlewareScheduleDeviceWakeupAt(Long milliseconds)
+    {
+        if(remoteFunctionHandler == null)
+        {
+            return;
+        }
+        middlewareFuncScheduleDeviceWakeUpAt.execute(getRuntimeType(), milliseconds);
     }
 }

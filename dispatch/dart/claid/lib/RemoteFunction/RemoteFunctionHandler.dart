@@ -221,7 +221,8 @@ class RemoteFunctionHandler
 
         if(future == null)
         {
-            Logger.logError("Failed to forward result of remote function. Cannot find future with identifier \"" + futureIdentifier + "\".");
+            // Not an error. Can happen if the user does not sture the future, as he does not care about a result.
+            //Logger.logError("Failed to forward result of remote function. Cannot find future with identifier \"" + futureIdentifier + "\".");
             return;
         }
 
