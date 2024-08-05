@@ -47,6 +47,12 @@
 
 #include "dispatch/core/RemoteFunction/RemoteFunctionRunnableHandler.hh"
 
+#include "dispatch/core/DeviceScheduler/GlobalDeviceScheduler.hh"
+
+#ifdef __ANDROID__
+    #include "dispatch/core/DeviceScheduler/GlobalDeviceSchedulerAndroid.hh"
+#endif
+
 using claidservice::ConfigUploadPayload;
 
 namespace claid
@@ -159,6 +165,8 @@ namespace claid
             std::unique_ptr<std::thread> controlPackageHandlerThread = nullptr; 
 
             RemoteFunctionRunnableHandler remoteFunctionRunnableHandler;
+            RemoteFunctionHandler remoteFunctionHandler; 
+            std::shared_ptr<GlobalDeviceScheduler> globalDeviceScheduler = nullptr;
 
             // Thread needed to load a new config if a message CTRL_UPLOAD_CONFIG_AND_DATA is received.
             // Loading a new config blocks the thread that calls loadNewConfig until the new config is loaded successfully.
@@ -213,6 +221,8 @@ namespace claid
             void handleUploadConfigAndPayloadMessage();
             bool storePayload(const ConfigUploadPayload& payload);
             void notifyAllRuntimesAboutNewPayload(const ConfigUploadPayload& payload);
+
+            void createPlatformSpecificGlobalDeviceScheduler();
 
     };
 }

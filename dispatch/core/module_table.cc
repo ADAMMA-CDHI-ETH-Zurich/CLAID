@@ -714,3 +714,19 @@ bool ModuleTable::isAnyRuntimeStillInitializing() const
     }
     return false;
 }
+
+void ModuleTable::setRuntimeConnected(claidservice::Runtime rt, bool connected)
+{
+    runtimeConnected[rt] = connected;
+}
+
+bool ModuleTable::isRuntimeConnected(claidservice::Runtime rt) const
+{
+    auto it = runtimeConnected.find(rt);
+    if(it == runtimeConnected.end())
+    {
+        return false;
+    }
+
+    return it->second;
+}

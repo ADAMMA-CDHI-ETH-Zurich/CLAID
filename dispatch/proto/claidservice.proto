@@ -527,3 +527,10 @@ message DataSyncPackage
   DataSyncPackageType package_type = 1;
   DataSyncFileDescriptorList file_descriptors = 2;
 }
+
+
+// Allows to send a runtime via a protobuf message.
+message RuntimeType
+{
+  Runtime runtime = 1;
+}

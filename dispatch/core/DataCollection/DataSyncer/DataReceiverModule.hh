@@ -75,7 +75,7 @@ namespace claid
 
             // One queue per user that has a DataSyncModule connected.
             // Indicates which files of the user we are missing.
-            std::map<std::string, std::queue<std::string>> missingFilesQueuePerUserPerUser;
+            std::map<std::string, std::queue<std::string>> missingFilesQueuePerUser;
 
             template<typename T>
             bool isElementContainedInVector(const std::vector<T>& vector, const T& element)
@@ -91,18 +91,19 @@ namespace claid
             {
                 missingList.clear();
                 std::string path;
-                for(const DataSyncFileDescriptor& descriptor : descriptorList)
+                for(const DataSyncFileDescriptor& descriptor : descriptorList.descriptors())
                 {   
-                    path = getUserStoragePath(userId) + std::string("/") + descriptor.relative_file_path();
+                    const std::string& relativePath = descriptor.relative_file_path();
+                    path = getUserStoragePath(userId) + std::string("/") + relativePath;
                     // If the file doesnt exist yet, we add it to the list of missing files.
                     if(!FileUtils::fileExists(path))
                     {
-                        missingList.push_back(fileName);
+                        missingList.push_back(relativePath);
                         continue;
                     }
 
                     uint64_t fileSize;
-                    if(!FileUtils::getFileSize(fileSize))
+                    if(!FileUtils::getFileSize(path, fileSize))
                     {
                         moduleError(absl::StrCat("Unable to get file size of file \"", path, "\""));
                         continue;
@@ -112,7 +113,7 @@ namespace claid
                     // The current file will then be replaced.
                     if(fileSize != descriptor.file_size())
                     {
-                        missingList.push_back(fileName);
+                        missingList.push_back(relativePath);
                         continue;
                     }
                 }
@@ -156,7 +157,7 @@ namespace claid
                 }
             }
 
-            void onPackageFromDataReceiver(ChannelData<DataSyncPackage> data)
+            void onDataFromDataSyncModule(ChannelData<DataSyncPackage> data)
             {
                 const DataSyncPackage& pkg = data.getData();
                 if(pkg.package_type() == DataSyncPackageType::ALL_AVAILABLE_FILES_LIST)
@@ -171,16 +172,13 @@ namespace claid
 
             void onCompleteFileListReceivedFromUser(const DataSyncFileDescriptorList& descriptorList, const std::string& userId)
             {
-                for(const DataSyncFileDescriptor& descriptor : descriptorList)
+                for(const DataSyncFileDescriptor& descriptor : descriptorList.descriptors())
                 {
                     Logger::logInfo("Missing file %s", descriptor.relative_file_path().c_str());
                 }
                 Logger::logInfo("Received complete file list from user %s", userId);
 
-                for(const std::string& value : completeList)
-                {
-                    Logger::logInfo("Complete file %s", value.c_str());
-                }                
+          
  
                 std::vector<std::string> missingFiles;
                 getMissingFilesOfUser(userId, descriptorList, missingFiles);
@@ -198,8 +196,8 @@ namespace claid
 
             void requestNextFileFromUser(const std::string& userId)
             {
-                std::queue<std::string>& filesQueue = this->missingFilesQueuePerUserPerUser[userId]; 
-                printf("Requesting next file %d\n", filesQueue);
+                std::queue<std::string>& filesQueue = this->missingFilesQueuePerUser[userId]; 
+                printf("Requesting next file %ld\n", filesQueue.size());
                 if(filesQueue.empty())
                 {
                     return;
@@ -215,16 +213,14 @@ namespace claid
                 DataSyncFileDescriptorList* descriptors = dataSyncPackage.mutable_file_descriptors();
                 descriptors->add_descriptors()->set_relative_file_path(file);
 
-                this->requestedFileChannel.postToUser(dataSyncPackage, userId);
+                this->toDataSyncModuleChannel.postToUser(dataSyncPackage, userId);
             }
 
             void onFileReceivedFromUser(const DataSyncFileDescriptorList& descriptorList, const std::string& userId)
             {
-
                 this->requestNextFileFromUser(userId);
-                const DataFile& dataFile = data.getData();
 
-                for(const DataSyncFileDescriptor& fileDescriptor : descriptorList.file_descriptors())
+                for(const DataSyncFileDescriptor& fileDescriptor : descriptorList.descriptors())
                 {
                     const std::string& relativePath = fileDescriptor.relative_file_path();
                     std::string folderPath;
@@ -248,7 +244,7 @@ namespace claid
                     std::string targetFilePath = 
                         getUserStoragePath(userId) + std::string("/") + folderPath + std::string("/") + filePath;
                     
-                    if(!saveDataFileToPath(dataFile, targetFilePath))
+                    if(!saveDataFileToPath(fileDescriptor, targetFilePath))
                     {
                         return;
                     }
@@ -259,7 +255,7 @@ namespace claid
 
                     DataSyncFileDescriptorList* descriptors = dataSyncPackage.mutable_file_descriptors();
                     descriptors->add_descriptors()->set_relative_file_path(relativePath);
-                    this->toDataSyncModuleChannel.postToUser(dataFile.relative_path(), userId);
+                    this->toDataSyncModuleChannel.postToUser(dataSyncPackage, userId);
                 }
 
                 
@@ -309,7 +305,7 @@ namespace claid
 
             }
 
-            bool saveDataFileToPath(const DataFile& dataFile, const std::string& path)
+            bool saveDataFileToPath(const DataSyncFileDescriptor& dataFile, const std::string& path)
             {
                 std::fstream file(path, std::ios::out | std::ios::binary);
                 if(!file.is_open())

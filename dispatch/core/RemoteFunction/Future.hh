@@ -27,64 +27,83 @@
 namespace claid {
 
 template<typename T>
-class Future : public AbstractFuture 
+class Future : public AbstractFuture
 {
 public:
-    typedef std::function<void (const T&)> TypedThenCallback;
+    typedef std::function<void(const T&)> TypedThenCallback;
 
     bool typedCallbackSet = false;
     TypedThenCallback callbackFunction;
 
-    Future(FuturesTable& futuresTableInHandler, 
-        FutureUniqueIdentifier uniqueIdentifier)  : AbstractFuture(futuresTableInHandler, uniqueIdentifier)
-    {
-    }
+    Future(FuturesTable& futuresTableInHandler, FutureUniqueIdentifier uniqueIdentifier)
+        : AbstractFuture(futuresTableInHandler, uniqueIdentifier) {}
 
-    template<typename U = T>
-    typename std::enable_if<std::is_same<U, void>::value, void>::type await()
+    T await() 
     {
         std::shared_ptr<DataPackage> responsePackage = this->awaitResponse();
-    }
-
-
-    template<typename U = T>
-    typename std::enable_if<!std::is_same<U, void>::value,U>::type await()
-    {
-        std::shared_ptr<DataPackage> responsePackage = this->awaitResponse();
-        if(responsePackage == nullptr || !this->wasExecutedSuccessfully())
-        {
+        if (responsePackage == nullptr || !this->wasExecutedSuccessfully()) {
             return T();
         }
 
         Mutator<T> mutator = TypeMapping::getMutator<T>();
-
         T t;
         mutator.getPackagePayload(*responsePackage, t);
-
         return t;
     }
-    
 
-    void then(TypedThenCallback callbackFunction)
+    void then(TypedThenCallback callbackFunction) 
     {
         this->callbackFunction = callbackFunction;
         this->typedCallbackSet = true;
-
-        this->thenUntyped(std::bind(&Future::callback, this));
+        this->thenUntyped(std::bind(&Future::callback, this, std::placeholders::_1));
     }
 
-    void callback(std::shared_ptr<DataPackage> data)
+    void callback(std::shared_ptr<DataPackage> data) 
     {
-        if(!this->typedCallbackSet)
-        {
+        if (!this->typedCallbackSet) {
             return;
         }
-        
-        Mutator<T> mutator = TypeMapping::getMutator<T>();
 
-        T t = mutator.getPackagePayload(responsePackage);
-        this->typedCallbackSet(t);
+        Mutator<T> mutator = TypeMapping::getMutator<T>();
+        T t;
+        mutator.getPackagePayload(*data, t);
+        this->callbackFunction(t);
     }
 };
+
+// Template specialization for Future<void>
+template<>
+class Future<void> : public AbstractFuture {
+public:
+    typedef std::function<void()> TypedThenCallback;
+
+    bool typedCallbackSet = false;
+    TypedThenCallback callbackFunction;
+
+    Future(FuturesTable& futuresTableInHandler, FutureUniqueIdentifier uniqueIdentifier)
+        : AbstractFuture(futuresTableInHandler, uniqueIdentifier) {}
+
+    void await()
+    {
+        std::shared_ptr<DataPackage> responsePackage = this->awaitResponse();
+    }
+
+    void then(TypedThenCallback callbackFunction) 
+    {
+        this->callbackFunction = callbackFunction;
+        this->typedCallbackSet = true;
+        this->thenUntyped(std::bind(&Future<void>::callback, this, std::placeholders::_1));
+    }
+
+    void callback(std::shared_ptr<DataPackage> data) 
+    {
+        if (!this->typedCallbackSet) {
+            return;
+        }
+
+        this->callbackFunction();
+    }
+};
+
 
 }

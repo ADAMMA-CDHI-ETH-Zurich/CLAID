@@ -398,6 +398,7 @@ RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& s
 
 
     moduleTable.addRuntimeIfNotExists(runTime);
+    moduleTable.setRuntimeConnected(true);
 
     shared_ptr<SharedQueue<DataPackage>> rtq = moduleTable.getOutputQueueOfRuntime(runTime);
 
@@ -418,6 +419,8 @@ void ServiceImpl::removeRuntimeDispatcher(Runtime rt) {
     lock_guard<mutex> lock(adMutex);
     activeDispatchers.erase(rt);
     moduleTable.removeAllLooseDirectSubscriptionsOfRuntime(rt);
+    globalDeviceScheduler->releaseAllWakeLocksOfRuntime(rt);
+    moduleTable.setRuntimeConnected(false);
     Logger::logInfo("Removed runtime dispatcher");
 
 }

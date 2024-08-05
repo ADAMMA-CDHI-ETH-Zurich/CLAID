@@ -35,7 +35,9 @@ using namespace std;
 MiddleWare::MiddleWare(const string& socketPath, const string& configurationPath,
     const string& hostId, const string& userId, const string& deviceId)
         : socketPath(socketPath), configurationPath(configurationPath),
-          hostId(hostId), userId(userId), deviceId(deviceId), remoteFunctionRunnableHandler("MIDDLEWARE", moduleTable.inputQueue())
+          hostId(hostId), userId(userId), deviceId(deviceId), 
+          remoteFunctionRunnableHandler("MIDDLEWARE", moduleTable.inputQueue()), 
+          remoteFunctionHandler(moduleTable.inputQueue())
     {
         moduleTable.setProperties(ModuleTableProperties{userId, deviceId});
         this->logMessagesQueue = std::make_shared<SharedQueue<LogMessage>>();
@@ -351,6 +353,16 @@ void MiddleWare::setupLogSink()
     currentConfiguration.getLogSinkConfiguration(this->logSinkConfiguration, this->logMessagesQueue);
     Logger::setLogSinkConfiguration(this->logSinkConfiguration);
 }
+
+void MiddleWare::createPlatformSpecificGlobalDeviceScheduler()
+{
+    #ifdef __ANDROID__
+    this->globalDeviceScheduler = std::static_pointer_cast<GlobalDeviceScheduler>(std::make_shared<GlobalDeviceSchedulerAndroid>(this->moduleTable));
+    #else
+    this->globalDeviceScheduler = std::make_shared<GlobalDeviceScheduler>(this->moduleTable);
+    #endif
+}
+
 
 void MiddleWare::assertAllModulesLoaded()
 {

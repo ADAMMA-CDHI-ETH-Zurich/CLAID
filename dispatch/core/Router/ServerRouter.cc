@@ -40,7 +40,6 @@ namespace claid
 
         const std::string& targetHost = dataPackage->target_host();
         const std::string& targetModule = dataPackage->target_module();
-        Logger::logInfo("Test");
         Logger::logInfo("ServerRouter routing package from host \"%s\" (Module \"%s\"), "
                         "destined for host \"%s\" (Module \"%s\").", sourceHost.c_str(), sourceModule.c_str(), targetHost.c_str(), targetModule.c_str());
 
@@ -71,7 +70,7 @@ namespace claid
         // This means that the targetHost is a direct client of us.
         if(route.size() == 1)
         {
-            // If the target user_token is set to *, we route to all users.
+            // If the target user_token is set to "" (empty), we route to all users.
             // If not, only to a specific user.
             bool routeToAllUsers = dataPackage->target_user_token() == "";
 
@@ -101,8 +100,10 @@ namespace claid
             }
             else
             {
-
                 const std::string& targetUserToken = dataPackage->target_user_token();
+                
+                Logger::logInfo("ServerRouter routing to user \"%s\"", dataPackage->target_user_token().c_str());
+
                 std::shared_ptr<SharedQueue<DataPackage>> queue;
                 status = this->hostUserTable.lookupOutputQueueForHostUser(nextHost, targetUserToken, queue);
 

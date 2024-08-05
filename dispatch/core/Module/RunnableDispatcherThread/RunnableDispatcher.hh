@@ -38,6 +38,8 @@
 #include "dispatch/core/RemoteFunction/RemoteFunction.hh"
 #include "dispatch/core/RemoteFunction/RemoteFunctionHandler.hh"
 
+using namespace claidservice;
+
 namespace claid
 {
     class RunnableDispatcher
@@ -60,9 +62,9 @@ namespace claid
             // to schedule device wake ups or request to keep the device awake.
             RemoteFunctionHandler* remoteFunctionHandler;
 
-            RemoteFunction<void> middlewareLockKeepDeviceAwake;
-            RemoteFunction<void> middlewareUnlockKeepDeviceAwake;
-            RemoteFunction<void> scheduleDeviceWakeUpInMilliseconds;
+            RemoteFunction<void> middlewareFuncAcquireWakeLock;
+            RemoteFunction<void> middlewareFuncReleaseLock;
+            RemoteFunction<void> middlewareFuncScheduleDeviceWakeUpInMilliseconds;
 
 
             std::chrono::microseconds getWaitDurationUntilNextRunnableIsDue()
@@ -248,19 +250,26 @@ namespace claid
                 Logger::logInfo("RunnableDispatcher shutdown.");
             }
 
-            void middlewareLockKeepApplicationAwake()
+            RuntimeType getRuntimeType()
             {
-
+                RuntimeType type;
+                type.set_runtime(RUNTIME_CPP);
+                return type;
             }
 
-            void middlewareUnlockKeepApplicationAwake()
+            void middlewareAcquireWakeLock()
             {
-
+                middlewareFuncAcquireWakeLock.execute(getRuntimeType());
             }
 
-            void middlewareScheduleDeviceWakeupInMilliseconds()
+            void middlewareReleaseWakeLock()
             {
+                middlewareFuncReleaseLock.execute(getRuntimeType());
+            }
 
+            void middlewareScheduleDeviceWakeupInMilliseconds(int32_t millieseconds)
+            {
+                middlewareFuncScheduleDeviceWakeUpInMilliseconds.execute(millieseconds, getRuntimeType());
             }
 
         public:
@@ -272,14 +281,14 @@ namespace claid
 
             void setRemoteFunctionHandler(RemoteFunctionHandler* remoteFunctionHandler)
             {
-                // this->middlewareLockKeepDeviceAwake = 
-                //     remoteFunctionHandler->mapRuntimeFunction<void>(Runtime::MIDDLEWARE_CORE, "lock_keep_device_awake");
+                this->middlewareFuncAcquireWakeLock = 
+                    remoteFunctionHandler->mapRuntimeFunction<void, RuntimeType>(Runtime::MIDDLEWARE_CORE, "acquire_wakelock");
 
-                // this->middlewareUnlockKeepDeviceAwake = 
-                //     remoteFunctionHandler->mapRuntimeFunction<void>(Runtime::MIDDLEWARE_CORE, "unlock_keep_device_awake");
+                this->middlewareFuncReleaseLock = 
+                    remoteFunctionHandler->mapRuntimeFunction<void, RuntimeType>(Runtime::MIDDLEWARE_CORE, "release_wakelock");
 
-                // this->scheduleDeviceWakeUpInMilliseconds = 
-                //     remoteFunctionHandler->mapRuntimeFunction<void, int32_t>(Runtime::MIDDLEWARE_CORE, "schedule_device_wakeup_in_milliseconds");
+                this->middlewareFuncScheduleDeviceWakeUpInMilliseconds = 
+                    remoteFunctionHandler->mapRuntimeFunction<void, int32_t, RuntimeType>(Runtime::MIDDLEWARE_CORE, "schedule_device_wakeup_in_milliseconds");
             }
 
             bool start()

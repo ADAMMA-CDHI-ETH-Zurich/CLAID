@@ -170,6 +170,9 @@ class ModuleTable {
     void setRuntimeIsInitializing(claidservice::Runtime runtime, bool initializing); 
     bool isAnyRuntimeStillInitializing() const;
 
+    void setRuntimeConnected(claidservice::Runtime, bool connected);
+    bool isRuntimeConnected(claidservice::Runtime) const;
+
   private:
     void augmentFieldValues(claidservice::DataPackage& pkt) const;
     ChannelEntry* findChannel(const std::string& channelId);
@@ -252,6 +255,8 @@ class ModuleTable {
     std::map<std::string, 
       std::map<claidservice::Runtime, 
         std::vector<claidservice::LooseDirectChannelSubscription>>> looseDirectChannelSubscriptions;
+
+    std::map<claidservice::Runtime, bool> runtimeConnected;
 
   friend class ServiceImpl;
 };

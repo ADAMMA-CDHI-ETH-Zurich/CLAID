@@ -273,6 +273,10 @@ namespace claid
 
     absl::Status MasterRouter::addPackageSourceIfNotSet(std::shared_ptr<DataPackage> package) const
     {
+        if(package->source_user_token() == "")
+        {
+            package->set_source_user_token(this->userId);
+        }
         // If the source_host is already set, we are done here.
         if(package->source_host() != "")
         {
