@@ -1,0 +1,15 @@
+{
+  "hosts": [
+    {
+      "hostname": "smartwatch",
+      "type": "android",
+      "isServer": false,
+      "min_log_severity_level": "WARNING",
+      "modules": [
+
+
+      ]
+    }
+
+  ]
+}
