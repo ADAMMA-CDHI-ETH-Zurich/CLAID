@@ -174,3 +174,29 @@ message LocationData
 {
     repeated LocationSample samples = 1;
 }
+
+
+enum SleepStageType
+{
+    STAGE_TYPE_UNKNOWN = 0;
+    STAGE_TYPE_AWAKE = 1;
+    STAGE_TYPE_SLEEPING = 2;
+    STAGE_TYPE_OUT_OF_BED = 3;
+    STAGE_TYPE_LIGHT = 4;
+    STAGE_TYPE_DEEP = 5;
+    STAGE_TYPE_REM = 6;
+    STAGE_TYPE_AWAKE_IN_BED = 7;
+}
+
+// Sleep data extracted using health connect API
+message SleepStage {
+    string stage = 1;
+    int64 start_time_unix_timestamp = 2;
+    int64 end_time_unix_timestamp = 3;
+}
+
+message SleepData {
+    int64 begin_of_sleep_data_interval_unix_timestamp_ms = 1;
+    int64 end_of_sleep_data_interval_unix_timestamp_ms = 2;
+    repeated SleepStage stages = 3;
+}

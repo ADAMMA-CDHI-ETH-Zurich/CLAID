@@ -49,7 +49,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.Instant;
 public class RunnableDispatcher 
 {
     private Map<LocalDateTime, ScheduledRunnable> scheduledRunnables = new TreeMap<>();
@@ -109,7 +113,24 @@ public class RunnableDispatcher
 
         mutex.lock();
         try {
-            writeToLogFile("condition variable waiting for "  + waitTime + " milliseconds");
+
+             // Get the current LocalDateTime
+            LocalDateTime now = LocalDateTime.now();
+
+            // Define the offset in milliseconds
+            long offsetMillis = waitTime; // Example: 1000 milliseconds (1 second)
+
+            // Add the offset to the current time
+            LocalDateTime newTime = now.plusNanos(offsetMillis * 1_0000_000);
+            // Define the formatter for the desired format
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy-HH:mm:ss");
+
+            // Format the new time as a string
+            String formattedTime = newTime.format(formatter);
+
+            writeToLogFile("condition variable waiting for "  + waitTime + " milliseconds, waking up at " + formattedTime);
+
+
 
             middlewareScheduleDeviceWakeupAt(Long.valueOf(System.currentTimeMillis() + waitTime));
 
@@ -311,13 +332,13 @@ public class RunnableDispatcher
     void writeToLogFile(String data) 
     {
         Logger.logInfo(data);
-        /*
+        
         try {
 
             if(fos == null)
             {
                 // Create a new File instance
-                File file = new File(CLAID.getMediaDirPath(CLAID.getContext()) + "/scheduler_log.txt");
+                File file = new File(CLAID.getMediaDirPath(CLAID.getContext()) + "/java_scheduler_log.txt");
 
                 // Use FileOutputStream to open the file in append mode
                 fos = new FileOutputStream(file, true);
@@ -334,7 +355,7 @@ public class RunnableDispatcher
             // Close the file output stream
         } catch (IOException e) {
             e.printStackTrace();
-        } */
+        } 
     }
 
     private static String getCurrentDateTime() {

@@ -142,6 +142,9 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    implementation "androidx.health.connect:connect-client:1.1.0-alpha07"
+
+    api "androidx.health.connect:connect-client:1.1.0-alpha07"
 
     api "com.google.protobuf:protobuf-java:3.24.0"
     api "com.google.protobuf:protobuf-java-util:3.24.0"
