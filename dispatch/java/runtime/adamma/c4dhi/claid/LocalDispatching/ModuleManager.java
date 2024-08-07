@@ -554,7 +554,7 @@ public class ModuleManager
 
     private void handleRuntimeRemoteFunctionExecution(DataPackage request)
     {
-        boolean result = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(this, request);
+        boolean result = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(request);
 
         if(!result)
         {

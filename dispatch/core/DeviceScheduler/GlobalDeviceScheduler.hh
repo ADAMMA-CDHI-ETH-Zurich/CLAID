@@ -81,19 +81,19 @@ class GlobalDeviceScheduler
         RemoteFunctionRunnableHandler& remoteFunctionRunnableHandler;
 
 
-        virtual void acquirePlatformSpecificWakeLock() 
+        virtual bool acquirePlatformSpecificWakeLock() 
         {
-
+            return true;
         }
         
-        virtual void releasePlatformSpecificWakeLock() 
+        virtual bool releasePlatformSpecificWakeLock() 
         {
-
+            return true;
         }
         
-        virtual void schedulePlatformSpecificDeviceWakeup(int64_t timestamp)
+        virtual bool schedulePlatformSpecificDeviceWakeup(int64_t timestamp)
         {
-
+            return true;
         }
         
 

@@ -42,15 +42,15 @@ public:
         androidScheduleDeviceWakeup = remoteFunctionHandler.mapRuntimeFunction<void, int64_t>(Runtime::RUNTIME_JAVA, "android_schedule_device_wakeup");
     }
 
-    void acquirePlatformSpecificWakeLock() override final
+    bool acquirePlatformSpecificWakeLock() override final
     {
         Logger::logInfo("GlobalDeviceSchedulerAndroid (Cpp): acquirePlatformSpecificWakeLock");
         if(!assertJavaRuntimeConnected())
         {
-            return;
+            return false;
         }
         auto result = androidAcquireWakeLock.execute();
-
+        return true;
         // Do not wait here! Will cause deadlock (some runtime requests MIDDLEWARE_CORE::acquireWakeLock, which is processed
         // in Middleware's control package thread. If it then waits here, we can never receive CTRL_REMOTE_FUNCTION_RESPONSE, as response
         // is also processed in Middleware's control package thread).
@@ -61,12 +61,12 @@ public:
         // }
     }
     
-    void releasePlatformSpecificWakeLock() override final
+    bool releasePlatformSpecificWakeLock() override final
     {
         Logger::logInfo("GlobalDeviceSchedulerAndroid (Cpp): releasePlatformSpecificWakeLock");
         if(!assertJavaRuntimeConnected())
         {
-            return;
+            return false;
         }
         auto result = androidReleaseWakeLock.execute();
 
@@ -75,17 +75,18 @@ public:
         // {
         //     Logger::logError("GlobalDeviceSchedulerAndroid::releasePlatformSpecificWakeLock: Failed to release WakeLock, failed to execute RPC function in Android.");
         // }
+        return true;
     }
     
-    void schedulePlatformSpecificDeviceWakeup(int64_t timestamp) override final
+    bool schedulePlatformSpecificDeviceWakeup(int64_t timestamp) override final
     {
         Logger::logInfo("GlobalDeviceSchedulerAndroid (Cpp): schedulePlatformSpecificDeviceWakeup");
         if(!assertJavaRuntimeConnected())
         {
-            return;
+            return false;
         }
         auto result = androidScheduleDeviceWakeup.execute(timestamp);
-
+        return true;
         // result->await();
         // if(!result->wasExecutedSuccessfully())
         // {

@@ -58,8 +58,10 @@ public class GlobalDeviceSchedulerWakeUpReceiver extends BroadcastReceiver
             String formattedDateTime = now.format(formatter);
             if(logWriter == null)
             {
+                DateTimeFormatter fileNameFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                String fileNameFormattedDateTime = now.format(fileNameFormatter);
                 // Open the file in append mode
-                String filename = CLAID.getCommonDataPath() + "/wakeup_receiver_log-"  + formattedDateTime + ".txt";
+                String filename = CLAID.getCommonDataPath() + "/wakeup_receiver_log-"  + fileNameFormattedDateTime + ".txt";
                 logWriter = new BufferedWriter(new FileWriter(filename, true));
             }
 
@@ -73,6 +75,8 @@ public class GlobalDeviceSchedulerWakeUpReceiver extends BroadcastReceiver
             logWriter.write(logEntry);
             // New line for better readability in the log file
             logWriter.newLine();
+            logWriter.flush();
+
         } catch (IOException e) {
             e.printStackTrace();
         } 

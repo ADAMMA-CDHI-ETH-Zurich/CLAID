@@ -43,7 +43,8 @@ import android.os.PowerManager;
 
 import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionRunnableHandler;
-
+import java.util.Date;
+import java.text.SimpleDateFormat;
 public class GlobalDeviceSchedulerAndroid
 {
     private PowerManager.WakeLock wakeLock;
@@ -52,7 +53,7 @@ public class GlobalDeviceSchedulerAndroid
     {
         runnableHandler.registerRunnable(this, "android_acquire_wakelock", Void.class);
         runnableHandler.registerRunnable(this, "android_release_wakelock", Void.class);
-        runnableHandler.registerRunnable(this, "android_schedule_device_wakeup_at", Void.class, Long.class);
+        runnableHandler.registerRunnable(this, "android_schedule_device_wakeup", Void.class, Long.class);
     }
 
     private boolean createWakeLocKIfNotExists()
@@ -110,8 +111,9 @@ public class GlobalDeviceSchedulerAndroid
         }
     }
 
-    public void android_schedule_device_wakeup_at(Long scheduledTimeUnixTimestamp)
+    public void android_schedule_device_wakeup(Long scheduledTimeUnixTimestamp)
     {
+        Logger.logInfo("android_schedule_device_wakeup_at called");
         writeToLogFile("android_schedule_device_wakeup_at called");
 
         Context context = CLAID.getContext();
@@ -134,7 +136,16 @@ public class GlobalDeviceSchedulerAndroid
         final PendingIntent pending = getBroadcast(context, 0, intent, FLAG_UPDATE_CURRENT|FLAG_MUTABLE);
 
         Logger.logInfo("Scheduling device wakeup at: " + calendar.toString());
-        writeToLogFile("Scheduling device wakeup at: " + calendar.toString());
+
+        // Convert Calendar to Date
+        Date date = calendar.getTime();
+        // Define the desired date format
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss");
+        // Format the date
+        String formattedDate = dateFormat.format(date);
+
+   
+        writeToLogFile("Scheduling device wakeup at: " + formattedDate);
 
         am.setExactAndAllowWhileIdle(RTC_WAKEUP, calendar.getTimeInMillis(), pending);
     }
@@ -164,6 +175,7 @@ public class GlobalDeviceSchedulerAndroid
             logWriter.write(logEntry);
             // New line for better readability in the log file
             logWriter.newLine();
+            logWriter.flush();
         } catch (IOException e) {
             e.printStackTrace();
         } 

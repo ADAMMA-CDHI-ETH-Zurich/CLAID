@@ -74,12 +74,12 @@ public class RemoteFunctionRunnableHandler
             }
         }
 
-        RemoteFunctionRunnable runnable = new RemoteFunctionRunnable(functionName, returnType, parameterList);
+        RemoteFunctionRunnable runnable = new RemoteFunctionRunnable(object, functionName, returnType, parameterList);
         
         return this.addRunnable(functionName, runnable);
     }
     
-    public boolean executeRemoteFunctionRunnable(Object object, DataPackage rpcRequest)
+    public boolean executeRemoteFunctionRunnable(DataPackage rpcRequest)
     {
         RemoteFunctionRequest request;
         if(!rpcRequest.getControlVal().hasRemoteFunctionRequest())
@@ -121,7 +121,7 @@ public class RemoteFunctionRunnableHandler
         else
         {
             RemoteFunctionRunnable runnable = this.registeredRunnables.get(functionName);
-            DataPackage response = runnable.executeRemoteFunctionRequest(object, rpcRequest);
+            DataPackage response = runnable.executeRemoteFunctionRequest(rpcRequest);
 
             if(response != null)
             {

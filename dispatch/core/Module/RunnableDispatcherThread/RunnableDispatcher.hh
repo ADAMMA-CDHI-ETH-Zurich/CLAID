@@ -63,7 +63,7 @@ namespace claid
             RemoteFunctionHandler* remoteFunctionHandler;
 
             RemoteFunction<void> middlewareFuncAcquireWakeLock;
-            RemoteFunction<void> middlewareFuncReleaseLock;
+            RemoteFunction<void> middlewareFuncReleaseWakeLock;
             RemoteFunction<void> middlewareFuncScheduleDeviceWakeUpAt;
 
 
@@ -93,11 +93,24 @@ namespace claid
                 }
             }
 
+            Time getExecutionTimeOfNextDueRunnable()
+            {
+                std::unique_lock<std::mutex> lock(this->mutex);
+                if(this->scheduledRunnables.size() == 0)
+                {
+                    // Wait forever.
+                    return Time::eternity();
+                }
+
+                return this->scheduledRunnables.begin()->first;
+            }
+
             void waitUntilRunnableIsDueOrRescheduleIsRequired()
             {
                 // If there is no runnable added, this will be infinity.
                 // Hence, we will wait forever and wake up if a reschedule is required.
                 std::chrono::microseconds waitTime = getWaitDurationUntilNextRunnableIsDue();
+                Time executionTime = getExecutionTimeOfNextDueRunnable();
 
                 // std::cout << "wait time: %u ms" << waitTime.count() / 1000 << "\n";
                 // The return value of wait_for can be used to determine whether the wait exited because time passed (false),
@@ -111,8 +124,9 @@ namespace claid
                     Time::now().toUnixTimestampMilliseconds() + 
                     std::chrono::duration_cast<std::chrono::milliseconds>(waitTime).count();
 
-                middlewareScheduleDeviceWakeupAt(timestampForDeviceWakeup);
-                this->conditionVariable.wait_for(lock, waitTime, [&]{return this->rescheduleRequired || this->stopped;});    
+                Logger::logInfo("Sleeping until: %lld %lld milliseconds %d %d", executionTime.toUnixTimestampMilliseconds(), waitTime.count()/1000, rescheduleRequired, stopped);
+                middlewareScheduleDeviceWakeupAt(executionTime.toUnixTimestampMilliseconds());
+                this->conditionVariable.wait_until(lock, executionTime, [&]{return this->rescheduleRequired || this->stopped;});    
             }
 
             void processRunnable(ScheduledRunnable& scheduledRunnable)
@@ -234,6 +248,7 @@ namespace claid
                 std::vector<ScheduledRunnable> dueRunnables;
                 while(!stopped)
                 {
+                    Logger::logInfo("Blablabla");
                     middlewareAcquireWakeLock();
                     do
                     {
@@ -276,7 +291,7 @@ namespace claid
                 {
                     return;
                 }
-                middlewareFuncReleaseLock.execute(getRuntimeType());
+                middlewareFuncReleaseWakeLock.execute(getRuntimeType());
             }
 
             void middlewareScheduleDeviceWakeupAt(int64_t milliseconds)
@@ -300,7 +315,7 @@ namespace claid
                 this->middlewareFuncAcquireWakeLock = 
                     remoteFunctionHandler->mapRuntimeFunction<void, RuntimeType>(Runtime::MIDDLEWARE_CORE, "acquire_wakelock");
 
-                this->middlewareFuncReleaseLock = 
+                this->middlewareFuncReleaseWakeLock = 
                     remoteFunctionHandler->mapRuntimeFunction<void, RuntimeType>(Runtime::MIDDLEWARE_CORE, "release_wakelock");
 
                 this->middlewareFuncScheduleDeviceWakeUpAt = 

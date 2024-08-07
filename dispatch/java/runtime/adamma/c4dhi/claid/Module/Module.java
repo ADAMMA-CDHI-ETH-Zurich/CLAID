@@ -674,7 +674,7 @@ public abstract class Module
             return;
         }
 
-        boolean result = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(this, rpcRequest);
+        boolean result = this.remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(rpcRequest);
         if(!result)
         {
             moduleError("Failed to execute rpcRequest");

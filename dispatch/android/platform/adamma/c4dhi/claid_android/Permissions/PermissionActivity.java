@@ -34,83 +34,150 @@ import adamma.c4dhi.claid.Logger.Logger;
 
 import java.util.Arrays;
 import java.util.Objects;
-
+import java.util.concurrent.atomic.AtomicBoolean;
+import androidx.core.content.IntentCompat;
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.Intent;
+import java.util.List;
 // "Invisible" activity used to ask permissions
 public class PermissionActivity extends Activity {
     public static final String EXTRA_PERMISSIONS = "permissions";
     public static final String EXTRA_REQUEST_CODE = "requestCode";
     public static final String EXTRA_DIALOG_TITLE = "dialogTitle";
     public static final String EXTRA_DIALOG_BODY = "dialogBody";
+    public static final String EXTRA_REQUIRES_PERMISSION_PAGE = "permissionPage";
+    public static final String EXTRA_ALWAYS_SHOW_INFO_DIALOG = "alwaysInfoDialog";
+
     static final int DEFAULT_PERMISSION_REQUEST_CODE = 500;
+
+    private boolean shouldRecheckPermissionsAfterReturningFromPermissionsPage = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Logger.logInfo("Request microphon permission 1.1");
 
         super.onCreate(savedInstanceState);
-        Logger.logInfo("Request microphon permission 1.2");
-
-        Logger.logInfo("Request microphon permission 1.3");
-
-        String[] permissions = getIntent().getStringArrayExtra(EXTRA_PERMISSIONS);
-        Logger.logInfo("Request microphon permission 1.4");
 
         this.setTheme();
+
+        if(getIntent().getBooleanExtra(EXTRA_ALWAYS_SHOW_INFO_DIALOG, false))
+        {
+            // Should be blocking.
+            Logger.logInfo("Always show info dialog is true");
+            displayAlertDialog(
+                getIntent().getStringExtra(EXTRA_DIALOG_TITLE),
+                getIntent().getStringExtra(EXTRA_DIALOG_BODY),
+                () -> requestPermissionsFromExtra()
+            );
+        }
+        else
+        {
+            requestPermissionsFromExtra();
+        }
+
+        
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        if(shouldRecheckPermissionsAfterReturningFromPermissionsPage)
+        {
+            shouldRecheckPermissionsAfterReturningFromPermissionsPage = false;
+            recheckPermissionAfterPermissionsPage();
+        }
+    }
+
+    void requestPermissionsFromExtra()
+    {
+        String[] permissions = getIntent().getStringArrayExtra(EXTRA_PERMISSIONS);
+
         int requestCode = getIntent().getIntExtra(EXTRA_REQUEST_CODE, DEFAULT_PERMISSION_REQUEST_CODE);
-        Logger.logInfo("Request microphon permission 14");
-
         this.requestPermissions(permissions, requestCode);
-        Logger.logInfo("Request microphon permission 15");
-
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        Logger.logInfo("Request microphon permission 12");
+        Logger.logInfo("showing alert -1");
         if (!Arrays.stream(grantResults).allMatch(result -> result == PackageManager.PERMISSION_GRANTED))
         {
-            Logger.logInfo("Request microphon permission 13");
+            Logger.logInfo("showing alert -2");
 
-            displayAlertDialog(getIntent().getStringExtra(EXTRA_DIALOG_TITLE), getIntent().getStringExtra(EXTRA_DIALOG_BODY));
+            if(!getIntent().getBooleanExtra(EXTRA_REQUIRES_PERMISSION_PAGE, false))
+            {
+                Logger.logInfo("showing alert -3");
+
+                displayAlertDialogAndRestart(getIntent().getStringExtra(EXTRA_DIALOG_TITLE), getIntent().getStringExtra(EXTRA_DIALOG_BODY));
+            }
+            else
+            {
+                displayAlertDialogSendUserToPermissionsPage(getIntent().getStringExtra(EXTRA_DIALOG_TITLE), getIntent().getStringExtra(EXTRA_DIALOG_BODY));
+            }
         }
         else
         {
-            Logger.logInfo("Request microphon permission 14");
+            Logger.logInfo("showing alert -4");
 
+            finish();
+        }
+    }
+
+    // This function will be called always after the user returns from the permissions page.
+    void recheckPermissionAfterPermissionsPage()
+    {
+        String[] requiredPermissions = getIntent().getStringArrayExtra(EXTRA_PERMISSIONS);
+
+        if(!Arrays.stream(requiredPermissions).allMatch(
+            permission -> checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED))
+        {
+            displayAlertDialogSendUserToPermissionsPage(
+                getIntent().getStringExtra(EXTRA_DIALOG_TITLE), 
+                getIntent().getStringExtra(EXTRA_DIALOG_BODY)
+            );
+        }
+        else
+        {
             finish();
         }
     }
 
     private void displayAlertDialog(String dialogTitle, String dialogBody)
     {
-        Logger.logInfo("request microphone permission11");
+        displayAlertDialog(dialogTitle, dialogBody, null);
+    }
 
-        runOnUiThread(() -> 
+    private void displayAlertDialog(String dialogTitle, String dialogBody, Runnable runnable)
+    {
+        new AlertDialog.Builder(this)
+        .setTitle(dialogTitle)
+        .setMessage(dialogBody)
+        .setPositiveButton("OK", (dialog, id) -> {
+            if(runnable != null)
+            {
+                runnable.run();
+            }
+        })
+        .setCancelable(false)
+        .setIcon(android.R.drawable.ic_dialog_alert)
+        .show();
+    }
 
-                new AlertDialog.Builder(this)
-                .setTitle(dialogTitle)
-                .setMessage(dialogBody)
-                .setPositiveButton("OK", (dialog, id) -> {
-                    PackageManager packageManager = this.getPackageManager();
-                    Intent intent = packageManager.getLaunchIntentForPackage(this
-                            .getPackageName());
-                    ComponentName componentName = intent.getComponent();
-                    Intent mainIntent = Intent.makeRestartActivityTask(componentName);
-                    this.startActivity(mainIntent);
-                    Runtime.getRuntime().exit(0);
-                })
-                .setCancelable(false)
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show());
+    private void displayAlertDialogAndRestart(String dialogTitle, String dialogBody)
+    {
+        displayAlertDialog(dialogTitle, dialogBody, () -> restartApp());
+    }
 
+
+    private void displayAlertDialogSendUserToPermissionsPage(String dialogTitle, String dialogBody)
+    {
+        displayAlertDialog(dialogTitle, dialogBody, () -> sendUserToPermissionsPageAndRecheckPermissions());
     }
 
     private void setTheme()
     {
-        Logger.logInfo("request microphone permission12");
-
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             getWindow().setDecorFitsSystemWindows(false);
@@ -119,9 +186,71 @@ public class PermissionActivity extends Activity {
         getWindow().setDimAmount(0.0f);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-                Logger.logInfo("request microphone permission13");
-
     }
 
+    private void restartApp()
+    {
+        PackageManager packageManager = this.getPackageManager();
+        Intent intent = packageManager.getLaunchIntentForPackage(this
+                .getPackageName());
+        ComponentName componentName = intent.getComponent();
+        Intent mainIntent = Intent.makeRestartActivityTask(componentName);
+        this.startActivity(mainIntent);
+        Runtime.getRuntime().exit(0);
+    }
 
+    
+    private void sendUserToPermissionsPage()
+    {
+        Intent intent = IntentCompat.createManageUnusedAppRestrictionsIntent
+                                (getApplicationContext(), getPackageName());
+                                
+        // Must use startActivityForResult(), not startActivity(), even if
+        // you don't use the result code returned in onActivityResult().
+        startActivityForResult(intent, 1337);
+    }
+
+    private void sendUserToPermissionsPageAndRecheckPermissions()
+    {
+        sendUserToPermissionsPage();
+        // If we would check "isAppOnForeground" already, it would likely be true,
+        // as the intent to send the user to the permissions page would not have been executed yet.
+        // Thus, sleep a bit before we check isAppOnForeground.
+        shouldRecheckPermissionsAfterReturningFromPermissionsPage = true;
+    }
+
+    public boolean isAppOnForeground() {
+        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
+        if (appProcesses == null) {
+            Logger.logInfo("App processes null");
+            return false;
+        }
+        final String packageName = getPackageName();
+        for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
+            if (appProcess.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND && appProcess.processName.equals(packageName)) {
+                Logger.logInfo("importance ");
+
+                return true;
+            }
+            else {
+                Logger.logInfo("importance fail");
+
+            }
+        }
+        Logger.logInfo("end of function");
+
+        return false;
+    }
+
+    protected void sleep(int milliseconds)
+    {
+        try{
+            Thread.sleep(milliseconds);
+        }
+        catch(InterruptedException e)
+        {
+            
+        }
+    }
 }

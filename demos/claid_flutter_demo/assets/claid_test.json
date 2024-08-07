@@ -10,7 +10,17 @@
         "id": "MyFirstModule",
         "output_channels": {"BatteryData" :  "MyData"},
         "properties" : {
-          "samplingPeriod" : 45000
+          "samplingPeriod" : 31000
+        }
+      },
+      {
+        "type": "DataSaverModule",
+        "id": "NDataSaver",
+        "input_channels": {"DataChannel" :  "MyData"},
+        "properties": {
+          "storagePath": "%media_dir/test",
+          "fileNameFormat": "%d_%m_%y-%H_%M_%S.txt",
+          "fileType": "json"
         }
       }
     ]

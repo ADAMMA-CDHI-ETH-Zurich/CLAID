@@ -25,11 +25,15 @@ import static adamma.c4dhi.claid_android.Permissions.PermissionActivity.EXTRA_DI
 import static adamma.c4dhi.claid_android.Permissions.PermissionActivity.EXTRA_DIALOG_TITLE;
 import static adamma.c4dhi.claid_android.Permissions.PermissionActivity.EXTRA_PERMISSIONS;
 import static adamma.c4dhi.claid_android.Permissions.PermissionActivity.EXTRA_REQUEST_CODE;
+import static adamma.c4dhi.claid_android.Permissions.PermissionActivity.EXTRA_REQUIRES_PERMISSION_PAGE;
+import static adamma.c4dhi.claid_android.Permissions.PermissionActivity.EXTRA_ALWAYS_SHOW_INFO_DIALOG;;
 
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import java.util.List;
+
+import androidx.core.content.IntentCompat;
 
 import adamma.c4dhi.claid_platform_impl.CLAID;
 import adamma.c4dhi.claid.Logger.Logger;
@@ -41,6 +45,16 @@ public abstract class Permission
 
     public void startIntentWithExtras(String[] permissions, int requestCode, String dialogTitle, String dialogBody)
     {
+        startIntentWithExtras(permissions, requestCode, dialogTitle, dialogBody, false, false);
+    }
+
+    public void startIntentWithExtras(String[] permissions, int requestCode, String dialogTitle, String dialogBody, boolean permissionsPage)
+    {
+        startIntentWithExtras(permissions, requestCode, dialogTitle, dialogBody, permissionsPage, false);
+    }
+
+    public void startIntentWithExtras(String[] permissions, int requestCode, String dialogTitle, String dialogBody, boolean permissionsPage, boolean alwaysShowInfoDialog)
+    {
         Logger.logInfo("request microphone permission4");
 
         while (!isAppOnForeground()){}
@@ -51,6 +65,8 @@ public abstract class Permission
         intent.putExtra(EXTRA_REQUEST_CODE, requestCode);
         intent.putExtra(EXTRA_DIALOG_TITLE, dialogTitle);
         intent.putExtra(EXTRA_DIALOG_BODY, dialogBody);
+        intent.putExtra(EXTRA_REQUIRES_PERMISSION_PAGE, permissionsPage);
+        intent.putExtra(EXTRA_ALWAYS_SHOW_INFO_DIALOG, alwaysShowInfoDialog);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         Logger.logInfo("request microphone permission6");
 
@@ -90,5 +106,17 @@ public abstract class Permission
         }
         return (Context) CLAID.getContext();
     }
+
+    protected void sleepABit()
+    {
+        try{
+            Thread.sleep(20);
+        }
+        catch(InterruptedException e)
+        {
+            
+        }
+    }
+
 
 }

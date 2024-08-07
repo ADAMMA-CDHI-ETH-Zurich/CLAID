@@ -14,13 +14,7 @@ public class MyApplication extends Application
     public void onCreate()
     {
         super.onCreate();
-        CLAID.startInPersistentService(getApplicationContext(),
-                "assets://claid_config.json",
-                "smartwatch",
-                "device",
-                "user",
-                CLAIDSpecialPermissionsConfig.almightyCLAID(),
-                CLAIDPersistanceConfig.maximumPersistance());
+
 
     }
 }

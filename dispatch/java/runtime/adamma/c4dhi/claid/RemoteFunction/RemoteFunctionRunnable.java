@@ -33,18 +33,20 @@ import com.google.protobuf.GeneratedMessageV3;
 
 public class RemoteFunctionRunnable 
 {
+    private Object object;
     private String functionName;
     private Class<?> returnType;
     private ArrayList<Class<?>> parameterTypes;
 
-    RemoteFunctionRunnable(String functionName, Class<?> returnType, ArrayList<Class<?>> parameterTypes)
+    RemoteFunctionRunnable(Object object, String functionName, Class<?> returnType, ArrayList<Class<?>> parameterTypes)
     {
+        this.object = object;
         this.functionName = functionName;
         this.returnType = returnType;
         this.parameterTypes = parameterTypes;
     }
 
-    DataPackage executeRemoteFunctionRequest(Object object, DataPackage rpcRequest)
+    DataPackage executeRemoteFunctionRequest(DataPackage rpcRequest)
     {
         RemoteFunctionRunnableResult status;
 
@@ -84,12 +86,12 @@ public class RemoteFunctionRunnable
             }
         }
 
-        status = executeRemoteFunctionRequest(object, parameters);
+        status = executeRemoteFunctionRequest(parameters);
 
         return makeRPCResponsePackage(status, rpcRequest, this.returnType);
     }
 
-    RemoteFunctionRunnableResult executeRemoteFunctionRequest(Object object, ArrayList<Object> parameters)
+    RemoteFunctionRunnableResult executeRemoteFunctionRequest(ArrayList<Object> parameters)
     {
         try 
         {        

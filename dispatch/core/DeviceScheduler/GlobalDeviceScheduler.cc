@@ -137,8 +137,10 @@ namespace claid {
         else
         {
             Logger::logInfo("Scheduling device wakeup platform specific at %lld", nextScheduledWakeupTime);
-            schedulerWakeLock = false;
-            schedulePlatformSpecificDeviceWakeup(nextScheduledWakeupTime);
+            if(schedulePlatformSpecificDeviceWakeup(nextScheduledWakeupTime))
+            {
+                schedulerWakeLock = false;
+            }
         }
         updateWakeLockState();
     }
@@ -158,8 +160,10 @@ namespace claid {
                     runtimeWakeLock ? "true" : "false",
                     schedulerWakeLock ? "true" : "false"
                 );
-                acquirePlatformSpecificWakeLock();
-                isPlatformSpecificWakeLockHeld = true;
+                if(acquirePlatformSpecificWakeLock())
+                {
+                    isPlatformSpecificWakeLockHeld = true;
+                }
             }
         }
         else 
@@ -174,8 +178,10 @@ namespace claid {
                     runtimeWakeLock ? "true" : "false",
                     schedulerWakeLock ? "true" : "false"
                 );
-                releasePlatformSpecificWakeLock();
-                isPlatformSpecificWakeLockHeld = false;
+                if(releasePlatformSpecificWakeLock())
+                {
+                    isPlatformSpecificWakeLockHeld = false;
+                }
             }
         }
     }

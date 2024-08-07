@@ -648,11 +648,16 @@ public class CLAID extends JavaCLAIDBase
         return pm.hasSystemFeature(PackageManager.FEATURE_WATCH);
     }
 
-
     public static void displayAlertDialog(String title, String body)
     {
         Dialog dialog = new Dialog();
-        dialog.showDialogBlocking(title, body);
+        dialog.showDialogBlocking(title, body, null);
+    }
+
+    public static void displayAlertDialog(String title, String body, Runnable runnable)
+    {
+        Dialog dialog = new Dialog();
+        dialog.showDialogBlocking(title, body, runnable);
     }
 
 

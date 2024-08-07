@@ -8,10 +8,13 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import adamma.c4dhi.claid_android.Configuration.CLAIDPersistanceConfig;
+import adamma.c4dhi.claid_android.Configuration.CLAIDSpecialPermissionsConfig;
 import adamma.c4dhi.claid_platform_impl.CLAID;
 import adamma.c4dhi.galaxy_watch_claid.databinding.ActivityMainBinding;
 
 public class MainActivity extends Activity {
+
 
 
     ActivityMainBinding binding;
@@ -27,7 +30,14 @@ public class MainActivity extends Activity {
 
         TextView tv = binding.textView;
         tv.setText("Waiting for CLAID to start.");
-
+        CLAID.registerModule(TestModule.class);
+        CLAID.startInBackground(getApplicationContext(),
+                "assets://claid_config.json",
+                "smartwatch",
+                "device",
+                "user",
+                CLAIDSpecialPermissionsConfig.regularConfig(),
+                CLAIDPersistanceConfig.minimumPersistance());
         CLAID.onStarted(() -> tv.setText("CLAID has started!"));
 
     }

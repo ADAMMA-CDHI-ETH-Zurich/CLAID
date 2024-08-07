@@ -38,7 +38,7 @@ public class Dialog
 {
 
 
-    public void showDialogBlocking(String dialogTitle, String dialogBody)
+    public void showDialogBlocking(String dialogTitle, String dialogBody, Runnable runnable)
     {
         // Wait until dialog is hidden.
         // That means another component is currently showing a dialog and we need to wait until it is done.
@@ -69,7 +69,13 @@ public class Dialog
         // Wait until dialog is hidden.
         while(DialogActivity.isShown.get())
         {
+            
+        }
 
+        // Launch runnable (if any).
+        if(runnable != null)
+        {
+            runnable.run();
         }
 
     }
