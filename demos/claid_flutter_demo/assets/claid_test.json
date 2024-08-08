@@ -3,7 +3,7 @@
     {
       "hostname": "Smartphone",
       "is_server": false,
-      "connect_to": "Server",
+      "connect_to": "test_server",
       "min_log_severity_level": "INFO",
       "modules": [
         {
@@ -35,13 +35,13 @@
           },
           "properties": {
             "filePath": "%media_dir/test",
-            "syncingPeriodInMs": "1800000"
+            "syncingPeriodInMs": "10000"
           }
         }
       ]
     },
     {
-      "hostname": "Server",
+      "hostname": "test_server",
       "is_server" : true,
       "host_server_address": "adamma.ethz.ch:1337",
       "min_log_severity_level": "INFO",

@@ -224,7 +224,7 @@ namespace claid
                     std::string folderPath;
                     std::string filePath;
                     Path::splitPathIntoFolderAndFileName(relativePath, folderPath, filePath);
-                    printf("folder file %s %s\n", folderPath.c_str(), filePath.c_str());
+                    printf("folder file %s %s %s\n", relativePath.c_str(), folderPath.c_str(), filePath.c_str());
                     
                     if(folderPath != "")
                     {
