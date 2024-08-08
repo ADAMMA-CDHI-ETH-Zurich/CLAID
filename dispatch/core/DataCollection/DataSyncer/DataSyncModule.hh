@@ -327,8 +327,8 @@ namespace claid
                 //     #endif
                 // #endif
 
-                this->toReceiverModuleChannel = this->publish<DataSyncPackage>("ToReceiverModuleChannel");
-                this->fromReceiverModuleChannel = this->subscribe<DataSyncPackage>("FromReceiverModuleChannel", &DataSyncModule::onPackageFromDataReceiver, this);
+                this->toReceiverModuleChannel = this->publish<DataSyncPackage>("ToDataReceiverModuleChannel");
+                this->fromReceiverModuleChannel = this->subscribe<DataSyncPackage>("FromDataReceiverModuleChannel", &DataSyncModule::onPackageFromDataReceiver, this);
                                
                 this->lastMessageFromFileReceiver = Time::now();
                 this->registerPeriodicFunction("PeriodicSyncFunction", &DataSyncModule::periodicSync, this, Duration::milliseconds(this->syncingPeriodInMs));

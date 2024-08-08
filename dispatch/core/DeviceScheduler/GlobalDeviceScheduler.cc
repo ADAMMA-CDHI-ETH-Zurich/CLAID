@@ -132,7 +132,6 @@ namespace claid {
             Logger::logInfo("Next device wakeup is in %d seconds which is less than %lld seconds. Keeping device awake", 
             (nextScheduledWakeupTime - currentTimestamp), REQUIRED_MILLISECONDS_UNTIL_NEXT_SCHEDULED_WAKEUP_TO_GO_TO_SLEEP);
             schedulerWakeLock = true;
-            return;
         }
         else
         {

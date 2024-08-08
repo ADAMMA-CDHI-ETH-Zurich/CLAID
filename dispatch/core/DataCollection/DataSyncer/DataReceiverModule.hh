@@ -160,6 +160,10 @@ namespace claid
             void onDataFromDataSyncModule(ChannelData<DataSyncPackage> data)
             {
                 const DataSyncPackage& pkg = data.getData();
+                Logger::logInfo(
+                    "DataReceiverModule received data from DataSyncModule, package type is: %s",
+                     DataSyncPackageType_Name(pkg.package_type()).c_str()
+                );
                 if(pkg.package_type() == DataSyncPackageType::ALL_AVAILABLE_FILES_LIST)
                 {
                     this->onCompleteFileListReceivedFromUser(pkg.file_descriptors(), data.getUserId());
@@ -172,13 +176,7 @@ namespace claid
 
             void onCompleteFileListReceivedFromUser(const DataSyncFileDescriptorList& descriptorList, const std::string& userId)
             {
-                for(const DataSyncFileDescriptor& descriptor : descriptorList.descriptors())
-                {
-                    Logger::logInfo("Missing file %s", descriptor.relative_file_path().c_str());
-                }
                 Logger::logInfo("Received complete file list from user %s", userId.c_str());
-
-          
  
                 std::vector<std::string> missingFiles;
                 getMissingFilesOfUser(userId, descriptorList, missingFiles);
@@ -197,7 +195,7 @@ namespace claid
             void requestNextFileFromUser(const std::string& userId)
             {
                 std::queue<std::string>& filesQueue = this->missingFilesQueuePerUser[userId]; 
-                printf("Requesting next file %u\n", filesQueue.size());
+                printf("Requesting next file %lu\n", filesQueue.size());
                 if(filesQueue.empty())
                 {
                     return;
@@ -257,8 +255,6 @@ namespace claid
                     descriptors->add_descriptors()->set_relative_file_path(relativePath);
                     this->toDataSyncModuleChannel.postToUser(dataSyncPackage, userId);
                 }
-
-                
             }
 
             bool setupStorageFolder()
@@ -286,7 +282,7 @@ namespace claid
             {
                 Logger::logInfo("DataReceiverModule initialize");
 
-                properties.getStringProperty("filePath", this->filePath);
+                properties.getStringProperty("storagePath", this->filePath);
 
                 // Create output directory, if not exists.
                 if(!this->setupStorageFolder())

@@ -1,29 +1,65 @@
 {
-  "hosts": [{
-    "hostname": "Smartphone",
-    "is_server": false,
-    "connect_to": "",
-    "min_log_severity_level": "INFO",
-    "modules": [
-      {
-        "type": "BatteryCollector",
-        "id": "MyFirstModule",
-        "output_channels": {"BatteryData" :  "MyData"},
-        "properties" : {
-          "samplingPeriod" : 31000
+  "hosts": [
+    {
+      "hostname": "Smartphone",
+      "is_server": false,
+      "connect_to": "Server",
+      "min_log_severity_level": "INFO",
+      "modules": [
+        {
+          "type": "BatteryCollector",
+          "id": "MyFirstModule",
+          "output_channels": {"BatteryData" :  "MyData"},
+          "properties" : {
+            "samplingPeriod" : 31000
+          }
+        },
+        {
+          "type": "DataSaverModule",
+          "id": "NDataSaver",
+          "input_channels": {"DataChannel" :  "MyData"},
+          "properties": {
+            "storagePath": "%media_dir/test",
+            "fileNameFormat": "%d_%m_%y-%H_%M_%S.txt",
+            "fileType": "json"
+          }
+        },
+        {
+          "type": "DataSyncModule",
+          "id": "DataSyncer",
+          "input_channels": {
+            "FromDataReceiverModuleChannel": "DataReceiverToDataSync"
+          },
+          "output_channels": {
+            "ToDataReceiverModuleChannel": "DataSyncToDataReceiver"
+          },
+          "properties": {
+            "filePath": "%media_dir/test",
+            "syncingPeriodInMs": "1800000"
+          }
         }
-      },
-      {
-        "type": "DataSaverModule",
-        "id": "NDataSaver",
-        "input_channels": {"DataChannel" :  "MyData"},
-        "properties": {
-          "storagePath": "%media_dir/test",
-          "fileNameFormat": "%d_%m_%y-%H_%M_%S.txt",
-          "fileType": "json"
+      ]
+    },
+    {
+      "hostname": "Server",
+      "is_server" : true,
+      "host_server_address": "adamma.ethz.ch:1337",
+      "min_log_severity_level": "INFO",
+      "modules": [
+        {
+          "type": "DataReceiverModule",
+          "id": "DataReceiver",
+          "input_channels": {
+            "FromDataSyncModuleChannel": "DataSyncToDataReceiver"
+          },
+          "output_channels": {
+            "ToDataSyncModuleChannel": "DataReceiverToDataSync"
+          },
+          "properties": {
+            "storagePath": "/tmp/CLAIDAdaptiveBatteryTest/SyncedData"
+          }
         }
-      }
-    ]
-  }
+      ]
+    }
   ]
 }

@@ -21,6 +21,9 @@
 
 package adamma.c4dhi.claid.Module.Scheduling;
 
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -121,7 +124,7 @@ public class RunnableDispatcher
             long offsetMillis = waitTime; // Example: 1000 milliseconds (1 second)
 
             // Add the offset to the current time
-            LocalDateTime newTime = now.plusNanos(offsetMillis * 1_0000_000);
+            LocalDateTime newTime = now.plus(offsetMillis, ChronoUnit.MILLIS);
             // Define the formatter for the desired format
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy-HH:mm:ss");
 
