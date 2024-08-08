@@ -226,18 +226,21 @@ namespace claid
                     Path::splitPathIntoFolderAndFileName(relativePath, folderPath, filePath);
                     printf("folder file %s %s %s\n", relativePath.c_str(), folderPath.c_str(), filePath.c_str());
                     
+                 
+                    std::string targetFolderPath = getUserStoragePath(userId) + std::string("/");
                     if(folderPath != "")
                     {
-                        std::string targetFolderPath = getUserStoragePath(userId) + std::string("/") + folderPath;
-                        if(!FileUtils::dirExists(targetFolderPath))
+                        targetFolderPath += std::string("/") + folderPath;
+                    }
+                    if(!FileUtils::dirExists(targetFolderPath))
+                    {
+                        if(!FileUtils::createDirectoriesRecursively(targetFolderPath))
                         {
-                            if(!FileUtils::createDirectoriesRecursively(targetFolderPath))
-                            {
-                                moduleError(absl::StrCat("Error in DataReceiverModule, cannot create target folder \"", targetFolderPath, "\"."));
-                                return;
-                            }
+                            moduleError(absl::StrCat("Error in DataReceiverModule, cannot create target folder \"", targetFolderPath, "\"."));
+                            return;
                         }
                     }
+                
 
                     std::string targetFilePath = 
                         getUserStoragePath(userId) + std::string("/") + folderPath + std::string("/") + filePath;
