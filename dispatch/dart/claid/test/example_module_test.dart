@@ -130,7 +130,7 @@ void main() {
         [for (var i = 0; i < 13; i++) 42.0 + i]);
     expect(myMod.triggeredEvents.length, 3);
     expect(myMod.scheduledEvents.length, 2);
-xxx
+
     final tm = TypeMapping();
 
     final mutBoolVal = tm.getMutator<BoolVal>(BoolVal());
