@@ -36,6 +36,7 @@
 #include "dispatch/core/RemoteFunction/RemoteFunction.hh"
 #include "dispatch/core/RemoteFunction/RemoteFunctionHandler.hh"
 #include "dispatch/core/RemoteFunction/RemoteFunctionRunnableHandler.hh"
+#include "dispatch/core/Utilities/ScheduleHelper.hh"
 
 namespace claid
 {
@@ -45,6 +46,7 @@ namespace claid
 #include "dispatch/core/Module/ChannelSubscriberPublisher.hh"
 
 using claidservice::PowerProfile;
+using claidservice::Schedule;
 
 namespace claid 
 {
@@ -138,6 +140,19 @@ namespace claid
         virtual void onConnectedToRemoteServer();
         virtual void onDisconnectedFromRemoteServer();
 
+        template<typename Class>
+        void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, const Duration& interval)
+        {
+            registerPeriodicFunction(name, f, obj, interval, Time::now() + interval);
+        }
+
+        template<typename Class>
+        void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, const Duration& interval, const Time& startTime)
+        {
+            std::function<void()> function = std::bind(f, obj);
+            this->registerPeriodicFunction(name, function, interval, startTime);
+        }
+
         void registerPeriodicFunction(const std::string& name, std::function<void()> callback, const Duration& interval);
         void registerPeriodicFunction(const std::string& name, std::function<void()> function, const Duration& interval, const Time& startTime);
        
@@ -154,6 +169,56 @@ namespace claid
             registerScheduledFunction(name, dateTime, function);  
         }
 
+        /// Registers a function to be executed based on a Schedule.
+        /// The Schedule can contain multiple periodic and/or timed schedules.
+        /// The specified function will be called at all times as specified in the Schedule.
+        /// The registerFunctionBasedOnSchedule returns a list of strings corresponding to the name under which each
+        /// entry of the Schedule was registered to the local list of timers.
+        /// The names in the returned list can be used to individually unsubscribe any of the registered timed or periodic ScheduledRunnables.
+        /// The provided "name" parameter will be used as prefix for all names in the returned list.
+        std::vector<std::string> registerFunctionBasedOnSchedule(
+                const std::string& name, const Schedule& schedule, std::function<void()> function)
+        {   
+            std::vector<std::string> timerNames;
+
+            // Counter and timestamp are used to provide a unique name for the registered function.
+            const Time now = Time::now();
+            uint64_t timestamp = now.toUnixTimestampMilliseconds();
+            for(const SchedulePeriodic& schedulePeriodic : schedule.periodic())
+            {
+                std::string functionName = name + std::string("_") + std::to_string(timestamp) + std::string("_") + std::to_string(timers.size());
+                timerNames.push_back(functionName);
+
+                if(schedulePeriodic.interval_case() != SchedulePeriodic::IntervalCase::INTERVAL_NOT_SET)
+                {
+                    moduleFatal(absl::StrCat(
+                        "Cannot register periodic function \"", name, "\" based on schedule; ",
+                        "no interval (i.e., frequency OR period) specified for scedule."
+                    ));
+                    return {};
+                }
+
+                const Duration interval = ScheduleHelper::getIntervalDurationFromPeriodicSchedule(schedulePeriodic);
+
+                Time startTime = now;
+                if(schedulePeriodic.has_first_execution_time())
+                {
+                    startTime = ScheduleHelper::calculateNextTimeOfDay(schedulePeriodic.first_execution_time());
+                }
+
+                registerPeriodicFunction(functionName, function, interval, startTime);
+            }
+
+            return timerNames;
+        }
+
+        template<typename Class>
+        std::vector<std::string> registerFunctionBasedOnSchedule(
+                const std::string& name, const Schedule& schedule, void (Class::*f)(), Class* obj)
+        {   
+            std::function<void()> function = std::bind(f, obj);
+            return registerFunctionBasedOnSchedule(name, schedule, function);  
+        }
 
         template<typename T>
         Channel<T> publish(const std::string& channelName) 
@@ -185,19 +250,6 @@ namespace claid
             return subscribe(channelID, function); 
         }
 
-
-        template<typename Class>
-        void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, const Duration& interval)
-        {
-            registerPeriodicFunction(name, f, obj, interval, Time::now() + interval);
-        }
-
-        template<typename Class>
-        void registerPeriodicFunction(const std::string& name, void (Class::* f)(), Class* obj, const Duration& interval, const Time& startTime)
-        {
-            std::function<void()> function = std::bind(f, obj);
-            this->registerPeriodicFunction(name, function, interval, startTime);
-        }
 
         void pauseInternal();
         void resumeInternal();

@@ -267,9 +267,32 @@ void ModuleTable::setModuleLoaded(const std::string& moduleId)
     unique_lock<shared_mutex> lock(loadedModulesSetMutex);
     if(loadedModules.find(moduleId) != loadedModules.end())
     {
-        throw std::runtime_error(absl::StrCat("Module with Id \"", moduleId, "\" was loaded more than once!"));
+        // LogFatal should throw an exception.
+        Logger::logFatal("%s", absl::StrCat("Module with Id \"", moduleId, "\" was loaded more than once!").c_str());
+        return;
     }
     loadedModules.insert(moduleId);
+}
+
+void ModuleTable::setModuleUnloaded(const std::string& moduleId)
+{
+    unique_lock<shared_mutex> lock(loadedModulesSetMutex);
+    auto it = loadedModules.find(moduleId);
+    if(it != loadedModules.end())
+    {
+        loadedModules.erase(it);
+    }
+}
+
+void ModuleTable::setAllModulesOfRuntimeUnloaded(Runtime rt)
+{
+    for(const auto& entry : this->moduleRuntimeMap)
+    {
+        if(entry.second == rt)
+        {
+            setModuleUnloaded(entry.first);
+        }
+    }
 }
 
 bool ModuleTable::allModulesLoaded() const

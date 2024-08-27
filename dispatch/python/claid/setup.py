@@ -26,7 +26,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='claid',
-    version='0.6.1',    
+    version='0.6.2',    
     description='CLAID Python package (PyCLAID)',
     url='https://claid.ch',
     author='Patrick Langer',

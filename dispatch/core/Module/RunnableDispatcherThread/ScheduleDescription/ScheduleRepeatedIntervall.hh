@@ -24,6 +24,9 @@
 
 #include "ScheduleDescription.hh"
 #include "dispatch/core/Logger/Logger.hh"
+#include "dispatch/proto/claidservice.grpc.pb.h"
+
+using claidservice::ScheduleTimeWindow;
 
 namespace claid
 {
@@ -32,12 +35,24 @@ namespace claid
         private:
             Time executionTime;
             Duration intervall;
+            ScheduleTimeWindow onlyActiveBetween;
+
+            bool isAlwaysActive = true;
 
         public:
 
-        ScheduleRepeatedIntervall(const Time& startTime, Duration intervall) : executionTime(startTime), intervall(intervall)
+        ScheduleRepeatedIntervall(const Time& startTime, Duration intervall) : executionTime(startTime), intervall(intervall), isAlwaysActive(true)
         {
+            
+        }
 
+        ScheduleRepeatedIntervall(
+            const Time& startTime, 
+            const Duration& intervall, 
+            const ScheduleTimeWindow& onlyActiveTimeWindow
+        ) : executionTime(startTime), intervall(intervall), onlyActiveBetween(onlyActiveTimeWindow)
+        {
+            
         }
         
         virtual ~ScheduleRepeatedIntervall() {};

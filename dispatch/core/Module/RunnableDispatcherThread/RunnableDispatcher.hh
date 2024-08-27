@@ -109,7 +109,6 @@ namespace claid
             {
                 // If there is no runnable added, this will be infinity.
                 // Hence, we will wait forever and wake up if a reschedule is required.
-                std::chrono::microseconds waitTime = getWaitDurationUntilNextRunnableIsDue();
                 Time executionTime = getExecutionTimeOfNextDueRunnable();
 
                 // std::cout << "wait time: %u ms" << waitTime.count() / 1000 << "\n";
@@ -120,13 +119,13 @@ namespace claid
                 // wait_for will atomically release the mutex and sleep, and will atomically lock the mutex after waiting.
                 std::unique_lock<std::mutex> lock(this->mutex);
                 // Middleware: ScheduleWakeUpInMicroSeconds();
-                int64_t timestampForDeviceWakeup = 
-                    Time::now().toUnixTimestampMilliseconds() + 
-                    std::chrono::duration_cast<std::chrono::milliseconds>(waitTime).count();
+              
 
-                Logger::logInfo("Sleeping until: %lld %lld milliseconds %d %d", executionTime.toUnixTimestampMilliseconds(), waitTime.count()/1000, rescheduleRequired, stopped);
                 middlewareScheduleDeviceWakeupAt(executionTime.toUnixTimestampMilliseconds());
+                Logger::logInfo("%lu sleeping", this);
                 this->conditionVariable.wait_until(lock, executionTime, [&]{return this->rescheduleRequired || this->stopped;});    
+                                Logger::logInfo("%lu woke up", this);
+
             }
 
             void processRunnable(ScheduledRunnable& scheduledRunnable)
@@ -341,7 +340,9 @@ namespace claid
                 {
                     return false;
                 }
+
                 this->stopped = true;
+                this->conditionVariable.notify_all();
                 this->thread.join();
                 return true;
             }

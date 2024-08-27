@@ -21,6 +21,7 @@
 
 #include "dispatch/test/test_helpers.hh"
 #include "dispatch/core/local_dispatching.hh"
+#include "dispatch/core/DeviceScheduler/GlobalDeviceScheduler.hh"
 #include "gtest/gtest.h"
 
 #include <chrono>
@@ -54,7 +55,11 @@ TEST(LocalDispatcherTestSuite, SocketBasedDispatcherTest) {
 
     }
 
-    DispatcherServer server(addr, modTable);
+    // Stub queue for the RemoteFunctionRunnableHandeler, unused.
+    SharedQueue<DataPackage> stub;
+    RemoteFunctionRunnableHandler runnableHandler("middleware", stub);
+    std::shared_ptr<GlobalDeviceScheduler> deviceScheduler(new GlobalDeviceScheduler(runnableHandler, modTable));
+    DispatcherServer server(addr, modTable, deviceScheduler);
     ASSERT_TRUE(server.start()) << "Unable to start server";
 
     auto routerThread = make_unique<thread>([&modTable]() {

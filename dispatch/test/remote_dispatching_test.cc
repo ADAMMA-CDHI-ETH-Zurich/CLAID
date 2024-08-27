@@ -57,7 +57,7 @@ class SenderModule : public claid::Module
 
     void initialize(Properties properties)
     {
-        Logger::logInfo("Initialize called");
+        moduleInfo("Initialize called");
         sendChannel = this->publish<std::string>("TestChannel");
 
         registerPeriodicFunction("PeriodicFunction", &SenderModule::periodicFunction, this, Duration::milliseconds(1000));
@@ -86,6 +86,7 @@ class ReceiverModule : public claid::Module
 
     void initialize(Properties properties)
     {
+        moduleInfo("Initialize!");
         receiveChannel = this->subscribe<std::string>("TestChannel", &ReceiverModule::onData, this);
     }
 

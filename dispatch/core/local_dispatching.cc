@@ -295,9 +295,13 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
             Logger::logError("Error in setChannelTyes: %s", status.error_message().c_str());
             return status;
         }
+        Logger::logInfo("Status ok");
 
         moduleTable.setModuleLoaded(moduleId);
+
+        Logger::logInfo("Set module loaded");
     }
+    Logger::logInfo("Set runtime is initializing false");
     moduleTable.setRuntimeIsInitializing(rt, false);
     return Status::OK;
 }
@@ -419,6 +423,7 @@ void ServiceImpl::removeRuntimeDispatcher(Runtime rt) {
     lock_guard<mutex> lock(adMutex);
     activeDispatchers.erase(rt);
     moduleTable.removeAllLooseDirectSubscriptionsOfRuntime(rt);
+    moduleTable.setAllModulesOfRuntimeUnloaded(rt);
     globalDeviceScheduler->releaseAllWakeLocksOfRuntime(rt);
     moduleTable.setRuntimeConnected(rt, false);
     Logger::logInfo("Removed runtime dispatcher");

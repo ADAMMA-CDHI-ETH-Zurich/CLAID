@@ -108,6 +108,8 @@ class ModuleTable {
 
     // Marks a module (identified by it's id) as loaded
     void setModuleLoaded(const std::string& moduleId);
+    void setModuleUnloaded(const std::string& moduleId);
+    void setAllModulesOfRuntimeUnloaded(claidservice::Runtime rt);
     
     // Verifies that the given channels are expected and sets their data types.
     // This is called as runtimes connect and verifies that the channels provided by the

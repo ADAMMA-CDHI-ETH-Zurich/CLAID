@@ -534,3 +534,53 @@ message RuntimeType
 {
   Runtime runtime = 1;
 }
+
+// A Schedule defines specific times for executing functions. 
+// It can be used to automatically register and trigger functions based on defined intervals, time frames, 
+// or specific times of day at each runtime.
+message Schedule
+{
+  repeated SchedulePeriodic periodic = 1;
+  repeated ScheduleExactTime timed = 2;
+}
+
+message ScheduleTimeWindow
+{
+  int32 start_hour = 1;
+  int32 stop_hour = 2;
+}
+
+message ScheduleTimeOfDay
+{
+  int32 hour = 1;
+  int32 minute = 2;
+  int32 second = 3;
+}
+
+message SchedulePeriodic
+{
+  // Optional. If not specified, periodic function will be started immediately.
+  ScheduleTimeOfDay first_execution_time = 1;
+  // Optional. If not specified, periodic function is always active.
+  ScheduleTimeWindow only_active_between = 2;
+
+  oneof interval 
+  {
+    double frequency_Hz = 3;
+    double frequency_kHz = 4;
+    double frequency_MHz = 5;
+    double period_milliseconds = 6;
+    double period_seconds = 7;
+    double period_minutes = 8;
+    double period_hours = 9;
+    double period_days = 10;
+  } 
+}
+
+message ScheduleExactTime
+{
+  ScheduleTimeOfDay time_of_day = 1;
+  double repeat_every_n_days = 2;
+}
+
+

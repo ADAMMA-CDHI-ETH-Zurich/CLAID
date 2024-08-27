@@ -370,13 +370,17 @@ void MiddleWare::createPlatformSpecificGlobalDeviceScheduler()
 
 void MiddleWare::assertAllModulesLoaded()
 {
+    if(!this->running)
+    {
+        return;
+    }
     std::vector<std::string> notLoadedModules;
     moduleTable.getNotLoadedModules(notLoadedModules);
 
     if(notLoadedModules.size() > 0)
     {
         std::string errorMessage = absl::StrCat(
-             "CLAID Middleware: Terminating as we have missing Modules.\n",
+             "CLAID Middleware: Terminating as we have missing Modules on host", hostId, ".\n",
              "The following Modules have not yet been loaded after a deadline of ", currentConfiguration.getDeadlineForLoadingModulesInMs(), " milliseconds\n"
         );
 

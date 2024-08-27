@@ -2,6 +2,13 @@
 * Fixed device view button not having the correct index
 * Added onShown() and onHidden() to CLAIDModuleView. Will be called whenever a view is selected from the CLAIDModuleList.
 * Ensuring Modules are shown in sorted order in CLAIDModuleList.
+* Improved DataSyncModule and DataReceiverModule; both now include better user handling.
+* Added RemoteFunctionWith1Parameter, RemoteFunctionWith2Parameters, ... to Dart to provide a more convenient execute function.
+* Added GlobalDeviceScheduler to have "perfect" scheduling across all Runtimes
+  * All Runtimes can call middleware functions like acquireWakelock, releaseWakelock and scheduleDeviceWakeupAtTime to let the middleware know about their scheduling requirements.
+  * The middleware then uses a platform specific GlobalDeviceScheduler, which uses platform specific code (e.g., on Android/WearOS and iOS) to acquire/release wakelocks and schedule device wakeups.
+  * This should guarantee that whenever any runtime schedules a Runnable by any means, that the device will be awake at the due date/time and keeps awake while the scheduled function is being executed.
+  * Providing global device scheduling functions to all supported Runtimes; starting with Java and C++ for now.
 
 ## 0.6.1
 * First major release of CLAID!

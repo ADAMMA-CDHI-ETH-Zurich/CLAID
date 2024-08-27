@@ -1,6 +1,7 @@
 package adamma.c4dhi.claid_android.collectors.health;
 import android.content.Context;
 import androidx.health.connect.client.HealthConnectClient;
+import androidx.health.connect.client.records.OxygenSaturationRecord;
 import androidx.health.connect.client.records.SleepSessionRecord;
 
 import androidx.health.connect.client.records.metadata.DataOrigin;
@@ -25,18 +26,20 @@ import adamma.c4dhi.claid_platform_impl.CLAID;
 import adamma.c4dhi.claid_sensor_data.SleepData;
 import adamma.c4dhi.claid_sensor_data.SleepStage;
 import adamma.c4dhi.claid_sensor_data.SleepStageType;
+import adamma.c4dhi.claid_sensor_data.OxygenSaturationData;
+import adamma.c4dhi.claid_sensor_data.OxygenSaturationSample;
 
 import kotlin.coroutines.EmptyCoroutineContext;
 import kotlin.reflect.KClass;
 import kotlinx.coroutines.BuildersKt;
 
-public class SleepDataModule extends Module {
+public class OxygenSaturationDataModule extends Module {
 
-    private Channel<SleepData> sleepChannel;
+    private Channel<OxygenSaturationData> oxygenSaturationDataChannel;
 
     @Override
     protected void initialize(Properties properties) {
-        sleepChannel = publish("SleepDataOutput", SleepData.class);
+        oxygenSaturationDataChannel = publish("OxygenSaturationData", OxygenSaturationData.class);
     }
 
     void gatherDataOfToday() {
@@ -51,7 +54,7 @@ public class SleepDataModule extends Module {
         int maxRecords = 2000;
         ReadRecordsRequest request =
                 new ReadRecordsRequest(
-                        kotlin.jvm.JvmClassMappingKt.getKotlinClass(SleepSessionRecord.class),
+                        kotlin.jvm.JvmClassMappingKt.getKotlinClass(OxygenSaturationRecord.class),
                         timeRangeFilter,
                         dor,
                         ascending,
@@ -69,30 +72,28 @@ public class SleepDataModule extends Module {
             return;
         }
 
-        SleepData.Builder sleepData = SleepData.newBuilder();
-        sleepData.setBeginOfSleepDataIntervalUnixTimestampMs(startTime.toEpochMilli());
-        sleepData.setEndOfSleepDataIntervalUnixTimestampMs(endTime.toEpochMilli());
+        OxygenSaturationData.Builder oxygenSaturationData = OxygenSaturationData.newBuilder();
+        oxygenSaturationData.setBeginOfOxygenDataIntervalUnixTimestampMs(startTime.toEpochMilli());
+        oxygenSaturationData.setEndOfOxygenDataIntervalUnixTimestampMs(endTime.toEpochMilli());
 
         for (Object datapointObj : response.getRecords()) {
             if (datapointObj instanceof androidx.health.connect.client.records.Record) {
                 androidx.health.connect.client.records.Record datapoint = (androidx.health.connect.client.records.Record) datapointObj;
                 // DATA_TYPES here we need to add support for each different data type
-                if (datapoint instanceof SleepSessionRecord) {
-                    SleepSessionRecord sleepSessionRecord = (SleepSessionRecord) datapoint;
+                if (datapoint instanceof OxygenSaturationRecord) {
+                    OxygenSaturationRecord oxygenSaturationRecord = (OxygenSaturationRecord) datapoint;
 
+                    OxygenSaturationSample.Builder oxygenSaturationSample = OxygenSaturationSample.newBuilder();
+                    oxygenSaturationSample.setUnixTimestampMs(oxygenSaturationRecord.getTime().toEpochMilli());
+                    oxygenSaturationSample.setOxygenSaturationPercentage(oxygenSaturationRecord.getPercentage().getValue());
 
-                    for (SleepSessionRecord.Stage stage : sleepSessionRecord.getStages()) {
-                        SleepStage.Builder sleepStage = SleepStage.newBuilder();
-                        sleepStage.setStartTimeUnixTimestamp(stage.getStartTime().toEpochMilli());
-                        sleepStage.setEndTimeUnixTimestamp(stage.getEndTime().toEpochMilli());
-                        sleepStage.setSleepStageType(SleepStageType.forNumber(stage.getStage()));
-                    }
+                    oxygenSaturationData.addOxygenSaturationSamples(oxygenSaturationSample.build());
                 }
             }
         }
 
 
-        sleepChannel.post(sleepData.build());
+        oxygenSaturationDataChannel.post(oxygenSaturationData.build());
     }
 
 
