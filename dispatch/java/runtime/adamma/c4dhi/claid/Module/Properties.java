@@ -227,7 +227,7 @@ public class Properties
         return deserializeObjectProperty(key, property, dataType);
     }
 
-    public <T extends Message> getObjectProperty(String key, Class<T> dataType, T defaultValue)
+    public <T extends Message> T getObjectProperty(String key, Class<T> dataType, T defaultValue)
     {
         Value property;
         property = lookupProperty(key);

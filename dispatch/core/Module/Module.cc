@@ -174,7 +174,8 @@ namespace claid
         registerPeriodicFunction(name, callback, interval, Time::now() + interval);
     }
 
-    void Module::registerPeriodicFunction(const std::string& name, std::function<void()> function, const Duration& interval, const Time& startTime) 
+    void Module::registerPeriodicFunction(const std::string& name, std::function<void()> function, 
+        const Duration& interval, const Time& startTime) 
     {
         if (interval.getMicroSeconds() == 0) {
             moduleError("Error in registerPeriodicFunction: Cannot register periodic function \"" + name + "\" with a period of 0 milliseconds.");
@@ -190,6 +191,29 @@ namespace claid
 
         ScheduledRunnable scheduledRunnable(runnable, 
             ScheduleRepeatedIntervall(startTime, interval));
+
+        this->timers.insert(std::make_pair(name, scheduledRunnable));
+        this->runnableDispatcher.addRunnable(scheduledRunnable);
+        Logger::logInfo("Registered periodic runnable %s", name.c_str());
+    }
+
+    void Module::registerPeriodicFunction(const std::string& name, std::function<void()> function, 
+            const Duration& interval, const Time& startTime, const ScheduleTimeWindow& onlyActiveBetweenFimeFrame)
+    {
+         if (interval.getMicroSeconds() == 0) {
+            moduleError("Error in registerPeriodicFunction: Cannot register periodic function \"" + name + "\" with a period of 0 milliseconds.");
+        }
+
+        auto it = timers.find(name);
+        if (it != timers.end()) {
+            moduleError("Tried to register function with name \"" + name + "\", but a periodic function with the same name was already registered before.");
+        }
+
+        std::shared_ptr<FunctionRunnable<void>> functionRunnable(new FunctionRunnable<void>(function));
+        std::shared_ptr<Runnable> runnable = std::static_pointer_cast<Runnable>(functionRunnable);
+
+        ScheduledRunnable scheduledRunnable(runnable, 
+            ScheduleRepeatedIntervall(startTime, interval, onlyActiveBetweenFimeFrame));
 
         this->timers.insert(std::make_pair(name, scheduledRunnable));
         this->runnableDispatcher.addRunnable(scheduledRunnable);

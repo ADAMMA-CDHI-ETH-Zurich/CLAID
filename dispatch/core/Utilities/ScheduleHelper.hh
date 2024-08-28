@@ -66,5 +66,21 @@ public:
         }
         return time;
     }
+
+    static bool isFirstTimeOfDayBeforeSecond(const ScheduleTimeOfDay& first, const ScheduleTimeOfDay& second)
+    {
+        if (first.hour() != second.hour()) {
+            return first.hour() < second.hour();
+        }
+        if (first.minute() != second.minute()) {
+            return first.minute() < second.minute();
+        }
+        return first.second() < second.second();
+    }
+
+    static bool areTimesOfDayEqual(const ScheduleTimeOfDay& first, const ScheduleTimeOfDay& second)
+    {
+        return first.hour() == second.hour() && first.minute() == second.minute() && first.second() == second.second();
+    }
 };
 }

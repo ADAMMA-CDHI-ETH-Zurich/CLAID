@@ -546,8 +546,8 @@ message Schedule
 
 message ScheduleTimeWindow
 {
-  int32 start_hour = 1;
-  int32 stop_hour = 2;
+  ScheduleTimeOfDay start_time_of_day = 1;
+  ScheduleTimeOfDay stop_time_of_day = 2;
 }
 
 message ScheduleTimeOfDay
@@ -560,9 +560,9 @@ message ScheduleTimeOfDay
 message SchedulePeriodic
 {
   // Optional. If not specified, periodic function will be started immediately.
-  ScheduleTimeOfDay first_execution_time = 1;
+  ScheduleTimeOfDay first_execution_time_of_day = 1;
   // Optional. If not specified, periodic function is always active.
-  ScheduleTimeWindow only_active_between = 2;
+  ScheduleTimeWindow only_active_between_time_frame = 2;
 
   oneof interval 
   {
