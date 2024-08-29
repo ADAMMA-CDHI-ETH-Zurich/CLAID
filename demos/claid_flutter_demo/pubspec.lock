@@ -44,10 +44,10 @@ packages:
   claid:
     dependency: "direct main"
     description:
-      path: "../../dispatch/dart/claid"
+      path: "../../build_packages/flutter"
       relative: true
     source: path
-    version: "0.6.1"
+    version: "0.6.2"
   clock:
     dependency: transitive
     description:

@@ -25,6 +25,7 @@ import adamma.c4dhi.claid.Logger.Logger;
 import adamma.c4dhi.claid.Module.Scheduling.FunctionRunnable;
 import adamma.c4dhi.claid.Module.Scheduling.FunctionRunnable;
 import adamma.c4dhi.claid.Module.Scheduling.RunnableDispatcher;
+import adamma.c4dhi.claid.Module.Scheduling.ScheduleHelper;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduleOnce;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduleRepeatedIntervall;
 import adamma.c4dhi.claid.Module.Scheduling.ScheduledRunnable;
@@ -33,6 +34,10 @@ import adamma.c4dhi.claid.Runtime;
 
 import adamma.c4dhi.claid.EventTracker.EventTracker;
 
+import adamma.c4dhi.claid.Schedule;
+import adamma.c4dhi.claid.ScheduleExactTime;
+import adamma.c4dhi.claid.SchedulePeriodic;
+import adamma.c4dhi.claid.ScheduleTimeWindow;
 import adamma.c4dhi.claid.TypeMapping.DataType;
 import adamma.c4dhi.claid.DataPackage;
 import adamma.c4dhi.claid.LogMessageSeverityLevel;
@@ -44,6 +49,7 @@ import adamma.c4dhi.claid.Module.Properties;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -580,6 +586,26 @@ public abstract class Module
         this.runnableDispatcher.addRunnable(runnable);
     }
 
+    protected void registerPeriodicFunction(final String name, Runnable callback, Duration intervall, LocalDateTime startTime, ScheduleTimeWindow onlyActiveBetween)
+    {
+        
+        if (intervall.toMillis() == 0) 
+        {
+            this.moduleError("Error in registerPeriodicFunction: Cannot register periodic function \"" + name + "\" with a period of 0 milliseconds.");
+        }
+
+        if (timers.containsKey(name))
+        {
+            this.moduleError("Tried to register function with name \"" + name + "\", but a periodic function with the same name was already registered before.");
+        }
+
+        FunctionRunnable runnable = new FunctionRunnable(callback, new ScheduleRepeatedIntervall(startTime, intervall, onlyActiveBetween));
+
+       
+        timers.put(name, runnable);
+        this.runnableDispatcher.addRunnable(runnable);
+    }
+
 
     protected void unregisterPeriodicFunction(final String name)
     {
@@ -625,6 +651,59 @@ public abstract class Module
         {
             entry.getValue().invalidate();
         }
+    }
+
+    public List<String> registerFunctionBasedOnSchedule(
+            String name, Schedule schedule, Runnable function) 
+    {
+
+        List<String> timerNames = new ArrayList<>();
+        
+        // Counter and timestamp are used to provide a unique name for the registered function
+        long timestamp = System.currentTimeMillis(); // get current timestamp in milliseconds
+        
+        for (SchedulePeriodic schedulePeriodic : schedule.getPeriodicList()) {
+            String functionName = name + "_" + timestamp + "_" + timers.size();
+            timerNames.add(functionName);
+
+            if (schedulePeriodic.getIntervalCase() == SchedulePeriodic.IntervalCase.INTERVAL_NOT_SET) {
+                throw new IllegalArgumentException(String.format(
+                        "Cannot register periodic function \"%s\" based on schedule; " +
+                        "no interval (i.e., frequency OR period) specified for schedule.",
+                        name));
+            }
+
+            Duration interval = ScheduleHelper.getIntervalDurationFromPeriodicSchedule(schedulePeriodic);
+
+            LocalDateTime startTime = LocalDateTime.now();
+            if (schedulePeriodic.hasFirstExecutionTimeOfDay()) {
+                startTime = ScheduleHelper.calculateNextTimeOfDay(schedulePeriodic.getFirstExecutionTimeOfDay());
+            }
+
+            if (schedulePeriodic.hasOnlyActiveBetweenTimeFrame()) {
+                registerPeriodicFunction(functionName, function, interval, startTime, schedulePeriodic.getOnlyActiveBetweenTimeFrame());
+            } else {
+                registerPeriodicFunction(functionName, function, interval, startTime);
+            }
+        }
+
+        for (ScheduleExactTime scheduleExactTime : schedule.getTimedList()) {
+            String functionName = name + "_" + timestamp + "_" + timers.size();
+            timerNames.add(functionName);
+
+            LocalDateTime startTime = LocalDateTime.now();
+            startTime = ScheduleHelper.calculateNextTimeOfDay(scheduleExactTime.getTimeOfDay());
+
+            if (scheduleExactTime.getRepeatEveryNDays() != 0) {
+                // If we have to repeat the function, schedule it as periodic function
+                registerPeriodicFunction(functionName, function, Duration.ofDays(1), startTime);
+            } else {
+                // Otherwise, schedule it exactly once
+                registerScheduledFunction(functionName, startTime, function);
+            }
+        }
+
+        return timerNames;
     }
 
     protected void onConnectedToRemoteServer()

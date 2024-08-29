@@ -274,7 +274,7 @@ namespace claid
                 {
                     if(!FileUtils::createDirectoriesRecursively(savePath))
                     {
-                        moduleError(absl::StrCat("Error in DataReceiverModule. Cannot create save directory \"", savePath, "."));
+                        moduleFatal(absl::StrCat("Error in DataReceiverModule. Cannot create save directory \"", savePath, "."));
                         return false;
                     }
                 }

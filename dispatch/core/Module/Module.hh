@@ -155,7 +155,9 @@ namespace claid
 
         void registerPeriodicFunction(const std::string& name, std::function<void()> callback, const Duration& interval);
         void registerPeriodicFunction(const std::string& name, std::function<void()> function, const Duration& interval, const Time& startTime);
-       
+        void registerPeriodicFunction(const std::string& name, std::function<void()> function, 
+            const Duration& interval, const Time& startTime, const ScheduleTimeWindow& onlyActiveBetweenFimeFrame);
+
         void unregisterPeriodicFunction(const std::string& name);
         void unregisterAllPeriodicFunctions();
 
@@ -189,7 +191,7 @@ namespace claid
                 std::string functionName = name + std::string("_") + std::to_string(timestamp) + std::string("_") + std::to_string(timers.size());
                 timerNames.push_back(functionName);
 
-                if(schedulePeriodic.interval_case() != SchedulePeriodic::IntervalCase::INTERVAL_NOT_SET)
+                if(schedulePeriodic.interval_case() == SchedulePeriodic::IntervalCase::INTERVAL_NOT_SET)
                 {
                     moduleFatal(absl::StrCat(
                         "Cannot register periodic function \"", name, "\" based on schedule; ",
@@ -201,12 +203,39 @@ namespace claid
                 const Duration interval = ScheduleHelper::getIntervalDurationFromPeriodicSchedule(schedulePeriodic);
 
                 Time startTime = now;
-                if(schedulePeriodic.has_first_execution_time())
+                if(schedulePeriodic.has_first_execution_time_of_day())
                 {
-                    startTime = ScheduleHelper::calculateNextTimeOfDay(schedulePeriodic.first_execution_time());
+                    startTime = ScheduleHelper::calculateNextTimeOfDay(schedulePeriodic.first_execution_time_of_day());
                 }
 
-                registerPeriodicFunction(functionName, function, interval, startTime);
+                if(schedulePeriodic.has_only_active_between_time_frame())
+                {
+                    registerPeriodicFunction(functionName, function, interval, startTime,  schedulePeriodic.only_active_between_time_frame());
+                }
+                else
+                {
+                    registerPeriodicFunction(functionName, function, interval, startTime);
+                }
+
+            }
+
+            for(const ScheduleExactTime& scheduleExactTime : schedule.timed())
+            {
+                std::string functionName = name + std::string("_") + std::to_string(timestamp) + std::string("_") + std::to_string(timers.size());
+                timerNames.push_back(functionName);
+                Time startTime = now;
+                startTime = ScheduleHelper::calculateNextTimeOfDay(scheduleExactTime.time_of_day());
+
+                if(scheduleExactTime.repeat_every_n_days() != 0)
+                {
+                    // If we have to repeat the function, schedule it as periodic function.
+                    registerPeriodicFunction(functionName, function, Duration::days(1), startTime);
+                }
+                else
+                {
+                    // Otherwise, schedule it exactly once.
+                    registerScheduledFunction(functionName, startTime, function);
+                }
             }
 
             return timerNames;

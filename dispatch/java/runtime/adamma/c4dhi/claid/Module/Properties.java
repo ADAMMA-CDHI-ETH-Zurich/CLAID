@@ -177,6 +177,17 @@ public class Properties
         }
     }
 
+    public String getStringProperty(String key, String defaultValue) 
+    {
+        Value property;
+        property = lookupProperty(key);
+        if (property != null && property.getKindCase() == Value.KindCase.STRING_VALUE) 
+        {
+            return property.getStringValue();
+        } 
+        return defaultValue;
+    }
+
     public boolean getBoolProperty(String key) 
     {
         Value property;
@@ -192,6 +203,17 @@ public class Properties
         }
     }
 
+    public boolean getBoolProperty(String key, boolean defaultValue) 
+    {
+        Value property;
+        property = lookupProperty(key);
+        if (property != null && property.getKindCase() == Value.KindCase.BOOL_VALUE) 
+        {
+            return property.getBoolValue();
+        } 
+        return defaultValue;
+    }
+
     public <T extends Message> T getObjectProperty(String key, Class<T> dataType)
     {
         Value property;
@@ -202,6 +224,24 @@ public class Properties
             return null;
         }
         
+        return deserializeObjectProperty(key, property, dataType);
+    }
+
+    public <T extends Message> T getObjectProperty(String key, Class<T> dataType, T defaultValue)
+    {
+        Value property;
+        property = lookupProperty(key);
+        if(property == null)
+        {
+            // Property not found, return default value.
+            return defaultValue;
+        }
+        
+        return deserializeObjectProperty(key, property, dataType);
+    }
+
+    private <T extends Message> T deserializeObjectProperty(String key, Value property, Class<T> dataType)
+    {
         String jsonString;
         try
         {
