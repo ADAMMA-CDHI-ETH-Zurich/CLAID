@@ -619,8 +619,8 @@ public abstract class Module
         ScheduledRunnable runnable = timers.get(name);
         if(runnable != null)
         {
-            timers.get(name).invalidate();
-
+            runnable.invalidate();
+            runnableDispatcher.removeRunnable(runnable);
         }
 
         timers.remove(name);
@@ -704,6 +704,11 @@ public abstract class Module
         }
 
         return timerNames;
+    }
+
+    protected boolean isPeriodicOrScheduledFunctionRegistered(String functionName)
+    {
+        return timers.containsKey(functionName);
     }
 
     protected void onConnectedToRemoteServer()

@@ -357,6 +357,26 @@ namespace claid
                 this->conditionVariable.notify_all();
             }
 
+            void removeRunnable(ScheduledRunnable runnable)
+            {
+                std::unique_lock<std::mutex> lock(this->mutex);
+
+                Time executionTime = runnable.schedule->getExecutionTime();
+                auto it = this->scheduledRunnables.find(executionTime);
+
+                if(it != this->scheduledRunnables.end())
+                {
+                    ScheduledRunnable& storedRunnable = it->second;
+                    if(storedRunnable == runnable)
+                    {
+                        scheduledRunnables.erase(it);
+                        this->rescheduleRequired = true;
+                        // This will lead to a wake-up, so we can reschedule.
+                        this->conditionVariable.notify_all();
+                    }
+                }
+            }
+
 
     };
 }

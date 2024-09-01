@@ -255,6 +255,7 @@ namespace claid
 
         it->second.runnable->invalidate();
         timers.erase(it);
+        this->runnableDispatcher.removeRunnable(it->second);
     }
 
     void Module::unregisterAllPeriodicFunctions()

@@ -67,5 +67,10 @@ namespace claid
                 this->schedule = 
                     std::static_pointer_cast<ScheduleDescription>(tmpSchedule);
             }
+
+            bool operator==(const ScheduledRunnable& other)
+            {
+                return this->runnable == other.runnable && this->schedule == other.schedule;
+            }
     };
 }

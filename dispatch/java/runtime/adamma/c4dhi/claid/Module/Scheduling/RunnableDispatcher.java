@@ -137,7 +137,14 @@ public class RunnableDispatcher
 
             middlewareScheduleDeviceWakeupAt(Long.valueOf(System.currentTimeMillis() + waitTime));
 
-            conditionVariable.await(waitTime, TimeUnit.MILLISECONDS);
+            //conditionVariable.await(waitTime, TimeUnit.MILLISECONDS);
+            // Step 2: Convert LocalDateTime to Instant using the system default time zone
+            Instant instant = newTime.atZone(ZoneId.systemDefault()).toInstant();
+
+            // Step 3: Convert Instant to Date
+            Date date = Date.from(instant);
+            conditionVariable.awaitUntil(date);
+
 
             writeToLogFile("Condition variable awoke");
         } catch (InterruptedException e) {
@@ -297,15 +304,33 @@ public class RunnableDispatcher
 
             scheduledRunnables.put(executionTime, runnable);
                 Logger.logInfo("Runnables " + scheduledRunnables.size());
-            // This will lead to a wake-up, so we can reschedule.
-            rescheduleRequired = true;
 
+            rescheduleRequired = true;
+            // This will lead to a wake-up, so we can reschedule.
             conditionVariable.signalAll();
 
         } finally {
             mutex.unlock();
         }
+    }
 
+    public void removeRunnable(ScheduledRunnable runnable)
+    {
+        mutex.lock();
+
+        LocalDateTime executionTime = runnable.schedule.getExecutionTime();
+        if(scheduledRunnables.containsKey(executionTime))
+        {
+            ScheduledRunnable storedRunnable = scheduledRunnables.get(executionTime);
+            if(storedRunnable == runnable)
+            {
+                scheduledRunnables.remove(executionTime);
+                rescheduleRequired = true;
+                // This will lead to a wake-up, so we can reschedule.
+                conditionVariable.signalAll();
+            }
+        }
+        mutex.unlock();
     }
 
     public void runScheduling() {
@@ -350,7 +375,7 @@ public class RunnableDispatcher
             String dateTime = getCurrentDateTime();
 
             // Combine date, time, and data
-            String entry = dateTime + " - " + data + "\n";
+            String entry = this + " " + dateTime + " - " + data + "\n";
 
             // Write the data to the file
             fos.write(entry.getBytes());

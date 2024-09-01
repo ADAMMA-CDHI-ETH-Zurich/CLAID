@@ -108,8 +108,10 @@ message HeartRateSample
     double hr = 1;
     int32 hrInterBeatInterval = 2;
     HeartRateStatus status = 3;
-    uint64 unix_timestamp_in_ms = 4;
-    string effective_time_frame = 5;
+    repeated int32 ibi_list = 4;
+    repeated HeartRateIBIStatus ibi_status_list = 5;
+    uint64 unix_timestamp_in_ms = 6;
+    string effective_time_frame = 7;
 }
 
 message HeartRateData
@@ -126,6 +128,14 @@ enum HeartRateStatus
     MEASUREMENT_UNRELIABLE_DUE_TO_MOVEMENT_OR_WRONG_ATTACHMENT_PPG_WEAK = 4;
     OFF_BODY = 5;
     INITIALIZING = 6;
+    HR_STATUS_UNKNOWN = 7;
+}
+
+enum HeartRateIBIStatus
+{
+    HR_IBI_STATUS_NORMAL = 0;
+    HR_IBI_STATUS_ERROR = 1;
+    HR_IBI_STATUS_UNKNOWN = 2;
 }
 
 enum BatteryState 
@@ -209,7 +219,16 @@ message OxygenSaturationSample
 
 message OxygenSaturationData
 {
-    int64 begin_of_oxygen_data_interval_unix_timestamp_ms = 1;
-    int64 end_of_oxygen_data_interval_unix_timestamp_ms = 2;
     repeated OxygenSaturationSample oxygen_saturation_samples = 3;
+}
+
+message GreenPPGSample
+{
+    int32 ppg_green_value = 1;
+    int64 unix_timestamp_in_ms = 2;
+}
+
+message GreenPPGData
+{
+    repeated GreenPPGSample green_ppg_samples = 1;
 }
