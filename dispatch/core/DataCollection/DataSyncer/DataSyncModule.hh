@@ -77,12 +77,15 @@ namespace claid
 
             std::string filePath;
 
-            Time lastMessageFromFileReceiver;
-        
-
+            Time lastMessageFromFileReceiver;        
 
             int syncingPeriodInMs;
             bool deleteFileAfterSync;
+
+            bool requiresConnectionToRemoteServer = true;
+            int remoteServerConnectionWaitTimeSeconds = 60;
+
+            bool wasConnectedToRemoteServerDuringLastSync = false;
 
             void makePathRelative(std::string& path)
             {
@@ -228,7 +231,18 @@ namespace claid
 
             void periodicSync()
             {
-                Logger::logInfo("PeriodicSyncCalled");
+                if(requiresConnectionToRemoteServer)
+                {
+                    if(!isConnectedToRemoteServer())
+                    {
+                        if(!waitUntilConnectedToRemoteServer(Duration::seconds(this->remoteServerConnectionWaitTimeSeconds)))
+                        {
+                            wasConnectedToRemoteServerDuringLastSync = false;
+                            return;
+                        }
+                    }
+                    wasConnectedToRemoteServerDuringLastSync = true;
+                }
                 // If a previous syncing process is still going on (e.g., file receiver is still requesting files),
                 // do not start a new syncing process just yet.
                 if(millisecondsSinceLastMessageFromFileReceiver() >= size_t(this->syncingPeriodInMs / 2))
@@ -241,13 +255,12 @@ namespace claid
             // Get's called by the middleware once we connect to a remote server.
             void onConnectedToRemoteServer()
             {
-                if(millisecondsSinceLastMessageFromFileReceiver() >= size_t(this->syncingPeriodInMs))
+                if(requiresConnectionToRemoteServer && !wasConnectedToRemoteServerDuringLastSync)
                 {
-                    // If we were not able to contact the DataReceiverModule for a while,
+                    // If we were not able to contact the DataReceiverModule on the Remote Server for a while,
                     // we retry upon successfull connection to a remote server, assuming 
                     // that the DataReceiverModule is not running on the same host.
-                    // If it is running on the same host, this code will never be executed,
-                    // since we will always receive a timely response from the DataReceiverModule.
+                    // If it is running on the same host, the property requiresConnectionToRemoteServer should be disabled.
                     this->periodicSync();
                 }
             }
@@ -293,6 +306,12 @@ namespace claid
                 properties.getStringProperty("filePath", this->filePath);
                 properties.getNumberProperty("syncingPeriodInMs", this->syncingPeriodInMs);
                 properties.getBoolProperty("deleteFileAfterSync", this->deleteFileAfterSync, false);
+                // If true, this Module requires that isConnectedToRemoteServer() is true when a syncing is due.
+                // If it is not true, it will wait for a certain number of seconds (see below), and if not give up.
+                properties.getBoolProperty("requiresConnectionToRemoteServer", this->requiresConnectionToRemoteServer, true);
+                // When a syncing is due, we require a connection to the remote server, and we are currently not connected,
+                // then we wait a certain number of seconds for a connection to the remote server to be established.
+                properties.getNumberProperty("remoteServerConnectionWaitTimeSeconds", this->remoteServerConnectionWaitTimeSeconds, 60);
 
                 if(properties.wasAnyPropertyUnknown())
                 {

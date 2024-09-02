@@ -63,6 +63,8 @@ namespace claid
 
         bool isPaused = false;
 
+        bool connectedToRemoteServer = false;
+
         std::map<std::string, ScheduledRunnable> timers;
 
         ChannelSubscriberPublisher* subscriberPublisher;
@@ -278,6 +280,9 @@ namespace claid
             std::function<void (ChannelData<T>)> function = std::bind(f, obj, std::placeholders::_1);
             return subscribe(channelID, function); 
         }
+
+        bool isConnectedToRemoteServer();
+        bool waitUntilConnectedToRemoteServer(Duration timeout);
 
 
         void pauseInternal();
