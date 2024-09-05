@@ -180,7 +180,7 @@ public class HeartRateCollector extends Module implements SensorEventListener
             HeartRateSample.Builder sample = HeartRateSample.newBuilder();
             sample.setHr((double) hr);
  
-            sample.setUnixTimestampInMs(currentTime.toInstant(ZoneOffset.UTC).toEpochMilli());
+            sample.setUnixTimestampInMs(currentTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
             sample.setStatus(getHrStatusFromSensorEvent(sensorEvent));
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");

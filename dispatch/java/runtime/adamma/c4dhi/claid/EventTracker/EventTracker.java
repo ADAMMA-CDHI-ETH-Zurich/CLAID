@@ -67,7 +67,7 @@ public class EventTracker
         LocalDateTime time = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm:ss");
         String timeString = time.format(formatter);
-        long milliseconds = time.toInstant(ZoneOffset.UTC).toEpochMilli();
+        long milliseconds = time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
 
         Path path = Paths.get(storageFolderPath, moduleId + "_events.txt");
