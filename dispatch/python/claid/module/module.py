@@ -50,24 +50,24 @@ class Module(ABC):
 
     def module_fatal(self, error):
         errorMsg = f"Module \"{self.__id}\": {error}"
-        Logger.log(LogMessageSeverityLevel.FATAL, errorMsg, LogMessageEntityType.MODULE, self.id)
+        Logger.log(LogMessageSeverityLevel.FATAL, errorMsg, LogMessageEntityType.MODULE, self.__id)
         raise Exception(errorMsg)
 
     def module_error(self, error):
         errorMsg = f"Module \"{self.__id}\": {error}"
-        Logger.log(LogMessageSeverityLevel.ERROR, errorMsg, LogMessageEntityType.MODULE, self.id)
+        Logger.log(LogMessageSeverityLevel.ERROR, errorMsg, LogMessageEntityType.MODULE, self.__id)
 
     def module_warning(self, warning):
         warningMsg = f"Module \"{self.__id}\": {warning}"
-        Logger.log(LogMessageSeverityLevel.WARNING, warningMsg, LogMessageEntityType.MODULE, self.id)
+        Logger.log(LogMessageSeverityLevel.WARNING, warningMsg, LogMessageEntityType.MODULE, self.__id)
 
     def module_info(self, info):
         infoMsg = f"Module \"{self.__id}\": {info}"
-        Logger.log(LogMessageSeverityLevel.INFO, infoMsg, LogMessageEntityType.MODULE, self.id)
+        Logger.log(LogMessageSeverityLevel.INFO, infoMsg, LogMessageEntityType.MODULE, self.__id)
 
     def module_debug(self, dbg):
         dbgMessage = f"Module \"{self.__id}\": {dbg}"
-        Logger.log(LogMessageSeverityLevel.DEBUG_VERBOSE, dbgMessage, LogMessageEntityType.MODULE, self.id)
+        Logger.log(LogMessageSeverityLevel.DEBUG_VERBOSE, dbgMessage, LogMessageEntityType.MODULE, self.__id)
 
     def start(self, subscriber_publisher, properties, main_thread_runnables_queue):
         if self.__is_initialized:

@@ -105,6 +105,16 @@ namespace claid
             hostDescription.hostServerAddress = host.host_server_address();
             hostDescription.connectTo = host.connect_to();
 
+            if(host.hostname() == "")
+            {
+                return absl::InvalidArgumentError(
+                        absl::StrCat(
+                            "Configuration: Hostnmae not specified! At least one Host you added has no hostname. ",
+                            "Please specify the hostname for each Host."
+                        )
+                    );
+            }
+
             if(hostDescriptions.find(hostDescription.hostname) != hostDescriptions.end())
             {
                 return absl::AlreadyExistsError(
@@ -141,6 +151,25 @@ namespace claid
 
                 moduleDescription.properties = moduleConfig.properties();
       
+                if(moduleConfig.id() == "")
+                {
+                    return absl::InvalidArgumentError(
+                        absl::StrCat(
+                            "Configuration: Module id not specified! At least one Module you added has no id. ",
+                            "Please specify an id for each Module."
+                        )
+                    );
+                }
+
+                if(moduleConfig.type() == "")
+                {
+                    return absl::InvalidArgumentError(
+                        absl::StrCat(
+                            "Configuration: Module type not specified! The type was not specified for Module \"", moduleConfig.id(), "\". ",
+                            "Please specify the type of each Module."
+                        )
+                    );
+                }
 
                 for(auto entry : moduleConfig.input_channels())
                 {
