@@ -317,6 +317,7 @@ namespace claid
 
     void Module::notifyConnectedToRemoteServer()
     {
+        this->connectedToRemoteServer = true;
         std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>([this] { this->onConnectedToRemoteServer();}));
 
         this->runnableDispatcher.addRunnable(
@@ -327,12 +328,34 @@ namespace claid
         
     void Module::notifyDisconnectedFromRemoteServer()
     {
+        this->connectedToRemoteServer = false;
         std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>([this] { this->onDisconnectedFromRemoteServer();}));
 
         this->runnableDispatcher.addRunnable(
             ScheduledRunnable(
                 std::static_pointer_cast<Runnable>(functionRunnable), 
-                ScheduleOnce(Time::now())));
+                ScheduleOnce(Time::now()))
+        );
+    }
+
+    bool Module::isConnectedToRemoteServer()
+    {
+        return this->connectedToRemoteServer;
+    }
+
+    bool Module::waitUntilConnectedToRemoteServer(Duration timeout)
+    {
+        Time startTime = Time::now();
+        Time endTime = startTime + timeout;
+        while(!connectedToRemoteServer)
+        {
+            if(Time::now() >= endTime)
+            {
+                break;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+        return this->connectedToRemoteServer;
     }
 
     void Module::pauseModule()

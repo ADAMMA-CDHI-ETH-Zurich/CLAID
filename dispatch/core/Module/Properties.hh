@@ -71,7 +71,7 @@ class Properties
         }
 
         template<typename T>
-        bool getNumberProperty(const std::string& key, T& value, T& defaultValue) 
+        bool getNumberProperty(const std::string& key, T& value, const T& defaultValue) 
         {
             google::protobuf::Value property;
             
