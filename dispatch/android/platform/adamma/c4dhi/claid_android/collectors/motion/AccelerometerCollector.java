@@ -186,7 +186,7 @@ public class AccelerometerCollector extends Module implements SensorEventListene
             sample.setAccelerationY((double) y);
             sample.setAccelerationZ((double) z);
             sample.setSensorBodyLocation("unknown/smartphone");
-            sample.setUnixTimestampInMs(currentTime.toInstant(ZoneOffset.UTC).toEpochMilli());
+            sample.setUnixTimestampInMs(currentTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
             String formattedString = currentTime.format(formatter);

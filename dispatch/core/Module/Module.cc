@@ -254,6 +254,7 @@ namespace claid
         }
 
         it->second.runnable->invalidate();
+        this->runnableDispatcher.removeRunnable(it->second);
         timers.erase(it);
     }
 

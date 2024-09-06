@@ -73,8 +73,8 @@ public class OxygenSaturationDataModule extends Module {
         }
 
         OxygenSaturationData.Builder oxygenSaturationData = OxygenSaturationData.newBuilder();
-        oxygenSaturationData.setBeginOfOxygenDataIntervalUnixTimestampMs(startTime.toEpochMilli());
-        oxygenSaturationData.setEndOfOxygenDataIntervalUnixTimestampMs(endTime.toEpochMilli());
+      //  oxygenSaturationData.setBeginOfOxygenDataIntervalUnixTimestampMs(startTime.toEpochMilli());
+     //   oxygenSaturationData.setEndOfOxygenDataIntervalUnixTimestampMs(endTime.toEpochMilli());
 
         for (Object datapointObj : response.getRecords()) {
             if (datapointObj instanceof androidx.health.connect.client.records.Record) {

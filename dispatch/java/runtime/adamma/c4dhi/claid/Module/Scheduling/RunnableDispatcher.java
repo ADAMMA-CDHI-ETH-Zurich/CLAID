@@ -21,6 +21,7 @@
 
 package adamma.c4dhi.claid.Module.Scheduling;
 
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalUnit;
@@ -107,6 +108,22 @@ public class RunnableDispatcher
         }
     }
 
+    LocalDateTime getExecutionTimeOfNextDueRunnable()
+    {
+        mutex.lock();
+        if(this.scheduledRunnables.isEmpty())
+        {
+            // Wait forever.
+            return LocalDateTime.MAX;
+        }
+
+        LocalDateTime dueTime = this.scheduledRunnables.values().iterator().next().getSchedule().getExecutionTime();
+
+        mutex.unlock();
+
+        return dueTime;
+    }
+
     private void waitUntilRunnableIsDueOrRescheduleIsRequired() 
     {
 
@@ -117,27 +134,24 @@ public class RunnableDispatcher
         mutex.lock();
         try {
 
-             // Get the current LocalDateTime
-            LocalDateTime now = LocalDateTime.now();
-
-            // Define the offset in milliseconds
-            long offsetMillis = waitTime; // Example: 1000 milliseconds (1 second)
-
-            // Add the offset to the current time
-            LocalDateTime newTime = now.plus(offsetMillis, ChronoUnit.MILLIS);
-            // Define the formatter for the desired format
+            LocalDateTime dueTime = getExecutionTimeOfNextDueRunnable();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy-HH:mm:ss");
-
-            // Format the new time as a string
-            String formattedTime = newTime.format(formatter);
+            String formattedTime = dueTime.format(formatter);
 
             writeToLogFile("condition variable waiting for "  + waitTime + " milliseconds, waking up at " + formattedTime);
 
 
 
-            middlewareScheduleDeviceWakeupAt(Long.valueOf(System.currentTimeMillis() + waitTime));
+            middlewareScheduleDeviceWakeupAt(dueTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
 
-            conditionVariable.await(waitTime, TimeUnit.MILLISECONDS);
+            //conditionVariable.await(waitTime, TimeUnit.MILLISECONDS);
+            // Step 2: Convert LocalDateTime to Instant using the system default time zone
+            Instant instant = dueTime.atZone(ZoneId.systemDefault()).toInstant();
+
+            // Step 3: Convert Instant to Date
+            Date date = Date.from(instant);
+            conditionVariable.awaitUntil(date);
+
 
             writeToLogFile("Condition variable awoke");
         } catch (InterruptedException e) {
@@ -297,15 +311,33 @@ public class RunnableDispatcher
 
             scheduledRunnables.put(executionTime, runnable);
                 Logger.logInfo("Runnables " + scheduledRunnables.size());
-            // This will lead to a wake-up, so we can reschedule.
-            rescheduleRequired = true;
 
+            rescheduleRequired = true;
+            // This will lead to a wake-up, so we can reschedule.
             conditionVariable.signalAll();
 
         } finally {
             mutex.unlock();
         }
+    }
 
+    public void removeRunnable(ScheduledRunnable runnable)
+    {
+        mutex.lock();
+
+        LocalDateTime executionTime = runnable.schedule.getExecutionTime();
+        if(scheduledRunnables.containsKey(executionTime))
+        {
+            ScheduledRunnable storedRunnable = scheduledRunnables.get(executionTime);
+            if(storedRunnable == runnable)
+            {
+                scheduledRunnables.remove(executionTime);
+                rescheduleRequired = true;
+                // This will lead to a wake-up, so we can reschedule.
+                conditionVariable.signalAll();
+            }
+        }
+        mutex.unlock();
     }
 
     public void runScheduling() {
@@ -350,7 +382,7 @@ public class RunnableDispatcher
             String dateTime = getCurrentDateTime();
 
             // Combine date, time, and data
-            String entry = dateTime + " - " + data + "\n";
+            String entry = this + " " + dateTime + " - " + data + "\n";
 
             // Write the data to the file
             fos.write(entry.getBytes());

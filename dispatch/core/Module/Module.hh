@@ -243,6 +243,11 @@ namespace claid
             return timerNames;
         }
 
+        bool isPeriodicOrScheduledFunctionRegistered(std::string functionName)
+        {
+            return timers.find(functionName) != timers.end();
+        }
+
         template<typename Class>
         std::vector<std::string> registerFunctionBasedOnSchedule(
                 const std::string& name, const Schedule& schedule, void (Class::*f)(), Class* obj)

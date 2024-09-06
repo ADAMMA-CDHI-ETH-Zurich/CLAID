@@ -186,7 +186,7 @@ public class GyroscopeCollector extends Module implements SensorEventListener
             sample.setGyroscopeY((double) y);
             sample.setGyroscopeZ((double) z);
             sample.setSensorBodyLocation("unknown/smartphone");
-            sample.setUnixTimestampInMs(currentTime.toInstant(ZoneOffset.UTC).toEpochMilli());
+            sample.setUnixTimestampInMs(currentTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
             String formattedString = currentTime.format(formatter);
