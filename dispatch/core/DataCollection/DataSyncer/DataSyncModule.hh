@@ -86,7 +86,10 @@ namespace claid
             int remoteServerConnectionWaitTimeSeconds = 60;
 
             bool wasConnectedToRemoteServerDuringLastSync = false;
+            
+            
 
+            
             void makePathRelative(std::string& path)
             {
                 std::string basePath = this->filePath;
@@ -231,6 +234,11 @@ namespace claid
 
             void periodicSync()
             {
+                startSync();
+            }
+
+            void startSync()
+            {
                 if(requiresConnectionToRemoteServer)
                 {
                     if(!isConnectedToRemoteServer())
@@ -261,7 +269,7 @@ namespace claid
                     // we retry upon successfull connection to a remote server, assuming 
                     // that the DataReceiverModule is not running on the same host.
                     // If it is running on the same host, the property requiresConnectionToRemoteServer should be disabled.
-                    this->periodicSync();
+                    this->startSync();
                 }
             }
 
@@ -336,8 +344,9 @@ namespace claid
                     }
                 }
                 
-           
-
+                // Exposing the internal "startSync" function, allowing other Modules to
+                // trigger the synchronization via a remote function call.
+                registerRemoteFunction("start_sync", &DataSyncModule::startSync, this);
             
 
                 // #ifdef __APPLE__
@@ -351,7 +360,7 @@ namespace claid
                                
                 this->lastMessageFromFileReceiver = Time::now();
                 this->registerPeriodicFunction("PeriodicSyncFunction", &DataSyncModule::periodicSync, this, Duration::milliseconds(this->syncingPeriodInMs));
-                this->periodicSync();
+                this->startSync();
                 Logger::logInfo("DataSyncModule done");
 
             }

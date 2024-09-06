@@ -28,10 +28,16 @@ int main(int argc, char** argv)
     ArgumentParser parser(argc, argv);
 
     std::string configPath = "";
+    std::string hostId = "";
+    std::string userId = "";
+    std::string deviceId = "";
     // Register argument to the parser.
     // This automatically parses argv.
     // A default value can be specified by the last parameter of the function.
     parser.add_argument<std::string>("path", configPath, "");
+    parser.add_argument<std::string>("host_id", hostId, "");
+    parser.add_argument<std::string>("user_id", userId, "");
+    parser.add_argument<std::string>("device_id", deviceId, "");
 
     // If "path" was not specified in argv, configPath is empty.
     // In that case, we print an error message.
@@ -44,9 +50,9 @@ int main(int argc, char** argv)
 
     const char* socket_path = "/tmp/test_grpc.sock";
     const char* config_file = configPath.c_str();
-    const char* host_id = "test_server";
-    const char* user_id = "user42";
-    const char* device_id = "something_else";
+    const char* host_id = hostId.c_str();
+    const char* user_id = userId.c_str();
+    const char* device_id = deviceId.c_str();
 
     claid::CLAID claid;
     bool result = claid.start(socket_path, config_file, host_id, user_id, device_id, "");
