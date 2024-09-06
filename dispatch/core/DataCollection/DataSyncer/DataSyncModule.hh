@@ -79,22 +79,17 @@ namespace claid
 
             Time lastMessageFromFileReceiver;
         
-
-            Schedule syncingSchedule;
-            bool deleteFileAfterSync;
-
+            // Constants
             static constexpr int SYNC_TIMEOUT_IN_MS = 10000;
 
-            Time lastMessageFromFileReceiver;        
-
-
+         
+            bool deleteFileAfterSync;
             bool requiresConnectionToRemoteServer = true;
+            bool wasConnectedToRemoteServerDuringLastSync = false;
             int remoteServerConnectionWaitTimeSeconds = 60;
 
-            bool wasConnectedToRemoteServerDuringLastSync = false;
-            
-            
-
+      
+            Schedule syncingSchedule;
             
             void makePathRelative(std::string& path)
             {
@@ -264,6 +259,11 @@ namespace claid
                 }
             }
 
+            void setSyncingSchedule(Schedule schedule)
+            {
+                this->syncingSchedule = schedule;
+            }
+
             // Get's called by the middleware once we connect to a remote server.
             void onConnectedToRemoteServer()
             {
@@ -320,7 +320,7 @@ namespace claid
                 properties.getBoolProperty("deleteFileAfterSync", this->deleteFileAfterSync, false);
                 // If true, this Module requires that isConnectedToRemoteServer() is true when a syncing is due.
                 // If it is not true, it will wait for a certain number of seconds (see below), and if not give up.
-                properties.getBoolProperty("requiresConnectionToRemoteServer", this->requiresConnectionToRemoteServer, true);
+                properties.getBoolProperty("requiresConnectionToRemoteServer", this->requiresConnectionToRemoteServer);
                 // When a syncing is due, we require a connection to the remote server, and we are currently not connected,
                 // then we wait a certain number of seconds for a connection to the remote server to be established.
                 properties.getNumberProperty("remoteServerConnectionWaitTimeSeconds", this->remoteServerConnectionWaitTimeSeconds, 60);
@@ -351,7 +351,11 @@ namespace claid
                 // Exposing the internal "startSync" function, allowing other Modules to
                 // trigger the synchronization via a remote function call.
                 registerRemoteFunction("start_sync", &DataSyncModule::startSync, this);
-            
+
+                // Exposing the internal "setSyncingSchedule" function, allowing other Modules to
+                // change the syncing schedule via a remote function call.
+                registerRemoteFunction("set_syncing_schedule", &DataSyncModule::setSyncingSchedule, this);
+
 
                 // #ifdef __APPLE__
                 //     #if TARGET_OS_IPHONE
@@ -371,9 +375,10 @@ namespace claid
                     this
                 );
                 
+
                 this->startSync();
 
-                Logger::logInfo("DataSyncModule done");
+                Logger::logInfo("DataSyncModule init done");
 
             }
 
