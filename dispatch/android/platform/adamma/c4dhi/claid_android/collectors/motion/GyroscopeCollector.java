@@ -216,6 +216,7 @@ public class GyroscopeCollector extends Module implements SensorEventListener
         {
             return;
         }
+        CLAID.acquireWakeLock(CLAID.getContext());
         moduleInfo("Starting sampling");
 
         sensorManager = (SensorManager) CLAID.getContext().getSystemService(Context.SENSOR_SERVICE); 
@@ -248,12 +249,19 @@ public class GyroscopeCollector extends Module implements SensorEventListener
         sensor = null;
         samplingIsRunning = false;
         samplingIsRunning = false;
+        CLAID.releaseWakeLock(CLAID.getContext());
     }
 
     public void restartSampling()
     {
+        // Stop sampling will release the wake lock.
+        // If we do not acquire it here (increasing the reference counter),
+        // it might get disabled.
+        CLAID.acquireWakeLock(CLAID.getContext());
         stopSampling();
         startSampling();
+        // Releasing the wake lock, as start sampling acquired one.
+        CLAID.releaseWakeLock(CLAID.getContext());
     }
 
     @Override

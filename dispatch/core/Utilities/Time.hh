@@ -265,7 +265,6 @@ public:
 		return Time::unixEpoch() + std::chrono::seconds(seconds);
 	}
 
-
 	static Time fromUnixTimestampMilliseconds(uint64_t milliSeconds)
 	{
 		return Time::unixEpoch() + std::chrono::milliseconds(milliSeconds);
@@ -274,6 +273,27 @@ public:
 	void toDateTime(int& year, int& month, int& day, int& hour, int& minute, int& second)
 	{
 		Time::toDateTime(*this, year, month, day, hour, minute, second);
+	}
+
+	int getHour() const
+	{
+		time_t tt = std::chrono::system_clock::to_time_t(*this);
+		tm local_tm = *localtime(&tt);
+		return local_tm.tm_hour;
+	}
+
+	int getMinute() const
+	{
+		time_t tt = std::chrono::system_clock::to_time_t(*this);
+		tm local_tm = *localtime(&tt);
+		return local_tm.tm_min;
+	}
+	
+	int getSecond() const
+	{
+		time_t tt = std::chrono::system_clock::to_time_t(*this);
+		tm local_tm = *localtime(&tt);
+		return local_tm.tm_sec;
 	}
 
 	static void toDateTime(Time& time, int& year, int& month, int& day, int& hour, int& minute, int& second)

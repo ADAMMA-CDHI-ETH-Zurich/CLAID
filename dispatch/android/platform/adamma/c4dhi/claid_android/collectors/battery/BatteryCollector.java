@@ -34,6 +34,7 @@ import adamma.c4dhi.claid.Module.Channel;
 import adamma.c4dhi.claid.Module.ChannelData;
 import adamma.c4dhi.claid.Module.Module;
 import adamma.c4dhi.claid.Module.Properties;
+import adamma.c4dhi.claid.Schedule;
 
 import adamma.c4dhi.claid_platform_impl.CLAID;
 
@@ -69,18 +70,18 @@ public class BatteryCollector extends Module
     @Override
     public void initialize(Properties properties) 
     {
-        if(!properties.hasProperty("samplingPeriod"))
+        if(!properties.hasProperty("schedule"))
         {
-            this.moduleFatal("Property \"samplingPeriod\" was not specified in the configuration file.");
+            this.moduleFatal("Property \"schedule\" was not specified in the configuration file.");
         }
 
-        Integer samplingPeriod = properties.getNumberProperty("samplingPeriod", Integer.class);
-        Logger.logInfo("BatteryCollector started, samplingPeriod is: " + samplingPeriod + "ms");
+        Schedule schedule = properties.getObjectProperty("schedule", Schedule.class);
+
 
         this.batteryDataChannel = this.publish("BatteryData", BatteryData.class);
 
-        this.registerPeriodicFunction("PeriodicBatteryMonitoring", () -> postBatteryData(), Duration.ofMillis(samplingPeriod));
-        System.out.println("BatteryCollector initialized");
+        this.registerFunctionBasedOnSchedule("PeriodicBatteryMonitoring", schedule,() -> postBatteryData());
+        moduleInfo("BatteryCollector initialized");
     }
 
     public void postBatteryData()

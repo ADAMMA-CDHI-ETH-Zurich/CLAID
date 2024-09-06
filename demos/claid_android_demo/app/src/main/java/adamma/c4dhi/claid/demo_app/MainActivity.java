@@ -74,7 +74,7 @@ public class MainActivity extends Activity {
                 CLAIDSpecialPermissionsConfig.regularConfig(),
                 CLAIDPersistanceConfig.maximumPersistance());
 
-        CLAID.onStarted(() -> CLAID.enableKeepAppAwake(CLAID.getContext()));
+        CLAID.onStarted(() -> CLAID.acquireWakeLock(CLAID.getContext()));
 
 
     }

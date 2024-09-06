@@ -120,6 +120,10 @@ public class CLAID extends JavaCLAIDBase
     private static ModuleFactory claidGlobalModuleFactory = new ModuleFactory();
     
     private static PowerManager.WakeLock claidWakeLock;
+    // This counter is increased when the wake lock is acquired, and decreased when it is released.
+    // Once the counter reaches 0, the wake lock is released, meaning that all entities/Modules
+    // having acquired the wake lock have released it again.
+    private static int wakeLockCounter = 0;
 
     private static Runnable onCLAIDStartedCallback = null;
     
@@ -583,7 +587,7 @@ public class CLAID extends JavaCLAIDBase
     // This is mainly relevant for WearOS applications,
     // which go into doze very quickly/aggressively, even if a Service is running.
     // On regular Smartphones, this is mostly not necessary if a Service is used.
-    public static boolean enableKeepAppAwake(Context context)
+    public static boolean acquireWakeLock(Context context)
     {  
         if(claidWakeLock == null)
         {
@@ -596,6 +600,8 @@ public class CLAID extends JavaCLAIDBase
                     "CLAID::PartialWakeLock");
         }
 
+        wakeLockCounter++;
+
         if(claidWakeLock.isHeld())
         {
             return true;
@@ -606,23 +612,27 @@ public class CLAID extends JavaCLAIDBase
         return true;
     }
 
-    public static boolean disableKeepAppAwake(Context context)
+    public static boolean releaseWakeLock(Context context)
     {
         if(claidWakeLock == null)
         {
             return true;
         }
-
-        if(!claidWakeLock.isHeld())
+        wakeLockCounter--;
+        if(wakeLockCounter <= 0)
         {
-            return true;
+            wakeLockCounter = 0;
+            if(!claidWakeLock.isHeld())
+            {
+                return true;
+            }
+            claidWakeLock.release();
         }
 
-        claidWakeLock.release();
         return true;
     }
 
-    private static void disableKeepAppAwake(Context context, Integer waitTimeMs)
+    private static void releaseWakeLock(Context context, Integer waitTimeMs)
     {
         try
         {
@@ -634,12 +644,12 @@ public class CLAID extends JavaCLAIDBase
         }
 
         Logger.logWarning("WakeLock disabled");
-        disableKeepAppAwake(context);
+        releaseWakeLock(context);
     }
 
-    public static void disableKeepAppAwakeAfterMs(Context context, Integer waitTimeMs)
+    public static void releaseWakeLockAfterMs(Context context, Integer waitTimeMs)
     {
-        asyncRunnablesHelperThread.insertRunnable(() ->disableKeepAppAwake(context, waitTimeMs));
+        asyncRunnablesHelperThread.insertRunnable(() ->releaseWakeLock(context, waitTimeMs));
     }
 
     public static boolean isWearOS(Context context) {

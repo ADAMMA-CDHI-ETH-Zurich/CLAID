@@ -60,21 +60,15 @@ namespace claid
             absl::Status createStorageFolder(const Path& currentSavePath);
             absl::Status createTmpFolderIfRequired(const Path& currentSavePath);
 
+
             bool initialized = false;
             bool hasReceivedData = false;
             bool overrideExistingFiles = false;
 
-        public:
+            int roundDown(int value, int multiple);
+            std::string strftime_advanced(const std::string& format, const Time& timestamp);
 
-            // template<typename Reflector>
-            // void reflect(Reflector& reflector)
-            // {
-            // reflector.member("serializer", serializer, "");
-
-            // }
-   
-
-            
+        public:           
 
             FileSaver();
 
@@ -92,4 +86,6 @@ namespace claid
             
 
     };
+
+    
 }

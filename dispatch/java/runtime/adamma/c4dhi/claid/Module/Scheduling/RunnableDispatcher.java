@@ -113,8 +113,8 @@ public class RunnableDispatcher
         mutex.lock();
         if(this.scheduledRunnables.isEmpty())
         {
-            // Wait forever.
-            return LocalDateTime.MAX;
+            // Cannot use LocalDateTime.MAX, as this will cause a long overflow when converting to millis.
+            return LocalDateTime.now().plusYears(20);
         }
 
         LocalDateTime dueTime = this.scheduledRunnables.values().iterator().next().getSchedule().getExecutionTime();

@@ -51,7 +51,6 @@ namespace claid
             this->storagePath += "/";
         }
 
-        Logger::logInfo("media dir %s", this->defaultMediaPath.c_str());
         if(this->defaultMediaPath != "")
         {
             claid::StringUtils::stringReplaceAll(this->storagePath, "\%media_dir", this->defaultMediaPath);
@@ -75,7 +74,6 @@ namespace claid
 
         std::string channelName = this->what;
         claid::StringUtils::stringReplaceAll(channelName, "/", "_");
-        // claid::StringUtils::stringReplaceAll(this->storagePath, "\%channel_name", channelName);
         
 
         absl::Status status = this->createStorageFolder(Path(this->storagePath));
@@ -103,7 +101,6 @@ namespace claid
     absl::Status FileSaver::onNewData(std::shared_ptr<const google::protobuf::Message> data, const Time& timestamp)
     {       
         Logger::logInfo("FileSaver on new data %llu %s", timestamp.toUnixTimestampMilliseconds(), fileNameFormat.c_str());
-        std::cout << "File saver on new data " << timestamp.toUnixTimestampMilliseconds() << "\n";
         std::string pathStr = this->fileNameFormat;
         // This has to be done BEFORE calling strftime! Otherwise strftime will throw an exception, 
         // if any of custom %identifier values are present.
@@ -115,7 +112,7 @@ namespace claid
             claid::StringUtils::stringReplaceAll(pathStr, "\%media_dir", this->defaultMediaPath);
         }
 
-        pathStr = timestamp.strftime(pathStr.c_str());
+        pathStr = strftime_advanced(pathStr, timestamp);
 
         Path path(pathStr);
         path = Path::join(this->storagePath, path);
@@ -127,7 +124,6 @@ namespace claid
         if(path != this->currentPath)
         {
             this->currentPath = path;
-            Logger::logInfo("FileSaver::storeData changing file Timestamp %s %s %s %s", std::to_string(timestampMs).c_str(), pathStr.c_str(), currentPath.toString().c_str(), this->what.c_str());
             status = beginNewFile(this->currentPath);
             if(!status.ok())
             {
@@ -141,14 +137,13 @@ namespace claid
     }
 
     absl::Status FileSaver::beginNewFile(const Path& path)
-    {
-        Logger::logInfo("Beginning new file");
-        absl::Status status = this->createStorageFolder(path);
+    {        absl::Status status = this->createStorageFolder(path);
         if(!status.ok())
         {
             return status;
         }
 
+        Logger::logInfo("Beginning new file %s", path.toString().c_str());
         status = this->createTmpFolderIfRequired(path);
         if(!status.ok())
         {
@@ -174,8 +169,6 @@ namespace claid
             }
         }
         
-
-        Logger::logInfo("PATH %s", path.toString().c_str());
         status = this->serializer->beginNewFile(path.toString());
         if(!status.ok())
         {
@@ -191,16 +184,10 @@ namespace claid
         return this->currentFilePath;
     }
 
-    // void FileSaver::storeDataHeader(const Path& path)
-    // {
-    //     bool append = true;
-    //     this->serializer->writeHeaderToFile(path, this->currentFile);
-    // }
-
     void FileSaver::getCurrentPathRelativeToStorageFolder(Path& path, const Time timestamp)
     {
         Time time = timestamp;
-        path = Path(time.strftime(this->fileNameFormat.c_str()));
+        path = Path(strftime_advanced(this->fileNameFormat, time));
         //path = Path::join(this->storagePath, path.toString());
     }
      
@@ -285,5 +272,42 @@ namespace claid
         return absl::OkStatus();
     }
 
-   
+    int FileSaver::roundDown(int value, int multiple) {
+        return (value / multiple) * multiple;
+    }
+
+
+    std::string FileSaver::strftime_advanced(const std::string& format, const Time& timestamp) {
+        std::string result = format;
+
+        // If the user specifies %2H, %2M, %2S, we want to round down to the nearest 2 hour, 2 minute, 2 second.
+        // If the user specifies %5M, we want to round down to the nearest 5 minute.
+        // If the user specifies %7H, we want to round down to the nearest 7 hour.
+        // This allows for better control over naming, as the user can specify the granularity of the file naming.
+        std::regex pattern("%(\\d*)([HMS])");
+        std::smatch matches;
+
+        while (std::regex_search(result, matches, pattern)) {
+            // Matches according to \\d*, i.e., any digits before H, M, or S.
+            int interval = matches[1].str().empty() ? 1 : std::stoi(matches[1].str());
+            // Matches according to [HMS], i.e., H, M, or S.
+            char unit = matches[2].str()[0];
+
+            int value;
+            switch (unit) {
+                case 'H': value = roundDown(timestamp.getHour(), interval); break;
+                case 'M': value = roundDown(timestamp.getMinute(), interval); break;
+                case 'S': value = roundDown(timestamp.getSecond(), interval); break;
+                default: value = 0; // Should never happen
+            }
+
+            std::string replacement = std::to_string(value);
+            if (replacement.length() == 1) {
+                replacement = "0" + replacement;  // Pad with leading zero if needed
+            }
+            result.replace(matches.position(), matches.length(), replacement);
+        }
+
+        return timestamp.strftime(result.c_str());
+    }
 }

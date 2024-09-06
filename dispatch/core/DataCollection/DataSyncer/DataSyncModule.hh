@@ -80,9 +80,10 @@ namespace claid
             Time lastMessageFromFileReceiver;
         
 
-
-            int syncingPeriodInMs;
+            Schedule syncingSchedule;
             bool deleteFileAfterSync;
+
+            static constexpr int SYNC_TIMEOUT_IN_MS = 10000;
 
             void makePathRelative(std::string& path)
             {
@@ -107,8 +108,6 @@ namespace claid
                 {
                     moduleWarning(absl::StrCat("Unable scan directory \"", this->filePath, "\" for files."));
                     return;
-                    //CLAID_THROW(Exception, "Error in DataSyncModule, cannot scan directory \"" << this->filePath << "\" "
-                    //<< "for files. Directory either does not exist or we do not have reading permissions.");
                 }
 
                 for(std::string& path : fileList)
@@ -231,7 +230,7 @@ namespace claid
                 Logger::logInfo("PeriodicSyncCalled");
                 // If a previous syncing process is still going on (e.g., file receiver is still requesting files),
                 // do not start a new syncing process just yet.
-                if(millisecondsSinceLastMessageFromFileReceiver() >= size_t(this->syncingPeriodInMs / 2))
+                if(millisecondsSinceLastMessageFromFileReceiver() >= SYNC_TIMEOUT_IN_MS)
                 {
                     Logger::logInfo("!!!PERIODIC SYNC!!!");
                     sendFileList();
@@ -241,7 +240,7 @@ namespace claid
             // Get's called by the middleware once we connect to a remote server.
             void onConnectedToRemoteServer()
             {
-                if(millisecondsSinceLastMessageFromFileReceiver() >= size_t(this->syncingPeriodInMs))
+                if(millisecondsSinceLastMessageFromFileReceiver() >= SYNC_TIMEOUT_IN_MS)
                 {
                     // If we were not able to contact the DataReceiverModule for a while,
                     // we retry upon successfull connection to a remote server, assuming 
@@ -291,7 +290,7 @@ namespace claid
 
 
                 properties.getStringProperty("filePath", this->filePath);
-                properties.getNumberProperty("syncingPeriodInMs", this->syncingPeriodInMs);
+                properties.getObjectProperty("syncingSchedule", this->syncingSchedule);
                 properties.getBoolProperty("deleteFileAfterSync", this->deleteFileAfterSync, false);
 
                 if(properties.wasAnyPropertyUnknown())
@@ -331,7 +330,14 @@ namespace claid
                 this->fromReceiverModuleChannel = this->subscribe<DataSyncPackage>("FromDataReceiverModuleChannel", &DataSyncModule::onPackageFromDataReceiver, this);
                                
                 this->lastMessageFromFileReceiver = Time::now();
-                this->registerPeriodicFunction("PeriodicSyncFunction", &DataSyncModule::periodicSync, this, Duration::milliseconds(this->syncingPeriodInMs));
+                
+                this->registerFunctionBasedOnSchedule(
+                    "PeriodicSyncFunction", 
+                    this->syncingSchedule,
+                    &DataSyncModule::periodicSync, 
+                    this
+                );
+                
                 this->periodicSync();
                 Logger::logInfo("DataSyncModule done");
 
