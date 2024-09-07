@@ -101,9 +101,13 @@ namespace claid
 
             HostDescription hostDescription;
             hostDescription.hostname = host.hostname();
-            hostDescription.isServer = host.is_server();
-            hostDescription.hostServerAddress = host.host_server_address();
-            hostDescription.connectTo = host.connect_to();
+            hostDescription.isServer = host.has_server_config();
+
+            if(hostDescription.isServer)
+            {
+                hostDescription.hostServerAddress = host.server_config().host_server_address();
+            }
+            hostDescription.connectTo = host.connect_to().address();
 
             if(host.hostname() == "")
             {

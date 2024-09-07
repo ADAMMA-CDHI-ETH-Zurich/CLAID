@@ -64,6 +64,13 @@ namespace claid
         return absl::OkStatus();
     }
 
+    absl::Status RemoteDispatcherServer::start(const TLSServerKeyStore& serverKeyStore)
+    {
+        this->serverKeyStore = serverKeyStore;
+        this->useTLS = true;
+        return this->start();
+    }
+
     void RemoteDispatcherServer::shutdown() 
     {
         if(!this->running)
@@ -71,7 +78,6 @@ namespace claid
             return;
         }
         
-        std::cout << "RemoteDispatcherServer shutdown 1\n";
         // server->Shutdown() will hang indefintely as long as there are still ongoing RPC calls by any client.
         // The clients call SendReceivePackages to stream data to/from the server. The SendReceivePackage RPC call
         // typically never returns, as long as the client is alive.
@@ -86,8 +92,6 @@ namespace claid
         const std::chrono::time_point<std::chrono::system_clock> deadline = std::chrono::system_clock::now() + waitDuration;
 
         server->Shutdown(deadline);
-        std::cout << "RemoteDispatcherServer shutdown 2\n";
-        std::cout << "RemoteDispatcherServer shutdown 3\n";
 
         this->running = false;
     }
@@ -95,7 +99,7 @@ namespace claid
     void RemoteDispatcherServer::buildAndStartServer()
     {
         grpc::ServerBuilder builder;
-        builder.AddListeningPort(addr, grpc::InsecureServerCredentials());
+        builder.AddListeningPort(addr, makeServerCredentials());
         builder.RegisterService(&remoteServiceImpl);
         builder.AddChannelArgument(GRPC_ARG_KEEPALIVE_TIME_MS,
                                     10 * 60 * 1000 /*10 min*/);
@@ -111,6 +115,33 @@ namespace claid
         builder.SetMaxSendMessageSize(1024 * 1024 * 1024);  // 1 GB
 
         server = builder.BuildAndStart();
+    }
+
+    std::shared_ptr<grpc::ServerCredentials> RemoteDispatcherServer::makeServerCredentials() const
+    {
+        if(this->useTLS)
+        {
+            grpc::SslServerCredentialsOptions::PemKeyCertPair key_cert_pair = {
+                this->serverKeyStore.serverKey, 
+                this->serverKeyStore.serverCert
+            };
+            grpc::SslServerCredentialsOptions ssl_opts;
+
+            if(this->serverKeyStore.requiresAuthentication())
+            {
+                // Mutual TLS (MTLS)
+                ssl_opts.pem_root_certs = this->serverKeyStore.clientCertificate;
+            }
+            ssl_opts.pem_key_cert_pairs.push_back(key_cert_pair);
+
+            // Create server credentials
+            auto server_creds = grpc::SslServerCredentials(ssl_opts);
+            return server_creds;
+        }
+        else
+        {
+            return grpc::InsecureServerCredentials();
+        }
     }
 
     bool RemoteDispatcherServer::isRunning() const

@@ -360,7 +360,7 @@ void MiddleWare::createPlatformSpecificGlobalDeviceScheduler()
 {
     #ifdef __ANDROID__
     this->globalDeviceScheduler = std::static_pointer_cast<GlobalDeviceScheduler>(
-            std::make_shared<GlobalDeviceSchedulerAndroid>(this->remoteFunctionRunnableHandler, this->moduleTable, remoteFunctionHandler)
+            std::make_shared<GlobalDeviceSchedulerAndroid>(this->moduleTable,this->remoteFunctionRunnableHandler, remoteFunctionHandler)
         );
     #else
     this->globalDeviceScheduler = std::make_shared<GlobalDeviceScheduler>(this->remoteFunctionRunnableHandler, this->moduleTable);

@@ -32,7 +32,7 @@
 #include "absl/status/status.h"
 
 #include "dispatch/core/RemoteDispatching/HostUserTable.hh"
-
+#include "dispatch/core/RemoteDispatching/TLSServerKeyStore.hh"
 namespace claid
 {
   class RemoteDispatcherServer
@@ -43,13 +43,14 @@ namespace claid
       virtual ~RemoteDispatcherServer();
 
       absl::Status start();
+      absl::Status start(const TLSServerKeyStore& serverKeyStore);
       void shutdown();
 
       bool isRunning() const;
 
     private:
       void buildAndStartServer();
-
+      std::shared_ptr<grpc::ServerCredentials> makeServerCredentials() const;
     private:
       const std::string addr;
 
@@ -57,6 +58,9 @@ namespace claid
 
       RemoteServiceImpl remoteServiceImpl;
       std::unique_ptr<grpc::Server> server;
+
+      bool useTLS = false;
+      TLSServerKeyStore serverKeyStore;
   };
 
 }

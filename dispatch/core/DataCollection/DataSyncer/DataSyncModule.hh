@@ -356,7 +356,6 @@ namespace claid
                 // change the syncing schedule via a remote function call.
                 registerRemoteFunction("set_syncing_schedule", &DataSyncModule::setSyncingSchedule, this);
 
-
                 // #ifdef __APPLE__
                 //     #if TARGET_OS_IPHONE
                 //         this->filePath = iOSApplicationPathHelper::getAppDocumentsPath() + std::string("/") + this->filePath;
