@@ -202,9 +202,9 @@ absl::Status MiddleWare::startRemoteDispatcherServer(const std::string& currentH
     }
 
     const HostDescription& hostDescription = it->second;
-    if(!hostDescription.isServer)
+    if(!hostDescription.isServer())
     {
-        if(hostDescription.hostServerAddress != "")
+        if(hostDescription.getHostServerAddress() != "")
         {
             return absl::InvalidArgumentError(absl::StrCat(
                 "Cannot start RemoteDispatcherServer on host \"", currentHost, "\".\n",
@@ -220,9 +220,9 @@ absl::Status MiddleWare::startRemoteDispatcherServer(const std::string& currentH
     }
 
     // Find out our port from the host description (if we are a server, then hostDescription.hostServerAddress typically would be a port).
-    const std::string address = hostDescription.hostServerAddress;
+    const std::string address = hostDescription.getHostServerAddress();
 
-    if(hostDescription.hostServerAddress == "")
+    if(address.empty())
     {
         return absl::InvalidArgumentError(absl::StrCat(
             "Cannot start RemoteDispatcherServer on host \"", currentHost, "\".\n",
@@ -256,9 +256,9 @@ absl::Status MiddleWare::startRemoteDispatcherClient(const std::string& currentH
     }
 
     const HostDescription& hostDescription = it->second;
-    const std::string& targetServer = hostDescription.connectTo;
+    const std::string& targetServer = hostDescription.getConnectToAddress();
 
-    if(targetServer == "")
+    if(!hostDescription.isClient() || hostDescription.getConnectToAddress().empty())
     {
         Logger::logInfo("Not starting RemoteDispatcherClient, because targetServer is empty (this host will not connect to an external host).");
         return absl::OkStatus();
@@ -275,7 +275,7 @@ absl::Status MiddleWare::startRemoteDispatcherClient(const std::string& currentH
 
     const HostDescription& serverDescription = it2->second;
 
-    if(!serverDescription.isServer)
+    if(!serverDescription.isServer())
     {
         return absl::InvalidArgumentError(absl::StrCat(
             "Current host \"", currentHost, "\" was configured to connect to server \"", targetServer, "\", ",
@@ -283,8 +283,8 @@ absl::Status MiddleWare::startRemoteDispatcherClient(const std::string& currentH
         ));
     }
 
-    const std::string& address = serverDescription.hostServerAddress;
-    if(address == "")
+    const std::string& address = serverDescription.getHostServerAddress();
+    if(address.empty())
     {
         return absl::InvalidArgumentError(absl::StrCat(
             "Current host \"", currentHost, "\" was configured to connect to server \"", targetServer, "\", ",
@@ -978,30 +978,30 @@ absl::Status MiddleWare::loadNewConfigIntoModuleTableAndRouter(const Configurati
             )));
         }
 
-        if(entry.second.connectTo != it->second.connectTo)
+        if(entry.second.getConnectToAddress() != it->second.getConnectToAddress())
         {
             return absl::Status(absl::InvalidArgumentError(absl::StrCat(
                 "Unable to load a new configuration into ModuleTable.\n",
                 "The new config has made changes to the internal configuration for host \"", entry.first, "\".\n",
-                "Previously, the property \"connectTo\" was set to \"", it->second.connectTo, " and now is \"", entry.second.connectTo, "\".\n",
+                "Previously, the property \"connectTo\" was set to \"", it->second.getConnectToAddress(), " and now is \"", entry.second.getConnectToAddress(), "\".\n",
                 "Changing the internal configuration of hosts when reloading configs is not supported. You can only change the Modules per host.")));
         }
 
-        if(entry.second.isServer != it->second.isServer)
+        if(entry.second.isServer() != it->second.isServer())
         {
             return absl::Status(absl::InvalidArgumentError(absl::StrCat(
                 "Unable to load a new configuration into ModuleTable.\n",
                 "The new config has made changes to the internal configuration for host \"", entry.first, "\".\n",
-                "Previously, the property \"isServer\" was set to \"", it->second.isServer, " and now is \"", entry.second.isServer, "\".\n",
+                "Previously, the property \"isServer\" was set to \"", it->second.isServer(), " and now is \"", entry.second.isServer(), "\".\n",
                 "Changing the internal configuration of hosts when reloading configs is not supported. You can only change the Modules per host.")));
         }
 
-        if(entry.second.connectTo != it->second.connectTo)
+        if(entry.second.getHostServerAddress() != it->second.getHostServerAddress())
         {
             return absl::Status(absl::InvalidArgumentError(absl::StrCat(
                 "Unable to load a new configuration into ModuleTable.\n",
                 "The new config has made changes to the internal configuration for host \"", entry.first, "\".\n",
-                "Previously, the property \"hostServerAddress\" was set to \"", it->second.hostServerAddress, " and now is \"", entry.second.hostServerAddress, "\".\n",
+                "Previously, the property \"hostServerAddress\" was set to \"", it->second.getHostServerAddress(), " and now is \"", entry.second.getHostServerAddress(), "\".\n",
                 "Changing the internal configuration of hosts when reloading configs is not supported. You can only change the Modules per host.")));
         }
     }

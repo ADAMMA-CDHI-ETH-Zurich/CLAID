@@ -99,15 +99,34 @@ namespace claid
         {
             const HostConfig& host = config.hosts(i);
 
-            HostDescription hostDescription;
-            hostDescription.hostname = host.hostname();
-            hostDescription.isServer = host.has_server_config();
+            HostDescription hostDescription(host);
 
-            if(hostDescription.isServer)
+            if(hostDescription.isServer())
             {
-                hostDescription.hostServerAddress = host.server_config().host_server_address();
+                if(hostDescription.getHostServerAddress().empty())
+                {
+                    return absl::InvalidArgumentError(
+                        absl::StrCat(
+                            "Configuration: Host \"",
+                            hostDescription.getHostname(),
+                            "\" is defined as server, but has no server address specified."
+                        )
+                    );
+                }
             }
-            hostDescription.connectTo = host.connect_to().address();
+            if(hostDescription.isClient())
+            {
+                if(hostDescription.getConnectToAddress().empty())
+                {
+                    return absl::InvalidArgumentError(
+                        absl::StrCat(
+                            "Configuration: Host \"",
+                            hostDescription.getHostname(),
+                            "\" is defined as client, but has no client address specified."
+                        )
+                    );
+                }
+            }
 
             if(host.hostname() == "")
             {
@@ -119,14 +138,14 @@ namespace claid
                     );
             }
 
-            if(hostDescriptions.find(hostDescription.hostname) != hostDescriptions.end())
+            if(hostDescriptions.find(hostDescription.getHostname()) != hostDescriptions.end())
             {
                 return absl::AlreadyExistsError(
                     absl::StrCat("Configuration: Host \"",
-                    hostDescription.hostname, "\" was defined more than once."));
+                    hostDescription.getHostname(), "\" was defined more than once."));
             }
 
-            absl::Status status = hostDescriptions.insert(make_pair(hostDescription.hostname, hostDescription));
+            absl::Status status = hostDescriptions.insert(make_pair(hostDescription.getHostname(), hostDescription));
             if(!status.ok())
             {
                 return status;

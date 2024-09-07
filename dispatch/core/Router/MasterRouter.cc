@@ -35,7 +35,7 @@ namespace claid
         for(const auto& entry : hostDescriptions)
         {
             const HostDescription& host = entry.second;
-            const std::string& hostname = host.hostname;  
+            const std::string& hostname = host.getHostname();  
         
             std::shared_ptr<Router> responsibleRouter = nullptr;
             for(std::shared_ptr<Router> router : this->routers)

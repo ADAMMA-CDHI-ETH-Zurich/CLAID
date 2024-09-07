@@ -32,8 +32,8 @@ private:
 
 public:
     GlobalDeviceSchedulerAndroid(
-        RemoteFunctionRunnableHandler& remoteFunctionRunnableHandler, 
         const ModuleTable& moduleTable,
+        RemoteFunctionRunnableHandler& remoteFunctionRunnableHandler, 
         RemoteFunctionHandler& remoteFunctionHandler
     ) : GlobalDeviceScheduler(remoteFunctionRunnableHandler, moduleTable), remoteFunctionHandler(remoteFunctionHandler)
     {

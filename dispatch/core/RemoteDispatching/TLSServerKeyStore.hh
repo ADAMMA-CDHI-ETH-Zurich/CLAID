@@ -13,6 +13,7 @@
  * @brief The main namespace for the CLAID framework.
  */
 
+#include "absl/status/status.h"
 namespace claid {
     /**
      * @struct TLSServerKeyStore
@@ -46,13 +47,25 @@ namespace claid {
          * @param pathToServerKey The path to the server key.
          * @return The TLSServerKeyStore with only encryption.
          */
-        static TLSServerKeyStore onlyEncryption(const std::string& pathToServerCert, const std::string& pathToServerKey)
+        static absl::Status onlyEncryption(
+            const std::string& pathToServerCert,
+            const std::string& pathToServerKey,
+            TLSServerKeyStore& store
+        )
         {
-            TLSServerKeyStore store;
-            store.loadCertificate(pathToServerCert);
-            store.loadKey(pathToServerKey);
+            store = TLSServerKeyStore();
+            absl::Status status = store.loadCertificate(pathToServerCert);
+            if (!status.ok()) {
+                Logger::logError("Failed to load server certificate: %s", status.ToString().c_str());
+                return status;
+            }
+            status = store.loadKey(pathToServerKey);
+            if (!status.ok()) {
+                Logger::logError("Failed to load server key: %s", status.ToString().c_str());
+                return status;
+            }
             store.encryption = true;
-            return store;
+            return absl::OkStatus();
         }
 
         /**
@@ -62,19 +75,32 @@ namespace claid {
          * @param pathToClientCert The path to the client certificate.
          * @return The TLSServerKeyStore with mutual encryption and authentication.
          */
-        static TLSServerKeyStore encryptionAndAuthentication(
+        static absl::Status encryptionAndAuthentication(
             const std::string& pathToServerCert,
             const std::string& pathToServerKey,
-            const std::string& pathToClientCert
+            const std::string& pathToClientCert,
+            TLSServerKeyStore& store
         )
         {
-            TLSServerKeyStore store;
-            store.loadCertificate(pathToServerCert);
-            store.loadKey(pathToServerKey);
-            store.clientCertificate = pathToClientCert;
+            store = TLSServerKeyStore();
+            absl::Status status = store.loadCertificate(pathToServerCert);
+            if (!status.ok()) {
+                Logger::logError("Failed to load server certificate: %s", status.ToString().c_str());
+                return status;
+            }
+            status = store.loadKey(pathToServerKey);
+            if (!status.ok()) {
+                Logger::logError("Failed to load server key: %s", status.ToString().c_str());
+                return status;
+            }
+            status = store.loadClientCertificate(pathToClientCert);
+            if (!status.ok()) {
+                Logger::logError("Failed to load client certificate: %s", status.ToString().c_str());
+                return status;
+            }
             store.encryption = true;
             store.authentication = true;
-            return store;
+            return absl::OkStatus();
         }
 
         /**
@@ -94,9 +120,9 @@ namespace claid {
         /**
          * @brief Loads the server certificate from a file.
          * @param path The path to the file containing the server certificate.
-         * @return True if the certificate was loaded successfully, false otherwise.
+         * @return absl::Status A status indicating whether the operation was successful.
          */
-        bool loadCertificate(const std::string& path)
+        absl::Status loadCertificate(const std::string& path)
         {
             return readFile(path, serverCert);
         }
@@ -104,9 +130,9 @@ namespace claid {
         /**
          * @brief Loads the server key from a file.
          * @param path The path to the file containing the server key.
-         * @return True if the key was loaded successfully, false otherwise.
+         * @return absl::Status A status indicating whether the operation was successful.
          */
-        bool loadKey(const std::string& path)
+        absl::Status loadKey(const std::string& path)
         {
             return readFile(path, serverKey);
         }
@@ -114,9 +140,9 @@ namespace claid {
         /**
          * @brief Loads the client certificate from a file.
          * @param path The path to the file containing the client certificate.
-         * @return True if the certificate was loaded successfully, false otherwise.
+         * @return absl::Status A status indicating whether the operation was successful.
          */
-        bool loadClientCertificate(const std::string& path)
+        absl::Status loadClientCertificate(const std::string& path)
         {
             return readFile(path, clientCertificate);
         }
@@ -124,18 +150,18 @@ namespace claid {
         /**
          * @brief Reads the contents of a file.
          * @param path The path to the file to read.
-         * @return The contents of the file as a string.
+         * @param content A buffer to store the content of the file.
+         * @return absl::Status A status indicating whether the operation was successful.
          */
-        bool readFile(const std::string& path, std::string& content)
+        absl::Status readFile(const std::string& path, std::string& content)
         {
             std::ifstream file(path, std::ios::binary);
             if(!file.is_open())
             {
-                Logger::logError("Failed to open file: \"%s\"", path.c_str());
-                return false;
+                return absl::NotFoundError(absl::StrCat("Failed to open file: ", path));
             }
             content = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-            return true;
+            return absl::OkStatus();
         }
     };
 }

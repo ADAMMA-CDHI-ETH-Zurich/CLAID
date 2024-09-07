@@ -394,14 +394,14 @@ message ServerConfig {
 }
 
 message TLSEncryption {
-  string server_certificate = 1;
-  string server_key = 2;
+  string certificate = 1;
+  string key = 2;
 }
 
 message TLSEncryptionAndAuthentication {
-  string server_certificate = 1;
-  string server_key = 2;
-  string client_certificate = 3;
+  string certificate = 1;
+  string key = 2;
+  string other_party_certificate = 3;
 }
 
 message ModuleConfig

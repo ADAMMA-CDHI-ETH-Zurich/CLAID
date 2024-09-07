@@ -179,6 +179,8 @@ cc_library(
         "RemoteDispatching/HostUserTable.hh",
         "RemoteDispatching/ClientTable.hh",
         "RemoteDispatching/RemoteClientKey.hh",
+        "RemoteDispatching/TLSClientKeyStore.hh",
+        "RemoteDispatching/TLSServerKeyStore.hh",
     ]),
     deps = [
         ":claid_config",
@@ -196,7 +198,11 @@ cc_library(
 cc_library(
     name = "claid_config",
     srcs = glob(["Configuration/*.cc"]),
-    hdrs = glob(["Configuration/*.hh"]),
+    hdrs = glob([
+        "Configuration/*.hh",
+        "RemoteDispatching/TLSClientKeyStore.hh",
+        "RemoteDispatching/TLSServerKeyStore.hh"
+    ]),
     deps = [
         "//dispatch/proto:claidservice_cc_proto",
         "@com_google_protobuf//:protobuf",

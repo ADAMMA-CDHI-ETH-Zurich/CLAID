@@ -40,15 +40,15 @@ namespace claid
                 {
                     const HostDescription& host = entry.second;
 
-                    if(host.isServer)
+                    if(host.isServer())
                     {
                         // Check if a server with this address already exists.
-                        if(hostDescriptions.find(host.hostServerAddress) != hostDescriptions.end())
+                        if(hostDescriptions.find(host.getHostServerAddress()) != hostDescriptions.end())
                         {
                             return absl::AlreadyExistsError(
                                 absl::StrCat(
                                     "Multiple hosts were configured to be a server with address \"",
-                                    host.hostServerAddress, "\". Each host that is a server needs to have a unique address."));
+                                    host.getHostServerAddress(), "\". Each host that is a server needs to have a unique address."));
                         }
                     }
                 }
@@ -65,16 +65,16 @@ namespace claid
                 {
                     const HostDescription& host = entry.second;
 
-                    if(routingNodes.find(host.hostname) == routingNodes.end())
+                    if(routingNodes.find(host.getHostname()) == routingNodes.end())
                     {
-                        RoutingNode* node = new RoutingNode(host.hostname);
-                        routingNodes.insert(make_pair(host.hostname, node));
+                        RoutingNode* node = new RoutingNode(host.getHostname());
+                        routingNodes.insert(make_pair(host.getHostname(), node));
                     }
                     else
                     {
                         return absl::AlreadyExistsError(
                             absl::StrCat("Error while parsing CLAID configuration to routing tree.",
-                                "Host \"", host.hostname, "\" was specified more than once."));
+                                "Host \"", host.getHostname(), "\" was specified more than once."));
                     }
                 }
                 return absl::OkStatus();
@@ -90,19 +90,19 @@ namespace claid
                 for(const auto& entry : hostDescriptions)
                 {
                     const HostDescription& host = entry.second;
-                    const std::string& connectToHostname = host.connectTo;
-                    RoutingNode* hostNode = routingNodes[host.hostname];
+                    const std::string& connectToHostname = host.getConnectToAddress();
+                    RoutingNode* hostNode = routingNodes[host.getHostname()];
 
-                    if(host.isServer && host.hostServerAddress.empty())
+                    if(host.isServer() && host.getHostServerAddress().empty())
                     {
-                        return absl::NotFoundError(absl::StrCat("Host \"", host.hostname, "\" was configured to be a server, ",
+                        return absl::NotFoundError(absl::StrCat("Host \"", host.getHostname(), "\" was configured to be a server, ",
                             "however, no hostServerAddress was specified."));
                     }
 
-                    if(host.connectTo == host.hostname)
+                    if(host.getConnectToAddress() == host.getHostname())
                     {
                         return absl::InvalidArgumentError(
-                            absl::StrCat("Host \"", host.hostname, "\" was configured to connect to itself. Loops are not allowed in the routing graph!"));
+                            absl::StrCat("Host \"", host.getHostname(), "\" was configured to connect to itself. Loops are not allowed in the routing graph!"));
                     }
 
                     if(connectToHostname == "")
@@ -114,7 +114,7 @@ namespace claid
                             // Root node was already set, but we found another node that doesnt connect to another host.
                             // Two unconnected nodes -> error.
                             return absl::InvalidArgumentError(absl::StrCat("Error while building routing tree.\n",
-                                        "Host \"", host.hostname, "\" does not connect to any other host,\n",
+                                        "Host \"", host.getHostname(), "\" does not connect to any other host,\n",
                                         "hence we assume it is the root node of the routing tree.\n",
                                         "However, host \"", routingTreeRoot->name, "\" was already set as routing tree root node.\n",
                                         "Please make sure that every host is connected to another host, except for the initial/root host (i.e., a server that no other server connects to)."));
@@ -127,17 +127,17 @@ namespace claid
                         if(hostIterator == hostDescriptions.end())
                         {
                             return absl::NotFoundError(absl::StrCat("Error while building routing tree.\n",
-                                        "Host \"", host.hostname, "\" is configured to connect to a host with address \"", connectToHostname, "\",\n",
+                                        "Host \"", host.getHostname(), "\" is configured to connect to a host with address \"", connectToHostname, "\",\n",
                                         "however a host with this address was not found.\n",
                                         "Make sure that that a host with a host_server_address set as \"", connectToHostname, "\" exists and is a server."));
                         }
 
                         const HostDescription& connectToHostDescription = hostIterator->second;
 
-                        if(!connectToHostDescription.isServer)
+                        if(!connectToHostDescription.isServer())
                         {
                             return absl::NotFoundError(absl::StrCat("Error while building routing tree.\n",
-                                        "Host \"", host.hostname, "\" is configured to connect to a host with address \"", connectToHostname, "\",\n",
+                                        "Host \"", host.getHostname(), "\" is configured to connect to a host with address \"", connectToHostname, "\",\n",
                                         "However host\"", connectToHostname, "\" is not configured as server."));
                         }
 
@@ -146,7 +146,7 @@ namespace claid
                         if(routingNodesIterator == routingNodes.end())
                         {
                             return absl::InvalidArgumentError(absl::StrCat("Error while building routing tree.\n",
-                                        "Host \"", host.hostname, "\" is configured to connect to host \"", connectToHostname, ",\"\n",
+                                        "Host \"", host.getHostname(), "\" is configured to connect to host \"", connectToHostname, ",\"\n",
                                         "however a RoutingNode for that host was not found"));
                         }
 

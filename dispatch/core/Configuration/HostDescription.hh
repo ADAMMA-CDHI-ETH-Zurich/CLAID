@@ -24,28 +24,166 @@
 #include <string>
 #include <map>
 #include "dispatch/core/Configuration/UniqueKeyMap.hh"
+#include "dispatch/core/RemoteDispatching/TLSServerKeyStore.hh"
+#include "dispatch/core/RemoteDispatching/TLSClientKeyStore.hh"
+#include "dispatch/proto/claidservice.pb.h"
 
+using namespace claidservice;
 namespace claid
 {
     struct HostDescription
     {
-        std::string hostname;
-        bool isServer;
-        std::string hostServerAddress;
-        std::string connectTo;
+
+
+        HostConfig hostConfig;
 
         HostDescription()
         {
 
         }
 
-        HostDescription(const std::string& hostname, 
-            bool isServer, 
-            const std::string& hostServerAddress, 
-            const std::string& connectTo) : hostname(hostname), isServer(isServer), 
-                                            hostServerAddress(hostServerAddress), connectTo(connectTo)
+        HostDescription(const HostConfig& hostConfig) : hostConfig(hostConfig)
         {
 
+        }
+
+        std::string getHostname() const
+        {
+            return hostConfig.hostname();
+        }
+
+        bool isServer() const
+        {
+            return hostConfig.has_server_config();
+        }
+
+
+        bool isClient() const
+        {
+            return hostConfig.has_connect_to();
+        }
+
+        /**
+         * @brief Retrieves the address of this host, when it acts as server.
+         * 
+         * This method returns the address specified in the server configuration.
+         * 
+         * @return const std::string& The address to connect to.
+         */
+        const std::string& getHostServerAddress() const
+        {
+            return hostConfig.server_config().host_server_address();
+        }
+
+        /**
+         * @brief Retrieves the address this host should connect to.
+         * 
+         * This method returns the address specified in the client configuration.
+         * 
+         * @return const std::string& The address to connect to.
+         */
+        const std::string& getConnectToAddress() const
+        {
+            return hostConfig.connect_to().address();
+        }
+
+        /**
+         * @brief Checks if a security configuration for the server was specified in the config.
+         * 
+         * This method checks if the server configuration has TLS settings.
+         * 
+         * @return true if TLS server settings are available, false otherwise.
+         */
+        bool hasTLSServerSettings() const
+        {
+            return hostConfig.server_config().security_settings_case() != ServerConfig::SecuritySettingsCase::SECURITY_SETTINGS_NOT_SET;
+        }
+        /**
+         * @brief Checks if a security configuration for the client was specified in the config.
+         * 
+         * This method checks if the client configuration has TLS settings.
+         * 
+         * @return true if TLS client settings are available, false otherwise.
+         */
+        bool hasTLSClientSettings() const
+        {
+            return hostConfig.connect_to().security_settings_case() != ClientConfig::SecuritySettingsCase::SECURITY_SETTINGS_NOT_SET;
+        }
+
+        /**
+         * @brief Retrieves the TLS server key store for the host.
+         * 
+         * This method checks if TLS server settings are available and returns the appropriate
+         * TLSServerKeyStore based on the security settings specified in the configuration.
+         * 
+         * @return absl::Status Indicates whether the operation was successful.
+         * @param store The TLSServerKeyStore to store the result in.
+         */
+        absl::Status getTLSServerKeyStore(TLSServerKeyStore& store) const
+        {
+            if(!hasTLSServerSettings())
+            {
+                throw std::runtime_error("HostDescription::getTLSServerKeyStore: No TLS server settings available.");
+            }
+
+            if(hostConfig.server_config().security_settings_case() == ServerConfig::SecuritySettingsCase::kTlsEncryption)
+            {
+                absl::Status status = TLSServerKeyStore::onlyEncryption(
+                    hostConfig.server_config().tls_encryption().certificate(),
+                    hostConfig.server_config().tls_encryption().key(),
+                    store
+                );
+                return status;
+            }
+            else if(hostConfig.server_config().security_settings_case() == ServerConfig::SecuritySettingsCase::kTlsEncryptionAndAuthentication)
+            {
+                absl::Status status = TLSServerKeyStore::encryptionAndAuthentication(
+                    hostConfig.server_config().tls_encryption_and_authentication().certificate(), 
+                    hostConfig.server_config().tls_encryption_and_authentication().key(),
+                    hostConfig.server_config().tls_encryption_and_authentication().other_party_certificate(),
+                    store
+                );
+                return status;
+            }
+            else
+            {
+                return absl::Status(absl::StatusCode::kInvalidArgument, "HostDescription::getTLSServerKeyStore: No TLS server settings specified in configuration.");
+            }
+        }
+        /**
+         * @brief Retrieves the TLS server key store for the host.
+         * 
+         * This method checks if TLS server settings are available and returns the appropriate
+         * TLSServerKeyStore based on the security settings specified in the configuration.
+         * 
+         * @return absl::Status Indicates whether the operation was successful.
+         * @param store The TLSServerKeyStore to store the result in.
+         */
+        absl::Status getTLSClientKeyStore(TLSClientKeyStore& store) const
+        {
+            if(hostConfig.connect_to().security_settings_case() == ClientConfig::SecuritySettingsCase::kTlsEncryption)
+            {
+                absl::Status status = TLSClientKeyStore::onlyEncryption(
+                    hostConfig.connect_to().tls_encryption().certificate(),
+                    hostConfig.connect_to().tls_encryption().key(),
+                    store
+                );
+                return status;
+            }
+            else if(hostConfig.connect_to().security_settings_case() == ClientConfig::SecuritySettingsCase::kTlsEncryptionAndAuthentication)
+            {
+                absl::Status status = TLSClientKeyStore::encryptionAndAuthentication(
+                    hostConfig.connect_to().tls_encryption_and_authentication().certificate(), 
+                    hostConfig.connect_to().tls_encryption_and_authentication().key(),
+                    hostConfig.connect_to().tls_encryption_and_authentication().other_party_certificate(),
+                    store
+                );
+                return status;
+            }
+            else 
+            {
+                return absl::Status(absl::StatusCode::kInvalidArgument, "HostDescription::getTLSClientKeyStore: No TLS client settings specified in configuration.");
+            }
         }
     };
 
