@@ -379,8 +379,8 @@ message HostConfig {
 message ClientConfig {
   string host = 1;
   oneof security_settings {
-    TLSEncryption tls_encryption = 2;
-    TLSEncryptionAndAuthentication tls_encryption_and_authentication = 3;
+    ClientTLSConfigServerBasedAuthentication tls = 2;
+    ClientTLSConfigMutualAuthentication mutual_tls = 3;
   }
 }
 
@@ -388,20 +388,35 @@ message ServerConfig {
   string host_server_address = 1;
 
   oneof security_settings {
-    TLSEncryption tls_encryption = 2;
-    TLSEncryptionAndAuthentication tls_encryption_and_authentication = 3;
+    ServerTLSConfigServerBasedAuthentication tls = 2;
+    ServerTLSConfigMutualAuthentication mutual_tls = 3;
   }
 }
 
-message TLSEncryption {
-  string certificate = 1;
-  string key = 2;
+// TLS features two types of authentication:
+// - Server-based authentication: The client authenticates the server using its public certificate.
+//   After the server has been successfully authenticated, client and server exchange a shared secret key, 
+//   which will be used to encrypt the data sent between client and server.
+// - Mutual authentication: Both client and server authenticate each other using certificates.
+message ClientTLSConfigServerBasedAuthentication {
+  string server_certificate = 1;
 }
 
-message TLSEncryptionAndAuthentication {
-  string certificate = 1;
-  string key = 2;
-  string other_party_certificate = 3;
+message ClientTLSConfigMutualAuthentication {
+  string client_public_certificate = 1;
+  string client_private_key = 2;
+  string server_certificate = 3;
+}
+
+message ServerTLSConfigServerBasedAuthentication {
+  string server_public_certificate = 1;
+  string server_private_key = 2;
+}
+
+message ServerTLSConfigMutualAuthentication {
+  string server_public_certificate = 1;
+  string server_private_key = 2;
+  string client_public_certificate = 3;
 }
 
 message ModuleConfig

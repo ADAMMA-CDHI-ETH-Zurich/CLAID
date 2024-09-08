@@ -56,10 +56,28 @@ namespace claid
         // Set the maximum send message size (in bytes)
         args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 1024 * 1024 * 1024);  // 1 GB
     
-
-
-        grpcChannel = grpc::CreateCustomChannel(addressToConnectTo, grpc::InsecureChannelCredentials(), args);
+        grpcChannel = grpc::CreateCustomChannel(addressToConnectTo, makeChannelCredentials(), args);
         stub = claidservice::ClaidRemoteService::NewStub(grpcChannel);
+    }
+
+    std::shared_ptr<grpc::ChannelCredentials> RemoteDispatcherClient::makeChannelCredentials() const
+    {
+        if(this->useTLS)
+        {
+            grpc::SslCredentialsOptions ssl_opts;
+            ssl_opts.pem_root_certs = this->clientKeyStore.serverCertificate;
+
+            if(this->clientKeyStore.requiresMutualTLS())
+            {
+                ssl_opts.pem_private_key = this->clientKeyStore.clientPrivateKey;
+                ssl_opts.pem_cert_chain = this->clientKeyStore.clientPublicCert;
+            }
+            return grpc::SslCredentials(ssl_opts);
+        }
+        else
+        {
+            return grpc::InsecureChannelCredentials();
+        }
     }
 
     void RemoteDispatcherClient::shutdown() 
@@ -85,7 +103,7 @@ namespace claid
 
 
         // Do not do this here!
-        // WriteThread will be shutdown in monitoring function.
+        // WriteThread will be shut down in monitoring function.
         // if (this->writeThread) 
         // {
         //     this->writeThread->join();
@@ -153,8 +171,6 @@ namespace claid
 
             Logger::logInfo("Sending ping package");
 
-
-
             if (!stream->Write(pingRequestPackage)) 
             {
                 grpc::Status status = stream->Finish();
@@ -163,10 +179,6 @@ namespace claid
                 ));
             }                
         
-
-            
-
-
             Logger::logInfo("Waiting for ping response");
 
             // Wait for the valid response ping
@@ -223,9 +235,7 @@ namespace claid
             }
             
             Logger::logInfo("RemoteDispatcherClient is reset.");
-        }
-        
-    
+        }    
     }
 
     absl::Status RemoteDispatcherClient::start()
@@ -245,6 +255,7 @@ namespace claid
         this->clientKeyStore = clientKeyStore;
         return this->start();
     }
+
     void RemoteDispatcherClient::processReading() 
     {
         Logger::logInfo("ProcessReading");
@@ -293,10 +304,7 @@ namespace claid
         }
 
 
-    }
-
-
-        
+    }        
 
     void RemoteDispatcherClient::processWriting() 
     {

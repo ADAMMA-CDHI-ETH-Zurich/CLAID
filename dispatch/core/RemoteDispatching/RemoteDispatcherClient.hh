@@ -70,6 +70,8 @@ namespace claid
             void onConnectedToServer();
             void onDisconnectedFromServer();
 
+            std::shared_ptr<grpc::ChannelCredentials> makeChannelCredentials() const;
+
 
         private:
 

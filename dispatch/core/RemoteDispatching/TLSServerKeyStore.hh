@@ -8,11 +8,6 @@
  * @brief Defines the TLSServerKeyStore structure for storing TLS server credentials.
  */
 
-/**
- * @namespace claid
- * @brief The main namespace for the CLAID framework.
- */
-
 #include "absl/status/status.h"
 namespace claid {
     /**
@@ -22,22 +17,26 @@ namespace claid {
     struct TLSServerKeyStore
     {
         /**
-         * @brief The server certificate.
+         * @brief The server certificate, containing the public key.
          */
         std::string serverCert;
 
         /**
-         * @brief The server key.
+         * @brief The server private key.
          */
         std::string serverKey;
 
         /**
          * @brief The certificate of the client(s) (each client needs to have the same certificate). Required for mutual TLS authentication.
-         * @note This is optional, and only required for strict identity verification. 
          * 
          * When set, the server will verify the client's certificate against this certificate upon connection.
-         * This ensures that only clients with a valid certificate can connect to the server.
+         * Specifically, in the case of mutal TLS, the client has a private key and a public certificate.
+         * It encrypts the public certificate with it's private key, and sends it to the server.
+         * The server then decrypts the certificate using this certificate. If the decryption is successful,
+         * the server knows that the client has a valid certificate.
          * 
+         * @note This is optional, and only required for mutual TLS. 
+         * It requires that the client has set up mutual TLS as well!
          */
         std::string clientCertificate;
 
@@ -47,7 +46,7 @@ namespace claid {
          * @param pathToServerKey The path to the server key.
          * @return The TLSServerKeyStore with only encryption.
          */
-        static absl::Status onlyEncryption(
+        static absl::Status serverBasedAuthentication(
             const std::string& pathToServerCert,
             const std::string& pathToServerKey,
             TLSServerKeyStore& store
@@ -64,7 +63,7 @@ namespace claid {
                 Logger::logError("Failed to load server key: %s", status.ToString().c_str());
                 return status;
             }
-            store.encryption = true;
+            store.mutualTLSRequired = false;
             return absl::OkStatus();
         }
 
@@ -75,7 +74,7 @@ namespace claid {
          * @param pathToClientCert The path to the client certificate.
          * @return The TLSServerKeyStore with mutual encryption and authentication.
          */
-        static absl::Status encryptionAndAuthentication(
+        static absl::Status mutualTLS(
             const std::string& pathToServerCert,
             const std::string& pathToServerKey,
             const std::string& pathToClientCert,
@@ -98,24 +97,22 @@ namespace claid {
                 Logger::logError("Failed to load client certificate: %s", status.ToString().c_str());
                 return status;
             }
-            store.encryption = true;
-            store.authentication = true;
+            store.mutualTLSRequired = true;
             return absl::OkStatus();
         }
 
         /**
-         * @brief Checks if the server requires authentication.
-         * @return True if the server requires authentication, i.e., a client certificate is provided, false otherwise.
+         * @brief Checks if mutual TLS is required.
+         * @return True if mutual TLS is required, false otherwise.
          */
-        bool requiresAuthentication() const
+        bool requiresMutualTLS() const
         {
-            return authentication;
+            return mutualTLSRequired;
         }
 
     private:
 
-        bool encryption = false;
-        bool authentication = false;
+        bool mutualTLSRequired = false;
 
         /**
          * @brief Loads the server certificate from a file.

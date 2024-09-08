@@ -127,9 +127,10 @@ namespace claid
             };
             grpc::SslServerCredentialsOptions ssl_opts;
 
-            if(this->serverKeyStore.requiresAuthentication())
+            if(this->serverKeyStore.requiresMutualTLS())
             {
                 // Mutual TLS (MTLS)
+                ssl_opts.client_certificate_request = GRPC_SSL_REQUEST_AND_REQUIRE_CLIENT_CERTIFICATE_AND_VERIFY;
                 ssl_opts.pem_root_certs = this->serverKeyStore.clientCertificate;
             }
             ssl_opts.pem_key_cert_pairs.push_back(key_cert_pair);
