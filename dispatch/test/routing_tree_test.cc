@@ -28,19 +28,30 @@
 
 using namespace claid;
 
-inline HostDescription makeHostDescription(const std::string& hostname, bool isServer, const std::string& hostServerAddress, const std::string& connectTo)
+inline HostDescription makeHostDescription(const std::string& hostname, const std::string& hostServerAddress, const std::string& connectTo)
 {
-    HostDescription description;
-    description.hostname = hostname;
-    description.isServer = isServer;
-    description.hostServerAddress = hostServerAddress;
-    description.connectTo = connectTo;
+    HostConfig hostConfig;
+    hostConfig.set_hostname(hostname);
+
+    if(hostServerAddress != ""  )
+    {
+        ServerConfig& serverConfig = *hostConfig.mutable_server_config();
+        serverConfig.set_host_server_address(hostServerAddress);
+    }
+
+    if(connectTo != "")
+    {
+        ClientConfig& clientConfig = *hostConfig.mutable_connect_to();
+        clientConfig.set_host(connectTo);
+    }
+
+    HostDescription description(hostConfig);
     return description;
 }
 
-inline void addHostDescription(HostDescriptionMap& map, const std::string& hostname, bool isServer, const std::string& hostServerAddress, const std::string& connectTo)
+inline void addHostDescription(HostDescriptionMap& map, const std::string& hostname, const std::string& hostServerAddress, const std::string& connectTo)
 {
-   absl::Status status = map.insert(std::make_pair(hostname, makeHostDescription(hostname, isServer, hostServerAddress, connectTo)));
+   absl::Status status = map.insert(std::make_pair(hostname, makeHostDescription(hostname, hostServerAddress, connectTo)));
    ASSERT_EQ(status.ok(), true) << status;
 }
 
@@ -48,7 +59,7 @@ inline void addClientsToServer(HostDescriptionMap& map, const std::string& serve
 {
     for(const std::string& client : clients)
     {
-        addHostDescription(map, client, false, "", server);
+        addHostDescription(map, client, "", server);
     }
 }
 
@@ -128,11 +139,11 @@ TEST(RoutingTreeTestSuite, RoutingTreeTest)
     RoutingTreeParser parser;  
 
     HostDescriptionMap hostDescriptions;
-    addHostDescription(hostDescriptions, "Server1", true, "claid1.ethz.ch", "");
-    addHostDescription(hostDescriptions, "Server2", true, "claid2.ethz.ch", "Server1");
-    addHostDescription(hostDescriptions, "Server3", true, "claid3.claid.ethz.ch", "Server2");
-    addHostDescription(hostDescriptions, "Server4", true, "claid4.claid.ethz.ch", "Server2");
-    addHostDescription(hostDescriptions, "Server5", true, "claid5.claid.ethz.ch", "Server4");
+    addHostDescription(hostDescriptions, "Server1", "claid1.ethz.ch", "");
+    addHostDescription(hostDescriptions, "Server2", "claid2.ethz.ch", "Server1");
+    addHostDescription(hostDescriptions, "Server3", "claid3.claid.ethz.ch", "Server2");
+    addHostDescription(hostDescriptions, "Server4", "claid4.claid.ethz.ch", "Server2");
+    addHostDescription(hostDescriptions, "Server5", "claid5.claid.ethz.ch", "Server4");
 
     std::vector<std::string> server1Childs = {"Client1", "Client2", "Client3"};
     std::vector<std::string> server2Childs = {"Client4", "Client5"};
@@ -185,12 +196,12 @@ TEST(RoutingTreeTestSuite, NoTwoMasterHostsTest)
     RoutingTreeParser parser;  
 
     HostDescriptionMap hostDescriptions;
-    addHostDescription(hostDescriptions, "Host1", true, "claid.ethz.ch", "");
-    addHostDescription(hostDescriptions, "Host2", true, "other.claid.ethz.ch", "");
-    addHostDescription(hostDescriptions, "Host3", false, "", "claid.ethz.ch");
-    addHostDescription(hostDescriptions, "Host4", false, "", "other.claid.ethz.ch");
-    addHostDescription(hostDescriptions, "Host5", false, "", "other.claid.ethz.ch");
-    addHostDescription(hostDescriptions, "Host6", false, "", "claid.ethz.ch");
+    addHostDescription(hostDescriptions, "Host1", "claid.ethz.ch", "");
+    addHostDescription(hostDescriptions, "Host2", "other.claid.ethz.ch", "");
+    addHostDescription(hostDescriptions, "Host3", "", "claid.ethz.ch");
+    addHostDescription(hostDescriptions, "Host4", "", "other.claid.ethz.ch");
+    addHostDescription(hostDescriptions, "Host5", "", "other.claid.ethz.ch");
+    addHostDescription(hostDescriptions, "Host6", "", "claid.ethz.ch");
     
 
     absl::Status status = parser.buildRoutingTree(hostDescriptions, routingTree);
@@ -201,9 +212,9 @@ TEST(RoutingTreeTestSuite, NoTwoMasterHostsTest)
 TEST(RoutingTreeTestSuite, UniqueHostNameTest)
 {
     HostDescriptionMap hostDescriptions;
-    absl::Status status = hostDescriptions.insert(std::make_pair("Host1", HostDescription("Host1", true, "claid.ethz.ch", "")));
-    status.Update(hostDescriptions.insert(std::make_pair("Host2", HostDescription("Host2", true, "1.claid.ethz.ch", "claid.ethz.ch"))));
-    status.Update(hostDescriptions.insert(std::make_pair("Host2", HostDescription("Host2", true, "claid.ethz.ch", "claid.ethz.ch"))));
+    absl::Status status = hostDescriptions.insert(std::make_pair("Host1", makeHostDescription("Host1", "claid.ethz.ch", "")));
+    status.Update(hostDescriptions.insert(std::make_pair("Host2", makeHostDescription("Host2", "1.claid.ethz.ch", "claid.ethz.ch"))));
+    status.Update(hostDescriptions.insert(std::make_pair("Host2", makeHostDescription("Host2", "claid.ethz.ch", "claid.ethz.ch"))));
 
     ASSERT_FALSE(status.ok()) << "Adding two hosts to the HostDescriptionMap did not yield an error.";
 } 
@@ -212,9 +223,9 @@ TEST(RoutingTreeTestSuite, UniqueHostNameTest)
 TEST(RoutingTreeTestSuite, UniqueAddressTest)
 {
     HostDescriptionMap hostDescriptions;
-    absl::Status status = hostDescriptions.insert(std::make_pair("Host1", HostDescription("Host1", true, "claid.ethz.ch", "")));
-    status.Update(hostDescriptions.insert(std::make_pair("Host2", HostDescription("Host2", true, "1.claid.ethz.ch", "claid.ethz.ch"))));
-    status.Update(hostDescriptions.insert(std::make_pair("Host3", HostDescription("Host3", true, "claid.ethz.ch", "claid.ethz.ch"))));
+    absl::Status status = hostDescriptions.insert(std::make_pair("Host1", makeHostDescription("Host1", "claid.ethz.ch", "")));
+    status.Update(hostDescriptions.insert(std::make_pair("Host2", makeHostDescription("Host2", "1.claid.ethz.ch", "claid.ethz.ch"))));
+    status.Update(hostDescriptions.insert(std::make_pair("Host3", makeHostDescription("Host3", "claid.ethz.ch", "claid.ethz.ch"))));
 
     RoutingTree routingTree;
     RoutingTreeParser parser;  
@@ -227,7 +238,7 @@ TEST(RoutingTreeTestSuite, UniqueAddressTest)
 TEST(RoutingTreeTestSuite, NoSelfLoopTest)
 {
     HostDescriptionMap hostDescriptions;
-    absl::Status status = hostDescriptions.insert(std::make_pair("Host1", HostDescription("Host1", true, "claid.ethz.ch", "Host1")));
+    absl::Status status = hostDescriptions.insert(std::make_pair("Host1", makeHostDescription("Host1", "claid.ethz.ch", "Host1")));
 
     RoutingTree routingTree;
     RoutingTreeParser parser;  

@@ -35,6 +35,7 @@
 #include <string>
 
 using namespace claid;
+using namespace claidservice;
 
 using claidtest::setStringVal;
 
@@ -128,19 +129,23 @@ void assertQueues(SharedQueue<DataPackage>*& outputQueue1, SharedQueue<DataPacka
     ASSERT_EQ(claidtest::getStringVal(*outputQueue3->pop_front()), "package33");
 }
 
-inline HostDescription makeHostDescription(const std::string& hostname, bool isServer, const std::string& hostServerAddress, const std::string& connectTo)
+inline HostDescription makeHostDescription(const std::string& hostname, const std::string& hostServerAddress, const std::string& connectTo)
 {
-    HostDescription description;
-    description.hostname = hostname;
-    description.isServer = isServer;
-    description.hostServerAddress = hostServerAddress;
-    description.connectTo = connectTo;
+    HostConfig hostConfig;
+    hostConfig.set_hostname(hostname);
+
+    ServerConfig& serverConfig = *hostConfig.mutable_server_config();
+    serverConfig.set_host_server_address(hostServerAddress);
+
+    ClientConfig& clientConfig = *hostConfig.mutable_connect_to();
+    clientConfig.set_host(connectTo);
+    HostDescription description(hostConfig);
     return description;
 }
 
 inline void addHostDescription(HostDescriptionMap& map, const std::string& hostname, bool isServer, const std::string& hostServerAddress, const std::string& connectTo)
 {
-   absl::Status status = map.insert(std::make_pair(hostname, makeHostDescription(hostname, isServer, hostServerAddress, connectTo)));
+   absl::Status status = map.insert(std::make_pair(hostname, makeHostDescription(hostname, hostServerAddress, connectTo)));
    ASSERT_EQ(status.ok(), true) << status;
 }
 
@@ -303,9 +308,8 @@ TEST(RouterTestSuite, MasterRouterTest)
 
     SharedQueue<DataPackage> queue;
     HostDescriptionMap hostDescriptions;
-    HostDescription hostDescription;
-    hostDescription.hostname = test_host;
-    hostDescription.isServer = false;
+    HostDescription hostDescription = makeHostDescription(test_host, "", "");
+
     hostDescriptions[test_host] = hostDescription;
 
     ModuleDescriptionMap moduleDescriptions;

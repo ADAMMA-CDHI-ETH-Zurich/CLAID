@@ -239,6 +239,12 @@ namespace claid
         return absl::OkStatus();
     }
 
+    absl::Status RemoteDispatcherClient::start(const TLSClientKeyStore& clientKeyStore)
+    {
+        this->useTLS = true;
+        this->clientKeyStore = clientKeyStore;
+        return this->start();
+    }
     void RemoteDispatcherClient::processReading() 
     {
         Logger::logInfo("ProcessReading");

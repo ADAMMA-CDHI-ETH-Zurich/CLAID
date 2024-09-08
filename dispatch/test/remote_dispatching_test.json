@@ -3,8 +3,9 @@
 	"hosts": [{
 			"hostname": "test_client",
 			"type": "linux",
-			"is_server": false,
-			"connect_to": "test_server",
+			"connect_to": {
+				"host": "test_server"
+			},
 			"modules": [
 				{
 					"type": "TestSenderModule",
@@ -20,8 +21,9 @@
 		{
 			"hostname": "test_server",
 			"type": "linux",
-			"is_server": true,
-			"host_server_address": "localhost:1337",
+			"server_config": {
+				"host_server_address": "localhost:1337"
+			},
 			"modules": [
 
 				{

@@ -377,7 +377,7 @@ message HostConfig {
 }
 
 message ClientConfig {
-  string address = 1;
+  string host = 1;
   oneof security_settings {
     TLSEncryption tls_encryption = 2;
     TLSEncryptionAndAuthentication tls_encryption_and_authentication = 3;

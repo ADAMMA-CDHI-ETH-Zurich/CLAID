@@ -76,7 +76,7 @@ namespace claid
         }
 
         /**
-         * @brief Retrieves the address this host should connect to.
+         * @brief Retrieves the the name of the host that this host should connect to.
          * 
          * This method returns the address specified in the client configuration.
          * 
@@ -84,7 +84,7 @@ namespace claid
          */
         const std::string& getConnectToAddress() const
         {
-            return hostConfig.connect_to().address();
+            return hostConfig.connect_to().host();
         }
 
         /**

@@ -25,6 +25,7 @@
 #include "dispatch/proto/claidservice.grpc.pb.h"
 #include "dispatch/core/RemoteDispatching/ClientTable.hh"
 #include "dispatch/core/Utilities/Time.hh"
+#include "dispatch/core/RemoteDispatching/TLSClientKeyStore.hh"
 
 #include <grpc/grpc.h>
 #include <grpcpp/create_channel.h>
@@ -52,6 +53,7 @@ namespace claid
             virtual ~RemoteDispatcherClient();
 
             absl::Status start();
+            absl::Status start(const TLSClientKeyStore& clientKeyStore);
 
             bool isConnected() const;
             absl::Status getLastStatus() const;
@@ -98,6 +100,9 @@ namespace claid
             // Upon disconnet, the reading stops and the thread tries to reconnect.
             std::unique_ptr<std::thread> watcherAndReaderThreader;
             std::unique_ptr<std::thread> writeThread;
+
+            bool useTLS = false;
+            TLSClientKeyStore clientKeyStore;
 
     };
 }

@@ -234,7 +234,20 @@ absl::Status MiddleWare::startRemoteDispatcherServer(const std::string& currentH
     Logger::logInfo("Starting RemoteDispatcherServer, listening on address %s", address.c_str());
     this->remoteDispatcherServer = make_unique<RemoteDispatcherServer>(address, this->hostUserTable);
 
-    return this->remoteDispatcherServer->start();
+    if(hostDescription.hasTLSServerSettings())
+    {
+        TLSServerKeyStore serverKeyStore;
+        absl::Status status = hostDescription.getTLSServerKeyStore(serverKeyStore);
+        if(!status.ok())
+        {
+            return status;
+        }
+        return this->remoteDispatcherServer->start(serverKeyStore);
+    }
+    else
+    {
+        return this->remoteDispatcherServer->start();
+    }
 }
 
 absl::Status MiddleWare::startRemoteDispatcherClient(const std::string& currentHost, const std::string& currentUser,
@@ -294,7 +307,23 @@ absl::Status MiddleWare::startRemoteDispatcherClient(const std::string& currentH
 
     Logger::logInfo("Starting RemoteDispatcherClient, connecting to address %s", address.c_str());
     this->remoteDispatcherClient = std::make_unique<RemoteDispatcherClient>(address, currentHost, currentUser, currentDeviceId, this->clientTable);
-    absl::Status status = this->remoteDispatcherClient->start();
+    absl::Status status;
+    
+    
+    if(hostDescription.hasTLSClientSettings())
+    {
+        TLSClientKeyStore clientKeyStore;
+        status = hostDescription.getTLSClientKeyStore(clientKeyStore);
+        if(!status.ok())
+        {
+            return status;
+        }
+        status = this->remoteDispatcherClient->start(clientKeyStore);
+    }
+    else
+    {
+        status = this->remoteDispatcherClient->start();
+    }
 
     if(!status.ok())
     {

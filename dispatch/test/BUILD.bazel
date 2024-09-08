@@ -8,7 +8,7 @@ FRAMEWORK_DEPS = [
 filegroup(
     name = "test_configs",
     srcs = [
-        "test_config.json",
+        "capi_test.json",
         "cpp_runtime_test.json",
         "remote_dispatching_test.json",
         "remote_function_test.json",
@@ -213,7 +213,6 @@ cc_test(
   name = "routing_tree_test",
   size = "small",
   srcs = ["routing_tree_test.cc"],
-  data = ["test_config.json"],
   deps = [
     "//dispatch/core:routing",
     "@bazel_tools//tools/cpp/runfiles",

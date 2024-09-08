@@ -2,8 +2,6 @@
 	"hosts": [{
 			"hostname": "test_client",
 			"type": "linux",
-			"is_server": false,
-			"connect_to": "",
 			"modules": [{
 					"type": "TestModule3",
 					"id": "TestModule3",
