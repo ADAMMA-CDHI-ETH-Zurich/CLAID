@@ -34,44 +34,37 @@ namespace claid
             shutdown();
         }
     }
-
-    RemoteDispatcherClient::RemoteDispatcherClient(const std::string& addressToConnectTo,
-                    const std::string& host,
-                    const std::string& userToken,
-                    const std::string& deviceID,
-                    ClientTable& clientTable) :     host(host), userToken(userToken), 
-                                                    deviceID(deviceID), clientTable(clientTable)
+ 
+    RemoteDispatcherClient::RemoteDispatcherClient(
+            const std::string& addressToConnectTo,
+            const std::string& host,
+            const std::string& userToken,
+            const std::string& deviceID,
+            ClientTable& clientTable
+    ) :     addressToConnectTo(addressToConnectTo), host(host), userToken(userToken), 
+            deviceID(deviceID), clientTable(clientTable)
     {
-        // Set up the gRCP channel
-        grpc::ChannelArguments args;
-        // Sample way of setting keepalive arguments on the client channel. Here we
-        // are configuring a keepalive time period of 20 seconds, with a timeout of 10
-        // seconds. Additionally, pings will be sent even if there are no calls in
-        // flight on an active connection.
-        args.SetInt(GRPC_ARG_KEEPALIVE_TIME_MS, 10 * 60 * 1000 /* 10 minutes sec*/);
-        args.SetInt(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 20 * 1000 /*10 sec*/);
-        args.SetInt(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
-        args.SetInt(GRPC_ARG_MAX_RECEIVE_MESSAGE_LENGTH, 1024 * 1024 * 1024);  // 1 GB
-    
-        // Set the maximum send message size (in bytes)
-        args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 1024 * 1024 * 1024);  // 1 GB
-    
-        grpcChannel = grpc::CreateCustomChannel(addressToConnectTo, makeChannelCredentials(), args);
-        stub = claidservice::ClaidRemoteService::NewStub(grpcChannel);
+        
     }
 
     std::shared_ptr<grpc::ChannelCredentials> RemoteDispatcherClient::makeChannelCredentials() const
     {
+        Logger::logInfo("Making channel credentials %d", this->useTLS);
         if(this->useTLS)
         {
+            Logger::logInfo("Client TLS using TLS %s", this->clientKeyStore.serverCertificate.c_str());
             grpc::SslCredentialsOptions ssl_opts;
             ssl_opts.pem_root_certs = this->clientKeyStore.serverCertificate;
+            Logger::logInfo("Client TLS using TLS 1");
 
             if(this->clientKeyStore.requiresMutualTLS())
             {
+                Logger::logInfo("Client TLS using TLS 2");
+
                 ssl_opts.pem_private_key = this->clientKeyStore.clientPrivateKey;
                 ssl_opts.pem_cert_chain = this->clientKeyStore.clientPublicCert;
             }
+            Logger::logInfo("Client TLS using TLS 3");
             return grpc::SslCredentials(ssl_opts);
         }
         else
@@ -238,8 +231,33 @@ namespace claid
         }    
     }
 
+    void RemoteDispatcherClient::createGRPCChannelToServer()
+    {
+        // Set up the gRCP channel
+        grpc::ChannelArguments args;
+        // Sample way of setting keepalive arguments on the client channel. Here we
+        // are configuring a keepalive time period of 20 seconds, with a timeout of 10
+        // seconds. Additionally, pings will be sent even if there are no calls in
+        // flight on an active connection.
+        args.SetInt(GRPC_ARG_KEEPALIVE_TIME_MS, 10 * 60 * 1000 /* 10 minutes sec*/);
+        args.SetInt(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 20 * 1000 /*10 sec*/);
+        args.SetInt(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
+        args.SetInt(GRPC_ARG_MAX_RECEIVE_MESSAGE_LENGTH, 1024 * 1024 * 1024);  // 1 GB
+    
+        // Set the maximum send message size (in bytes)
+        args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 1024 * 1024 * 1024);  // 1 GB
+    
+        grpcChannel = grpc::CreateCustomChannel(addressToConnectTo, makeChannelCredentials(), args);
+        stub = claidservice::ClaidRemoteService::NewStub(grpcChannel);
+    }
+
     absl::Status RemoteDispatcherClient::start()
     {
+        Logger::logInfo("Starting Client without TLS");
+        Logger::logInfo("Starting Client with TLS is tls enabled %d", this->useTLS);
+
+        createGRPCChannelToServer();
+
         if(this->connectionMonitorRunning)
         {
             return absl::AlreadyExistsError("RemoteDispatcherClient was started twice");
@@ -251,7 +269,10 @@ namespace claid
 
     absl::Status RemoteDispatcherClient::start(const TLSClientKeyStore& clientKeyStore)
     {
+        Logger::logInfo("Starting Client with TLS");
         this->useTLS = true;
+        Logger::logInfo("Starting Client with TLS is tls enabled %d", this->useTLS);
+
         this->clientKeyStore = clientKeyStore;
         return this->start();
     }

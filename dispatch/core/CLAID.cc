@@ -62,8 +62,6 @@ namespace claid {
             return false;
         }
 
-        MiddleWare* middleware = static_cast<MiddleWare*>(handle);
-
         if(!attachCppRuntime(handle))
         {
             // AttachCppRuntime will set startStatus accordingly.

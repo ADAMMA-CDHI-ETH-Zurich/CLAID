@@ -99,7 +99,6 @@ namespace claid {
                 updateWakeLockState();
                 return;
             }
-            int64_t currentTimestamp = Time::now().toUnixTimestampMilliseconds();
             nextScheduledWakeupTime = scheduledWakeups.begin()->first;
         }
         Logger::logInfo("Found scheduled wakeup");
@@ -188,7 +187,7 @@ namespace claid {
     GlobalDeviceScheduler::GlobalDeviceScheduler(
             RemoteFunctionRunnableHandler& remoteFunctionRunnableHandler,
             const ModuleTable& moduleTable
-    ) : remoteFunctionRunnableHandler(remoteFunctionRunnableHandler), moduleTable(moduleTable)
+    ) : moduleTable(moduleTable), remoteFunctionRunnableHandler(remoteFunctionRunnableHandler)
     {
         remoteFunctionRunnableHandler
             .registerRunnable(

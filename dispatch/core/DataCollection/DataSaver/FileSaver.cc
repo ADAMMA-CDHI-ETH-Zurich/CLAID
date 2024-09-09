@@ -175,7 +175,6 @@ namespace claid
             return status;
         }
 
-
         return absl::OkStatus();
     }
 

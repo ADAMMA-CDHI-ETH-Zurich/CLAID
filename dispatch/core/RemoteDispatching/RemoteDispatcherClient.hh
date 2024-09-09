@@ -70,12 +70,14 @@ namespace claid
             void onConnectedToServer();
             void onDisconnectedFromServer();
 
+            void createGRPCChannelToServer();
             std::shared_ptr<grpc::ChannelCredentials> makeChannelCredentials() const;
 
 
         private:
 
             // Current host (i.e., the identifier of the current instance/configuration of CLAID).
+            const std::string addressToConnectTo;
             const std::string host;
             const std::string userToken;
             const std::string deviceID;

@@ -135,7 +135,7 @@ namespace claid
                 );
                 return status;
             }
-            else if(hostConfig.server_config().security_settings_case() == ServerConfig::SecuritySettingsCase::kTlsEncryptionAndAuthentication)
+            else if(hostConfig.server_config().security_settings_case() == ServerConfig::SecuritySettingsCase::kMutualTls)
             {
                 absl::Status status = TLSServerKeyStore::mutualTLS(
                     hostConfig.server_config().mutual_tls().server_public_certificate(), 
@@ -161,17 +161,17 @@ namespace claid
          */
         absl::Status getTLSClientKeyStore(TLSClientKeyStore& store) const
         {
-            if(hostConfig.connect_to().security_settings_case() == ClientConfig::SecuritySettingsCase::kMutualTls)
+            if(hostConfig.connect_to().security_settings_case() == ClientConfig::SecuritySettingsCase::kTls)
             {
-                absl::Status status = TLSClientKeyStore::onlyEncryption(
-                    hostConfig.connect_to().mutual_tls().server_public_certificate(),
+                absl::Status status = TLSClientKeyStore::serverBasedAuthentication(
+                    hostConfig.connect_to().tls().server_public_certificate(),
                     store
                 );
                 return status;
             }
-            else if(hostConfig.connect_to().security_settings_case() == ClientConfig::SecuritySettingsCase::kTlsEncryptionAndAuthentication)
+            else if(hostConfig.connect_to().security_settings_case() == ClientConfig::SecuritySettingsCase::kMutualTls)
             {
-                absl::Status status = TLSClientKeyStore::encryptionAndAuthentication(
+                absl::Status status = TLSClientKeyStore::mutualTLS(
                     hostConfig.connect_to().mutual_tls().client_public_certificate(), 
                     hostConfig.connect_to().mutual_tls().client_private_key(),
                     hostConfig.connect_to().mutual_tls().server_public_certificate(),

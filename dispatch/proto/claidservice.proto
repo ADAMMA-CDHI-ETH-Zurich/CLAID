@@ -399,13 +399,13 @@ message ServerConfig {
 //   which will be used to encrypt the data sent between client and server.
 // - Mutual authentication: Both client and server authenticate each other using certificates.
 message ClientTLSConfigServerBasedAuthentication {
-  string server_certificate = 1;
+  string server_public_certificate = 1;
 }
 
 message ClientTLSConfigMutualAuthentication {
   string client_public_certificate = 1;
   string client_private_key = 2;
-  string server_certificate = 3;
+  string server_public_certificate = 3;
 }
 
 message ServerTLSConfigServerBasedAuthentication {

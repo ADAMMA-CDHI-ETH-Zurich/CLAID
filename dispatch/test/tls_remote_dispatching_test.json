@@ -1,0 +1,49 @@
+{
+	"milliseconds_deadline_to_load_modules" : -1,
+	"hosts": [{
+			"hostname": "test_client",
+			"type": "linux",
+			"connect_to": {
+				"host": "test_server",
+				"tls": {
+					"server_public_certificate": "dispatch/test/resources/server_public_certificate.crt"
+				}
+			},
+			"modules": [
+				{
+					"type": "TestSenderModule",
+					"id": "SenderModule1",
+					"input_channels": {},
+					"output_channels": {"TestChannel" : "TestChannel"},
+					"properties": {
+						
+					}
+				}
+			]
+		},
+		{
+			"hostname": "test_server",
+			"type": "linux",
+			"server_config": {
+				"host_server_address": "localhost:1337",
+				"tls": {
+					"server_public_certificate": "dispatch/test/resources/server_public_certificate.crt",
+					"server_private_key": "dispatch/test/resources/server_private_key.key"
+				}
+			},
+			"modules": [
+
+				{
+					"type": "TestReceiverModule",
+					"id": "ReceiverModule",
+					"input_channels": {"TestChannel" : "TestChannel"},
+					"output_channels": {},
+					"properties": {
+						
+					}
+				}
+
+			]
+		}
+	]
+}

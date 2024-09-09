@@ -14,7 +14,8 @@ filegroup(
         "remote_function_test.json",
         "data_saver_json_test.json",
         "config_reload_test_1.json",
-        "config_reload_test_2.json"
+        "config_reload_test_2.json",
+        "tls_remote_dispatching_test.json",
     ],
 )
 
@@ -23,6 +24,14 @@ filegroup(
     name = "test_data",
     srcs = [
         "properties_test.json"
+    ],
+)
+
+filegroup(
+    name = "tls_remote_dispatching_test_data",
+    srcs = [
+        "resources/server_private_key.key",
+        "resources/server_public_certificate.crt",
     ],
 )
 
@@ -126,6 +135,20 @@ cc_test(
   ] + FRAMEWORK_DEPS,
   data = [
     ":test_configs",
+  ]
+)
+
+cc_test(
+  name = "tls_remote_dispatching_test",
+  size = "small",
+  srcs = ["tls_remote_dispatching_test.cc"],
+  deps = [
+    ":testmessages_cc_proto",
+    "//dispatch/core:capi",
+  ] + FRAMEWORK_DEPS,
+  data = [
+    ":test_configs",
+    ":tls_remote_dispatching_test_data"
   ]
 )
 
