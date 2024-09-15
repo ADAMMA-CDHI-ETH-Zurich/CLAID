@@ -319,7 +319,7 @@ namespace claid
                 properties.getObjectProperty("syncingSchedule", this->syncingSchedule);
                 properties.getBoolProperty("deleteFileAfterSync", this->deleteFileAfterSync, false);
                 // If true, this Module requires that isConnectedToRemoteServer() is true when a syncing is due.
-                // If it is not true, it will wait for a certain number of seconds (see below), and if not give up.
+                // If isConnectedToRemoteServer() is not true, the Module will wait for a certain number of seconds (see below), and if not give up.
                 properties.getBoolProperty("requiresConnectionToRemoteServer", this->requiresConnectionToRemoteServer);
                 // When a syncing is due, we require a connection to the remote server, and we are currently not connected,
                 // then we wait a certain number of seconds for a connection to the remote server to be established.
