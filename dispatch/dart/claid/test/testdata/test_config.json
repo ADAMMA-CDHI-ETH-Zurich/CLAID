@@ -2,8 +2,6 @@
 	"hosts": [{
 			"hostname": "alex_client",
 			"type": "android",
-			"is_server": false,
-			"connect_to": "claid.ethz.ch:1337",
 			"modules": [{
 					"type": "MicrophoneCollector",
 					"id": "AudioRecorder1",

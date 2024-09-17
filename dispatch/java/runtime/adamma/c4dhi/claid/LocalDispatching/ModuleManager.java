@@ -597,4 +597,8 @@ public class ModuleManager
         return runningModules.get(moduleId);
     }
 
+    public RemoteFunctionHandler getRemoteFunctionHandler()
+    {
+        return this.remoteFunctionHandler;
+    }
 }

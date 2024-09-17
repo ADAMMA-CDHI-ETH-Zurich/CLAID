@@ -2,7 +2,6 @@
 	"hosts": [{
 			"hostname": "test_client",
 			"type": "android",
-			"is_server": false,
 			"modules": [
 				{
 					"type": "TestModule",

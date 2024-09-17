@@ -1,3 +1,16 @@
+## 0.6.3
+* Fixed bug in global scheduling in Java, that would cause some threads to not wake up in time.
+* Added Schedule data type, allowing to easily specify schedules in terms of intervals, frequencies, exact times or time windows.
+* Added registerFunctionBasedOnSchedule, allowing to easily register function calls based on a specified schedule.
+  * Schedule can be specified as property, hence can be set from the config file, allowing to specify schedules very easily
+  * Changed BatteryCollector to use Schedule
+  * Changed DataSyncModule to use Schedule
+* Added remote functions "start_sync" and "set_sync_schedule" to DataSyncModule, allowing other Modules to start the synchronization process and to change its schedule.
+* Added support for for enabling TLS and mutual TLS (mTLS) encryption and authentication from configuration files.
+  * Added Test for TLS
+* Changed CLAID WakeLocks to leverage reference counting, so acquiring a wakelock X times and releasing it X times is safe and will not cause issues.
+* Changed AccelerometerCollector and GyroscopeCollector to use WakeLocks.
+
 ## 0.6.2
 * Fixed device view button not having the correct index when clicked on in the ModuleList.
 * Added onShown() and onHidden() to CLAIDModuleView. Will be called whenever a view is selected from the CLAIDModuleList.

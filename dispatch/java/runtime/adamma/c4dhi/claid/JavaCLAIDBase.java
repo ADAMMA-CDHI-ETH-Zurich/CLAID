@@ -253,4 +253,13 @@ public abstract class JavaCLAIDBase
     {
         return JavaCLAIDBase.moduleManager.getModuleById(moduleId);
     }
+
+    protected static RemoteFunctionHandler getRemoteFunctionHandler()
+    {
+        if(JavaCLAIDBase.moduleManager == null)
+        {
+            return null;
+        }
+        return JavaCLAIDBase.moduleManager.getRemoteFunctionHandler();
+    }
 }
