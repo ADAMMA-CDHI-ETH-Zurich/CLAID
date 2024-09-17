@@ -1,5 +1,5 @@
 ## 0.6.3
-* Fixed bug in global scheduling in Java, that would cause some threads to not wake up in time.
+* Fixed bug in global scheduling in Java, that would cause some threads to not wake up when due.
 * Added Schedule data type, allowing to easily specify schedules in terms of intervals, frequencies, exact times or time windows.
 * Added registerFunctionBasedOnSchedule, allowing to easily register function calls based on a specified schedule.
   * Schedule can be specified as property, hence can be set from the config file, allowing to specify schedules very easily

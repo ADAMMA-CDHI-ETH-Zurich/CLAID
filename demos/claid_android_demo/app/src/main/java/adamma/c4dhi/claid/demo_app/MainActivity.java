@@ -61,8 +61,6 @@ public class MainActivity extends Activity {
         CLAID.getAppDataDirectory(this);
 
 
-
-
         CLAID.registerModule(RPCTestModule1.class);
         CLAID.registerModule(RPCTestModule2.class);
 
@@ -74,9 +72,15 @@ public class MainActivity extends Activity {
                 CLAIDSpecialPermissionsConfig.regularConfig(),
                 CLAIDPersistanceConfig.maximumPersistance());
 
-        CLAID.onStarted(() -> CLAID.acquireWakeLock(CLAID.getContext()));
+        CLAID.onStarted(() -> onCLAIDStarted());
 
 
+    }
+
+    void onCLAIDStarted()
+    {
+        CLAID.acquireWakeLock(CLAID.getContext());
+        CLAID.getRemoteFunctionHandler().mapModuleFunction("MyModule", "test_func", null);
     }
 
     void scan() throws IOException, ClassNotFoundException, NoSuchMethodException {

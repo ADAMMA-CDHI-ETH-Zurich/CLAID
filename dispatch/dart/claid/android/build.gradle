@@ -114,6 +114,6 @@ protobuf {
 
 dependencies
 {
-    api "ch.claid:claid:0.6.2"
+    api "ch.claid:claid:0.6.3"
 }
 
