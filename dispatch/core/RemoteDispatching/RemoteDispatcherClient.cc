@@ -148,16 +148,13 @@ namespace claid
                 continue;
             }
 
-            Logger::logInfo("RemoteDispatcherClient 1.");
             stream = stub->SendReceivePackages(streamContext.get());
 
-            Logger::logInfo("RemoteDispatcherClient 2.");
             if(!stream)
             {
                 this->lastStatus = absl::UnavailableError("RemoteDispatcherClient failed to connect to remote server. Stream is null.");
                 continue;
             }
-            Logger::logInfo("RemoteDispatcherClient 3.");
 
             claidservice::DataPackage pingRequestPackage;
             makeRemoteRuntimePing(*pingRequestPackage.mutable_control_val(), this->host, this->userToken, this->deviceID);
@@ -253,9 +250,6 @@ namespace claid
 
     absl::Status RemoteDispatcherClient::start()
     {
-        Logger::logInfo("Starting Client without TLS");
-        Logger::logInfo("Starting Client with TLS is tls enabled %d", this->useTLS);
-
         createGRPCChannelToServer();
 
         if(this->connectionMonitorRunning)
@@ -269,9 +263,7 @@ namespace claid
 
     absl::Status RemoteDispatcherClient::start(const TLSClientKeyStore& clientKeyStore)
     {
-        Logger::logInfo("Starting Client with TLS");
         this->useTLS = true;
-        Logger::logInfo("Starting Client with TLS is tls enabled %d", this->useTLS);
 
         this->clientKeyStore = clientKeyStore;
         return this->start();

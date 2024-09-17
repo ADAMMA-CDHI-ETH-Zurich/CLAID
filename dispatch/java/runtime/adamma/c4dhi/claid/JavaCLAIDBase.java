@@ -28,6 +28,7 @@ import adamma.c4dhi.claid.Module.ModuleFactory;
 import adamma.c4dhi.claid.Module.Module;
 import adamma.c4dhi.claid.LogMessage;
 
+import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionHandler;
 
 public abstract class JavaCLAIDBase
 {
@@ -254,7 +255,7 @@ public abstract class JavaCLAIDBase
         return JavaCLAIDBase.moduleManager.getModuleById(moduleId);
     }
 
-    protected static RemoteFunctionHandler getRemoteFunctionHandler()
+    public static RemoteFunctionHandler getRemoteFunctionHandler()
     {
         if(JavaCLAIDBase.moduleManager == null)
         {

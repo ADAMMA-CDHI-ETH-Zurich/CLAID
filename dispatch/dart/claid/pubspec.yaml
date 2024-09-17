@@ -1,6 +1,6 @@
 name: claid
 description: CLAID is a flexible and modular middleware framework based on transparent computing. CLAID allows to build applications for mobile (Android, WearOS, iOS*) and regular (Linux, macOS) operating systems, enabling seamless communication between individual Modules implemented in different programming languages (C++, Java, Dart, Python) running on all these operating systems. Existing CLAID Modules allow to effortlessly implement modular machine learning and data collection application with little-to-no coding.
-version: 0.6.2
+version: 0.6.3
 homepage: https://claid.ethz.ch
 
 environment:

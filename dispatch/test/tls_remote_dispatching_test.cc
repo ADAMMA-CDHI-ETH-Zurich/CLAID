@@ -107,7 +107,10 @@ TEST(RemoteDispatcherTestSuite, ServerTest)
     CLAID clientMiddleware;
     result = clientMiddleware.start(socket_path_local_1, config_file, client_host_id, user_id, device_id);
     ASSERT_TRUE(result) << "Failed to start client middleware";
-   
+    if(!result)
+    {
+        exit(1);
+    }
     // We deliberately start the clientMiddleware first. This will cause the connection attempt
     // of the RemoteDispatcherClient to fail, because the server is not started yet.
     // The RemoteDispatcherClient should then try at a later time (every 2 seconds);
@@ -118,7 +121,11 @@ TEST(RemoteDispatcherTestSuite, ServerTest)
     CLAID serverMiddleware;
     result = serverMiddleware.start(socket_path_local_2, config_file, server_host_id, user_id, device_id);
     ASSERT_TRUE(result) << "Failed to start server middleware";
-   
+
+    if(!result)
+    {
+        exit(1);
+    }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(4100));
     ASSERT_TRUE(clientMiddleware.isConnectedToRemoteServer()) << clientMiddleware.getRemoteClientStatus();
