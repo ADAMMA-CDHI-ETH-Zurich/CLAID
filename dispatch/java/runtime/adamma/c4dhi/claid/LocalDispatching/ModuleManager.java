@@ -120,8 +120,15 @@ public class ModuleManager
             return false;
         }
 
-        Logger.logInfo("Loaded Module id \"" + moduleId + "\" (class: \"" + moduleClass + "\").");
+        Logger.logInfo("Loaded Module with id \"" + moduleId + "\" (class: \"" + moduleClass + "\").");
         Module module = this.moduleFactory.getInstance(moduleClass, moduleId);
+
+        if(module == null)
+        {
+            Logger.logError("Failed to instantiate Module with id \"" + moduleId + "\" (class: \"" + moduleClass + "\").");
+            return false;
+        }
+
         module.setEventTracker(this.eventTracker);
         this.runningModules.put(moduleId, module);
         return true;

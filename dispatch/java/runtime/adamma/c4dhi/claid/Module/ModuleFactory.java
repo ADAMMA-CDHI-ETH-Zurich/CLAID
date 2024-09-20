@@ -67,22 +67,22 @@ public class ModuleFactory
             }
             catch(NoSuchMethodException e)
             {
-                e.printStackTrace();
+                Logger.logError(e.getMessage());
                 return null;
             }
             catch(InstantiationException e)
             {
-                e.printStackTrace();
+                Logger.logError(e.getMessage());
                 return null;
             }
             catch(IllegalAccessException e)
             {
-                e.printStackTrace();
+                Logger.logError(e.getMessage());
                 return null;
             }
             catch(InvocationTargetException e)
             {
-                e.printStackTrace();
+                Logger.logError(e.getMessage());
                 return null;
             }
         }
