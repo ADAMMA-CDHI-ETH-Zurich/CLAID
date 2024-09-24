@@ -67,8 +67,8 @@ public class MainActivity extends Activity {
         CLAID.startInBackground(getApplicationContext(),
                 "assets://RPCTest.json",
                 "Smartphone",
-                "device",
                 "user",
+                "device",
                 CLAIDSpecialPermissionsConfig.regularConfig(),
                 CLAIDPersistanceConfig.maximumPersistance());
 

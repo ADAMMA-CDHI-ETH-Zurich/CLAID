@@ -34,8 +34,8 @@ public class MainActivity extends Activity {
         CLAID.startInBackground(getApplicationContext(),
                 "assets://claid_config.json",
                 "smartwatch",
-                "device",
                 "user",
+                "device",
                 CLAIDSpecialPermissionsConfig.regularConfig(),
                 CLAIDPersistanceConfig.minimumPersistance());
         CLAID.onStarted(() -> tv.setText("CLAID has started!"));
