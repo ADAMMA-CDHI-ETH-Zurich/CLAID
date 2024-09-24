@@ -29,7 +29,7 @@ namespace claid
     class ModuleRef
     {
         private:
-            Module* module;
+            Module* module = nullptr;
         
         public:
             ModuleRef(Module* module) : module(module)

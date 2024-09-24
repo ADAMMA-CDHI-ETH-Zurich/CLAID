@@ -571,12 +571,12 @@ public abstract class Module
         
         if (intervall.toMillis() == 0) 
         {
-            this.moduleError("Error in registerPeriodicFunction: Cannot register periodic function \"" + name + "\" with a period of 0 milliseconds.");
+            this.moduleFatal("Error in registerPeriodicFunction: Cannot register periodic function \"" + name + "\" with a period of 0 milliseconds.");
         }
 
         if (timers.containsKey(name))
         {
-            this.moduleError("Tried to register function with name \"" + name + "\", but a periodic function with the same name was already registered before.");
+            this.moduleFatal("Tried to register function with name \"" + name + "\", but a periodic function with the same name was already registered before.");
         }
 
         FunctionRunnable runnable = new FunctionRunnable(callback, new ScheduleRepeatedIntervall(startTime, intervall));
@@ -591,12 +591,12 @@ public abstract class Module
         
         if (intervall.toMillis() == 0) 
         {
-            this.moduleError("Error in registerPeriodicFunction: Cannot register periodic function \"" + name + "\" with a period of 0 milliseconds.");
+            this.moduleFatal("Error in registerPeriodicFunction: Cannot register periodic function \"" + name + "\" with a period of 0 milliseconds.");
         }
 
         if (timers.containsKey(name))
         {
-            this.moduleError("Tried to register function with name \"" + name + "\", but a periodic function with the same name was already registered before.");
+            this.moduleFatal("Tried to register function with name \"" + name + "\", but a periodic function with the same name was already registered before.");
         }
 
         FunctionRunnable runnable = new FunctionRunnable(callback, new ScheduleRepeatedIntervall(startTime, intervall, onlyActiveBetween));

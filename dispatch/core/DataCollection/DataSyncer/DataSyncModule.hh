@@ -330,7 +330,7 @@ namespace claid
                     std::string unknownProperties;
                     properties.unknownPropertiesToString(unknownProperties);
 
-                    this->moduleError(absl::StrCat("Missing properties: [", unknownProperties, "]. Please sepcify the properties in the configuration file."));
+                    this->moduleFatal(absl::StrCat("Missing properties: [", unknownProperties, "]. Please sepcify the properties in the configuration file."));
                     return;
                 }
 
@@ -342,7 +342,7 @@ namespace claid
                 {
                     if(this->filePath.find("\%media_dir") != std::string::npos)
                     {
-                        moduleError("Failed to initialize DataSyncModule. Storage path \"%s\" contains literal \%media_dir, \n"
+                        moduleFatal("Failed to initialize DataSyncModule. Storage path \"%s\" contains literal \%media_dir, \n"
                         "however media dir was never set. Make sure claid.setCommonDataPath() is called and a valid path is provided.");
                         return;
                     }
@@ -374,9 +374,6 @@ namespace claid
                     this
                 );
                 
-
-                this->startSync();
-
                 Logger::logInfo("DataSyncModule init done");
 
             }

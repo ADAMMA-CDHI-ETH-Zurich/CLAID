@@ -10,7 +10,7 @@ namespace claid {
 class ScheduleHelper
 {
 public:
-    static Duration getIntervalDurationFromPeriodicSchedule(const SchedulePeriodic schedule)
+    static Duration getIntervalDurationFromPeriodicSchedule(const SchedulePeriodic& schedule)
     {
         switch(schedule.interval_case())
         {
@@ -27,16 +27,16 @@ public:
                 return Duration::milliseconds(schedule.period_milliseconds());
             }
             case SchedulePeriodic::IntervalCase::kPeriodSeconds: {
-                return Duration::milliseconds(schedule.period_milliseconds()*1000);
+                return Duration::milliseconds(schedule.period_seconds()*1000);
             }
             case SchedulePeriodic::IntervalCase::kPeriodMinutes: {
-                return Duration::milliseconds(schedule.period_milliseconds()*1000*60);
+                return Duration::milliseconds(schedule.period_minutes()*1000*60);
             }
             case SchedulePeriodic::IntervalCase::kPeriodHours: {
-                return Duration::milliseconds(schedule.period_milliseconds()*1000*60*60);
+                return Duration::milliseconds(schedule.period_hours()*1000*60*60);
             }
             case SchedulePeriodic::IntervalCase::kPeriodDays: {
-                return Duration::milliseconds(schedule.period_milliseconds()*1000*60*60*24);
+                return Duration::milliseconds(schedule.period_days()*1000*60*60*24);
             }
             default: {
                 return Duration::milliseconds(0);

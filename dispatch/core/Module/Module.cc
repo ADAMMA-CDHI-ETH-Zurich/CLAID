@@ -178,12 +178,12 @@ namespace claid
         const Duration& interval, const Time& startTime) 
     {
         if (interval.getMicroSeconds() == 0) {
-            moduleError("Error in registerPeriodicFunction: Cannot register periodic function \"" + name + "\" with a period of 0 milliseconds.");
+            moduleFatal("Error in registerPeriodicFunction: Cannot register periodic function \"" + name + "\" with a period of 0 milliseconds.");
         }
 
         auto it = timers.find(name);
         if (it != timers.end()) {
-            moduleError("Tried to register function with name \"" + name + "\", but a periodic function with the same name was already registered before.");
+            moduleFatal("Tried to register function with name \"" + name + "\", but a periodic function with the same name was already registered before.");
         }
 
         std::shared_ptr<FunctionRunnable<void>> functionRunnable(new FunctionRunnable<void>(function));
