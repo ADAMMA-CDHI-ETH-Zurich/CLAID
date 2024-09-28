@@ -25,7 +25,7 @@ from typing import Type, Generic
 from module.publisher import Publisher
 from module.subscriber import Subscriber
 from module.channel_access_rights import ChannelAccessRights
-
+from logger.logger import Logger
 
 class Channel():
     def __init__(self, parent, channel_id, publisher_or_subscriber):
@@ -67,7 +67,11 @@ class Channel():
     def post(self, data) -> None:
         if not self.can_write():
             msg = f"Tried to post data to channel \"{self.channel_id}\", however\nit did not publish this channel before."
-            self.parent.module_error(msg)
+            
+            if self.parent != None:
+                self.parent.module_fatal(msg)
+            else:
+                Logger.LOG_THROW_FATAL(msg)
             return
 
         self.publisher.post(data)

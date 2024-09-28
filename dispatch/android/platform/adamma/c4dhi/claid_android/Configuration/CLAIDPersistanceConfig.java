@@ -48,6 +48,10 @@ public class CLAIDPersistanceConfig
         {
             return maximumPersistance();
         }
+        else if(identifier.equals("onBootAutoStart"))
+        {
+            return onBootAutoStart();
+        }
         else if(identifier.equals("minimumPersistance"))
         {
             return minimumPersistance();
@@ -70,6 +74,16 @@ public class CLAIDPersistanceConfig
         return config;
     }
 
+    // A configuration that will lead to automatically start when the device has booted (and was unlocked by the user).
+    // CLAID will however not restart if the App is terminated due to battery optimization strategies by the OS.
+    public static CLAIDPersistanceConfig onBootAutoStart()
+    {
+        CLAIDPersistanceConfig config = new CLAIDPersistanceConfig();
+        config.RESTART_ON_BOOT = true;
+        config.MONITOR_TRY_RESTART_IF_CRASHED_OR_EXITED = false;
+        config.DISABLE_BATTERY_OPTIMIZATIONS = false;
+        return config;
+    }
 
     // A configration that tells CLAID to simply let go when the service is terminated.
     // No effort will be taken to restart the service.

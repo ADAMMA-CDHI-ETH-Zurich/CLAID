@@ -1,3 +1,11 @@
+## 0.6.4
+* Fixed bug in isConnectedToRemoteServer, leading to an invalid state if the connection to the remote server was established before all Modules were initialized
+  * isConnectedToRemoteServer now directly uses a RemoteFunction to request the connection state from the middleware, instead of keeping track of the state for each Module
+  * Added isConnectedToRemoteServer to Java API as well
+* Fixed bug in setSyncingSchedule of DataSyncModule, leading to functions not being rescheduled based on a new Schedule
+* Fixed onCLAIDStarted not being called sometimes, when starting CLAID in the foreground
+* Improved error handling, changed some errors to fatals to ensure the user will notice it
+ 
 ## 0.6.3
 * Fixed bug in global scheduling in Java, that would cause some threads to not wake up when due.
 * Added Schedule data type, allowing to easily specify schedules in terms of intervals, frequencies, exact times or time windows.

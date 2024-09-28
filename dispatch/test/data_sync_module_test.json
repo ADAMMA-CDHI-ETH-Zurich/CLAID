@@ -1,0 +1,21 @@
+{
+	"hosts": [{
+			"hostname": "alex_client",
+			"type": "linux",
+			"modules": [
+				{
+					"type": "DataSyncModule",
+					"id": "DataSyncModule",
+					"input_channels": {},
+					"output_channels": {"Data" : "Data"},
+					"properties": {
+						"dataPeriodMs" : "100"
+					}
+				}
+			]
+		}
+	]
+}
+
+
+

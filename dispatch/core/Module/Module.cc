@@ -102,6 +102,7 @@ namespace claid
         this->remoteFunctionRunnableHandler = 
             std::make_shared<RemoteFunctionRunnableHandler>("Module " + this->id, subscriberPublisher->getToModuleDispatcherQueue());
 
+        this->isConnectedToRemoteServerRemoteFunction = remoteFunctionHandler->mapRuntimeFunction<bool>(claidservice::Runtime::MIDDLEWARE_CORE, "is_connected_to_remote_server");
 
         runnableDispatcher.setRemoteFunctionHandler(remoteFunctionHandler);
         if (!runnableDispatcher.start()) 
@@ -251,6 +252,7 @@ namespace claid
         auto it = timers.find(name);
         if (it == timers.end()) {
             moduleError("Error, tried to unregister periodic function but function was not found in the list of registered timers. Was a function with this name ever registered before?");
+            return;
         }
 
         it->second.runnable->invalidate();
@@ -316,8 +318,12 @@ namespace claid
     }
 
     void Module::notifyConnectedToRemoteServer()
-    {
-        this->connectedToRemoteServer = true;
+    {     
+        if(!this->isInitialized)
+        {
+            return;
+        }
+
         std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>([this] { this->onConnectedToRemoteServer();}));
 
         this->runnableDispatcher.addRunnable(
@@ -328,7 +334,11 @@ namespace claid
         
     void Module::notifyDisconnectedFromRemoteServer()
     {
-        this->connectedToRemoteServer = false;
+        if(!this->isInitialized)
+        {
+            return;
+        }
+
         std::shared_ptr<FunctionRunnable<void>> functionRunnable (new FunctionRunnable<void>([this] { this->onDisconnectedFromRemoteServer();}));
 
         this->runnableDispatcher.addRunnable(
@@ -340,22 +350,29 @@ namespace claid
 
     bool Module::isConnectedToRemoteServer()
     {
-        return this->connectedToRemoteServer;
+        auto future = this->isConnectedToRemoteServerRemoteFunction.execute();
+        bool isConnected = future->await();
+        // This should only happen if the middleware is not yet ready, which is very unlikely.
+        if(!future->wasExecutedSuccessfully())
+        {
+            return false;
+        }
+        return isConnected;
     }
 
     bool Module::waitUntilConnectedToRemoteServer(Duration timeout)
     {
         Time startTime = Time::now();
         Time endTime = startTime + timeout;
-        while(!connectedToRemoteServer)
+        while(!isConnectedToRemoteServer())
         {
             if(Time::now() >= endTime)
             {
                 break;
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
-        return this->connectedToRemoteServer;
+        return this->isConnectedToRemoteServer();
     }
 
     void Module::pauseModule()

@@ -219,7 +219,7 @@ public class ModuleManager
         Logger.logInfo("Received ModuleListResponse: " + moduleList);
         if(!instantiateModules(moduleList))
         {
-            Logger.logFatal("ModuleDispatcher: Failed to instantiate Modules.");
+            Logger.LOG_THROW_FATAL("ModuleDispatcher: Failed to instantiate Modules.");
             return false;
         }
 

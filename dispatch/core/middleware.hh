@@ -80,7 +80,7 @@ namespace claid
 
             int getLogSinkSeverityLevel() const;
 
-            bool isConnectedToRemoteServer() const;
+            bool isConnectedToRemoteServer();
             absl::Status getRemoteClientStatus() const;
 
             absl::Status loadNewConfig(const std::string& configPath);

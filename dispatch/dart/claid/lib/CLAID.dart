@@ -94,6 +94,11 @@ class CLAIDPersistanceConfig
     return CLAIDPersistanceConfig._("maximumPersistance");
   }
 
+  static CLAIDPersistanceConfig onBootAutoStart()
+  {
+    return CLAIDPersistanceConfig._("onBootAutoStart");
+  }
+
   static CLAIDPersistanceConfig minimumPersistance()
   {
     return CLAIDPersistanceConfig._("minimumPersistance");

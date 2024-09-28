@@ -70,12 +70,12 @@ public class BatteryCollector extends Module
     @Override
     public void initialize(Properties properties) 
     {
-        if(!properties.hasProperty("schedule"))
+        if(!properties.hasProperty("samplingSchedule"))
         {
-            this.moduleFatal("Property \"schedule\" was not specified in the configuration file.");
+            this.moduleFatal("Property \"samplingSchedule\" was not specified in the configuration file.");
         }
 
-        Schedule schedule = properties.getObjectProperty("schedule", Schedule.class);
+        Schedule schedule = properties.getObjectProperty("samplingSchedule", Schedule.class);
 
 
         this.batteryDataChannel = this.publish("BatteryData", BatteryData.class);

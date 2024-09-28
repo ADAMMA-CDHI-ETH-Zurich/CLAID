@@ -104,4 +104,10 @@ public class Logger {
         String formattedDateTime = currentDateTime.format(formatter);
         return formattedDateTime;
     }
+
+    public static void LOG_THROW_FATAL(String msg)
+    {
+        Logger.logFatal(msg);
+        throw new RuntimeException(msg); 
+    }
 }

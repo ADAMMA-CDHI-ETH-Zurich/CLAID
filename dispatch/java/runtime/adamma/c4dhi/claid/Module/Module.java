@@ -44,6 +44,7 @@ import adamma.c4dhi.claid.LogMessageSeverityLevel;
 import adamma.c4dhi.claid.LogMessageEntityType;
 import adamma.c4dhi.claid.PowerProfile;
 import adamma.c4dhi.claid.Module.Properties;
+import adamma.c4dhi.claid.RemoteFunction.Future;
 
 
 import java.util.ArrayList;
@@ -83,6 +84,8 @@ public abstract class Module
     private boolean isTerminating = false;
     private boolean isTerminated = false;
     private boolean isPaused = false;
+
+    private RemoteFunction<Boolean> isConnectedToRemoteServerRemoteFunction;
 
     Map<String, ScheduledRunnable> timers = new HashMap<>();
 
@@ -136,6 +139,10 @@ public abstract class Module
         this.subscriberPublisher = subscriberPublisher;
         this.remoteFunctionHandler = remoteFunctionHandler;
         this.remoteFunctionRunnableHandler = new RemoteFunctionRunnableHandler("Module " + this.id, subscriberPublisher.getToModuleManagerQueue());
+
+        this.isConnectedToRemoteServerRemoteFunction = 
+            remoteFunctionHandler.mapRuntimeFunction(Runtime.MIDDLEWARE_CORE, "is_connected_to_remote_server", null);
+
 
         this.runnableDispatcher.setRemoteFunctionHandler(this.remoteFunctionHandler);
         if(!this.runnableDispatcher.start())
@@ -721,13 +728,32 @@ public abstract class Module
 
     }
 
+    protected boolean isConnectedToRemoteServer()
+    {
+        Future<Boolean> future = this.isConnectedToRemoteServerRemoteFunction.execute();
+        Boolean result = future.await();
+        if(!future.wasExecutedSuccessfully())
+        {
+            return false;
+        }
+        return result.booleanValue();
+    }
+
     public void notifyConnectedToRemoteServer()
     {
+        if(!this.isInitialized)
+        {
+            return;
+        }
         this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> onConnectedToRemoteServer()));
     }
         
     public void notifyDisconnectedFromRemoteServer()
     {
+        if(!this.isInitialized)
+        {
+            return;
+        }
         this.runnableDispatcher.addRunnable(new FunctionRunnable(() -> onDisconnectedFromRemoteServer()));
     }
 

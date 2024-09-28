@@ -27,6 +27,7 @@
 #include "dispatch/core/shared_queue.hh"
 #include "RemoteFunction.hh"
 #include "dispatch/core/proto_util.hh"
+#include "dispatch/core/Exception/Exception.hh"
 #include "AbstractRemoteFunctionRunnable.hh"
 #include "RemoteFunctionRunnable.hh"
 
@@ -55,12 +56,12 @@ public:
 
         if(it != this->registeredRunnables.end())
         {
-            Logger::logFatal("Failed to register function \"%s\" in Module \"%s\". Function already registered before.",
-            functionName.c_str(), this->entityName.c_str());
+            CLAID_LOG_THROW_FATAL(
+                claid::Exception,
+                absl::StrCat("Failed to register function \"", functionName, " in Module \"", entityName, "\". Function already registered before.")
+            );
             return false;
         }
-
-        
 
         if(!RemoteFunctionRunnable<Return>::template isDataTypeSupported<Return>())
         {

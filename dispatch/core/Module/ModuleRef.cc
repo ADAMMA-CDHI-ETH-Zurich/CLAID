@@ -21,7 +21,7 @@
 
 #include "dispatch/core/Module/ModuleRef.hh"
 #include "dispatch/core/Module/Module.hh"
-
+#include "dispatch/core/Exception/Exception.hh"
 namespace claid
 {
 
@@ -29,7 +29,7 @@ namespace claid
     {
         if(this->module == nullptr)
         {
-            Logger::logFatal("ModuleRef::moduleError called on an uninitialized Channel! Most likely reason: A Channel is used which was never initialized via publish or subscribe.");
+            CLAID_LOG_THROW_FATAL(claid::Exception, "ModuleRef::moduleError called on an uninitialized Channel! Most likely reason: A Channel is used which was never initialized via publish or subscribe.");
             return;
         }
         this->module->moduleError(error);
@@ -39,7 +39,7 @@ namespace claid
     {
         if(this->module == nullptr)
         {
-            Logger::logFatal("ModuleRef::moduleWarning called on an uninitialized Channel! Most likely reason: A Channel is used which was never initialized via publish or subscribe.");
+            CLAID_LOG_THROW_FATAL(claid::Exception, "ModuleRef::moduleWarning called on an uninitialized Channel! Most likely reason: A Channel is used which was never initialized via publish or subscribe.");
             return;
         }
         this->module->moduleWarning(warning);
@@ -49,8 +49,8 @@ namespace claid
     {
         if(this->module == nullptr)
         {
-            Logger::logFatal("ModuleRef::getId called on an uninitialized Channel! Most likely reason: A Channel is used which was never initialized via publish or subscribe.");
-            return;
+            CLAID_LOG_THROW_FATAL(claid::Exception, "ModuleRef::getId called on an uninitialized Channel! Most likely reason: A Channel is used which was never initialized via publish or subscribe.");
+            return "";
         }
         return this->module->getId();
     }

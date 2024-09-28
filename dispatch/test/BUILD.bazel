@@ -13,6 +13,7 @@ filegroup(
         "remote_dispatching_test.json",
         "remote_function_test.json",
         "data_saver_json_test.json",
+        "data_sync_module_test",
         "config_reload_test_1.json",
         "config_reload_test_2.json",
         "tls_remote_dispatching_test.json",
@@ -79,6 +80,20 @@ cc_test(
   name = "data_saver_json_test",
   size = "small",
   srcs = ["data_saver_json_test.cc"],
+  deps = [
+    ":test_helpers",
+    "//dispatch/proto:claidservice_cc_proto",
+    "//dispatch/core:capi"
+  ] + FRAMEWORK_DEPS,
+  data = [
+    ":test_configs",
+  ]
+)
+
+cc_test(
+  name = "data_sync_module_test",
+  size = "small",
+  srcs = ["data_sync_module_test.cc"],
   deps = [
     ":test_helpers",
     "//dispatch/proto:claidservice_cc_proto",

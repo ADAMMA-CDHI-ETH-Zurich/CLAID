@@ -129,6 +129,7 @@ cc_library(
         "shared_queue.hh",
         "local_dispatching.hh",
         "DeviceScheduler/**/*.hh",
+        "Exception/Exception.hh",
         "Module/TypeMapping/**/*.hh",
         "RemoteFunction/**/*.hh",
         "Traits/**/*.hh",

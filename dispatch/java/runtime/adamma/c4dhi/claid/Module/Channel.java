@@ -86,7 +86,15 @@ public class Channel<T>
         {
             String msg = " tried to post data to channel \"" + this.channelId + "\", however\n" +    
                         "it did not publish this channel before.";
-            parent.moduleError(msg);
+
+            if(parent != null)
+            {
+                parent.moduleFatal(msg);
+            }
+            else 
+            {
+                Logger.LOG_THROW_FATAL(msg);
+            }
             return;
         }
         this.publisher.post(data, System.currentTimeMillis());
@@ -98,7 +106,15 @@ public class Channel<T>
         {
             String msg = " tried to post data to channel \"" + this.channelId + "\", however\n" +    
                         "it did not publish this channel before.";
-            parent.moduleError(msg);
+
+            if(parent != null)
+            {
+                parent.moduleFatal(msg);
+            }
+            else 
+            {
+                Logger.LOG_THROW_FATAL(msg);
+            }
             return;
         }
         this.publisher.post(data, timestamp);

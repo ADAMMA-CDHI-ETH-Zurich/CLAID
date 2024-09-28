@@ -63,8 +63,6 @@ namespace claid
 
         bool isPaused = false;
 
-        bool connectedToRemoteServer = false;
-
         std::map<std::string, ScheduledRunnable> timers;
 
         ChannelSubscriberPublisher* subscriberPublisher;
@@ -74,6 +72,9 @@ namespace claid
         std::shared_ptr<EventTracker> eventTracker;
 
         void enqueueRunnable(const ScheduledRunnable& runnable);
+
+    private:
+        RemoteFunction<bool> isConnectedToRemoteServerRemoteFunction;
 
     public:
         Module();

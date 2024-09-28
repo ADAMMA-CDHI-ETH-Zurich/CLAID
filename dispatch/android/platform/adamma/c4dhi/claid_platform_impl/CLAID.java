@@ -294,6 +294,10 @@ public class CLAID extends JavaCLAIDBase
     public static void onStarted(Runnable runnable)
     {
         CLAID.onCLAIDStartedCallback = runnable;
+        if(CLAID.isRunning())
+        {
+            runnable.run();
+        }
     }
 
     public static ModuleFactory registerDefaultModulesToFactory(ModuleFactory factory)
@@ -536,9 +540,7 @@ public class CLAID extends JavaCLAIDBase
     }
 
     public static void requestBatteryOptimizationExemption(Context context) 
-    {
-        
-        
+    { 
         BatteryOptimizationExemption exemption = new BatteryOptimizationExemption();
         if(!exemption.isGranted())
         {

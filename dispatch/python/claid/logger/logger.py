@@ -104,4 +104,8 @@ class Logger:
         formatted_datetime = current_datetime.strftime(formatter)
         return formatted_datetime
     
+    @staticmethod
+    def LOG_THROW_FATAL(message):
+        Logger.logFatal(message)
+        raise Exception(message)
 

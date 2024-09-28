@@ -59,6 +59,11 @@ MiddleWare::MiddleWare(const string& socketPath, const string& configurationPath
             .registerRunnable(
                 "remove_loose_direct_subscription", &MiddleWare::removeLooseDirectSubscription, this);
 
+        remoteFunctionRunnableHandler
+            .registerRunnable(
+                "is_connected_to_remote_server", &MiddleWare::isConnectedToRemoteServer, this);
+
+
         createPlatformSpecificGlobalDeviceScheduler();
     }
 
@@ -564,7 +569,7 @@ const std::string& MiddleWare::getDeviceId() const
     return deviceId;
 }
 
-bool MiddleWare::isConnectedToRemoteServer() const
+bool MiddleWare::isConnectedToRemoteServer() 
 {
     return this->remoteDispatcherClient != nullptr && this->remoteDispatcherClient->isConnected();
 }
@@ -574,9 +579,7 @@ absl::Status MiddleWare::getRemoteClientStatus() const
     return this->remoteDispatcherClient != nullptr ?
          this->remoteDispatcherClient->getLastStatus() : 
             absl::UnavailableError("Status of RemoteDispatcherClient not available, because the RemoteDispatcherClient does not exist.");
-
 }
-
 
 void MiddleWare::readControlPackages()
 {

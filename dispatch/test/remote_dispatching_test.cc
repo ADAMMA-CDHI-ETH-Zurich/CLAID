@@ -51,6 +51,10 @@ RemoteDispatcherClient(const std::string& addressToConnectTo,
                     SharedQueue<DataPackage>& outgoingQueue);
 */
 
+const int REQUIRED_DATA_TRANSMISSIONS = 42;
+int dataSentCtr = 0;
+int dataReceivedCtr = 0;
+
 class SenderModule : public claid::Module
 {
     Channel<std::string> sendChannel;
@@ -60,13 +64,26 @@ class SenderModule : public claid::Module
         moduleInfo("Initialize called");
         sendChannel = this->publish<std::string>("TestChannel");
 
-        registerPeriodicFunction("PeriodicFunction", &SenderModule::periodicFunction, this, Duration::milliseconds(1000));
+        registerPeriodicFunction("PeriodicFunction", &SenderModule::periodicFunction, this, Duration::milliseconds(200));
     }
 
     void periodicFunction()
     {
+        if(!isConnectedToRemoteServer())
+        {
+            Logger::logWarning("Not yet connected to remote server. Waiting.");
+            return;
+        }
         Logger::logInfo("Periodic function");
         sendChannel.post("TestData");
+        dataSentCtr++;
+        if(dataSentCtr == REQUIRED_DATA_TRANSMISSIONS)
+        {
+            unregisterPeriodicFunction("PeriodicFunction");
+        }
+        
+        ASSERT_TRUE(dataSentCtr <= REQUIRED_DATA_TRANSMISSIONS) << "Too much data sent! dataSentCtr is "
+         << dataSentCtr << " which is more than REQUIRED_DATA_TRANSMISSIONS (" << REQUIRED_DATA_TRANSMISSIONS << ")";
     }
 
     void onConnectedToRemoteServer()
@@ -93,6 +110,9 @@ class ReceiverModule : public claid::Module
     void onData(ChannelData<std::string> data)
     {
         Logger::logInfo("Received data %s", data.getData().c_str());
+        dataReceivedCtr++;
+        ASSERT_TRUE(dataReceivedCtr <= REQUIRED_DATA_TRANSMISSIONS) << "Too much data received! dataReceivedCtr is "
+         << dataReceivedCtr << " which is more than REQUIRED_DATA_TRANSMISSIONS (" << REQUIRED_DATA_TRANSMISSIONS << ")";
     }
 };
 
@@ -135,6 +155,17 @@ TEST(RemoteDispatcherTestSuite, ServerTest)
     std::this_thread::sleep_for(std::chrono::milliseconds(4100));
     ASSERT_TRUE(clientMiddleware.isConnectedToRemoteServer()) << clientMiddleware.getRemoteClientStatus();
 
+    while(dataSentCtr != dataReceivedCtr || dataSentCtr != REQUIRED_DATA_TRANSMISSIONS)
+    {
+        Logger::logInfo(
+            """Waiting for data transmissions and receivals, current is:\n"""
+            """Transmissions: %d/%d\n"""
+            """Receivals: %d/%d\n""",
+            dataSentCtr, REQUIRED_DATA_TRANSMISSIONS,
+            dataReceivedCtr, REQUIRED_DATA_TRANSMISSIONS
+        );
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    }
     Logger::logInfo("===== STOPPING SERVER MIDDLEWARE ====");
 
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
@@ -146,5 +177,14 @@ TEST(RemoteDispatcherTestSuite, ServerTest)
     clientMiddleware.shutdown();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    Logger::logInfo(
+            """Finished data transmissions and receivals:\n"""
+            """Transmissions: %d/%d\n"""
+            """Receivals: %d/%d\n""",
+            dataSentCtr, REQUIRED_DATA_TRANSMISSIONS,
+            dataReceivedCtr, REQUIRED_DATA_TRANSMISSIONS
+        );
+    ASSERT_EQ(dataSentCtr, REQUIRED_DATA_TRANSMISSIONS) << "Invalid number of data transmissions! Expected " << REQUIRED_DATA_TRANSMISSIONS << " but got " << dataSentCtr;
+    ASSERT_EQ(dataReceivedCtr, REQUIRED_DATA_TRANSMISSIONS) << "Invalid number of data receivals! Expected " << REQUIRED_DATA_TRANSMISSIONS << " but got " << dataReceivedCtr;
 
 }

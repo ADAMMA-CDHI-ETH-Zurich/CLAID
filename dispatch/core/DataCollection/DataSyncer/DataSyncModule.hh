@@ -90,6 +90,7 @@ namespace claid
 
       
             Schedule syncingSchedule;
+            std::vector<std::string> syncFunctionSchedulingNames;
             
             void makePathRelative(std::string& path)
             {
@@ -262,6 +263,8 @@ namespace claid
             void setSyncingSchedule(Schedule schedule)
             {
                 this->syncingSchedule = schedule;
+                this->unregisterSyncFunction();
+                this->registerSyncFunctionBasedOnSchedule();
             }
 
             // Get's called by the middleware once we connect to a remote server.
@@ -367,15 +370,31 @@ namespace claid
                                
                 this->lastMessageFromFileReceiver = Time::now();
                 
-                this->registerFunctionBasedOnSchedule(
+                registerSyncFunctionBasedOnSchedule();
+
+                Logger::logInfo("DataSyncModule init done");
+
+            }
+
+            void unregisterSyncFunction()
+            {
+                for(const std::string& function : this->syncFunctionSchedulingNames)
+                {
+                    Logger::logInfo("Unregistering scheduled function %s",function.c_str());
+                    this->unregisterPeriodicFunction(function);
+                }
+                Logger::logInfo("Scheduled functions are now: %d", this->syncFunctionSchedulingNames.size());
+                this->syncFunctionSchedulingNames.clear();
+            }
+
+            void registerSyncFunctionBasedOnSchedule()
+            {
+                this->syncFunctionSchedulingNames = this->registerFunctionBasedOnSchedule(
                     "PeriodicSyncFunction", 
                     this->syncingSchedule,
                     &DataSyncModule::periodicSync, 
                     this
                 );
-                
-                Logger::logInfo("DataSyncModule init done");
-
             }
 
        
