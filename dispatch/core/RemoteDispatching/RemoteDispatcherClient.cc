@@ -239,10 +239,10 @@ namespace claid
         args.SetInt(GRPC_ARG_KEEPALIVE_TIME_MS, 10 * 60 * 1000 /* 10 minutes sec*/);
         args.SetInt(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 20 * 1000 /*10 sec*/);
         args.SetInt(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
-        args.SetInt(GRPC_ARG_MAX_RECEIVE_MESSAGE_LENGTH, 1024 * 1024 * 1024);  // 1 GB
+        args.SetInt(GRPC_ARG_MAX_RECEIVE_MESSAGE_LENGTH, 10 * 1024 * 1024 * 1024);  // 10 GB
     
         // Set the maximum send message size (in bytes)
-        args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 1024 * 1024 * 1024);  // 1 GB
+        args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 10 * 1024 * 1024 * 1024);  // 10 GB
     
         grpcChannel = grpc::CreateCustomChannel(addressToConnectTo, makeChannelCredentials(), args);
         stub = claidservice::ClaidRemoteService::NewStub(grpcChannel);

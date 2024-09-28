@@ -109,10 +109,10 @@ namespace claid
         builder.AddChannelArgument(
             GRPC_ARG_HTTP2_MIN_RECV_PING_INTERVAL_WITHOUT_DATA_MS,
             30 * 1000 /*30 sec*/);
-        builder.SetMaxReceiveMessageSize(1024 * 1024 * 1024);  // 1 GB
+        builder.SetMaxReceiveMessageSize(10 * 1024 * 1024 * 1024);  // 10 GB
 
         // Set the maximum send message size (in bytes) for the server
-        builder.SetMaxSendMessageSize(1024 * 1024 * 1024);  // 1 GB
+        builder.SetMaxSendMessageSize(10 * 1024 * 1024 * 1024);  // 10 GB
 
         server = builder.BuildAndStart();
     }

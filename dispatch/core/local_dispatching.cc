@@ -483,9 +483,9 @@ void DispatcherServer::buildAndStartServer() {
     ServerBuilder builder;
     builder.AddListeningPort(addr, grpc::InsecureServerCredentials());
     builder.RegisterService(&serviceImpl);
-    builder.SetMaxReceiveMessageSize(1024 * 1024 * 1024);  // 1 GB
+    builder.SetMaxReceiveMessageSize(10 * 1024 * 1024 * 1024);  // 10 GB
     // Set the maximum send message size (in bytes) for the server
-    builder.SetMaxSendMessageSize(1024 * 1024 * 1024);  // 1 GB
+    builder.SetMaxSendMessageSize(10 * 1024 * 1024 * 1024);  // 10 GB
     server = builder.BuildAndStart();
     }
 
@@ -501,8 +501,8 @@ DispatcherClient::DispatcherClient(const string& socketPath,
     // Set up the gRCP channel
     grpc::ChannelArguments args;
 
-    args.SetInt(GRPC_ARG_MAX_RECEIVE_MESSAGE_LENGTH, 1024 * 1024 * 1024);  // 1 GB
-    args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 1024 * 1024 * 1024);  // 1 GB
+    args.SetInt(GRPC_ARG_MAX_RECEIVE_MESSAGE_LENGTH, 10 * 1024 * 1024 * 1024);  // 10 GB
+    args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 10 * 1024 * 1024 * 1024);  // 10 GB
 
     grpcChannel = grpc::CreateCustomChannel(socketPath, grpc::InsecureChannelCredentials(), args);
     stub = ClaidService::NewStub(grpcChannel);

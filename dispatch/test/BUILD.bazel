@@ -13,7 +13,7 @@ filegroup(
         "remote_dispatching_test.json",
         "remote_function_test.json",
         "data_saver_json_test.json",
-        "data_sync_module_test",
+        "data_sync_module_test.json",
         "config_reload_test_1.json",
         "config_reload_test_2.json",
         "tls_remote_dispatching_test.json",
