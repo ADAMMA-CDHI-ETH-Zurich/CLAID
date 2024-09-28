@@ -123,6 +123,7 @@ cc_library(
         "local_dispatching.cc",
         "DeviceScheduler/**/*.cc",
         "Module/TypeMapping/**/*.cc",
+        "Exception/Exception.cc",
         "RemoteFunction/**/*.cc",
     ]),
     hdrs = glob([

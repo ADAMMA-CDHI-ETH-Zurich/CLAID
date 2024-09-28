@@ -483,9 +483,9 @@ void DispatcherServer::buildAndStartServer() {
     ServerBuilder builder;
     builder.AddListeningPort(addr, grpc::InsecureServerCredentials());
     builder.RegisterService(&serviceImpl);
-    builder.SetMaxReceiveMessageSize(10 * 1024 * 1024 * 1024);  // 10 GB
+    builder.SetMaxReceiveMessageSize(-1);  // -1 means unlimited https://android.googlesource.com/platform/external/grpc-grpc/+/bc1ebd11f9c7ccb881ecd93da0ea00ec16399067/include/grpc/impl/codegen/grpc_types.h#156
     // Set the maximum send message size (in bytes) for the server
-    builder.SetMaxSendMessageSize(10 * 1024 * 1024 * 1024);  // 10 GB
+    builder.SetMaxSendMessageSize(-1);  // -1 means unlimited
     server = builder.BuildAndStart();
     }
 
@@ -501,8 +501,8 @@ DispatcherClient::DispatcherClient(const string& socketPath,
     // Set up the gRCP channel
     grpc::ChannelArguments args;
 
-    args.SetInt(GRPC_ARG_MAX_RECEIVE_MESSAGE_LENGTH, 10 * 1024 * 1024 * 1024);  // 10 GB
-    args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 10 * 1024 * 1024 * 1024);  // 10 GB
+    args.SetInt(GRPC_ARG_MAX_RECEIVE_MESSAGE_LENGTH, -1);  // -1 means unlimited https://android.googlesource.com/platform/external/grpc-grpc/+/bc1ebd11f9c7ccb881ecd93da0ea00ec16399067/include/grpc/impl/codegen/grpc_types.h#156
+    args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, -1);  // -1 means unlimited
 
     grpcChannel = grpc::CreateCustomChannel(socketPath, grpc::InsecureChannelCredentials(), args);
     stub = ClaidService::NewStub(grpcChannel);
