@@ -80,7 +80,7 @@ namespace claid
             Time lastMessageFromFileReceiver;
         
             // Constants
-            static constexpr int SYNC_TIMEOUT_IN_MS = 10000;
+            static constexpr int SYNC_TIMEOUT_IN_MS = 3000;
 
          
             bool deleteFileAfterSync;
@@ -258,8 +258,14 @@ namespace claid
                 // do not start a new syncing process just yet.
                 if(millisecondsSinceLastMessageFromFileReceiver() >= SYNC_TIMEOUT_IN_MS)
                 {
+                    moduleInfo("DataSyncModule periodic sync 7");
+
                     Logger::logInfo("!!!PERIODIC SYNC!!!");
                     sendFileList();
+                }
+                else
+                {
+                    moduleWarning("Synchronizing skipped as previous sync is still ongoing (milli seconds since last mesasge from file receiver < SYNC_TIMEOUT_IN_MS (3 seconds)");
                 }
             }
 

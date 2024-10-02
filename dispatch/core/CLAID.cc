@@ -187,4 +187,13 @@ namespace claid {
         claid::MiddleWare* middleware = static_cast<claid::MiddleWare*>(handle);
         return middleware->loadNewConfig(newConfigFilePath);
     }
+
+    RemoteFunctionHandler* CLAID::getRemoteFunctionHandler()
+    {
+        if(this->moduleManager == nullptr)
+        {
+            return nullptr;
+        }
+        return this->moduleManager->getRemoteFunctionHandler();
+    }
 }

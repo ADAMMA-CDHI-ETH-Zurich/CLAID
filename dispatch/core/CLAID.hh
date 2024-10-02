@@ -67,6 +67,8 @@ namespace claid
         absl::Status getRemoteClientStatus() const;
         
         absl::Status loadNewConfig(const std::string& newConfigFilePath);
+
+        RemoteFunctionHandler* getRemoteFunctionHandler();
     };
 
 }

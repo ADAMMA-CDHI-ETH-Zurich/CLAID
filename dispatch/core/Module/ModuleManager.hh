@@ -107,8 +107,7 @@ namespace claid {
 
             absl::Status start();
             void stop();
-          
-           
 
+            RemoteFunctionHandler* getRemoteFunctionHandler();
     };
 }

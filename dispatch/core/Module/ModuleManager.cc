@@ -520,4 +520,8 @@ void ModuleManager::restart()
         this->remoteFunctionHandler.handleResponse(remoteFunctionResponse);
     }
 
+    RemoteFunctionHandler* ModuleManager::getRemoteFunctionHandler()
+    {
+        return &this->remoteFunctionHandler;
+    }
 }

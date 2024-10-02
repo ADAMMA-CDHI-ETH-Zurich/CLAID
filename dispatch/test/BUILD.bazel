@@ -95,6 +95,7 @@ cc_test(
   name = "data_sync_module_test",
   size = "small",
   srcs = ["data_sync_module_test.cc"],
+  timeout = "moderate",
   deps = [
     ":test_helpers",
     "//dispatch/proto:claidservice_cc_proto",

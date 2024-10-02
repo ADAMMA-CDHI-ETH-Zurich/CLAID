@@ -99,7 +99,7 @@ void  generateRandomFiles(int numFiles, std::vector<FileInfo>& files) {
 
 
 
-void createDataFolder()
+void clearOrCreateDataFolder()
 {
     if(FileUtils::dirExists(FOLDER_PATH))
     {
@@ -112,6 +112,7 @@ void createDataFolder()
     ASSERT_TRUE(FileUtils::createDirectory(FOLDER_PATH)) << "Failed to create storage folder " << absolutePath;
     Logger::logInfo("Data folder created under %s", absolutePath.c_str());
 }
+
 
 void startCLAIDInstances()
 {
@@ -152,10 +153,8 @@ void startCLAIDInstances()
 
 void stopCLAIDInstances()
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     Logger::logInfo("===== STOPPING SERVER MIDDLEWARE ====");
     serverMiddleware.shutdown();
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
     Logger::logInfo("===== STOPPING CLIENT MIDDLEWARE ====");
 
@@ -202,46 +201,109 @@ void checkSynchronizedFiles(const std::vector<FileInfo>& files)
     ASSERT_EQ(leftoverFiles.size(), 0) << "Leftover files found in directory" << FOLDER_PATH << "directory. Directory should be empty!";
 }
 
+void testCase1()
+{
+    Logger::logInfo("\n\n========== TEST CASE 1 ==========\n");
+    // In test case 1, we generate 10 random files and synchronize them to an output folder.
+    // The 10 files should be deleted from the source folder during synchronization.
+    // Expectation:
+    //  - output folder should contain the 10 files, with correct sizes, after max 10 seconds.
+    //  - source folder should be empty after max 10 seconds.
+    std::vector<FileInfo> files;
+    generateRandomFiles(10, files);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+    checkSynchronizedFiles(files);
+}
+
+void testCase2()
+{
+    Logger::logInfo("\n\n========== TEST CASE 2 ==========\n");
+    // In test case 2, we now have 21 files. The first 10 are named the same as in test case 1. Those 10 files
+    // are still available in the output folder. Now, since we generate 21 new files, the first 10 will have different sizes.
+    // Thus, they should again be synchronized, and deleted in the process.
+    // Expectation:
+    //  - output folder should contain the 21 files, with correct sizes, after max 10 seconds.
+    //  - source folder should be empty after max 10 seconds.
+    std::vector<FileInfo> files;
+    generateRandomFiles(21, files);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+    checkSynchronizedFiles(files);
+}
+
+void testCase3(std::vector<FileInfo>& returnFiles)
+{
+    Logger::logInfo("\n\n========== TEST CASE 3 ==========\n");
+    // In test case 3, we set the syncing schedule of the data sync module to an empty schedule, which should effectively 
+    // disable the synchronization. Before starting, we clear the output folder. We create 15 in the source folder.
+    // Expectation:
+    // - output folder should be empty
+    // - source folder should contain 15 files
+    clearOrCreateDataFolder();
+    RemoteFunctionHandler* remoteFunctionHandler = clientMiddleware.getRemoteFunctionHandler();
+    ASSERT_NE(remoteFunctionHandler, nullptr) << "RemoteFunctionHandler is null.";
+
+    RemoteFunction<void> setSyncingSchedule = remoteFunctionHandler->mapModuleFunction<void, Schedule>("DataSyncer", "set_syncing_schedule");
+
+    // Set empty schedule
+    Schedule schedule;
+    auto future = setSyncingSchedule.execute(schedule);
+    future->await();
+    ASSERT_TRUE(future->wasExecutedSuccessfully()) << "Remote function \"set_syncing_schedule\" was not executed successfully on DataSyncer Module";
+    generateRandomFiles(15, returnFiles);
+    std::this_thread::sleep_for(std::chrono::milliseconds(12000));
+
+    std::vector<std::string> leftoverFiles;
+    ASSERT_TRUE(FileUtils::getAllFilesInDirectory(FOLDER_PATH, leftoverFiles)) << "Failed to get files in folder " << FOLDER_PATH;
+    ASSERT_EQ(leftoverFiles.size(), 15) << "Files have been synchronized even though they should not have been! Expected 0 files but found " << leftoverFiles.size();
+}
+
+void testCase4(const std::vector<FileInfo>& files)
+{
+    Logger::logInfo("\n\n========== TEST CASE 4 ==========\n");
+    // In test case 4, we set the syncing schedule of the data sync module to the previously schedule, effectively continuing 
+    // the synchronization. We then simply wait for the leftover files from testCase3 to be synchronized.
+    // Before we set the schedule, we clear the output folder.
+    // Expectation:
+    // - output folder should be empty
+    // - source folder should contain 15 files
+
+    const std::string synchronizedPath = Path::join(OUTPUT_FOLDER_PATH, USER_NAME);
+
+    ASSERT_TRUE(FileUtils::removeDirectoryRecursively(synchronizedPath)) << "Failed to clear output directory " << synchronizedPath;
+    ASSERT_TRUE(FileUtils::createDirectoriesRecursively(synchronizedPath)) << "Failed to create output directory " << synchronizedPath;
+
+    RemoteFunctionHandler* remoteFunctionHandler = clientMiddleware.getRemoteFunctionHandler();
+    ASSERT_NE(remoteFunctionHandler, nullptr) << "RemoteFunctionHandler is null.";
+
+    RemoteFunction<void> setSyncingSchedule = remoteFunctionHandler->mapModuleFunction<void, Schedule>("DataSyncer", "set_syncing_schedule");
+
+    // Set empty schedule
+    Schedule schedule;
+    SchedulePeriodic* periodic_entry = schedule.add_periodic();
+    periodic_entry->set_period_seconds(5);
+
+    auto future = setSyncingSchedule.execute(schedule);
+    future->await();
+    ASSERT_TRUE(future->wasExecutedSuccessfully()) << "Remote function \"set_syncing_schedule\" was not executed successfully on DataSyncer Module";
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(12000));
+    checkSynchronizedFiles(files);
+}
+
 // Creates two simple Modules (Sender, Receiver) and registers them with the C++ Runtime.
 // Starts the C++ runtime and and waits for the Receiver to receive data from the Sender.
 TEST(DataSyncModuleTestSuite, DataSyncModuleSetSyncScheduleTest)  
 {
-    createDataFolder();
-    std::vector<FileInfo> files;
-    generateRandomFiles(10, files);
+    clearOrCreateDataFolder();
+
     startCLAIDInstances();
 
-    // Files are synchronized every 5 seconds.
-    // So, 10 seconds to wait should be more than enough.
-    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-
-    checkSynchronizedFiles(files);
+    testCase1();
+    testCase2();
     
-    // Do a second round of syncs.
-    // Files are synchronized every 5 seconds.
-    // So, 10 seconds to wait should be more than enough
-    generateRandomFiles(21, files);
-    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-    checkSynchronizedFiles(files);
+    std::vector<FileInfo> files;
+    testCase3(files); // Fills files
+    testCase4(files); // Uses files
 
     stopCLAIDInstances();
-
-    // while(dataSentCtr != dataReceivedCtr || dataSentCtr != REQUIRED_DATA_TRANSMISSIONS)
-    // {
-    //     Logger::logInfo(
-    //         """Waiting for data transmissions and receivals, current is:\n"""
-    //         """Transmissions: %d/%d\n"""
-    //         """Receivals: %d/%d\n""",
-    //         dataSentCtr, REQUIRED_DATA_TRANSMISSIONS,
-    //         dataReceivedCtr, REQUIRED_DATA_TRANSMISSIONS
-    //     );
-    //     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-    // }
-
-
-   
-
-    // ASSERT_EQ(dataSentCtr, REQUIRED_DATA_TRANSMISSIONS) << "Invalid number of data transmissions! Expected " << REQUIRED_DATA_TRANSMISSIONS << " but got " << dataSentCtr;
-    // ASSERT_EQ(dataReceivedCtr, REQUIRED_DATA_TRANSMISSIONS) << "Invalid number of data receivals! Expected " << REQUIRED_DATA_TRANSMISSIONS << " but got " << dataReceivedCtr;
-
 }
