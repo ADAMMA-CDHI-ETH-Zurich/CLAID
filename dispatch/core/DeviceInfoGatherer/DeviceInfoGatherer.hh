@@ -32,11 +32,11 @@ namespace claid {
 class DeviceInfoGatherer
 {
     private:
-        RemoteFunctionHandler remoteFunctionHandler;
+        RemoteFunctionHandler& remoteFunctionHandler;
     
     public:
 
-        DeviceInfoGatherer(RemoteFunctionHandler remoteFunctionHandler) : remoteFunctionHandler(remoteFunctionHandler)
+        DeviceInfoGatherer(RemoteFunctionHandler& remoteFunctionHandler) : remoteFunctionHandler(remoteFunctionHandler)
         {
 
         }
@@ -53,7 +53,7 @@ class DeviceInfoGatherer
 
         virtual DeviceChargingState getDeviceChargingState()
         {
-            return DeviceChargingState::UNKNOWN;
+            return DeviceChargingState::DEVICE_CHARGING_STATE_UNKNOWN;
         }
 };
 

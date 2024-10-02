@@ -5,6 +5,7 @@
 * Fixed bug in setSyncingSchedule of DataSyncModule, leading to functions not being rescheduled based on a new Schedule
 * Fixed onCLAIDStarted not being called sometimes, when starting CLAID in the foreground
 * Improved error handling, changed some errors to fatals to ensure the user will notice it
+* Added DeviceInfoGatherer, allowing to request charging state and battery level on mobile devices from other runtimes (currently only C++, only on Android)
  
 ## 0.6.3
 * Fixed bug in global scheduling in Java, that would cause some threads to not wake up when due.

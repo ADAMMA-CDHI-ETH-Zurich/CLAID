@@ -24,10 +24,11 @@
 #include "dispatch/core/Utilities/Time.hh"
 #include "dispatch/core/module_table.hh"
 #include "dispatch/core/RemoteFunction/RemoteFunctionHandler.hh"
+#include "dispatch/core/DeviceInfoGatherer/DeviceInfoGatherer.hh"
 
 namespace claid {
 
-class DeviceInfoGatherer
+class DeviceInfoGathererAndroid : public DeviceInfoGatherer
 {
 private:
     RemoteFunction<double> androidGetDeviceBatteryLevelPercentage;
@@ -35,10 +36,10 @@ private:
 
 public:
  
-    DeviceInfoGatherer(RemoteFunctionHandler remoteFunctionHandler) : remoteFunctionHandler(remoteFunctionHandler)
+    DeviceInfoGathererAndroid(RemoteFunctionHandler& remoteFunctionHandler) : DeviceInfoGatherer(remoteFunctionHandler)
     {
-        androidGetDeviceBatteryLevelPercentage = remoteFunctionHandler.mapRuntimeFunction<void>(Runtime::RUNTIME_JAVA, "android_get_battery_level_percentage");
-        androidIsDeviceCharging = remoteFunctionHandler.mapRuntimeFunction<void>(Runtime::RUNTIME_JAVA, "android_is_device_charging");
+        androidGetDeviceBatteryLevelPercentage = remoteFunctionHandler.mapRuntimeFunction<double>(Runtime::RUNTIME_JAVA, "android_get_battery_level_percentage");
+        androidIsDeviceCharging = remoteFunctionHandler.mapRuntimeFunction<bool>(Runtime::RUNTIME_JAVA, "android_is_device_charging");
     }
 
     virtual bool isAvailable()
@@ -48,7 +49,7 @@ public:
 
     virtual double getDeviceBatteryLevelPercentage()
     {
-        auto future = androidGetDeviceBatteryLevelPercentage();
+        auto future = androidGetDeviceBatteryLevelPercentage.execute();
         double percentage = future->await();
 
         if(!future->wasExecutedSuccessfully())
@@ -61,20 +62,20 @@ public:
 
     virtual DeviceChargingState getDeviceChargingState()
     {
-        auto future = androidIsDeviceCharging();
+        auto future = androidIsDeviceCharging.execute();
         bool charging = future->await();
 
         if(!future->wasExecutedSuccessfully())
         {
-            return DeviceChargingState::UNKNOWN;
+            return DeviceChargingState::DEVICE_CHARGING_STATE_UNKNOWN;
         }
         else if(charging)
         {
-            return DeviceChargingState::CHARGING;
+            return DeviceChargingState::DEVICE_CHARGING_STATE_CHARGING;
         }
         else
         {
-            return DeviceChargingState::NOT_CHARGING;
+            return DeviceChargingState::DEVICE_CHARGING_STATE_NOT_CHARGING;
         }
     }
 };

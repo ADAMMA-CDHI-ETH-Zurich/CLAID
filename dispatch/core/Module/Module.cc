@@ -28,6 +28,10 @@
 #include "dispatch/core/Exception/Exception.hh"
 #include "absl/strings/str_split.h"
 
+#ifdef __ANDROID__
+#include "dispatch/core/DeviceInfoGatherer/DeviceInfoGathererAndroid.hh"
+#endif
+
 namespace claid
 {
     Module::Module()
@@ -103,6 +107,8 @@ namespace claid
             std::make_shared<RemoteFunctionRunnableHandler>("Module " + this->id, subscriberPublisher->getToModuleDispatcherQueue());
 
         this->isConnectedToRemoteServerRemoteFunction = remoteFunctionHandler->mapRuntimeFunction<bool>(claidservice::Runtime::MIDDLEWARE_CORE, "is_connected_to_remote_server");
+
+        this->deviceInfoGatherer = getDeviceInfoGatherer();
 
         runnableDispatcher.setRemoteFunctionHandler(remoteFunctionHandler);
         if (!runnableDispatcher.start()) 
@@ -469,6 +475,17 @@ namespace claid
             return "";
         }
         return this->eventTracker->getStorageFolderPath();
+    }
+
+    std::shared_ptr<DeviceInfoGatherer> Module::getDeviceInfoGatherer()
+    {
+        #ifdef __ANDROID__
+        return std::static_pointer_cast<DeviceInfoGatherer>(
+            std::make_shared<DeviceInfoGathererAndroid>(*this->remoteFunctionHandler)
+        );
+        #else
+        return std::make_shared<DeviceInfoGatherer>(*this->remoteFunctionHandler);
+        #endif
     }
 
 }

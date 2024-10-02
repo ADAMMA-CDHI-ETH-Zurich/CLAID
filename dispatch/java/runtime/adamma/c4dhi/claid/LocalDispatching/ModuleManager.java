@@ -58,6 +58,7 @@ import adamma.c4dhi.claid.CtrlType;
 import adamma.c4dhi.claid.LogMessage;
 import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionHandler;
 import adamma.c4dhi.claid.RemoteFunction.RemoteFunctionRunnableHandler;
+import adamma.c4dhi.claid_platform_impl.DeviceInfoGathererAndroid;
 import adamma.c4dhi.claid_platform_impl.GlobalDeviceSchedulerAndroid;
 import adamma.c4dhi.claid.RemoteFunctionRequest;
 
@@ -81,7 +82,14 @@ public class ModuleManager
 {
     private ModuleDispatcher dispatcher;
     private ModuleFactory moduleFactory;
+    // Can be used by the Middleware to acquire and release wakelocks, and to schedule wakeups.
+    // Registers remote functions when constructed.
+    // Is not used by ModuleManager directly, but is available via remote functions.
     private GlobalDeviceSchedulerAndroid deviceScheduler;
+    // Can be used by other runtimes to request device information, such as charging state and battery level,
+    // of the current device. Registers remote functions when constructed.
+    // Is not used by ModuleManager directly, but is available via remote functions.
+    private DeviceInfoGathererAndroid deviceInfoGatherer;
 
     // ModuleId, Module
     private Map<String, Module> runningModules = new HashMap<>();
@@ -108,6 +116,7 @@ public class ModuleManager
         this.remoteFunctionHandler = new RemoteFunctionHandler(fromModulesChannel);
         this.remoteFunctionRunnableHandler = new RemoteFunctionRunnableHandler("RUNTIME_JAVA", fromModulesChannel);
         this.deviceScheduler = new GlobalDeviceSchedulerAndroid(this.remoteFunctionRunnableHandler);
+        this.deviceInfoGatherer = new DeviceInfoGathererAndroid(this.remoteFunctionRunnableHandler);
     }
 
     private boolean instantiateModule(String moduleId, String moduleClass)

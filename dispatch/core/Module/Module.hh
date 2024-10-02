@@ -37,6 +37,7 @@
 #include "dispatch/core/RemoteFunction/RemoteFunctionHandler.hh"
 #include "dispatch/core/RemoteFunction/RemoteFunctionRunnableHandler.hh"
 #include "dispatch/core/Utilities/ScheduleHelper.hh"
+#include "dispatch/core/DeviceInfoGatherer/DeviceInfoGatherer.hh"
 
 namespace claid
 {
@@ -70,6 +71,7 @@ namespace claid
         std::shared_ptr<RemoteFunctionRunnableHandler> remoteFunctionRunnableHandler;
 
         std::shared_ptr<EventTracker> eventTracker;
+        std::shared_ptr<DeviceInfoGatherer> deviceInfoGatherer;
 
         void enqueueRunnable(const ScheduledRunnable& runnable);
 
@@ -342,6 +344,8 @@ namespace claid
         {
             return this->remoteFunctionHandler->mapRuntimeFunction<Return, Parameters...>(runtime, functionName);
         }
+
+        std::shared_ptr<DeviceInfoGatherer> getDeviceInfoGatherer();
     };
 
 }

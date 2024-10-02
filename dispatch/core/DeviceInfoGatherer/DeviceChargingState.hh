@@ -25,9 +25,9 @@ namespace claid {
 
 enum DeviceChargingState
 {
-    UNKNOWN,
-    CHARGING,
-    NOT_CHARGING
+    DEVICE_CHARGING_STATE_UNKNOWN,
+    DEVICE_CHARGING_STATE_CHARGING,
+    DEVICE_CHARGING_STATE_NOT_CHARGING
 };
 
 }

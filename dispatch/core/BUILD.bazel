@@ -125,6 +125,7 @@ cc_library(
         "Module/TypeMapping/**/*.cc",
         "Exception/**/*.cc",
         "RemoteFunction/**/*.cc",
+        "DeviceInfoGatherer/**/*.cc"
     ]),
     hdrs = glob([
         "shared_queue.hh",
@@ -134,6 +135,7 @@ cc_library(
         "Module/TypeMapping/**/*.hh",
         "RemoteFunction/**/*.hh",
         "Traits/**/*.hh",
+        "DeviceInfoGatherer/**/*.hh"
     ]),
     deps = [
         ":module_table",
