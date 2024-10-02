@@ -21,6 +21,7 @@
 
 #include "dispatch/core/Logger/Logger.hh"
 #include "dispatch/core/shared_queue.hh"
+#include "dispatch/core/Exception/Exception.hh"
 
 #include <sstream>
 #include <stdarg.h>
@@ -281,6 +282,34 @@ void claid::Logger::logFatal(const char* format, ...)
         std::vsnprintf( &result.front(), sz, format, args_copy ) ;
 
 		claid::Logger::log(LogMessageSeverityLevel::FATAL, result, LogMessageEntityType::MIDDLEWARE, "");
+
+        va_end(args_copy) ;
+        va_end(args) ;
+    }
+
+    catch( const std::bad_alloc& )
+    {
+        va_end(args_copy) ;
+        va_end(args) ;
+        throw ;
+    }
+}
+
+
+void claid::Logger::throwLogFatalIfNotCaught(const char* format, ...)
+{
+	va_list args, args_copy ;
+    va_start( args, format ) ;
+    va_copy( args_copy, args ) ;
+	
+    const auto sz = std::vsnprintf( nullptr, 0, format, args ) + 1 ;
+
+    try
+    {
+        std::string result( sz, ' ' ) ;
+        std::vsnprintf( &result.front(), sz, format, args_copy ) ;
+
+        CLAID_THROW(claid::Exception, result);
 
         va_end(args_copy) ;
         va_end(args) ;

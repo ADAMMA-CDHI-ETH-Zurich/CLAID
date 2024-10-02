@@ -38,17 +38,12 @@ class TestModule1 : public Module
     {
         std::string prop; 
 
-        if(properties.getStringProperty("TestModule1Data", prop))
+        properties.getStringProperty("TestModule1Data", prop);
+        if(prop == "42")
         {
-            if(prop == "42")
-            {
-                testModule1Started = true;
-            }
+            testModule1Started = true;
         }
-        else
-        {
-            Logger::logError("TestModule1 did not find property TestModule1Data");
-        }
+        
     }
 };
 
@@ -60,16 +55,10 @@ class TestModule2 : public Module
     {
         std::string prop; 
 
-        if(properties.getStringProperty("TestModule2Data", prop))
+        properties.getStringProperty("TestModule2Data", prop);
+        if(prop == "1337")
         {
-            if(prop == "1337")
-            {
-                testModule2Started = true;
-            }
-        }
-        else
-        {
-            Logger::logError("TestModule2 did not find property TestModule2Data");
+            testModule2Started = true;
         }
     }
 };
@@ -83,16 +72,11 @@ class TestModule3 : public Module
     {
         std::string prop;
         Logger::logInfo("TestModule 3 initialize");
-        if(properties.getStringProperty("TestModule3Data", prop))
+        properties.getStringProperty("TestModule3Data", prop);
+
+        if(prop == "420")
         {
-            if(prop == "420")
-            {
-                testModule3Started = true;
-            }
-        }
-        else
-        {
-            Logger::logError("TestModule3 did not find property TestModule3Data");
+            testModule3Started = true;
         }
     }
 };
@@ -105,17 +89,13 @@ class TestModule4 : public Module
     void initialize(Properties properties)
     {
         std::string prop;
-        if(properties.getStringProperty("TestModule4Data", prop))
+        properties.getStringProperty("TestModule4Data", prop);
+   
+        if(prop == "96")
         {
-            if(prop == "96")
-            {
-                testModule4Started = true;
-            }
+            testModule4Started = true;
         }
-        else
-        {
-            Logger::logError("TestModule4 did not find property TestModule4Data");
-        }
+        
     }
 };
 

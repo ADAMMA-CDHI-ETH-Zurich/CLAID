@@ -53,6 +53,8 @@ namespace claid
             static bool moveFileTo(const std::string& source, const std::string& destination, bool appendExistingFile = false);
 
             static bool getFileSize(const std::string& path, uint64_t& size);
+
+	        static bool getCurrentWorkingDirectory(std::string& outPath);
             
 
     };

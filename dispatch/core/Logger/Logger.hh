@@ -95,6 +95,7 @@ namespace claid
 			static void logWarning(const char* format, ...);
 			static void logError(const char* format, ...);
 			static void logFatal(const char* format, ...);
+			static void throwLogFatalIfNotCaught(const char* format, ...);
 
 			// All log messages are forward to the middleware, which can then process them separately.
 			// Useful to send messages to the log_sink host or to allow individual runtimes to receive all log messages.

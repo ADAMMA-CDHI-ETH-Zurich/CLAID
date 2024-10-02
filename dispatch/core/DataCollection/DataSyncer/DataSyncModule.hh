@@ -117,6 +117,8 @@ namespace claid
                     return;
                 }
 
+                moduleInfo(absl::StrCat("Scanning directory \"", this->filePath, "\" for files."));
+
                 for(std::string& path : fileList)
                 {
                     uint64_t fileSize;
@@ -145,7 +147,7 @@ namespace claid
                 DataSyncFileDescriptorList* descriptors = dataSyncPackage.mutable_file_descriptors();
                 this->buildFileList(*descriptors);
                 this->toReceiverModuleChannel.post(dataSyncPackage);
-                moduleInfo("Sending file list");
+                moduleInfo(absl::StrCat("Sending file list containing ", descriptors->descriptors_size(), " files"));
             }
 
             void sendRequestedFile(const DataSyncFileDescriptor& descriptor, const std::string& userId)
@@ -246,6 +248,7 @@ namespace claid
                         if(!waitUntilConnectedToRemoteServer(Duration::seconds(this->remoteServerConnectionWaitTimeSeconds)))
                         {
                             wasConnectedToRemoteServerDuringLastSync = false;
+                            moduleWarning("Not connected to remote server. Skipping synchronization and waiting for connection to come back.");
                             return;
                         }
                     }
@@ -319,6 +322,7 @@ namespace claid
 
 
                 properties.getStringProperty("filePath", this->filePath);
+                
                 properties.getObjectProperty("syncingSchedule", this->syncingSchedule);
                 properties.getBoolProperty("deleteFileAfterSync", this->deleteFileAfterSync, false);
                 // If true, this Module requires that isConnectedToRemoteServer() is true when a syncing is due.

@@ -535,4 +535,25 @@ namespace claid
 		return true;
 	}
 
+	bool FileUtils::getCurrentWorkingDirectory(std::string& outPath) 
+	{
+		char buffer[PATH_MAX];
+		
+	#ifdef _WIN32
+		if (GetCurrentDirectoryA(PATH_MAX, buffer)) {
+			outPath = std::string(buffer);
+			return true;
+		} else {
+			return false;
+		}
+	#else
+		if (getcwd(buffer, sizeof(buffer))) {
+			outPath = std::string(buffer);
+			return true;
+		} else {
+			return false;
+		}
+	#endif
+	}
+
 }

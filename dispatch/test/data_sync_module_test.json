@@ -1,21 +1,54 @@
 {
+	"milliseconds_deadline_to_load_modules" : -1,
 	"hosts": [{
-			"hostname": "alex_client",
-			"type": "linux",
+			"hostname": "test_client",
+			"connect_to": {
+				"host": "test_server"
+			},
 			"modules": [
 				{
 					"type": "DataSyncModule",
-					"id": "DataSyncModule",
-					"input_channels": {},
-					"output_channels": {"Data" : "Data"},
-					"properties": {
-						"dataPeriodMs" : "100"
-					}
+                    "id": "DataSyncer",
+                    "input_channels": {
+                        "FromDataReceiverModuleChannel": "DataReceiverToDataSync"
+                    },
+                    "output_channels": {
+                        "ToDataReceiverModuleChannel": "DataSyncToDataReceiver"
+                    },
+                    "properties": {
+                        "filePath": "%media_dir/source_files",
+                        "syncingSchedule": {
+							"periodic": {
+								"period_seconds": 5
+							}
+                        },
+                        "deleteFileAfterSync": true,
+                        "requiresConnectionToRemoteServer": true
+                    }
 				}
+			]
+		},
+		{
+			"hostname": "test_server",
+			"server_config": {
+				"host_server_address": "localhost:1337"
+			},
+			"modules": [
+				{
+                    "type": "DataReceiverModule",
+                    "id": "DataReceiver",
+                    "input_channels": {
+                        "FromDataSyncModuleChannel": "DataSyncToDataReceiver"
+                    },
+                    "output_channels": {
+                        "ToDataSyncModuleChannel": "DataReceiverToDataSync"
+                    },
+                    "properties": {
+                        "storagePath": "%media_dir/synchronized_files"
+                    }
+                }
+
 			]
 		}
 	]
 }
-
-
-

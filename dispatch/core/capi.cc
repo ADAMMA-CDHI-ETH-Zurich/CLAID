@@ -29,6 +29,7 @@
 
 #include "dispatch/proto/sensor_data_types.pb.h"
 #include "dispatch/proto/claidservice.pb.h"
+#include "dispatch/core/Exception/ExceptionHandler.hh"
 
 
 extern "C"
@@ -42,6 +43,7 @@ void* start_core(const char* socket_path, const char* config_file, const char* h
 
 __attribute__((visibility("default"))) __attribute__((used))
 void* start_core_with_event_tracker(const char* socket_path, const char* config_file, const char* host_id, const char* user_id, const char* device_id, const char* common_data_path) {
+    claid::ExceptionHandler::install();
     auto socketPath = std::string(socket_path);
     if (socketPath.find("unix://") != 0 && socketPath.find("localhost:") != 0) 
     {

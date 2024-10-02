@@ -89,7 +89,7 @@ namespace claid
                 return this->path.substr(0, index);
             }
 
-            std::string getFilePath() const
+            std::string getFileNameFromPath() const
             {
                 size_t index = this->getIndexOfRightMostPathSeparator();
                 if(index == 0)

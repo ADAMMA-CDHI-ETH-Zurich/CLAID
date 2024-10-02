@@ -55,13 +55,13 @@ TEST(PropertiesTestSuite, PropertiesTest)
     bool myBoolAsString;
     std::string myString;
 
-    ASSERT_TRUE(properties.getNumberProperty("myInt", myInt));
-    ASSERT_TRUE(properties.getNumberProperty("myIntAsString", myIntAsString));
-    ASSERT_TRUE(properties.getNumberProperty("myDouble", myDouble));
-    ASSERT_TRUE(properties.getBoolProperty("myBool", myBool));
-    ASSERT_TRUE(properties.getBoolProperty("myBoolAsString", myBoolAsString));
+    properties.getNumberProperty("myInt", myInt);
+    properties.getNumberProperty("myIntAsString", myIntAsString);
+    properties.getNumberProperty("myDouble", myDouble);
+    properties.getBoolProperty("myBool", myBool);
+    properties.getBoolProperty("myBoolAsString", myBoolAsString);
 
-    ASSERT_TRUE(properties.getStringProperty("myString", myString));
+    properties.getStringProperty("myString", myString);
 
     ASSERT_EQ(myInt, 42);
     ASSERT_EQ(myIntAsString, 420);
@@ -72,7 +72,7 @@ TEST(PropertiesTestSuite, PropertiesTest)
 
     PowerSavingStrategyList strategyList;
 
-    ASSERT_TRUE(properties.getObjectProperty("myPowerSavingStrategy", strategyList));
+    properties.getObjectProperty("myPowerSavingStrategy", strategyList);
 
     ASSERT_EQ(strategyList.strategies().size(), 1);
     PowerSavingStrategy strategy = strategyList.strategies()[0];

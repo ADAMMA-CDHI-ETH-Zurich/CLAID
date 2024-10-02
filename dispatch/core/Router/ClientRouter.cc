@@ -42,8 +42,7 @@ namespace claid {
         const std::string& targetModule = dataPackage->target_module();
 
         Logger::logInfo("ClientRouter routing package from host \"%s\" (Module \"%s\"), "
-                        "destined for host \"%s\" (Module \"%s\"):\n%s.", sourceHost.c_str(), sourceModule.c_str(), targetHost.c_str(), targetModule.c_str(),
-                        messageToString(*dataPackage).c_str());
+                        "destined for host \"%s\" (Module \"%s\").", sourceHost.c_str(), sourceModule.c_str(), targetHost.c_str(), targetModule.c_str());
 
         if(!canReachHost(targetHost))
         {

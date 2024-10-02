@@ -90,10 +90,10 @@ REGISTER_MODULE_FACTORY_CUSTOM_NAME(TestReceiverModule, ReceiverModule)
 TEST(RemoteDispatcherTestSuite, ServerTest) 
 {
     // unix domain socket for the client CLAID instance (not for remote communication, only for local dispatching!)
-    const char* socket_path_local_1 = "unix:///tmp/test_grpc_client.sock";
+    const char* socket_path_local_1 = "unix:///tmp/tls_remote_dispatching_test_test_grpc_client.sock";
 
     // unix domain socket for the server CLAID instance (not for remote communication, only for local dispatching!)
-    const char* socket_path_local_2 = "unix:///tmp/test_grpc_server.sock";
+    const char* socket_path_local_2 = "unix:///tmp/tls_remote_dispatching_test_grpc_server.sock";
     const char* config_file = "dispatch/test/tls_remote_dispatching_test.json";
     const char* client_host_id = "test_client";
     const char* server_host_id = "test_server";

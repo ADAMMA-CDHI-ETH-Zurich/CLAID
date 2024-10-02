@@ -14,17 +14,7 @@
 						"fileNameFormat": "Data_%d-%m-%y_%M.wav",
 						"fileSerializer": "RawBinary"
 					}
-				},
-				{
-					"type": "DataSyncModule",
-					"id": "FileSyncer",
-					"input_channels": {"RequestedFiles" : "RequestedFiles"},
-					"output_channels": {"AvailableFiles" : "AvailableFiles", "FileChannel" : "FileChannel"},
-					"properties": {
-						"folderToSynchronize": "/sdcard/CLAID/AudioData"
-					}
 				}
-
 			]
 		}
 	]

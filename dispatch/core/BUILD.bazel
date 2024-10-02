@@ -123,14 +123,14 @@ cc_library(
         "local_dispatching.cc",
         "DeviceScheduler/**/*.cc",
         "Module/TypeMapping/**/*.cc",
-        "Exception/Exception.cc",
+        "Exception/**/*.cc",
         "RemoteFunction/**/*.cc",
     ]),
     hdrs = glob([
         "shared_queue.hh",
         "local_dispatching.hh",
         "DeviceScheduler/**/*.hh",
-        "Exception/Exception.hh",
+        "Exception/**/*.hh",
         "Module/TypeMapping/**/*.hh",
         "RemoteFunction/**/*.hh",
         "Traits/**/*.hh",
@@ -233,8 +233,8 @@ cc_library(
 
 cc_library(
     name = "logger",
-    srcs = glob(["Logger/*.cc", "Utilities/*.cc", "shared_queue.hh"]),
-    hdrs = glob(["Logger/*.hh", "Utilities/*.hh", "shared_queue.cc"]),
+    srcs = glob(["Logger/*.cc", "Utilities/*.cc", "shared_queue.hh", "Exception/*.cc"]),
+    hdrs = glob(["Logger/*.hh", "Utilities/*.hh", "shared_queue.cc", "Exception/*.hh"]),
     deps = [
         "//dispatch/proto:claidservice_cc_proto",
         "//dispatch/proto:claidservice_cc_grpc"

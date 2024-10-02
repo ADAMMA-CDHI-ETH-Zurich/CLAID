@@ -41,7 +41,7 @@ class Properties
         }
 
         template<typename T>
-        bool getNumberProperty(const std::string& key, T& value) 
+        void getNumberProperty(const std::string& key, T& value)
         {
             google::protobuf::Value property;
             
@@ -58,20 +58,17 @@ class Properties
                 }
                 else
                 {
-                    return false;
+                    Logger::throwLogFatalIfNotCaught("Invalid property type! Found property \"%s\", but it's type is invalid (expected number or string).", key.c_str());
                 }
-                
-                return true;
             } 
             else 
             {
                 this->unknownProperties.push_back(key);
-                return false;
             }
         }
 
         template<typename T>
-        bool getNumberProperty(const std::string& key, T& value, const T& defaultValue) 
+        void getNumberProperty(const std::string& key, T& value, const T& defaultValue) 
         {
             google::protobuf::Value property;
             
@@ -88,19 +85,16 @@ class Properties
                 }
                 else
                 {
-                    return false;
+                    Logger::throwLogFatalIfNotCaught("Invalid property type! Found property \"%s\", but it's type is invalid (expected number or string).", key.c_str());
                 }
-                
-                return true;
             } 
             else 
             {
                 value = defaultValue;
-                return false;
             }
         }
 
-        bool getStringProperty(const std::string& key, std::string& value) 
+        void getStringProperty(const std::string& key, std::string& value) 
         {
             google::protobuf::Value property;
             
@@ -109,19 +103,19 @@ class Properties
                 if(property.kind_case() == google::protobuf::Value::KindCase::kStringValue)
                 {
                     value = property.string_value();
-                    return true;
                 }
-                
-                return false;
+                else
+                {
+                    Logger::throwLogFatalIfNotCaught("Invalid property type! Found property \"%s\", but it's type is invalid (expected string).", key.c_str());            
+                }        
             } 
             else 
             {
                 this->unknownProperties.push_back(key);
-                return false;
             }
         }
 
-        bool getStringProperty(const std::string& key, std::string& value, const std::string& defaultValue) 
+        void getStringProperty(const std::string& key, std::string& value, const std::string& defaultValue) 
         {
             google::protobuf::Value property;
             
@@ -130,19 +124,19 @@ class Properties
                 if(property.kind_case() == google::protobuf::Value::KindCase::kStringValue)
                 {
                     value = property.string_value();
-                    return true;
                 }
-                
-                return false;
+                else
+                {
+                    Logger::throwLogFatalIfNotCaught("Invalid property type! Found property \"%s\", but it's type is invalid (expected string).", key.c_str());            
+                }  
             } 
             else 
             {
                 value = defaultValue;
-                return false;
             }
         }
 
-        bool getBoolProperty(const std::string& key, bool& value) 
+        void getBoolProperty(const std::string& key, bool& value) 
         {
             google::protobuf::Value property;
             
@@ -151,7 +145,6 @@ class Properties
                 if(property.kind_case() == google::protobuf::Value::KindCase::kBoolValue)
                 {
                     value = property.bool_value();
-                    return true;
                 }
                 else if(property.kind_case() == google::protobuf::Value::KindCase::kStringValue)
                 {
@@ -162,18 +155,19 @@ class Properties
                     }
                     
                     value = tmp == "true";
-                    return true;
                 }
-                return false;
+                else
+                {
+                    Logger::throwLogFatalIfNotCaught("Invalid property type! Found property \"%s\", but it's type is invalid (expected bool or string).", key.c_str());            
+                }
             } 
             else 
             {
                 this->unknownProperties.push_back(key);
-                return false;
             }
         }
 
-        bool getBoolProperty(const std::string& key, bool& value, const bool& defaultValue) 
+        void getBoolProperty(const std::string& key, bool& value, const bool& defaultValue) 
         {
             google::protobuf::Value property;
             
@@ -182,7 +176,6 @@ class Properties
                 if(property.kind_case() == google::protobuf::Value::KindCase::kBoolValue)
                 {
                     value = property.bool_value();
-                    return true;
                 }
                 else if(property.kind_case() == google::protobuf::Value::KindCase::kStringValue)
                 {
@@ -193,19 +186,20 @@ class Properties
                     }
                     
                     value = tmp == "true";
-                    return true;
                 }
-                return false;
+                else
+                {
+                    Logger::throwLogFatalIfNotCaught("Invalid property type! Found property \"%s\", but it's type is invalid (expected bool or string).", key.c_str());            
+                }
             } 
             else 
             {
                 value = defaultValue;
-                return false;
             }
         }
 
         template<typename T>
-        bool getObjectProperty(const std::string& key, T& value)
+        void getObjectProperty(const std::string& key, T& value)
         {
             static_assert(std::is_base_of<google::protobuf::Message, T>::value, "Cannot use class as object property, getObjectProperty only supports protobuf classes."); 
             google::protobuf::Value property;
@@ -214,7 +208,6 @@ class Properties
             {
                 if(property.kind_case() == google::protobuf::Value::KindCase::kStructValue)
                 {
-
                     // Serialize property to json, and then deserialize into the target proto message object.
                     std::string jsonOutput;
                     google::protobuf::util::JsonPrintOptions options;
@@ -224,8 +217,8 @@ class Properties
                     absl::Status status = MessageToJsonString(property, &jsonOutput, options);
                     if(!status.ok())
                     {
-                        Logger::logError("Failed get object property: Failed to serialize property \"%s\" to json: %s", key.c_str(), status.ToString().c_str());
-                        return false;
+                        Logger::throwLogFatalIfNotCaught("Failed to get object property: Failed to serialize property \"%s\" to json: %s", key.c_str(), status.ToString().c_str());
+                        return;
                     }
 
                     google::protobuf::util::JsonParseOptions options2;
@@ -233,18 +226,18 @@ class Properties
 
                     if(!status.ok())
                     {
-                        Logger::logError("Failed get object property: Failed to deserialize \"%s\" from json: %s", key.c_str(), status.ToString().c_str());
-                        return false;
+                        Logger::throwLogFatalIfNotCaught("Failed to get object property: Failed to deserialize \"%s\" from json: %s", key.c_str(), status.ToString().c_str());
+                        return;
                     }
-                    return true;
                 }
-                
-                return false;
+                else
+                {
+                    Logger::throwLogFatalIfNotCaught("Invalid property type! Found property \"%s\", but it's type is invalid (expected object type).", key.c_str());
+                }
             } 
             else 
             {
                 this->unknownProperties.push_back(key);
-                return false;
             }
         }
         
