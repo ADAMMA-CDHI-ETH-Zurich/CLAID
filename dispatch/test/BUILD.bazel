@@ -16,6 +16,7 @@ filegroup(
         "data_sync_module_test.json",
         "config_reload_test_1.json",
         "config_reload_test_2.json",
+        "module_test.json", 
         "tls_remote_dispatching_test.json",
     ],
 )
@@ -104,6 +105,20 @@ cc_test(
   ]
 )
 
+
+cc_test(
+  name = "module_test",
+  size = "small",
+  srcs = ["module_test.cc"],
+  deps = [
+    ":test_helpers",
+    "//dispatch/proto:claidservice_cc_proto",
+    "//dispatch/core:capi"
+  ] + FRAMEWORK_DEPS,
+  data = [
+    ":test_configs",
+  ]
+)
 
 cc_test(
   name = "file_saver_test",

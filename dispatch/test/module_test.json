@@ -1,0 +1,12 @@
+{
+	"hosts": [{
+			"hostname": "test_client",
+			"modules": [
+				{
+					"type": "TestModule",
+					"id": "TestModule"
+				}
+			]
+		}
+	]
+}
