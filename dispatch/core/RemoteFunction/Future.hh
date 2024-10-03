@@ -38,9 +38,14 @@ public:
     Future(FuturesTable& futuresTableInHandler, FutureUniqueIdentifier uniqueIdentifier)
         : AbstractFuture(futuresTableInHandler, uniqueIdentifier) {}
 
-    T await() 
+    T await()
     {
-        std::shared_ptr<DataPackage> responsePackage = this->awaitResponse();
+        return await(-1);
+    }
+
+    T await(int timeoutSeconds) 
+    {
+        std::shared_ptr<DataPackage> responsePackage = this->awaitResponse(timeoutSeconds);
         if (responsePackage == nullptr || !this->wasExecutedSuccessfully()) {
             return T();
         }

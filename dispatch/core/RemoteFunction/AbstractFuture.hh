@@ -61,6 +61,7 @@ class AbstractFuture
         std::shared_ptr<DataPackage> responsePackage;
 
         std::shared_ptr<DataPackage> awaitResponse();
+        std::shared_ptr<DataPackage> awaitResponse(int timeoutSeconds);
 
         void thenUntyped(ThenCallback callback);
 

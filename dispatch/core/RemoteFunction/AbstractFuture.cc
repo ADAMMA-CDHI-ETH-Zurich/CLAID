@@ -10,16 +10,35 @@ AbstractFuture::AbstractFuture(FuturesTable& futuresTableInHandler,
 {
 }
 
-
 std::shared_ptr<DataPackage> AbstractFuture::awaitResponse()
 {
-    std::unique_lock<std::mutex> lock(this->mutex);
-  
-    while (!finished) 
-    {                
-        conditionVariable.wait(lock, [&]{return this->finished;});  
-    }
+    return awaitResponse(-1);
+}
 
+std::shared_ptr<DataPackage> AbstractFuture::awaitResponse(int timeoutSeconds)
+{
+    std::unique_lock<std::mutex> lock(this->mutex);
+    
+    const auto timeoutDuration = std::chrono::seconds(timeoutSeconds);
+
+    if(timeoutSeconds > 0)
+    {
+        bool result = conditionVariable.wait_for(lock, timeoutDuration, [&]{return this->finished;});
+    }
+    else
+    {
+        while(!finished)
+        {
+            conditionVariable.wait(lock, [&]{return this->finished;});
+        }
+    }
+    
+    if(!finished)
+    {
+        // Then timeout
+        successful = false;
+        return nullptr;
+    }
 
     // This is thread safe, as FuturesList is thread safe
     this->futuresTableInHandler.removeFuture(this->uniqueIdentifier);

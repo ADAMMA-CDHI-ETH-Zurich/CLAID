@@ -1,7 +1,7 @@
 // The Android Gradle Plugin builds the native code with the Android NDK.
 
 group 'ch.claid.flutter'
-version '0.6.3'
+version '0.6.4'
 
 buildscript {
     repositories {
@@ -114,6 +114,6 @@ protobuf {
 
 dependencies
 {
-    api "ch.claid:claid:0.6.3"
+    api "ch.claid:claid:0.6.4"
 }
 

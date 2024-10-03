@@ -62,19 +62,29 @@ public:
 
     virtual DeviceChargingState getDeviceChargingState()
     {
+        Logger::logInfo("get device charging state 1");
         auto future = androidIsDeviceCharging.execute();
-        bool charging = future->await();
+            Logger::logInfo("get device charging state 2");
+
+        bool charging = future->await(20);
+        Logger::logInfo("get device charging state 3");
 
         if(!future->wasExecutedSuccessfully())
         {
+                    Logger::logInfo("get device charging state 4");
+
             return DeviceChargingState::DEVICE_CHARGING_STATE_UNKNOWN;
         }
         else if(charging)
         {
+                    Logger::logInfo("get device charging state 5");
+
             return DeviceChargingState::DEVICE_CHARGING_STATE_CHARGING;
         }
         else
         {
+                    Logger::logInfo("get device charging state 6");
+
             return DeviceChargingState::DEVICE_CHARGING_STATE_NOT_CHARGING;
         }
     }

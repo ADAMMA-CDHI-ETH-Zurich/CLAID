@@ -84,6 +84,7 @@ namespace claid
 
          
             bool deleteFileAfterSync;
+            bool onlyWhenCharging = false;
             bool requiresConnectionToRemoteServer = true;
             bool wasConnectedToRemoteServerDuringLastSync = false;
             int remoteServerConnectionWaitTimeSeconds = 60;
@@ -241,23 +242,60 @@ namespace claid
 
             void startSync()
             {
+                moduleInfo("Start sync called");
+                if(onlyWhenCharging)
+                {                
+                    moduleInfo("Start sync called 1");
+                    if(deviceInfoGatherer->isAvailable())
+                    {
+                                        moduleInfo("Start sync called 2");
+
+                        if(deviceInfoGatherer->getDeviceChargingState() != DeviceChargingState::DEVICE_CHARGING_STATE_CHARGING)
+                        {
+                                            moduleInfo("Start sync called 3");
+
+                            moduleWarning("Not charging, skipping sync this time");
+                            return;
+                        }
+                                        moduleInfo("Start sync called 4");
+
+                    }
+                                    moduleInfo("Start sync called 5");
+
+                }
+                                moduleInfo("Start sync called 6");
+
                 if(requiresConnectionToRemoteServer)
                 {
+                                    moduleInfo("Start sync called 7");
+
                     if(!isConnectedToRemoteServer())
                     {
+                                        moduleInfo("Start sync called 8");
+
                         if(!waitUntilConnectedToRemoteServer(Duration::seconds(this->remoteServerConnectionWaitTimeSeconds)))
                         {
+                                            moduleInfo("Start sync called 9");
+
                             wasConnectedToRemoteServerDuringLastSync = false;
                             moduleWarning("Not connected to remote server. Skipping synchronization and waiting for connection to come back.");
                             return;
                         }
+                                        moduleInfo("Start sync called 10");
+
                     }
+                                    moduleInfo("Start sync called 11");
+
                     wasConnectedToRemoteServerDuringLastSync = true;
                 }
+                                moduleInfo("Start sync called 12");
+
                 // If a previous syncing process is still going on (e.g., file receiver is still requesting files),
                 // do not start a new syncing process just yet.
                 if(millisecondsSinceLastMessageFromFileReceiver() >= SYNC_TIMEOUT_IN_MS)
                 {
+                                    moduleInfo("Start sync called 13");
+
                     moduleInfo("DataSyncModule periodic sync 7");
 
                     Logger::logInfo("!!!PERIODIC SYNC!!!");
@@ -265,6 +303,8 @@ namespace claid
                 }
                 else
                 {
+                                    moduleInfo("Start sync called 14");
+
                     moduleWarning("Synchronizing skipped as previous sync is still ongoing (milli seconds since last mesasge from file receiver < SYNC_TIMEOUT_IN_MS (3 seconds)");
                 }
             }
@@ -334,10 +374,12 @@ namespace claid
                 // If true, this Module requires that isConnectedToRemoteServer() is true when a syncing is due.
                 // If isConnectedToRemoteServer() is not true, the Module will wait for a certain number of seconds (see below), and if not give up.
                 properties.getBoolProperty("requiresConnectionToRemoteServer", this->requiresConnectionToRemoteServer);
+                // If true, then syncing only happens when charging.
+                // Only relevant on platforms where the charging state can be queried (e.g., Android). Not relevant for PCs/Servers (will simply be ignored).
+                properties.getBoolProperty("onlyWhenCharging", this->onlyWhenCharging, false);
                 // When a syncing is due, we require a connection to the remote server, and we are currently not connected,
                 // then we wait a certain number of seconds for a connection to the remote server to be established.
                 properties.getNumberProperty("remoteServerConnectionWaitTimeSeconds", this->remoteServerConnectionWaitTimeSeconds, 60);
-
                 if(properties.wasAnyPropertyUnknown())
                 {
                     std::string unknownProperties;
