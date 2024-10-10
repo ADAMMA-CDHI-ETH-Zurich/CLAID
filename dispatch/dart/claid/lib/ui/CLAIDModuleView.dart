@@ -85,7 +85,7 @@ abstract class CLAIDModuleView extends StatefulWidget
 
   Future<bool?> subscribeModuleChannel<T>(String channelName, T dataType, DataReceiverCallback<T> callback) async
   {
-    RemoteFunction<bool> function = mapMiddlewareFunction<bool>("add_loose_direct_subscription", false, [LooseDirectChannelSubscription()]);
+    RemoteFunction<bool> function = mapMiddlewareFunction<bool>("add_loose_direct_subscription_if_not_exists", false, [LooseDirectChannelSubscription()]);
 
     LooseDirectChannelSubscription subscription = LooseDirectChannelSubscription();
     subscription.subscribedModule = mappedModuleId;
