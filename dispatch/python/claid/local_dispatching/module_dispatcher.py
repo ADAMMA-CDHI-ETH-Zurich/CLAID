@@ -66,8 +66,6 @@ class ModuleDispatcher:
         )
         Logger.log_info(f"Sending ModuleListRequest: {request}")
 
-      
-
         Logger.log_info("Python Runtime: Calling getModuleList(...)")
 
         try:
