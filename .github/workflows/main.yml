@@ -23,7 +23,7 @@ jobs:
       - name: Set up Bazel
         uses: bazelbuild/setup-bazelisk@v2
 
-      - name: Install Android SDK
+            - name: Install Android SDK
         run: |
           sudo apt-get update
           sudo apt-get install -y unzip
@@ -45,7 +45,10 @@ jobs:
           yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
+          # Ensure correct environment variables
           echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK=$ANDROID_HOME" >> $GITHUB_ENV
           echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_ENV
 
       - name: Install NDK
