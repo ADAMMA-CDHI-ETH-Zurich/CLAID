@@ -1,21 +1,75 @@
-name: Bazel Tests
+name: Android Build with Bazel
 
 on:
   push:
     branches:
-      - main  # Adjust if needed
+      - main
   pull_request:
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
       - name: Set up Bazel
         uses: bazelbuild/setup-bazelisk@v2
 
-      - name: Run Bazel Tests
-        run: bazel test //dispatch/test:all
+      - name: Install Android SDK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip
+
+          # Set up Android SDK paths
+          export ANDROID_HOME=$HOME/android-sdk
+          export ANDROID_SDK_ROOT=$ANDROID_HOME
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+          cd "$ANDROID_HOME/cmdline-tools"
+          
+          # Download and install SDK Command Line Tools
+          curl -o sdk-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip sdk-tools.zip
+          mv cmdline-tools latest
+
+          # Accept licenses and install required SDK components
+          yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
+          sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_ENV
+
+      - name: Install NDK
+        run: |
+          cd $HOME
+          wget https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip
+          unzip android-ndk-r21e-linux-x86_64.zip
+          mv android-ndk-r21e $HOME/android-ndk-r21
+
+          # Set NDK environment variables
+          echo "ANDROID_NDK_HOME=$HOME/android-ndk-r21" >> $GITHUB_ENV
+          echo "ANDROID_NDK=$HOME/android-ndk-r21" >> $GITHUB_ENV
+          echo "ANDROID_NDK_ROOT=$HOME/android-ndk-r21" >> $GITHUB_ENV
+
+      - name: Run Android Tests with Bazel
+        run: |
+          bazel test //app/src/test:all
+
+      - name: Build APK with Bazel
+        run: |
+          bazel build //app/src/main:app
+
+      - name: Save APK as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-apk
+          path: bazel-bin/app/src/main/app.apk
