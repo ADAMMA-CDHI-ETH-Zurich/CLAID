@@ -1,0 +1,21 @@
+name: Bazel Tests
+
+on:
+  push:
+    branches:
+      - main  # Adjust if needed
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bazel
+        uses: bazelbuild/setup-bazelisk@v2
+
+      - name: Run Bazel Tests
+        run: bazel test //dispatch/test:all
