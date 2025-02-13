@@ -60,13 +60,15 @@ jobs:
           echo "ANDROID_NDK=$HOME/android-ndk-r21" >> $GITHUB_ENV
           echo "ANDROID_NDK_ROOT=$HOME/android-ndk-r21" >> $GITHUB_ENV
 
-      - name: Run Android Tests with Bazel
+      - name: Build AAR package
         run: |
-          bazel test //app/src/test:all
+          cd dispatch/android
+          make aar_package
 
-      - name: Build APK with Bazel
+
+      - name: Run Tests with Bazel
         run: |
-          bazel build //app/src/main:app
+          bazel test //dispatch/test:all
 
       - name: Save APK as Artifact
         uses: actions/upload-artifact@v4
