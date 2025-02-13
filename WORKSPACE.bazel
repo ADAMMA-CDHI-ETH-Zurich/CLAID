@@ -56,3 +56,11 @@ load(
 )
 
 apple_support_dependencies()
+
+android_sdk_repository(
+        name = "androidsdk", # Required. Name *must* be "androidsdk".
+    )
+
+android_ndk_repository(
+        name = "androidndk", # Required. Name *must* be "androidndk".
+    )
