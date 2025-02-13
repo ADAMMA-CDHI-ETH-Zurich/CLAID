@@ -79,9 +79,9 @@ absl::Status JSONSerializer::onNewData(std::shared_ptr<const google::protobuf::M
     }
 
     std::string jsonOutput = "";
-    google::protobuf::util::JsonPrintOptions options;
+    google::protobuf::json::PrintOptions options;
     options.add_whitespace = true;
-    options.always_print_primitive_fields = true;
+    options.always_print_fields_with_no_presence = true;
     options.preserve_proto_field_names = true;
     absl::Status status = MessageToJsonString(*newData, &jsonOutput, options);
 

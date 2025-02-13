@@ -14,23 +14,23 @@
 #     # ],
 # )
 
-cc_library(
-    name = "claid_lib",
-    srcs = glob(["src/**/*.cpp"]),
-    hdrs = glob(["include/**/*.hpp"]) + glob(["src/**/*.hpp"]),
-    includes = ["include"],
-    # deps = [
-    # ],
-)
+# cc_library(
+#     name = "claid_lib",
+#     srcs = glob(["src/**/*.cpp"]),
+#     hdrs = glob(["include/**/*.hpp"]) + glob(["src/**/*.hpp"]),
+#     includes = ["include"],
+#     # deps = [
+#     # ],
+# )
 
-cc_binary(
-    name = "claid_test",
-    srcs = [],
-    deps = [
-        "//dispatch/core:claid_dispatcher",
-        "//dispatch/core:claid_config",
-        ":claid_lib",
-        "@com_google_protobuf//:protobuf",
-    ]
+# cc_binary(
+#     name = "claid_test",
+#     srcs = [],
+#     deps = [
+#         "//dispatch/core:claid_dispatcher",
+#         "//dispatch/core:claid_config",
+#         ":claid_lib",
+#         "@com_google_protobuf//:protobuf",
+#     ]
 
-)
+# )
