@@ -63,18 +63,24 @@ jobs:
           echo "ANDROID_NDK=$HOME/android-ndk-r21" >> $GITHUB_ENV
           echo "ANDROID_NDK_ROOT=$HOME/android-ndk-r21" >> $GITHUB_ENV
 
+      - name: Run Tests with Bazel
+        run: |
+          bazel test //dispatch/test:all
+    
       - name: Build AAR package
         run: |
           cd dispatch/android
           make aar_package
 
-
-      - name: Run Tests with Bazel
-        run: |
-          bazel test //dispatch/test:all
-
-      - name: Save APK as Artifact
+      - name: Save Debug AAR as Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: built-apk
-          path: bazel-bin/app/src/main/app.apk
+          name: debug_aar
+          path: dispatch/android/aar/claid/claid/build/outputs/aar/claid-debug.aar
+
+      - name: Save Release AAR as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release_aar
+          path: dispatch/android/aar/claid/claid/build/outputs/aar/claid-release.aar
+
