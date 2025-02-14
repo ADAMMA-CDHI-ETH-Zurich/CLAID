@@ -24,7 +24,7 @@
 
 #include <string>
 #include <vector>
-
+#include <cstdint>
 namespace claid
 {
     class FileUtils
