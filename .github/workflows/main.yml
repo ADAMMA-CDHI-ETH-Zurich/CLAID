@@ -65,7 +65,7 @@ jobs:
 
       - name: Run Tests with Bazel
         run: |
-          bazel test //dispatch/test:all
+          bazel test //dispatch/test:all --test_output=streamed
     
       - name: Build AAR package
         run: |
