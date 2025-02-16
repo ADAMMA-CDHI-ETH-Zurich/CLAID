@@ -38,7 +38,7 @@ namespace claid {
 
     class TypeMapping
     {
-        static std::map<std::string, ProtoCodec> protoCodecMap;
+        static std::map<std::string, std::shared_ptr<ProtoCodec>> protoCodecMap;
 
         template<typename T>
         static std::shared_ptr<const google::protobuf::Message> makeMessage()
@@ -46,39 +46,35 @@ namespace claid {
             return std::static_pointer_cast<const google::protobuf::Message>(std::make_shared<T>());
         }
 
-        static ProtoCodec& getProtoCodec(const google::protobuf::Message* instance) 
+        static std::shared_ptr<ProtoCodec> getProtoCodec(const google::protobuf::Message* instance) 
         {
             const std::string fullName =  instance->GetDescriptor()->full_name();
-            std::shared_ptr<const google::protobuf::Message> msg(instance->New());
-            ProtoCodec codec(msg);
-            protoCodecMap.insert(make_pair(fullName, codec));
-            return codec;
-            // auto it = protoCodecMap.find(fullName);
-            // if(it == protoCodecMap.end())
-            // {
-            //     std::shared_ptr<const google::protobuf::Message> msg(instance->New());
-            //     ProtoCodec codec(msg);
-            //     protoCodecMap.insert(make_pair(fullName, codec));
-            //     return protoCodecMap[fullName];
-            // }
+            auto it = protoCodecMap.find(fullName);
+            if(it == protoCodecMap.end())
+            {
+                std::shared_ptr<const google::protobuf::Message> msg(instance->New());
+                std::shared_ptr<ProtoCodec> codec = std::make_shared<ProtoCodec>(msg);
+                protoCodecMap.insert(make_pair(fullName, codec));
+                return protoCodecMap[fullName];
+            }
 
-            // return it->second;
+            return it->second;
         }
 
         template<typename T>
         static bool setProtoPayload(DataPackage& packet, T& protoValue)
         {
-            ProtoCodec& protoCodec = getProtoCodec(&protoValue);
+            std::shared_ptr<ProtoCodec> protoCodec = getProtoCodec(&protoValue);
 
             Blob& blob = *packet.mutable_payload();
 
-            return protoCodec.encode(static_cast<const google::protobuf::Message*>(&protoValue), blob);
+            return protoCodec->encode(static_cast<const google::protobuf::Message*>(&protoValue), blob);
         }
 
         template<typename T>
         static bool getProtoPayload(const DataPackage& packet, T& returnValue)
         {
-            ProtoCodec& protoCodec = getProtoCodec(&returnValue);
+            std::shared_ptr<ProtoCodec> protoCodec = getProtoCodec(&returnValue);
 
             if(packet.payload().message_type() == "")
             {
@@ -86,7 +82,7 @@ namespace claid {
                 throw std::invalid_argument("ProtoCodec.decode failed. Wrong payload type.");
             }
             
-            if(!protoCodec.decode(packet.payload(), static_cast<google::protobuf::Message*>(&returnValue)))
+            if(!protoCodec->decode(packet.payload(), static_cast<google::protobuf::Message*>(&returnValue)))
             {
                 throw std::invalid_argument("ProtoCodec.decode failed");
             }
@@ -373,11 +369,11 @@ namespace claid {
                         throw std::invalid_argument("Failed to get data of type AnyProtoMessage from DataPacakge. Value of AnyProtoMessage is nullptr");
                     }
 
-                    ProtoCodec& protoCodec = getProtoCodec(message.get());
+                    std::shared_ptr<ProtoCodec> protoCodec = getProtoCodec(message.get());
 
                     Blob& blob = *packet.mutable_payload();
 
-                    if(!protoCodec.encode(value.getMessage().get(), blob))
+                    if(!protoCodec->encode(value.getMessage().get(), blob))
                     {
                         throw std::invalid_argument("ProtoCodec.encode failed for AnyProtoType");
                     }
