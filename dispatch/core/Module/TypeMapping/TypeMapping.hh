@@ -52,7 +52,7 @@ namespace claid {
             std::shared_ptr<const google::protobuf::Message> msg(instance->New());
             ProtoCodec codec(msg);
             protoCodecMap.insert(make_pair(fullName, codec));
-            return protoCodecMap[fullName];
+            return codec;
             // auto it = protoCodecMap.find(fullName);
             // if(it == protoCodecMap.end())
             // {
