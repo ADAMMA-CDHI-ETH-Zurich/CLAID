@@ -48,17 +48,19 @@ namespace claid {
 
         static std::shared_ptr<ProtoCodec> getProtoCodec(const google::protobuf::Message* instance) 
         {
-            const std::string fullName =  instance->GetDescriptor()->full_name();
-            auto it = protoCodecMap.find(fullName);
-            if(it == protoCodecMap.end())
-            {
-                std::shared_ptr<const google::protobuf::Message> msg(instance->New());
-                std::shared_ptr<ProtoCodec> codec = std::make_shared<ProtoCodec>(msg);
-                protoCodecMap.insert(make_pair(fullName, codec));
-                return protoCodecMap[fullName];
-            }
+            std::shared_ptr<ProtoCodec> codec = std::make_shared<ProtoCodec>(msg);
+            return codec;
+            // const std::string fullName =  instance->GetDescriptor()->full_name();
+            // auto it = protoCodecMap.find(fullName);
+            // if(it == protoCodecMap.end())
+            // {
+            //     std::shared_ptr<const google::protobuf::Message> msg(instance->New());
+            //     std::shared_ptr<ProtoCodec> codec = std::make_shared<ProtoCodec>(msg);
+            //     protoCodecMap.insert(make_pair(fullName, codec));
+            //     return protoCodecMap[fullName];
+            // }
 
-            return it->second;
+            // return it->second;
         }
 
         template<typename T>
