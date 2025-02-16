@@ -48,6 +48,7 @@ namespace claid {
 
         static std::shared_ptr<ProtoCodec> getProtoCodec(const google::protobuf::Message* instance) 
         {
+            std::shared_ptr<const google::protobuf::Message> msg(instance->New());
             std::shared_ptr<ProtoCodec> codec = std::make_shared<ProtoCodec>(msg);
             return codec;
             // const std::string fullName =  instance->GetDescriptor()->full_name();
