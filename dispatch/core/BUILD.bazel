@@ -17,7 +17,6 @@ cc_binary(
         "//dispatch/proto:claidservice_cc_proto",
         "//dispatch/proto:claidservice_cc_grpc",
     ],
-    copts = ["-DGRPC_ARES=0", "-std=c++17", "-GRPC_DNS_RESOLVER=native"],  # Define MY_FEATURE as 
 
 )
 
