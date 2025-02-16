@@ -1,5 +1,5 @@
 import Foundation
-
+import CLAIDNative
 /// Calls the C function `start_core(...)`.
 /// - Parameters:
 ///   - socketPath: A socket path string.

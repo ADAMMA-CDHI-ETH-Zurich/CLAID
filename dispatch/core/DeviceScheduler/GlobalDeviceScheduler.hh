@@ -99,6 +99,7 @@ class GlobalDeviceScheduler
 
     public:
         GlobalDeviceScheduler(RemoteFunctionRunnableHandler& remoteFunctionRunnableHandler, const ModuleTable& moduleTable);
+        virtual ~GlobalDeviceScheduler() {}
 
         void scheduleDeviceWakeupAt(RuntimeType runtime, int64_t unixTimestampMs);
         void acquireWakeLockForRuntime(RuntimeType runtime);

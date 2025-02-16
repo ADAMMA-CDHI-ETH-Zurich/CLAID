@@ -41,6 +41,8 @@ class DeviceInfoGatherer
 
         }
 
+        virtual ~DeviceInfoGatherer() {}
+
         virtual bool isAvailable()
         {
             return false;

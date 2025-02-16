@@ -19,21 +19,16 @@
 * limitations under the License.
 ***************************************************************************/
 
-
 #pragma once
 
-#include "dispatch/core/Module/Module.hh"
-
-
-#include "dispatch/core/Module/ModuleAnnotator/ModuleAnnotator.hh"
-
-namespace claid
+#ifdef __cplusplus
+extern "C"
 {
-	class ModuleFactoryBase
-	{
-		public:
-			virtual Module* getInstanceUntyped() = 0;
-			virtual bool getModuleAnnotation(ModuleAnnotator& annotator) = 0;
-			virtual ~ModuleFactoryBase() {}
-	};
+#endif
+
+    void* start_core(const char* socket_path, const char* config_file, const char* host_id, const char* user_id, const char* device_id);
+    
+
+#ifdef __cplusplus
 }
+#endif

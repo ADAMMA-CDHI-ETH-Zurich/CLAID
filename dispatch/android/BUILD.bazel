@@ -6,7 +6,7 @@ cc_library(
     deps = ["//dispatch/core:capi", "@rules_jni//jni:jni"],
     alwayslink = True,   # include everything in dependents
     linkstatic = True,
-    linkopts =["-landroid", "-llog", "-lm", "-ldl"]
+    linkopts =["-landroid", "-llog", "-lm", "-ldl"],
 )
 
 cc_library(
@@ -18,6 +18,7 @@ cc_library(
     linkstatic = True,
     linkopts =["-landroid", "-llog", "-lm", "-ldl"]
 )
+
 
 # android_library(
 #     name = "android_claid_sources",
@@ -57,5 +58,4 @@ android_binary(
 #     manifest = "aar/claid/app/src/main/AndroidManifest.xml",
 #     resource_files = glob(["aar/claid/app/src/main/res/**/*.xml"])
 # )
-
 

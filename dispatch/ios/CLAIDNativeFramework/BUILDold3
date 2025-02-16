@@ -1,0 +1,32 @@
+load("@build_bazel_rules_ios//rules:framework.bzl", "apple_framework")
+load("@build_bazel_rules_apple//apple:ios.bzl", "ios_application")
+load("@build_bazel_rules_apple//apple:apple.bzl", "apple_static_xcframework")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+
+objc_library(
+    name = "bridging_header_lib",
+    srcs = [
+        "claid_bridging_header.h",
+    ],
+    # or textual_hdrs if you prefer
+)
+
+swift_library(
+    name = "claid_swift_package",
+    srcs = glob(["**/*.swift"]),
+    # copts = [
+    #     # Tell Swift to use this bridging header
+    #     "-import-objc-header",
+    #     "dispatch/ios/native_claid_xcframework/claid_bridging_header.h",
+    # ],
+    deps = [
+        "//dispatch/core:capi",
+    ],
+    module_name = "native_xcframework"
+)
+apple_framework(
+    name = "MySwiftFramework",
+    deps = [":claid_swift_package"],
+    visibility = ["//visibility:public"],
+)
