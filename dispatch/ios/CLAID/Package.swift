@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "SwiftCLAID",
+    name: "CLAID",
     platforms: [
         .iOS(.v15), // or whichever platforms you support
         .macOS(.v11)
@@ -12,14 +12,14 @@ let package = Package(
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
-            name: "SwiftCLAID",
-            targets: ["SwiftCLAID"]),
+            name: "CLAID",
+            targets: ["CLAID"]),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "SwiftCLAID",
+            name: "CLAID",
             dependencies: [
                 "CLAIDNative"
             ]
@@ -35,8 +35,8 @@ let package = Package(
             path: "../../../bazel-bin/dispatch/ios/native_claid_xcframework/native_xcframework.xcframework.zip"
         ),
         .testTarget(
-            name: "SwiftCLAIDTests",
-            dependencies: ["SwiftCLAID"]
+            name: "CLAIDTests",
+            dependencies: ["CLAID"]
         ),
     ]
 )

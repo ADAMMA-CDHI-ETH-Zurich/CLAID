@@ -45,3 +45,4 @@ use_repo(android_sdk_repository_extension, "androidsdk")
 register_toolchains("@androidsdk//:sdk-toolchain", "@androidsdk//:all")
 
 bazel_dep(name = "rules_ios", version = "5.5.1", repo_name = "build_bazel_rules_ios")
+bazel_dep(name = "googletest", version = "1.16.0", repo_name = "com_google_googletest")
