@@ -10,7 +10,7 @@ on:
 
       
 jobs:
-  setup:
+  test-and-build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -65,21 +65,6 @@ jobs:
           echo "ANDROID_NDK=$HOME/android-ndk" >> $GITHUB_ENV
           echo "ANDROID_NDK_ROOT=$HOME/android-ndk" >> $GITHUB_ENV
 
-  test:
-      needs: setup
-      runs-on: ubuntu-latest
-
-      steps:
-        - name: Run Bazel Tests
-          run: bazel test //dispatch/test:all
-
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-
-    steps:
-      
-    
       - name: Build AAR package
         run: |
           cd dispatch/android

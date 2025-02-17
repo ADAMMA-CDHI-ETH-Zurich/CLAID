@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  test:
+  test-and-build:
     runs-on: macos-latest
 
     steps:
@@ -18,12 +18,6 @@ jobs:
 
       - name: Set up Bazel
         uses: bazelbuild/setup-bazelisk@v2
-
-  build:
-    needs: test
-    runs-on: macos-latest
-
-    steps:
 
       - name: Build XCFramework
         run: |
