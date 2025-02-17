@@ -21,7 +21,7 @@ jobs:
 
       - name: Build XCFramework
         run: |
-          bazel build //dispatch/ios/claid_native_xcframework
+          bazel build //dispatch/ios/CLAIDNativeFramework:claid_native_xcframework
 
       - name: Verify Build Output
         run: |
@@ -31,4 +31,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: claid_native_xcframework
-          path: bazel-bin/dispatch/ios/claid_native_xcframework/claid_native_xcframework.xcframework.zip
+          path: bazel-bin/dispatch/ios/CLAIDNativeFramework/claid_native_xcframework.xcframework.zip 
