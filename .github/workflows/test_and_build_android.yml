@@ -1,15 +1,17 @@
-name: Android Build with Bazel
+name: TestAndBuildAndroid
 
 on:
-  workflow_run:
-    workflows: ["NativeCoreTestsUbuntu"]  # Name of the test workflow
-    types:
-      - completed
+  push:
+    branches:
+      - main 
+  pull_request:
+    branches:
+      - main
+
       
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -62,6 +64,21 @@ jobs:
           echo "ANDROID_NDK_HOME=$HOME/android-ndk" >> $GITHUB_ENV
           echo "ANDROID_NDK=$HOME/android-ndk" >> $GITHUB_ENV
           echo "ANDROID_NDK_ROOT=$HOME/android-ndk" >> $GITHUB_ENV
+
+  test:
+      needs: setup
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Run Bazel Tests
+          run: bazel test //dispatch/test:all
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      
     
       - name: Build AAR package
         run: |

@@ -1,21 +1,29 @@
-name: Build and Upload XCFramework
+name: TestAndBuildApple
 
 on:
-  workflow_run:
-    workflows: ["NativeCoreTestsMacOS"]  # Name of the test workflow
-    types:
-      - completed
+  push:
+    branches:
+      - main 
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build:
+  test:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set Up Bazel
+      - name: Set up Bazel
         uses: bazelbuild/setup-bazelisk@v2
+
+  build:
+    needs: test
+    runs-on: macos-latest
+
+    steps:
 
       - name: Build XCFramework
         run: |
