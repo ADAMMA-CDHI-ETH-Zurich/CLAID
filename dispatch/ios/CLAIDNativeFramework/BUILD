@@ -60,7 +60,7 @@ load("@build_bazel_rules_apple//apple:apple.bzl", "apple_xcframework")
 #     deps = [
 #         "//dispatch/core:capi",
 #     ],
-#     module_name="native_xcframework"
+#     module_name="claid_native_xcframework"
 # )
 
 ###############################
@@ -79,7 +79,7 @@ objc_library(
     deps = [
         "//dispatch/core:capi",
     ],
-    module_name = "native_xcframework"
+    module_name = "claid_native_xcframework"
 )
 
 swift_library(
@@ -91,11 +91,11 @@ swift_library(
     deps = [
         ":objc_library",
     ],
-    module_name = "native_xcframework"
+    module_name = "claid_native_xcframework"
 )
 
 apple_xcframework(
-    name = "native_xcframework",
+    name = "claid_native_xcframework",
     # You can pass multiple frameworks and/or libraries for different platforms,
     # but here's a single iOS static framework example:
     minimum_os_versions = { "ios": "15.0", "tvos": "15.0", },

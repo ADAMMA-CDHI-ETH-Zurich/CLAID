@@ -1,11 +1,10 @@
 name: Android Build with Bazel
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-
+  workflow_run:
+    workflows: ["NativeCoreTestsMacOS"]  # Name of the test workflow
+    types:
+      - completed
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -62,10 +61,6 @@ jobs:
           echo "ANDROID_NDK_HOME=$HOME/android-ndk" >> $GITHUB_ENV
           echo "ANDROID_NDK=$HOME/android-ndk" >> $GITHUB_ENV
           echo "ANDROID_NDK_ROOT=$HOME/android-ndk" >> $GITHUB_ENV
-
-      - name: Run Tests with Bazel
-        run: |
-          bazel test //dispatch/test:all --test_output=streamed
     
       - name: Build AAR package
         run: |

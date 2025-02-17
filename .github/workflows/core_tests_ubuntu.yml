@@ -1,10 +1,12 @@
-name: Bazel Tests
+name: NativeCoreTestsUbuntu
 
 on:
   push:
     branches:
-      - main  # Adjust if needed
+      - main 
   pull_request:
+    branches:
+      - main
 
 jobs:
   test:

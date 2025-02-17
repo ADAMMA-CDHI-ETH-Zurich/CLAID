@@ -1,0 +1,23 @@
+name: NativeCoreTestsMacOS
+
+on:
+  push:
+    branches:
+      - main 
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bazel
+        uses: bazelbuild/setup-bazelisk@v2
+
+      - name: Run Bazel Tests
+        run: bazel test //dispatch/test:all

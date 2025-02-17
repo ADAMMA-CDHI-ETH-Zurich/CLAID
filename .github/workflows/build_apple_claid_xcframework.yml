@@ -1,0 +1,33 @@
+name: Build and Upload XCFramework
+
+on:
+  workflow_run:
+    workflows: ["NativeCoreTestsMacOS"]  # Name of the test workflow
+    types:
+      - completed
+
+jobs:
+  build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Bazel
+        uses: bazelbuild/setup-bazelisk@v2
+
+      - name: Build XCFramework
+        run: |
+          bazel build //dispatch/ios/claid_native_xcframework
+
+      - name: Verify Build Output
+        run: |
+          ls -la bazel-bin/dispatch/ios/claid_native_xcframework
+
+      - name: Upload XCFramework as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: claid_native_xcframework
+          path: bazel-bin/dispatch/ios/claid_native_xcframework/claid_native_xcframework.xcframework.zip
