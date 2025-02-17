@@ -2,9 +2,10 @@ name: Android Build with Bazel
 
 on:
   workflow_run:
-    workflows: ["NativeCoreTestsMacOS"]  # Name of the test workflow
+    workflows: ["NativeCoreTestsUbuntu"]  # Name of the test workflow
     types:
       - completed
+      
 jobs:
   build:
     runs-on: ubuntu-latest
