@@ -1,0 +1,10 @@
+{
+    "generate": {
+      "clients": true,
+      "servers": true,
+      "messages": true
+    },
+    "protoc": {
+    "executablePath": "/opt/homebrew/bin/protoc"}
+      
+}
