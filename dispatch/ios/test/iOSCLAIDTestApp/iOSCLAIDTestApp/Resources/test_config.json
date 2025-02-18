@@ -1,0 +1,9 @@
+{
+	"hosts": [{
+			"hostname": "test_host",
+			"type": "ios",
+			"modules": [
+			]
+		}
+	]
+}

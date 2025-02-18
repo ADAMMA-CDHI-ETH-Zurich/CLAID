@@ -205,10 +205,13 @@ ServiceImpl::ServiceImpl(ModuleTable& modTable, std::shared_ptr<GlobalDeviceSche
 
 Status ServiceImpl::GetModuleList(ServerContext* context,
         const ModuleListRequest* req, ModuleListResponse* resp) {
+
     if (req->runtime() == Runtime::RUNTIME_UNSPECIFIED) {
         return Status(grpc::INVALID_ARGUMENT, "Invalid runtime value provided");
     }
+
     moduleTable.setRuntimeIsInitializing(req->runtime(), true);
+
     // {
     //     std::string jsonOutput = "";
     //     google::protobuf::util::JsonPrintOptions options;

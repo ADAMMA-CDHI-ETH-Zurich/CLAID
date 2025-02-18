@@ -305,6 +305,7 @@ enum Runtime {
   RUNTIME_DART = 3;
   RUNTIME_JAVA = 4;
   RUNTIME_PYTHON = 5;
+  RUNTIME_SWIFT = 6;
 }
 
 enum LogMessageSeverityLevel
