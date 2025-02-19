@@ -43,7 +43,7 @@ let package = Package(
             path: "Sources/CLAIDNative"),
         .binaryTarget(
             name: "native_xcframework",
-            path: "../../../bazel-bin/dispatch/ios/native_claid_xcframework/native_xcframework.xcframework.zip"
+            path: "../../../bazel-bin/dispatch/ios/CLAIDNativeFramework/claid_native_xcframework.xcframework.zip"
         ),
         .testTarget(
             name: "CLAIDTests",

@@ -102,6 +102,12 @@ public class ScheduleRepeatedIntervall implements ScheduleDescription {
     
             if (!executionTime.isBefore(startDateTime) && !executionTime.isAfter(stopDateTime)) {
                 executionTime = executionTime.plus(interval);
+                
+                if (executionTime.isAfter(stopDateTime)) {
+                    startDateTime = startDateTime.plus(1, ChronoUnit.DAYS);
+                    executionTime = startDateTime;
+                }
+
             } else if (executionTime.isBefore(startDateTime)) {
                 executionTime = startDateTime;
             } else if (executionTime.isAfter(stopDateTime)) {

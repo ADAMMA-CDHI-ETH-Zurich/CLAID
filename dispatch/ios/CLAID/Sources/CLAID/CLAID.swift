@@ -16,6 +16,7 @@ public actor CLAID {
 
     public func start(configFile: String, hostID: String, userID: String, deviceID: String) async throws {
         
+        Logger.logInfo("Starting CLAID")
         let socketPath = "unix://tmp/claid_local.grpc"
         
         handle = startCore(socketPath: socketPath, configFile: configFile, hostID: hostID, userID: userID, deviceID: deviceID)
@@ -31,8 +32,7 @@ public actor CLAID {
     func attach_swift_runtime(socketPath: String) async throws {
         
         try await self.moduleDispatcher = ModuleDispatcher(socketPath: socketPath)
-      
-        sleep(5)
+
         let result = try await self.moduleDispatcher?.getModuleList(registeredModuleClasses: ["None"])
     }
 }

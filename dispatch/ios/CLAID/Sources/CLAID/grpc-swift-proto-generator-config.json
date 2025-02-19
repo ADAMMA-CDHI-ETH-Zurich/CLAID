@@ -4,6 +4,10 @@
       "servers": true,
       "messages": true
     },
+    "generatedSource": {
+      "accessLevel": "public",
+      "accessLevelOnImports": false
+    },
     "protoc": {
     "executablePath": "/opt/homebrew/bin/protoc"}
       

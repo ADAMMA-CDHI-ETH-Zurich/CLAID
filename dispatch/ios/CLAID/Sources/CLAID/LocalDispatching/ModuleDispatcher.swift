@@ -8,7 +8,6 @@ actor ModuleDispatcher {
     private let channel: GRPCClient<HTTP2ClientTransport.Posix>
     private let stub: Claidservice_ClaidService.Client<HTTP2ClientTransport.Posix>
     private let socketPath: String
-    private let logger = Logger(subsystem: "com.yourapp.ModuleDispatcher", category: "GRPC")
 
     init(socketPath: String) async throws {
         self.socketPath = socketPath
@@ -38,16 +37,16 @@ actor ModuleDispatcher {
     private func runClient() {
         Task {
             do {
-                logger.info("Running connections")
+                Logger.logInfo("Running connections")
                 try await self.channel.runConnections()
             } catch {
-                logger.error("Client closed with status: \(error.localizedDescription)")
+                Logger.logError("Client closed with status: \(error.localizedDescription)")
             }
         }
     }
     
     func stopClient() {
-        logger.info("Initiating graceful shutdown")
+        Logger.logInfo("Initiating graceful shutdown")
         self.channel.beginGracefulShutdown()
     }
 
@@ -58,7 +57,7 @@ actor ModuleDispatcher {
         request.moduleAnnotations = [:]
         
         print("Sending ModuleListRequest: \(request)")
-        logger.info("Swift Runtime: Calling getModuleList(...)")
+        Logger.logInfo("Swift Runtime: Calling getModuleList(...)")
         
         do {
             let response = try await self.stub.getModuleList(request: .init(message: request))
