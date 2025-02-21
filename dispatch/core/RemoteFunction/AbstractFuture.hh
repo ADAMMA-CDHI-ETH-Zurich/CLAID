@@ -20,7 +20,7 @@
 ***************************************************************************/
 #pragma once
 
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "FuturesTable.hh"
 
 using namespace claidservice;

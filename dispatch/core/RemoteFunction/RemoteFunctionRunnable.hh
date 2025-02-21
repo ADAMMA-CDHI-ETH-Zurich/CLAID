@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/Logger/Logger.hh"
 #include "FutureHandler.hh"
 #include "dispatch/core/shared_queue.hh"

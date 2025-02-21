@@ -26,7 +26,7 @@
 #include <string>
 #include <regex>
 
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/Logger/Logger.hh"
 #include "dispatch/core/proto_util.hh"
 #include "google/protobuf/json/json.h"
@@ -222,7 +222,7 @@ class Properties
                         return;
                     }
 
-                    google::protobuf::util::JsonParseOptions options2;
+                    google::protobuf::json::ParseOptions options2;
                     status = JsonStringToMessage(jsonOutput, &value, options2);
 
                     if(!status.ok())

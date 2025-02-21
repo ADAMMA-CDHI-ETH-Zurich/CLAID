@@ -43,7 +43,7 @@ namespace claid
 
     absl::Status Configuration::fromJSONString(const std::string& json)
     {
-        google::protobuf::util::JsonParseOptions options2;
+        google::protobuf::json::ParseOptions options2;
         absl::Status status = JsonStringToMessage(json, &this->config, options2);
         Logger::logInfo("status %s", status.ToString().c_str());
         return status;

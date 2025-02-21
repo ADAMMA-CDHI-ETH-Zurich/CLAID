@@ -28,7 +28,7 @@
 #include "dispatch/core/Traits/is_integer_no_bool.hh"
 #include "dispatch/core/Traits/is_specialization_of.hh"
 
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/Module/TypeMapping/ProtoCodec.hh"
 #include "dispatch/core/Module/TypeMapping/AnyProtoType.hh"
 

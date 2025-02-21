@@ -25,8 +25,8 @@
 #include "dispatch/core/Utilities/FileUtils.hh"
 #include "dispatch/core/Utilities/StringUtils.hh"
 #include "dispatch/core/Utilities/Path.hh"
-#include "dispatch/proto/sensor_data_types.grpc.pb.h"
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/sensor_data_types.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 
 // #ifdef __APPLE__
 //     #include "TargetConditionals.h"

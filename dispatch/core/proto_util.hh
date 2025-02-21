@@ -25,7 +25,7 @@
 #include <string>
 
 #include <google/protobuf/text_format.h>
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 
 using claidservice::DataPackage;
 namespace claid {

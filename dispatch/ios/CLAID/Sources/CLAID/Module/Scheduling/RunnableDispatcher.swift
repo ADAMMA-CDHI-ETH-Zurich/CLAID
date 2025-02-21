@@ -1,59 +1,55 @@
 import Foundation
 
 actor RunnableDispatcher {
-    let serialQueue = DispatchQueue(label: "module.dispatcher")
-    
-    func addRunnable(runnable: ScheduledRunnable) async throws {
-        let date = await runnable.schedule.getExecutionTime()
-        let timeInterval = date.timeIntervalSinceNow
+    private let serialQueue = DispatchQueue(label: "module.dispatcher")
+    private var scheduledTasks: [Date: DispatchWorkItem] = [:] // Keyed by Date
+    private var isRunning: Bool = false
 
-        serialQueue.asyncAfter(deadline: .now() + timeInterval) {
-            // Execute the runnable task
-            runnable.run()
-            
-            Task {
-                if(await runnable.schedule.doesRunnableHaveToBeRepeated()) {
+    func start() {
+        isRunning = true
+    }
+
+    func stop() {
+        isRunning = false
+        for (_, task) in scheduledTasks {
+            task.cancel()
+        }
+        scheduledTasks.removeAll()
+    }
+
+    func addRunnable(runnable: ScheduledRunnable) async throws {
+        guard isRunning else { return }
+        let date = await runnable.schedule.getExecutionTime()
+        let timeInterval = max(date.timeIntervalSinceNow, 0) // Don't schedule past tasks
+
+        let workItem = DispatchWorkItem { [weak self] in
+            Task { [weak self] in
+                guard let self = self else { return }
+                guard await self.isRunning else { return }
+                
+                await runnable.run()
+                
+                if await runnable.schedule.doesRunnableHaveToBeRepeated() {
                     try await runnable.schedule.updateExecutionTime()
                     try await self.addRunnable(runnable: runnable)
                 }
-            }
-            
-
-        }
-    
-    }
-}
-
-/*
-actor RunnableDispatcher {
-    
-    func addRunnable(runnable: ScheduledRunnable) async {
-        Task { // Launch in a new concurrent task
-            let date = await runnable.schedule.getExecutionTime()
-            let timeInterval = date.timeIntervalSinceNow
-            
-            if timeInterval > 0 {
-                do {
-                    try await Task.sleep(microseconds: UInt64(timeInterval * 1_000_000_000))
-                } catch {
-                    print("Task sleep interrupted: \(error)")
-                    return
-                }
-            }
-            
-            // Execute the runnable task
-            await runnable.run()
-            
-            // Check if the task should be repeated
-            if await runnable.schedule.doesRunnableHaveToBeRepeated() {
-                do {
-                    try await runnable.schedule.updateExecutionTime()
-                    await addRunnable(runnable: runnable) // Recursively reschedule
-                } catch {
-                    print("Failed to reschedule runnable: \(error)")
-                }
+                
+                await self.removeTask(for: date)
             }
         }
+
+        scheduledTasks[date] = workItem
+        serialQueue.asyncAfter(deadline: .now() + timeInterval, execute: workItem)
+    }
+
+    func removeRunnable(for date: Date) {
+        if let task = scheduledTasks[date] {
+            task.cancel()
+            scheduledTasks.removeValue(forKey: date)
+        }
+    }
+
+    private func removeTask(for date: Date) {
+        scheduledTasks.removeValue(forKey: date)
     }
 }
-*/

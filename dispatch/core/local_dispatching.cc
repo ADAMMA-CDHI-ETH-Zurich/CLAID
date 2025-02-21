@@ -292,7 +292,12 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
         Logger::logInfo("InitRuntime num channel pakets for module %s: %d", moduleId.c_str(), modChanIt.channel_packets().size());
 
         // Add the channels for this module
-        Status status = moduleTable.setChannelTypes(moduleId, modChanIt.channel_packets());
+        absl::Status abslStatus = moduleTable.setChannelTypes(moduleId, modChanIt.channel_packets());
+
+        grpc::Status status = grpc::Status(
+            static_cast<grpc::StatusCode>(static_cast<int>(abslStatus.code())), 
+            std::string(abslStatus.message())
+        );
         if (!status.ok()) {
             moduleTable.setRuntimeIsInitializing(rt, false);
             Logger::logError("Error in setChannelTyes: %s", status.error_message().c_str());

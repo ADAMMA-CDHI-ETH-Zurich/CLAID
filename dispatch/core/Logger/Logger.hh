@@ -24,7 +24,7 @@
 #include <fstream>
 
 #include "dispatch/core/Utilities/Time.hh"
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/Logger/LogSinkConfiguration.hh"
 
 

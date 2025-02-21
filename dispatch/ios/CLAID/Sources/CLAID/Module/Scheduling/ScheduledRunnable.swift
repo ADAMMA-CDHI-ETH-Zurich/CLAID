@@ -7,8 +7,9 @@
 
 public protocol ScheduledRunnable: Sendable {
     var schedule: ScheduleDescription { get }
-    var isValid: Bool { get }
+    func isValid() async -> Bool
     
-    func run()
-    func invalidate()
+    func run() async
+    func invalidate() async
+    
 }

@@ -27,9 +27,8 @@
 #include <shared_mutex>
 #include <string>
 #include <set>
-#include <grpc/grpc.h>
 
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/shared_queue.hh"
 
 namespace claid {
@@ -114,7 +113,7 @@ class ModuleTable {
     // Verifies that the given channels are expected and sets their data types.
     // This is called as runtimes connect and verifies that the channels provided by the
     // runtimes are correct.
-    grpc::Status setChannelTypes(const std::string& moduleId,
+    absl::Status setChannelTypes(const std::string& moduleId,
             const google::protobuf::RepeatedPtrField<claidservice::DataPackage>& channels);
 
     bool ready() const;

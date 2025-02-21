@@ -1,7 +1,7 @@
 #pragma once
 
 #include <typeinfo>
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 
 using claidservice::DataPackage;
 

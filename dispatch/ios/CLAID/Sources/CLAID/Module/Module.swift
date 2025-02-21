@@ -7,7 +7,7 @@ public class Module {
     private var isTerminating = false
     private var subscriberPublisher: Any?
     private var timers: [String: ScheduledRunnable] = [:]
-    private var runnableDispatcher: RunnableDispatcher?
+    private var runnableDispatcher: RunnableDispatcher = RunnableDispatcher()
 
     
     init() {
@@ -40,7 +40,7 @@ public class Module {
         Logger.log(.debugVerbose, dbgMessage, logMessageEntityType: .module, logMessageEntity: self.id)
     }
     
-    func start(subscriberPublisher: Any, properties: [String: Any], mainThreadRunnablesQueue: DispatchQueue) -> Bool {
+    func start(subscriberPublisher: Any, properties: [String: Any], mainThreadRunnablesQueue: DispatchQueue) async throws -> Bool {
         if isInitialized {
             moduleError("Initialize called twice!")
             return false
@@ -48,25 +48,21 @@ public class Module {
         
         Logger.logInfo("Module start called")
         self.subscriberPublisher = subscriberPublisher
-        self.runnableDispatcher = RunnableDispatcher(queue: mainThreadRunnablesQueue)
+        self.runnableDispatcher = RunnableDispatcher()
         
-        guard let dispatcher = runnableDispatcher, dispatcher.start() else {
-            moduleError("Failed to start RunnableDispatcher.")
-            return false
-        }
+
         
         isInitializing = true
         isInitialized = false
         
-        let functionRunnable = FunctionRunnableWithParams(initializeInternal)
-        functionRunnable.setParams(properties)
+        await initializeInternal(properties: properties)
         
-        dispatcher.addRunnable(
-            ScheduledRunnable(
-                runnable: functionRunnable,
-                schedule: ScheduleOnce(Date())
-            )
-        )
+        /*
+        let functionRunnable = FunctionRunnable(schedule: ScheduleOnce(executionTime: Date.now)) {await
+            self.initializeInternal(properties: properties)
+        }
+        
+        try await runnableDispatcher.addRunnable(runnable: functionRunnable)*/
         
         while !isInitialized {
             sleep(1)
@@ -95,26 +91,28 @@ public class Module {
         return id
     }
     
-    func shutdown() {
+    func shutdown() async throws{
         isTerminating = true
-        let functionRunnable = FunctionRunnable(terminateInternal)
-        runnableDispatcher?.addRunnable(
-            ScheduledRunnable(
-                runnable: functionRunnable,
-                schedule: ScheduleOnce(Date())
-            )
-        )
+        
+        /*let functionRunnable = FunctionRunnable(schedule: ScheduleOnce(executionTime: Date.now)) {
+            self.terminateInternal()
+        }
+
+        try await runnableDispatcher.addRunnable(runnable: functionRunnable)*/
+        
+        await terminateInternal()
+        
         while isTerminating {
             sleep(1)
         }
         Logger.logInfo("Runnable dispatcher stopping")
-        runnableDispatcher?.stop()
+        await runnableDispatcher.stop()
         isInitialized = false
     }
     
-    private func terminateInternal() {
+    private func terminateInternal() async {
         Logger.logInfo("Unregistering all periodic functions")
-        unregisterAllPeriodicFunctions()
+        await unregisterAllPeriodicFunctions()
         Logger.logInfo("Calling terminate")
         terminate()
         Logger.logInfo("Terminated")
@@ -125,9 +123,9 @@ public class Module {
         fatalError("Subclasses must override terminate method")
     }
     
-    func unregisterAllPeriodicFunctions() {
+    func unregisterAllPeriodicFunctions() async {
         for (_, entry) in timers {
-            entry.runnable.invalidate()
+            await entry.invalidate()
         }
         timers.removeAll()
     }

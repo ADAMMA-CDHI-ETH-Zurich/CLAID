@@ -68,6 +68,7 @@ apply plugin: 'com.google.protobuf'
 android {
     namespace 'adamma.c4dhi.claid'
     compileSdk 33
+    ndkVersion "25.2.9519653"
 
     defaultConfig {
         minSdk 26
@@ -112,6 +113,22 @@ android {
             withSourcesJar()
         }
     }
+
+    externalNativeBuild {
+        cmake {
+            path file('src/main/cpp/CMakeLists.txt')
+        }
+    }
+
+    // Enable generation of Prefab packages and include them in the library's AAR.
+    buildFeatures {
+        prefabPublishing true
+    }
+
+ 
+
+  
+    
 
 }
 
