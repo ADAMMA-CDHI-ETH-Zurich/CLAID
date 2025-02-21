@@ -9,14 +9,14 @@
 public final actor FunctionRunnable: ScheduledRunnable {
     
     public let schedule: ScheduleDescription
-    private let runnable: () -> Void
+    private let runnable: @Sendable () async -> Void
     private var valid: Bool = true
     
     public func isValid() async -> Bool {
         return valid
     }
     
-    public  init(schedule: ScheduleDescription, runnable: @escaping () -> Void) {
+    public  init(schedule: ScheduleDescription, runnable: @Sendable @escaping () async -> Void) {
         self.schedule = schedule
         self.runnable = runnable
     }
@@ -24,7 +24,7 @@ public final actor FunctionRunnable: ScheduledRunnable {
 
     public func run() async {
         guard await isValid() else { return }
-        runnable()
+        await runnable()
     }
     
     public func invalidate() async {
