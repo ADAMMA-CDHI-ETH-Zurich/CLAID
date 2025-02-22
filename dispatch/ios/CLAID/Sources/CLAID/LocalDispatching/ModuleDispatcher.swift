@@ -93,85 +93,77 @@ actor ModuleDispatcher {
         return true
     }
     
-    public func sendReceivePackagesdd(inConsumer: @escaping (DataPackage) -> Void) async throws -> Bool {
+    func makeControlRuntimePing() async -> Claidservice_DataPackage {
+        var dataPackage = Claidservice_DataPackage()
+        var controlPkg = Claidservice_ControlPackage()
+        controlPkg.ctrlType = .ctrlRuntimePing
+        controlPkg.runtime = .swift  // Or whichever runtime
+        dataPackage.controlVal = controlPkg
+        return dataPackage
+    }
+
+    
+    public func sendReceivePackages(
+        inStream: AsyncThrowingStream<Claidservice_DataPackage, Error>,
+        outContinuation: AsyncThrowingStream<Claidservice_DataPackage, Error>.Continuation
+    ) async throws -> Bool {
         
+        // Example handshake actor, if needed:
+        let pingPongWaiter = CtrlRuntimePingPongWaiter()
         
-        
-        let packagesToSend = [
-            Claidservice_DataPackage()
-        ]
+        // Build the request that will consume from inStream
+        let request = StreamingClientRequest<Claidservice_DataPackage>(producer: { writer in
+            // 1) (Optional) Send initial ping
+            try await writer.write(self.makeControlRuntimePing())
+            await pingPongWaiter.waitForPong()
             
-        // Create the streaming request
-        let request = StreamingClientRequest<Claidservice_DataPackage>(
-            producer: { writer in
-                // Write messages to the server
-                for package in packagesToSend {
-                    try await writer.write(package)
+            // 2) Send additional packages from the client→server inStream
+            for try await package in inStream {
+                try await writer.write(package)
+            }
+        })
+        
+        // Perform the bidirectional call, capturing server→client messages:
+        let _ = try await stub.sendReceivePackages(request: request) { fromMiddlewareStream in
+            do {
+                for try await msg in fromMiddlewareStream.messages {
+                    // (Optional) check handshake
+                    if msg.hasControlVal && msg.controlVal.ctrlType == .ctrlRuntimePing {
+                        await pingPongWaiter.gotPong()
+                    }
+                    
+                    // Push the message to outContinuation
+                    outContinuation.yield(msg)
                 }
-                // Closing the writer ends the client->server stream
+            } catch {
+                // Optionally throw an error into the continuation
+                outContinuation.finish(throwing: error)
             }
-        )
-        
-        // Make the bidirectional streaming call
-        let call = try await stub.sendReceivePackages(request: request) { writer in
             
+            // When server finishes or an error occurs, close the out stream
+            outContinuation.finish()
         }
-            // Handle incoming packages from server
-            for try await receivedPackage in call.responseStream {
-                print("Received package: \(receivedPackage)")
-            }
-        
-        
-        self.inConsumer = inConsumer
-
-        guard inConsumer != nil else {
-            Logger.logFatal("Invalid argument in ModuleDispatcher::sendReceivePackages. Provided consumer is nil.")
-            return false
-        }
-
-        self.waitForInputStreamCancelled = false
-        self.inputStreamCancelled = false
-
-        self.inStream = makeInputStreamObserver(
-            onNext: { dataPackage in self.onMiddlewareStreamPackageReceived(dataPackage) },
-            onError: { error in self.onMiddlewareStreamError(error) },
-            onCompleted: { self.onMiddlewareStreamCompleted() }
-        )
-        
-        let inQueue = RPCAsyncSequence<Claidservice_DataPackage, any Error>(wrapping: <#_#>)
-        
-        let writer = RPCWriter<Claidservice_DataPackage>{
-            return Claidservice_DataPackage()
-        }
-        let value = StreamingClientRequest.init(of: Claidservice_DataPackage.self, producer: <#T##(RPCWriter<Claidservice_DataPackage>) async throws -> Void#>)
-        
-        stub.sendReceivePackages(request: {continuation in
-        }, onResponse: <#T##(StreamingClientResponse<Claidservice_DataPackage>) async throws -> Sendable#>)
-        
-        func routeChat(
-          request: RPCAsyncSequence<Routeguide_RouteNote, any Error>,
-          response: RPCWriter<Routeguide_RouteNote>,
-          context: ServerContext
-        ) async throws {
-        }
-        
-        let streamingRequest = StreamingClientRequest<Claidservice_DataPackage>(, producer: <#@Sendable (RPCWriter<Claidservice_DataPackage>) async throws -> Void#>)
-
-        stub.sendReceivePackages(request: StreamingClientRequest<Claidservice_DataPackage>, onResponse: <#T##(StreamingClientResponse<Claidservice_DataPackage>) async throws -> Sendable#>)
-        self.outStream = stub.sendReceivePackages(self.inStream)
-
-        guard self.outStream != nil else {
-            return false
-        }
-
-        self.waitingForPingResponse = true
-        let pingReq = makeControlRuntimePing()
-        self.outStream?.onNext(pingReq)
-
-        awaitPingPackage()
 
         return true
     }
 
-    
+
+}
+
+
+actor CtrlRuntimePingPongWaiter {
+    private var continuation: CheckedContinuation<Void, Never>?
+
+    /// Suspends until `gotPong()` is called.
+    func waitForPong() async {
+        await withCheckedContinuation { cont in
+            self.continuation = cont
+        }
+    }
+
+    /// Resumes the `waitForPong()` call, allowing it to proceed.
+    func gotPong() {
+        continuation?.resume()
+        continuation = nil
+    }
 }
