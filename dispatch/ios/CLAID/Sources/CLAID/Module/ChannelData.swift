@@ -8,7 +8,7 @@
 
 import Foundation
 
-public actor ChannelData<T>{
+public actor ChannelData<T> : Sendable{
     let data: T
     let timestamp: Date
     let userToken: String
@@ -22,7 +22,7 @@ public actor ChannelData<T>{
     }
 
     /// Returns whether the data is valid
-    func isValid() -> Bool {
+    func isValid() async -> Bool {
         return valid
     }
 }

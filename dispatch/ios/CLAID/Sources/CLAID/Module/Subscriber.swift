@@ -13,10 +13,10 @@ actor Subscriber<T>: AbstractSubscriber {
     private let callbackDispatcher: RunnableDispatcher
     private let mutator: Mutator<T>
 
-    init(callback: @escaping (ChannelData<T>) -> Void, callbackDispatcher: RunnableDispatcher) {
+    init(callback: @escaping (ChannelData<T>) -> Void, callbackDispatcher: RunnableDispatcher, t: T) {
         self.callback = callback
         self.callbackDispatcher = callbackDispatcher
-        self.mutator = TypeMapping.getMutator<T>()
+        self.mutator = TypeMapping.getMutator(type(of: t))
     }
 
     /// Converts `Int64` UNIX timestamp (milliseconds) to `Date`
@@ -27,8 +27,7 @@ actor Subscriber<T>: AbstractSubscriber {
     /// Calls the callback function on a background dispatcher
     private func invokeCallback(_ data: ChannelData<T>) async {
         
-        let runnable = ConsumerRunnable<ChannelData<T>>(data: data, consumer: callback)
-        await callbackDispatcher.addRunnable(runnable)
+        await callback(data)
         
     }
 

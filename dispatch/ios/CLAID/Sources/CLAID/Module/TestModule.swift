@@ -6,6 +6,8 @@
 //
 
 public actor TestModule : @preconcurrency Module {
+  
+
 
     
     
@@ -15,7 +17,7 @@ public actor TestModule : @preconcurrency Module {
     
     }
     
-    public func initialize() async {
+    public func initialize(properties: Properties) async {
         await registerPeriodicFunction(name: "incrementCounter", interval: 2) {
             await self.incrementCounter()
         }
@@ -27,5 +29,9 @@ public actor TestModule : @preconcurrency Module {
     
     func incrementCounter() async {
         ctr += 1
+    }
+    
+    public func terminate() async {
+        
     }
 }

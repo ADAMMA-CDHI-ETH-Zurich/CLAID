@@ -4,7 +4,7 @@ enum ChannelAccessRights {
     case read, write, readWrite, none
 }
 
-class Channel<T> {
+public class Channel<T> {
     private let channelId: String
     private let accessRights: ChannelAccessRights
     
@@ -24,7 +24,7 @@ class Channel<T> {
     }
 
     /// Constructor for **published** channels
-    init(parent: Module, channelId: String, publisher: Publisher<T>) {
+    init(channelId: String, publisher: Publisher<T>) {
         self.channelId = channelId
         self.accessRights = .write
         self.publisher = publisher
@@ -53,18 +53,18 @@ class Channel<T> {
     }
 
     /// Posts data to the channel with the current timestamp
-    func post(_ data: T) {
+    func post(_ data: T) async {
         guard canWrite() else {
             let msg = "Tried to post data to channel \"\(self.channelId)\", but it was not published before."
 
             Logger.logFatal(msg)
             return
         }
-        publisher?.post(data, timestamp: Date().timeIntervalSince1970 * 1000)
+        await publisher?.post(data, timestamp: Date.now)
     }
 
     /// Posts data to the channel with a custom timestamp
-    func post(_ data: T, timestamp: TimeInterval) {
+    func post(_ data: T, date: Date) async {
         guard canWrite() else {
             let msg = "Tried to post data to channel \"\(self.channelId)\", but it was not published before."
 
@@ -72,7 +72,7 @@ class Channel<T> {
             Logger.logFatal(msg)
             return
         }
-        publisher?.post(data, timestamp: timestamp)
+        await publisher?.post(data, timestamp: date)
     }
 
     /// Returns the channel ID

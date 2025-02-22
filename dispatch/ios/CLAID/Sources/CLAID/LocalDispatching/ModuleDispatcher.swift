@@ -3,6 +3,8 @@ import Foundation
 import GRPCNIOTransportHTTP2
 import os
 
+import SwiftProtobuf
+
 actor ModuleDispatcher {
     
     private let channel: GRPCClient<HTTP2ClientTransport.Posix>
@@ -50,7 +52,7 @@ actor ModuleDispatcher {
         self.channel.beginGracefulShutdown()
     }
 
-    func getModuleList(registeredModuleClasses: [String]) async throws -> Claidservice_ModuleListResponse {
+    public func getModuleList(registeredModuleClasses: [String]) async throws -> Claidservice_ModuleListResponse {
         var request = Claidservice_ModuleListRequest()
         request.runtime = Claidservice_Runtime.swift
         request.supportedModuleClasses = registeredModuleClasses
@@ -69,5 +71,107 @@ actor ModuleDispatcher {
         }
     }
     
+    public func initRuntime(channelExamplePackages: [String: [Claidservice_DataPackage]]) async throws -> Bool {
+        var initRuntimeRequest = Claidservice_InitRuntimeRequest()
+
+        for (moduleId, dataPackages) in channelExamplePackages {
+            var moduleChannels = Claidservice_InitRuntimeRequest.ModuleChannels()
+            moduleChannels.moduleID = moduleId
+            moduleChannels.channelPackets.append(contentsOf: dataPackages)
+            print("Adding \(dataPackages)")
+            initRuntimeRequest.modules.append(moduleChannels)
+        }
+
+        initRuntimeRequest.runtime = .swift  // Assuming equivalent Swift enum exists
+
+        var resultReceived = false
+
+        Logger.logInfo("Swift Runtime: Calling initRuntime(...)")
+        let response = try await stub.initRuntime(request: .init(message: initRuntimeRequest))
+
+
+        return true
+    }
+    
+    public func sendReceivePackagesdd(inConsumer: @escaping (DataPackage) -> Void) async throws -> Bool {
+        
+        
+        
+        let packagesToSend = [
+            Claidservice_DataPackage()
+        ]
+            
+        // Create the streaming request
+        let request = StreamingClientRequest<Claidservice_DataPackage>(
+            producer: { writer in
+                // Write messages to the server
+                for package in packagesToSend {
+                    try await writer.write(package)
+                }
+                // Closing the writer ends the client->server stream
+            }
+        )
+        
+        // Make the bidirectional streaming call
+        let call = try await stub.sendReceivePackages(request: request) { writer in
+            
+        }
+            // Handle incoming packages from server
+            for try await receivedPackage in call.responseStream {
+                print("Received package: \(receivedPackage)")
+            }
+        
+        
+        self.inConsumer = inConsumer
+
+        guard inConsumer != nil else {
+            Logger.logFatal("Invalid argument in ModuleDispatcher::sendReceivePackages. Provided consumer is nil.")
+            return false
+        }
+
+        self.waitForInputStreamCancelled = false
+        self.inputStreamCancelled = false
+
+        self.inStream = makeInputStreamObserver(
+            onNext: { dataPackage in self.onMiddlewareStreamPackageReceived(dataPackage) },
+            onError: { error in self.onMiddlewareStreamError(error) },
+            onCompleted: { self.onMiddlewareStreamCompleted() }
+        )
+        
+        let inQueue = RPCAsyncSequence<Claidservice_DataPackage, any Error>(wrapping: <#_#>)
+        
+        let writer = RPCWriter<Claidservice_DataPackage>{
+            return Claidservice_DataPackage()
+        }
+        let value = StreamingClientRequest.init(of: Claidservice_DataPackage.self, producer: <#T##(RPCWriter<Claidservice_DataPackage>) async throws -> Void#>)
+        
+        stub.sendReceivePackages(request: {continuation in
+        }, onResponse: <#T##(StreamingClientResponse<Claidservice_DataPackage>) async throws -> Sendable#>)
+        
+        func routeChat(
+          request: RPCAsyncSequence<Routeguide_RouteNote, any Error>,
+          response: RPCWriter<Routeguide_RouteNote>,
+          context: ServerContext
+        ) async throws {
+        }
+        
+        let streamingRequest = StreamingClientRequest<Claidservice_DataPackage>(, producer: <#@Sendable (RPCWriter<Claidservice_DataPackage>) async throws -> Void#>)
+
+        stub.sendReceivePackages(request: StreamingClientRequest<Claidservice_DataPackage>, onResponse: <#T##(StreamingClientResponse<Claidservice_DataPackage>) async throws -> Sendable#>)
+        self.outStream = stub.sendReceivePackages(self.inStream)
+
+        guard self.outStream != nil else {
+            return false
+        }
+
+        self.waitingForPingResponse = true
+        let pingReq = makeControlRuntimePing()
+        self.outStream?.onNext(pingReq)
+
+        awaitPingPackage()
+
+        return true
+    }
+
     
 }

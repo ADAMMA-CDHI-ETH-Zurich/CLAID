@@ -64,18 +64,18 @@ actor ModuleManager {
     func getTemplatePackagesOfModules() async -> [String: [Claidservice_DataPackage]] {
         var moduleChannels: [String: [Claidservice_DataPackage]] = [:]
         for moduleId in runningModules.keys {
-            let templatePackagesForModule = await subscriberPublisher?.getChannelTemplatePackagesForModule(moduleId) ?? []
+            let templatePackagesForModule = await subscriberPublisher?.getChannelTemplatePackagesForModule(moduleId: moduleId) ?? []
             moduleChannels[moduleId] = templatePackagesForModule
         }
         return moduleChannels
     }
 
-    func start() async -> Bool {
+    func start() async throws -> Bool {
         let registeredModuleClasses = await moduleFactory.getRegisteredModuleClasses()
 
 
 
-        let moduleList = await dispatcher.getModuleList(registeredModules: registeredModuleClasses)
+        let moduleList = try await dispatcher.getModuleList(registeredModuleClasses: registeredModuleClasses)
         print("Received ModuleListResponse: \(moduleList)")
 
         if !(await instantiateModules(moduleList: moduleList)) {
@@ -84,7 +84,7 @@ actor ModuleManager {
         }
 
         if subscriberPublisher == nil {
-            subscriberPublisher = ChannelSubscriberPublisher(channel: dispatcher.getFromModulesChannel())
+            subscriberPublisher = ChannelSubscriberPublisher(toModuleManagerQueue: dispatcher.getFromModulesChannel())
         }
 
         if !(await initializeModules(moduleList: moduleList, subscriberPublisher: subscriberPublisher!)) {
@@ -142,7 +142,7 @@ actor ModuleManager {
         await dispatcher.postPackage(dataPackage)
     }
 
-    func restart() async {
+    /*func restart() async {
         await stop()
         print("Shutting down dispatcher")
         await dispatcher.shutdown()
@@ -170,7 +170,7 @@ actor ModuleManager {
         ctrlPackageBuilder.runtime = .RUNTIME_SWIFT
         ctrlPackageBuilder.logMessage = logMessage
         responseBuilder.controlVal = ctrlPackageBuilder
-    }
+    }*/
 
     func getModuleById(moduleId: String) async -> Module? {
         return runningModules[moduleId]

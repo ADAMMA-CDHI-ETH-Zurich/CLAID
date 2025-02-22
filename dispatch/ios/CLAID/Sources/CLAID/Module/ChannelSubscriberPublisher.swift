@@ -7,19 +7,14 @@ public actor ChannelSubscriberPublisher {
     // Maps (channelName, moduleId) -> List of subscribers
     private var moduleChannelsSubscriberMap: [String: [String: [AbstractSubscriber]]] = [:]
 
-    // AsyncStream for sending `DataPackage` to `ModuleManager`
-    private var streamContinuation: AsyncStream<Claidservice_DataPackage>.Continuation?
-    let toModuleManagerQueue: AsyncStream<Claidservice_DataPackage>
+    let toModuleManagerQueue: AsyncStream<Claidservice_DataPackage>.Continuation
 
-    init() async {
-        // Setup the async stream for data packages
-        self.toModuleManagerQueue = AsyncStream { continuation in
-            self.streamContinuation = continuation
-        }
-    }
+    init(toModuleManagerQueue: AsyncStream<Claidservice_DataPackage>.Continuation) {
+       self.toModuleManagerQueue = toModuleManagerQueue
+   }
 
     /// Prepares an example `DataPackage` for a module publishing or subscribing to a channel
-    private func prepareExamplePackage(dataTypeExample: Any, moduleId: String, channelName: String, isPublisher: Bool) -> Claidservice_DataPackage {
+    private func prepareExamplePackage<T>(dataTypeExample: T, moduleId: String, channelName: String, isPublisher: Bool) -> Claidservice_DataPackage {
         var dataPackage = Claidservice_DataPackage()
         
         if isPublisher {
@@ -31,8 +26,8 @@ public actor ChannelSubscriberPublisher {
         dataPackage.channel = channelName
         print("Preparing example package for channel: \(channelName) with data type: \(type(of: dataTypeExample))")
 
-        let mutator = TypeMapping.getMutator(exampleInstance: dataTypeExample)
-        mutator.setPackagePayload(&dataPackage, dataTypeExample)
+        let mutator = TypeMapping.getMutator(type(of: dataTypeExample))
+        mutator.setPackagePayload(packet: dataPackage, value: dataTypeExample)
 
         return dataPackage
     }
@@ -45,8 +40,11 @@ public actor ChannelSubscriberPublisher {
         print("Inserting package for Module \(moduleId)")
         examplePackagesForEachModule[moduleId, default: []].append(examplePackage)
 
+
+            
+        
         let publisher = Publisher(dataType: dataTypeExample, moduleId: moduleId, channelName: channelName, toModuleManagerQueue: self)
-        return Channel(module: module, name: channelName, publisher: publisher)
+        return Channel(channelId: channelName, publisher: publisher)
     }
 
     /// Subscribes a module to a channel

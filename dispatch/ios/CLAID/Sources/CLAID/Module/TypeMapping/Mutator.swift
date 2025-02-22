@@ -19,7 +19,7 @@ class Mutator<T>: AbstractMutator {
     }
 
     /// Sets the payload in an immutable `Claidservice_DataPackage` and returns a new instance
-    func setPackagePayload(_ packet: Claidservice_DataPackage, value: T) -> Claidservice_DataPackage {
+    func setPackagePayload(packet: Claidservice_DataPackage, value: T) -> Claidservice_DataPackage {
         return setter(packet, value)
     }
 
@@ -38,7 +38,7 @@ class Mutator<T>: AbstractMutator {
         guard let value = object as? T else {
             fatalError("Type mismatch: Expected \(T.self), but got \(type(of: object))")
         }
-        return setPackagePayload(packet, value: value)
+        return setPackagePayload(packet: packet, value: value)
     }
 
     /// Overrides `AbstractMutator` method to retrieve payload as `Any`
