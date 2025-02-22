@@ -11,4 +11,8 @@ public class ModuleHandle {
     public var counter: Int = 0  // A variable to be modified by tasks
     public var id: String = ""
     public var type: String = ""
+    public var subscriberPublisher: ChannelSubscriberPublisher?
+    public var remoteFunctionHandler: RemoteFunctionHandler?
+    public var properties: Properties?
+    public var isInitialized: Bool = false
 }

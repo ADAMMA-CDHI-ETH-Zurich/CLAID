@@ -2,15 +2,18 @@ import Foundation
 
 
 
-protocol Module {
+public protocol Module : Sendable {
     var moduleHandle: ModuleHandle { get }
-    func initialize() async
+    func initialize(properties: Properties) async
     init()
+    
+    func getId() async -> String
+    
+    func start(subscriberPublisher: ChannelSubscriberPublisher, remoteFunctionHandler: RemoteFunctionHandler, properties: Properties) async
+    
 }
 
 extension Module {
-    
-
     /// Registers a periodic function and stores it in the dictionary
     func registerPeriodicFunction(name: String, interval: TimeInterval, function: @escaping @Sendable () async -> Void) async {
         let task = await moduleHandle.dispatcher.addPeriodicTask(interval: interval, function: function)
@@ -48,7 +51,20 @@ extension Module {
         moduleHandle.id = id
     }
     
+    func getId() async -> String {
+        return moduleHandle.id
+    }
+    
     func setType(_ type: String) async {
         moduleHandle.type = type
+    }
+    
+    func start(subscriberPublisher: ChannelSubscriberPublisher, remoteFunctionHandler: RemoteFunctionHandler, properties: Properties) async {
+        moduleHandle.subscriberPublisher = subscriberPublisher
+        moduleHandle.remoteFunctionHandler = remoteFunctionHandler
+        moduleHandle.properties = properties
+        
+        await initialize(properties: properties)
+        moduleHandle.isInitialized = true
     }
 }

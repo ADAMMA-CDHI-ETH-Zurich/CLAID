@@ -20,4 +20,14 @@ public actor RunnableDispatcher {
         }
         return task
     }
+    
+    func addRunnable(_ runnable: ScheduledRunnable) async {
+        let dueDateTime = await runnable.schedule.getExecutionTime()
+        let currentTime = Date()
+        let delay = max(dueDateTime.timeIntervalSince(currentTime), 0) // Ensure non-negative delay
+
+        _ = addScheduledTask(delay: delay) {
+            await runnable.run()
+        }
+    }
 }

@@ -14,7 +14,7 @@ public actor CLAID {
         self.moduleDispatcher = nil
     }
 
-    public func start(configFile: String, hostID: String, userID: String, deviceID: String) async throws {
+    public func start(configFile: String, hostID: String, userID: String, deviceID: String, moduleFactory: ModuleFactory) async throws {
         
         Logger.logInfo("Starting CLAID")
         let socketPath = "unix://tmp/claid_local.grpc"
