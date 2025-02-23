@@ -42,7 +42,7 @@ TEST(PropertiesTestSuite, PropertiesTest)
 
     google::protobuf::Struct val;
 
-    google::protobuf::util::JsonParseOptions options2;
+    google::protobuf::json::ParseOptions options2;
     absl::Status status = JsonStringToMessage(json, &val, options2);
     ASSERT_TRUE(status.ok()) << status;
 

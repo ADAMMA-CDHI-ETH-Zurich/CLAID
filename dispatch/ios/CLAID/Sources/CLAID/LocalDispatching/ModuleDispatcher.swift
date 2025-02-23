@@ -18,7 +18,6 @@ actor ModuleDispatcher {
     public let toMiddlewareStream: AsyncStream<Claidservice_DataPackage>
 
     
-    
     init(socketPath: String) async throws {
         self.socketPath = socketPath
         self.channel = try await Self.createGRPCClient(socketPath: socketPath)
@@ -41,7 +40,18 @@ actor ModuleDispatcher {
         runClient()
     }
     
-    
+    private static func splitHostAndPort(input: String) async throws -> (host: String, port: Int?) {
+        let components = input.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: true)
+        
+        guard !components.isEmpty else {
+            throw CLAIDError("Input string is empty or invalid")
+        }
+        
+        let host = String(components[0])
+        let port = components.count > 1 ? Int(components[1]) : nil
+        
+        return (host, port)
+    }
 
     
     private static func createGRPCClient(socketPath: String) async throws -> GRPCClient<HTTP2ClientTransport.Posix> {
@@ -49,17 +59,31 @@ actor ModuleDispatcher {
         var normalizedPath = socketPath
         let unixPrefix = "unix://" // Middleware requires this prefix for unix domain sockets, but we don't. Otherwise our path is wrong.
 
+        let dnsPrefix = "dns:"
+
         if normalizedPath.hasPrefix(unixPrefix) {
-           normalizedPath.removeFirst(unixPrefix.count)
+            normalizedPath.removeFirst(unixPrefix.count)
+            guard let transport = try? HTTP2ClientTransport.Posix.http2NIOPosix(
+                target: .unixDomainSocket(path: normalizedPath),
+                transportSecurity: .plaintext
+            ) else {
+                throw NSError(domain: "TransportError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create transport"])
+            }
+            return GRPCClient(transport: transport)
+        } else {
+            if normalizedPath.hasPrefix(dnsPrefix) {
+                normalizedPath.removeFirst(dnsPrefix.count)
+            }
+            
+            let (host, port) = try await splitHostAndPort(input: normalizedPath)
+            guard let transport = try? HTTP2ClientTransport.Posix.http2NIOPosix(
+                target: .dns(host: host, port: port),
+                transportSecurity: .plaintext
+            ) else {
+                throw NSError(domain: "TransportError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create transport"])
+            }
+            return GRPCClient(transport: transport)
         }
-        
-        guard let transport = try? HTTP2ClientTransport.Posix.http2NIOPosix(
-            target: .unixDomainSocket(path: normalizedPath),
-            transportSecurity: .plaintext
-        ) else {
-            throw NSError(domain: "TransportError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create transport"])
-        }
-        return GRPCClient(transport: transport)
     }
 
     private func runClient() {

@@ -1,4 +1,5 @@
 {
+    "milliseconds_deadline_to_load_modules": -1,
 	"hosts": [{
 			"hostname": "test_host",
 			"type": "ios",
