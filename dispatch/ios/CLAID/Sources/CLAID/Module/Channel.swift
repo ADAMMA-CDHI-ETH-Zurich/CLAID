@@ -32,7 +32,7 @@ public class Channel<T> {
     }
 
     /// Constructor for **subscribed** channels
-    init(parent: Module, channelId: String, subscriber: Subscriber<T>) {
+    init(channelId: String, subscriber: Subscriber<T>) {
         self.channelId = channelId
         self.accessRights = .read
         self.subscriber = subscriber

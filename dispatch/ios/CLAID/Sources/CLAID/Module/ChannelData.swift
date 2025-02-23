@@ -8,8 +8,8 @@
 
 import Foundation
 
-public actor ChannelData<T> : Sendable{
-    let data: T
+public actor ChannelData<T: Sendable> : Sendable{
+    private let data: T
     let timestamp: Date
     let userToken: String
     let valid: Bool

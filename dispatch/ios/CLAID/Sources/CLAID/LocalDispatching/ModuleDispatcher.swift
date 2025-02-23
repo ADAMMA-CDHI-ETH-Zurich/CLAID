@@ -11,12 +11,38 @@ actor ModuleDispatcher {
     private let stub: Claidservice_ClaidService.Client<HTTP2ClientTransport.Posix>
     private let socketPath: String
 
+    var fromMiddlewareContinuation: AsyncStream<Claidservice_DataPackage>.Continuation!
+    public let fromMiddlewareStream: AsyncStream<Claidservice_DataPackage>
+
+    var toMiddlewareContinuation: AsyncStream<Claidservice_DataPackage>.Continuation!
+    public let toMiddlewareStream: AsyncStream<Claidservice_DataPackage>
+
+    
+    
     init(socketPath: String) async throws {
         self.socketPath = socketPath
         self.channel = try await Self.createGRPCClient(socketPath: socketPath)
         self.stub = .init(wrapping: channel)
+        
+        func makePackageStreamAndContinuation()
+            -> (stream: AsyncStream<Claidservice_DataPackage>,
+                continuation: AsyncStream<Claidservice_DataPackage>.Continuation)
+        {
+            var continuation: AsyncStream<Claidservice_DataPackage>.Continuation!
+            let stream = AsyncStream<Claidservice_DataPackage> { cont in
+                continuation = cont
+            }
+            return (stream, continuation)
+        }
+        
+        (self.fromMiddlewareStream, self.fromMiddlewareContinuation) = makePackageStreamAndContinuation()
+        (self.toMiddlewareStream, self.toMiddlewareContinuation) = makePackageStreamAndContinuation()
+
         runClient()
     }
+    
+    
+
     
     private static func createGRPCClient(socketPath: String) async throws -> GRPCClient<HTTP2ClientTransport.Posix> {
 
@@ -103,57 +129,72 @@ actor ModuleDispatcher {
     }
 
     
-    public func sendReceivePackages(
-        inStream: AsyncThrowingStream<Claidservice_DataPackage, Error>,
-        outContinuation: AsyncThrowingStream<Claidservice_DataPackage, Error>.Continuation
-    ) async throws -> Bool {
+    public func sendReceivePackages() async throws -> Bool {
         
         // Example handshake actor, if needed:
         let pingPongWaiter = CtrlRuntimePingPongWaiter()
         
         // Build the request that will consume from inStream
         let request = StreamingClientRequest<Claidservice_DataPackage>(producer: { writer in
-            // 1) (Optional) Send initial ping
+            // Send initial ping package
             try await writer.write(self.makeControlRuntimePing())
             await pingPongWaiter.waitForPong()
             
-            // 2) Send additional packages from the client→server inStream
-            for try await package in inStream {
+            for try await package in self.toMiddlewareStream {
                 try await writer.write(package)
             }
         })
         
         // Perform the bidirectional call, capturing server→client messages:
-        let _ = try await stub.sendReceivePackages(request: request) { fromMiddlewareStream in
+        let result = try await stub.sendReceivePackages(request: request) { inStream in
             do {
-                for try await msg in fromMiddlewareStream.messages {
-                    // (Optional) check handshake
-                    if msg.hasControlVal && msg.controlVal.ctrlType == .ctrlRuntimePing {
-                        await pingPongWaiter.gotPong()
+                for try await msg in inStream.messages {
+                    if await pingPongWaiter.isWaiting() {
+                        if msg.hasControlVal && msg.controlVal.ctrlType == .ctrlRuntimePing {
+                            await pingPongWaiter.gotPong()
+                        } else {
+                            throw CLAIDError("Received invalid package from middleware while waiting for ping response. Got \(msg) but awaited Control message with CTRL_RUNTIME_PING.")
+                        }
+                    } else {
+                        await self.onPackageReceivedFromMiddleware(msg)
                     }
-                    
-                    // Push the message to outContinuation
-                    outContinuation.yield(msg)
                 }
             } catch {
                 // Optionally throw an error into the continuation
-                outContinuation.finish(throwing: error)
+                await self.fromMiddlewareContinuation.finish()
             }
             
             // When server finishes or an error occurs, close the out stream
-            outContinuation.finish()
+            await self.fromMiddlewareContinuation.finish()
         }
 
         return true
     }
-
+    
+    func onPackageReceivedFromMiddleware(_ package: Claidservice_DataPackage) async {
+        // Optional here we could handle further control package.
+        await self.fromMiddlewareContinuation.yield(package)
+    }
+    
+    public func getToMiddlewareContinuation() async -> AsyncStream<Claidservice_DataPackage>.Continuation {
+        return self.toMiddlewareContinuation
+    }
+    
+    public func getFromMiddlewareStream() async -> AsyncStream<Claidservice_DataPackage> {
+        return self.fromMiddlewareStream
+    }
 
 }
 
 
 actor CtrlRuntimePingPongWaiter {
     private var continuation: CheckedContinuation<Void, Never>?
-
+    private var waitingForPingResponse = false
+    
+    init() {
+        waitingForPingResponse = true
+    }
+    
     /// Suspends until `gotPong()` is called.
     func waitForPong() async {
         await withCheckedContinuation { cont in
@@ -165,5 +206,10 @@ actor CtrlRuntimePingPongWaiter {
     func gotPong() {
         continuation?.resume()
         continuation = nil
+        waitingForPingResponse = false
+    }
+    
+    public func isWaiting() -> Bool {
+        return waitingForPingResponse
     }
 }

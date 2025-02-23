@@ -33,7 +33,7 @@ public actor ChannelSubscriberPublisher {
     }
 
     /// Publishes a new channel for a module
-    func publish<T>(dataTypeExample: T, module: Module, channelName: String) async -> Channel<T> {
+    func publish<T: Sendable>(dataTypeExample: T, module: Module, channelName: String) async -> Channel<T> {
         let moduleId = await module.getId()
         let examplePackage = prepareExamplePackage(dataTypeExample: dataTypeExample, moduleId: moduleId, channelName: channelName, isPublisher: true)
 
@@ -43,19 +43,24 @@ public actor ChannelSubscriberPublisher {
 
             
         
-        let publisher = Publisher(dataType: dataTypeExample, moduleId: moduleId, channelName: channelName, toModuleManagerQueue: self)
+        let publisher = Publisher(
+            dataTypeExample: dataTypeExample,
+            moduleId: moduleId,
+            channelName: channelName,
+            toModuleManagerQueue: toModuleManagerQueue
+        )
         return Channel(channelId: channelName, publisher: publisher)
     }
 
     /// Subscribes a module to a channel
-    func subscribe<T>(dataTypeExample: T, module: Module, channelName: String, subscriber: AbstractSubscriber) async -> Channel<T> {
+    func subscribe<T>(dataTypeExample: T, module: Module, channelName: String, subscriber: Subscriber<T>) async -> Channel<T> {
         let moduleId = await module.getId()
         let examplePackage = prepareExamplePackage(dataTypeExample: dataTypeExample, moduleId: moduleId, channelName: channelName, isPublisher: false)
 
         examplePackagesForEachModule[moduleId, default: []].append(examplePackage)
         insertSubscriber(channelName: channelName, moduleId: moduleId, subscriber: subscriber)
 
-        return Channel(module: module, name: channelName, subscriber: subscriber)
+        return Channel(channelId: channelName, subscriber: subscriber)
     }
 
     /// Inserts a subscriber into the subscription map
@@ -95,7 +100,7 @@ public actor ChannelSubscriberPublisher {
 
     /// Sends a `DataPackage` to the async stream (used by `ModuleManager`)
     func sendToModuleManager(_ dataPackage: Claidservice_DataPackage) {
-        streamContinuation?.yield(dataPackage)
+        toModuleManagerQueue.yield(dataPackage)
     }
 
     /// Resets all stored channels and subscribers

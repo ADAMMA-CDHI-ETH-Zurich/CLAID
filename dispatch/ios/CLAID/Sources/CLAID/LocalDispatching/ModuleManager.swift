@@ -84,7 +84,7 @@ actor ModuleManager {
         }
 
         if subscriberPublisher == nil {
-            subscriberPublisher = ChannelSubscriberPublisher(toModuleManagerQueue: dispatcher.getFromModulesChannel())
+            subscriberPublisher = await ChannelSubscriberPublisher(toModuleManagerQueue: dispatcher.getToMiddlewareContinuation())
         }
 
         if !(await initializeModules(moduleList: moduleList, subscriberPublisher: subscriberPublisher!)) {
@@ -93,22 +93,14 @@ actor ModuleManager {
         }
 
         let examplePackagesOfModules = await getTemplatePackagesOfModules()
-        if !(await dispatcher.initRuntime(examplePackagesOfModules)) {
-            print("Failed to initialize runtime.")
-            return false
-        }
-
-        if !(await dispatcher.sendReceivePackages { receivedPackage in
-            await self.onDataPackageReceived(dataPackage: receivedPackage)
-        }) {
-            print("Failed to set up input and output streams with middleware.")
-            return false
-        }
-
+        try await dispatcher.initRuntime(channelExamplePackages: examplePackagesOfModules)
+        
+        // This should block indefinitely?
+        try await dispatcher.sendReceivePackages()
         running = true
 
         Task {
-            await self.readFromModules()
+            await self.readFromMiddleware()
         }
 
         return true
@@ -126,20 +118,17 @@ actor ModuleManager {
         running = false
     }
 
-    func readFromModules() async {
+    func readFromMiddleware() async {
         while running {
-            print("Reading from modules")
-            if let dataPackage = await dispatcher.getFromModulesChannel().blockingGet() {
-                await onDataPackageFromModule(dataPackage: dataPackage)
-            } else {
-                print("Read from modules: null")
+            let stream = await dispatcher.getFromMiddlewareStream()
+            for try await package in stream {
+                await onDataPackageReceivedFromMiddleware(dataPackage: package)
             }
         }
     }
 
-    func onDataPackageFromModule(dataPackage: DataPackage) async {
-        print("ModuleManager received local package from Module \"\(dataPackage.sourceModule)\": \(dataPackage)")
-        await dispatcher.postPackage(dataPackage)
+    func onDataPackageReceivedFromMiddleware(dataPackage: Claidservice_DataPackage) async {
+       
     }
 
     /*func restart() async {

@@ -6,20 +6,20 @@ public class Publisher<T> {
     private let mutator: Mutator<T>
     
     // Continuation for sending data to the ModuleManager
-    private let streamContinuation: AsyncStream<Claidservice_DataPackage>.Continuation
+    private let toModuleManagerQueue: AsyncStream<Claidservice_DataPackage>.Continuation
 
     init(
-        dataType: T,
+        dataTypeExample: T,
         moduleId: String,
         channelName: String,
-        streamContinuation: AsyncStream<Claidservice_DataPackage>.Continuation
+        toModuleManagerQueue: AsyncStream<Claidservice_DataPackage>.Continuation
     ) {
         self.moduleId = moduleId
         self.channelName = channelName
       
      
-        self.mutator = TypeMapping.getMutator(type(of: dataType))
-        self.streamContinuation = streamContinuation
+        self.mutator = TypeMapping.getMutator(type(of: dataTypeExample))
+        self.toModuleManagerQueue = toModuleManagerQueue
     }
 
     /// Posts data to the `AsyncStream` with the current timestamp
@@ -38,6 +38,6 @@ public class Publisher<T> {
         dataPackage = mutator.setPackagePayload(packet: dataPackage, value: data)
 
         // Send to the `AsyncStream`
-        streamContinuation.yield(dataPackage)
+        toModuleManagerQueue.yield(dataPackage)
     }
 }
