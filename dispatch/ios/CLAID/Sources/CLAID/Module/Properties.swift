@@ -5,7 +5,7 @@
 //  Created by Patrick Langer on 21.02.2025.
 //
 import SwiftProtobuf
-public class Properties {
+public actor Properties : Sendable{
     
     let properties: Google_Protobuf_Struct
     

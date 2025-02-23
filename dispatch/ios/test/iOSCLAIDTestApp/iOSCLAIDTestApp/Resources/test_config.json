@@ -3,6 +3,13 @@
 			"hostname": "test_host",
 			"type": "ios",
 			"modules": [
+                {
+                    "type": "TestModule",
+                    "id": "TestMod",
+                    "output_channels": {
+                        "OutputChannel": "OutputChannel"
+                    }
+                }
 			]
 		}
 	]

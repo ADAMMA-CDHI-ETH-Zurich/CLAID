@@ -4,7 +4,7 @@ enum ChannelAccessRights {
     case read, write, readWrite, none
 }
 
-public class Channel<T> {
+public actor Channel<T: Sendable> {
     private let channelId: String
     private let accessRights: ChannelAccessRights
     
@@ -48,7 +48,7 @@ public class Channel<T> {
     }
 
     /// Factory method to create an **invalid** channel
-    static func newInvalidChannel(channelId: String) -> Channel<T> {
+    public static func newInvalidChannel(channelId: String) -> Channel<T> {
         return Channel(channelId: channelId)
     }
 

@@ -7,7 +7,7 @@ public actor CLAID {
     
     private var handle: UnsafeMutableRawPointer? = nil
     private var moduleDispatcher: ModuleDispatcher? = nil
-    
+    private var moduleManager: ModuleManager? = nil
 
     public init() {
         self.handle = nil
@@ -25,14 +25,29 @@ public actor CLAID {
             throw NSError(domain: "InitError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to start CLAID middleware, handle is null."])
         }
         
-        try await attach_swift_runtime(socketPath: socketPath)
+        try await attach_swift_runtime(socketPath: socketPath, moduleFactory: moduleFactory)
 
     }
     
-    func attach_swift_runtime(socketPath: String) async throws {
+    func attach_swift_runtime(socketPath: String, moduleFactory: ModuleFactory) async throws {
+        
         
         try await self.moduleDispatcher = ModuleDispatcher(socketPath: socketPath)
-
-        let result = try await self.moduleDispatcher?.getModuleList(registeredModuleClasses: ["None"])
+        
+        guard let dispatcher = self.moduleDispatcher else {
+            throw CLAIDError("Failed to create CLAID ModuleDispatcher in Swift runtime.")
+        }
+        
+        self.moduleManager = ModuleManager(
+            dispatcher: dispatcher,
+            moduleFactory: moduleFactory
+        )
+        
+        guard let moduleManager = self.moduleManager else {
+            throw CLAIDError("Failed to create CLAID ModuleManager in swift runtime.")
+        }
+        
+        try await moduleManager.start()
+        Logger.logInfo("CLAID has started")
     }
 }

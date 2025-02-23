@@ -3,8 +3,8 @@ import Foundation
 actor ModuleManager {
     private let dispatcher: ModuleDispatcher
     private let moduleFactory: ModuleFactory
-    private let remoteFunctionHandler: RemoteFunctionHandler
-    private let remoteFunctionRunnableHandler: RemoteFunctionRunnableHandler
+    private let remoteFunctionHandler = RemoteFunctionHandler()
+    private let remoteFunctionRunnableHandler = RemoteFunctionRunnableHandler()
     
 
     private var runningModules: [String: Module] = [:]
@@ -27,10 +27,12 @@ actor ModuleManager {
         }
 
         print("Loaded Module with id \"\(moduleId)\" (class: \"\(moduleClass)\").")
-        guard let module = await moduleFactory.getInstance(className: moduleClass, moduleId: moduleId) else {
+       /* guard let module = await moduleFactory.getInstance(className: moduleClass, moduleId: moduleId) else {
             print("Failed to instantiate Module with id \"\(moduleId)\" (class: \"\(moduleClass)\").")
             return false
-        }
+        }*/
+        let module = TestModule()
+        await module.setId("Test")
 
         runningModules[moduleId] = module
         return true
@@ -46,7 +48,7 @@ actor ModuleManager {
         return true
     }
 
-    func initializeModules(moduleList: Claidservice_ModuleListResponse, subscriberPublisher: ChannelSubscriberPublisher) async -> Bool {
+    func initializeModules(moduleList: Claidservice_ModuleListResponse, subscriberPublisher: ChannelSubscriberPublisher) async throws -> Bool {
         for descriptor in moduleList.descriptors {
             guard let module = runningModules[descriptor.moduleID] else {
                 print("Failed to initialize Module \"\(descriptor.moduleID)\" (class: \"\(descriptor.moduleClass)\").\nThe Module was not loaded.")
@@ -55,7 +57,11 @@ actor ModuleManager {
 
             print("Calling module.start() for Module \"\(await module.getId())\".")
             let properties = Properties(properties: descriptor.properties)
-            await module.start(subscriberPublisher: subscriberPublisher, remoteFunctionHandler: remoteFunctionHandler, properties: properties)
+            try await module.start(
+                subscriberPublisher: subscriberPublisher,
+                remoteFunctionHandler: remoteFunctionHandler,
+                properties: properties
+            )
             print("Module \"\(await module.getId())\" has started.")
         }
         return true
@@ -87,7 +93,7 @@ actor ModuleManager {
             subscriberPublisher = await ChannelSubscriberPublisher(toModuleManagerQueue: dispatcher.getToMiddlewareContinuation())
         }
 
-        if !(await initializeModules(moduleList: moduleList, subscriberPublisher: subscriberPublisher!)) {
+        if !(try await initializeModules(moduleList: moduleList, subscriberPublisher: subscriberPublisher!)) {
             print("Failed to initialize Modules.")
             return false
         }

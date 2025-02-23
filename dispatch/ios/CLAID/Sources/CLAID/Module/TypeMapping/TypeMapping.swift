@@ -75,7 +75,7 @@ class TypeMapping {
     /// Returns a `Mutator<T>` based on the given `DataType`
     static func getMutator<T>(_ type: T.Type) -> Mutator<T> {
         
-        if type == Int.self || type == Int64.self {
+        if type == Int.self || type == Int64.self || type == Int32.self || type == UInt.self || type == UInt64.self || type == UInt32.self {
             return Mutator<T>(
                 setter: { packet, value in
                     var builder = dataPackageBuilderCopy(packet)

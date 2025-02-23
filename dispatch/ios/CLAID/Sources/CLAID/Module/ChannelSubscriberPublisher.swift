@@ -42,7 +42,6 @@ public actor ChannelSubscriberPublisher {
 
 
             
-        
         let publisher = Publisher(
             dataTypeExample: dataTypeExample,
             moduleId: moduleId,
