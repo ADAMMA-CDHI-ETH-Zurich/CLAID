@@ -43,6 +43,10 @@ class Mutator<T>: AbstractMutator {
 
     /// Overrides `AbstractMutator` method to retrieve payload as `Any`
     func getPackagePayloadAsObject(_ packet: Claidservice_DataPackage) -> Any {
-        return getPackagePayload(packet) as Any
+        
+        guard let value = getPackagePayload(packet) as? T else {
+            fatalError("Type mismatch: Expected \(T.self), but got \(packet.payload.messageType)")
+        }
+        return value
     }
 }

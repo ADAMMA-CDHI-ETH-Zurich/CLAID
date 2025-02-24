@@ -12,23 +12,23 @@ public actor FutureInfoStore : Sendable {
     
     var responsePackage: Claidservice_DataPackage? = nil
     
-    var callback: ((Claidservice_DataPackage?) -> Void)?
+    var callback: ((Claidservice_DataPackage?) async -> Void)?
     var callbackSet: Bool = false
     
     var futureUniqueIdentifier: FutureUniqueIdentifier
     
-    public init() {
-        
+    public init(futureUniqueIdentifier: FutureUniqueIdentifier) {
+        self.futureUniqueIdentifier = futureUniqueIdentifier
     }
     
-    public func setCallback(callback: ((Claidservice_DataPackage?) -> Void)? = nil) {
+    public func setCallback(callback: @escaping @Sendable ((Claidservice_DataPackage?) async -> Void)) {
         self.callback = callback
         self.callbackSet = true
     }
     
-    public func callCallbackIfSet() {
+    public func callCallbackIfSet() async {
         if callbackSet {
-            callback?(self.responsePackage)
+            await callback?(self.responsePackage)
         }
     }
     

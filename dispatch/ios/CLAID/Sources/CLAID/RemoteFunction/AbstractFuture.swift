@@ -7,26 +7,26 @@
 
 import Foundation
 
-protocol AbstractFuture : Actor {
+public protocol AbstractFuture : Actor {
     
     var futureInfoStore: FutureInfoStore { get }
     var futureTable: FuturesTable { get }
+        
+    func setResponse(_ response: Claidservice_DataPackage) async
     
-    init(futuresTable: FuturesTable, uniqueIdentifier: FutureUniqueIdentifier)
-    
-    func setResponse(_ response: Claidservice_DataPackage)
-    func setFailed()
-    
-    func wasExecutedSuccessfully() -> Bool
-    func awaitResponse() -> Claidservice_DataPackage
-    func awaitResponse(timeoutDuration: Duration) throws -> Claidservice_DataPackage
-    func getUniqueIdentifier() -> FutureUniqueIdentifier
+    func wasExecutedSuccessfully() async -> Bool
+    func awaitResponse() async -> Claidservice_DataPackage?
+    func awaitResponse(timeoutDuration: Duration) async -> Claidservice_DataPackage?
+    func getUniqueIdentifier() async -> FutureUniqueIdentifier
 }
 
 extension AbstractFuture {
    
+    public func awaitResponse() async -> Claidservice_DataPackage? {
+        return await awaitResponse(timeoutDuration: Duration.seconds(Int.max))
+    }
     
-    func awaitResponse(timeoutDuration: Duration) async -> Claidservice_DataPackage?  {
+    public func awaitResponse(timeoutDuration: Duration) async -> Claidservice_DataPackage?  {
         
         let timeoutTime = Date.now.advanced(by: timeoutDuration.timeInterval)
                 
@@ -39,30 +39,29 @@ extension AbstractFuture {
         return await futureInfoStore.successful ? await futureInfoStore.responsePackage : nil
     }
     
-    func thenUntyped(callback: @escaping (Claidservice_DataPackage?) -> Void) async {
+    public func thenUntyped(callback: @escaping @Sendable (Claidservice_DataPackage?) async -> Void) async {
         await futureInfoStore.setCallback(callback: callback)
     }
     
-    func setResponse(responsePackage: Claidservice_DataPackage) async {
-        await futureInfoStore.setResponsePackage(responsePackage)
+    public func setResponse(_ response: Claidservice_DataPackage) async {
         await futureInfoStore.setSuccessful(true)
-        await futureInfoStore.setResponsePackage(responsePackage)
+        await futureInfoStore.setResponsePackage(response)
         await futureInfoStore.callCallbackIfSet()
         await futureInfoStore.setSuccessful(true)
     }
     
-    func setFailed() async {
+    public func setFailed() async {
         await futureInfoStore.unsetResponsePackage()
         await futureInfoStore.setSuccessful(false)
         await futureInfoStore.callCallbackIfSet()
         await futureInfoStore.setFinished(true)
     }
     
-    func getUniqueIdentifier() async -> FutureUniqueIdentifier  {
+    public func getUniqueIdentifier() async -> FutureUniqueIdentifier  {
         return await futureInfoStore.futureUniqueIdentifier
     }
     
-    func wasExecutedSuccessfully() async -> Bool {
+    public func wasExecutedSuccessfully() async -> Bool {
         let successful = await futureInfoStore.successful
         let finished = await futureInfoStore.finished
         
