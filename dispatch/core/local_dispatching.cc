@@ -153,7 +153,7 @@ void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
         std::string connectionName;
         if(!moduleTable.lookupOutputConnectionForChannelOfModule(pkt.source_module(), pkt.channel(), connectionName))
         {
-            status = Status(grpc::NOT_FOUND, absl::StrCat("Could not find channel of Module\"", pkt.source_module(), "\" which connects to connection \"", 
+            status = Status(grpc::NOT_FOUND, absl::StrCat("Could not find channel of Module \"", pkt.source_module(), "\" which connects to connection \"", 
                             pkt.channel(), "\"."));
             Logger::logError("%s", status.error_message().c_str());
             return;

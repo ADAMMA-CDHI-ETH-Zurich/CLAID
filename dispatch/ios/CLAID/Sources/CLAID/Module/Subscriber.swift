@@ -27,7 +27,7 @@ public actor Subscriber<T: Sendable>: AbstractSubscriber {
     /// Calls the callback function on a background dispatcher
     private func invokeCallback(_ data: ChannelData<T>) async {
         
-       // await callback(data)
+        await callback(data)
         
     }
 

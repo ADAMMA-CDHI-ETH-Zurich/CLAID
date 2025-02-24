@@ -9,6 +9,8 @@ public protocol Module : Actor {
     
     func initialize(properties: Properties) async throws
     func terminate() async
+    func notifyConnectedToRemoteServer() async
+    func notifyDisconnectedFromRemoteServer() async
 }
 
 extension Module {
@@ -92,35 +94,6 @@ extension Module {
         print("All tasks cancelled.")
     }
     
-    public func setId(_ id: String) async {
-        await self.moduleHandle.setId(id)
-    }
-    
-    public func getId() async -> String {
-        return await moduleHandle.getId()
-    }
-    
-    public func setType(_ type: String) async {
-        await moduleHandle.setType(type)
-    }
-    
-    public func start(
-        subscriberPublisher: ChannelSubscriberPublisher,
-        remoteFunctionHandler: RemoteFunctionHandler,
-        properties: Properties
-    ) async throws {
-        await moduleHandle.setSubscribePublisher(subscriberPublisher)
-        await moduleHandle.setRemoteFunctionHandler(remoteFunctionHandler)
-        await moduleHandle.setProperties(properties)
-        
-        await moduleHandle.setInitialized(true)
-        try await initialize(properties: properties)
-    }
-    
-    public func shutdown() async {
-        await terminate()
-    }
-    
     func moduleFatal(_ error: String) async {
         let moduleId = await moduleHandle.getId()
         let errorMsg = "Module \(moduleId): \(error)"
@@ -149,5 +122,42 @@ extension Module {
         let moduleId = await moduleHandle.getId()
         let dbgMsg = "Module \(moduleId): \(debug)"
         Logger.log(.debugVerbose, dbgMsg, logMessageEntityType:.module, logMessageEntity:moduleId)
+    }
+    
+    public func setId(_ id: String) async {
+        await self.moduleHandle.setId(id)
+    }
+    
+    public func getId() async -> String {
+        return await moduleHandle.getId()
+    }
+    
+    public func setType(_ type: String) async {
+        await moduleHandle.setType(type)
+    }
+    
+    public func start(
+        subscriberPublisher: ChannelSubscriberPublisher,
+        remoteFunctionHandler: RemoteFunctionHandler,
+        properties: Properties
+    ) async throws {
+        await moduleHandle.setSubscribePublisher(subscriberPublisher)
+        await moduleHandle.setRemoteFunctionHandler(remoteFunctionHandler)
+        await moduleHandle.setProperties(properties)
+        
+        await moduleHandle.setInitialized(true)
+        try await initialize(properties: properties)
+    }
+    
+    public func shutdown() async {
+        await terminate()
+    }
+        
+    public func notifyConnectedToRemoteServer() async {
+        
+    }
+    
+    public func notifyDisconnectedFromRemoteServer() async {
+        
     }
 }

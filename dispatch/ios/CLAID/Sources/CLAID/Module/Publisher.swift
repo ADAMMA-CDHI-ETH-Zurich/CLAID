@@ -37,7 +37,6 @@ public actor Publisher<T> {
         // Apply the mutator to set the package payload
         dataPackage = mutator.setPackagePayload(packet: dataPackage, value: data)
 
-        Logger.logInfo("Yielding \(dataPackage)")
         // Send to the `AsyncStream`
         toModuleManagerQueue.yield(dataPackage)
     }

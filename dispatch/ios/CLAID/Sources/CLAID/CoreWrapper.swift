@@ -39,14 +39,21 @@ public func startCore(
 
 
 /// Initializes the core with an event tracker
-func startWithEventTracker(socketPath: String, configFile: String, hostID: String, userID: String, deviceID: String, commonDataPath: String) -> UnsafeMutableRawPointer?  {
+func startCoreWithEventTracker(socketPath: String, configFile: String, hostID: String, userID: String, deviceID: String, commonDataPath: String) -> UnsafeMutableRawPointer?  {
     let handle = socketPath.withCString { socketCStr in
         configFile.withCString { configCStr in
             hostID.withCString { hostCStr in
                 userID.withCString { userCStr in
                     deviceID.withCString { deviceCStr in
                         commonDataPath.withCString { commonDataCStr in
-                            start_core_with_event_tracker(socketCStr, configCStr, hostCStr, userCStr, deviceCStr, commonDataCStr)
+                            return start_core_with_event_tracker(
+                                socketCStr,
+                                configCStr,
+                                hostCStr,
+                                userCStr,
+                                deviceCStr,
+                                commonDataCStr
+                            )
                         }
                     }
                 }

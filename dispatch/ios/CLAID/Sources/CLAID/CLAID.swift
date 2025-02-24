@@ -21,7 +21,20 @@ public class CLAID {
         Logger.logInfo("Starting CLAID")
         let socketPath = "localhost:1337"
         
-        handle = startCore(socketPath: socketPath, configFile: configFile, hostID: hostID, userID: userID, deviceID: deviceID)
+        guard let documentsPathUri = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            throw CLAIDError("Failed to get documents directory URI.")
+        }
+        
+        let documentsPath = documentsPathUri.path
+
+        handle = startCoreWithEventTracker(
+            socketPath: socketPath,
+            configFile: configFile,
+            hostID: hostID,
+            userID: userID,
+            deviceID: deviceID,
+            commonDataPath: documentsPath
+        )
         
         if(handle == nil) {
             throw CLAIDError("Failed to start CLAID middleware, handle is null.")

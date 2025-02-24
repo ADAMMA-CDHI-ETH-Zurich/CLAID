@@ -12,7 +12,7 @@ public class Logger {
     
     static let logSeverityLevelToPrint: Claidservice_LogMessageSeverityLevel = .info
     
-    static func log(_ level: Claidservice_LogMessageSeverityLevel, _ message: Any, logMessageEntityType: Claidservice_LogMessageEntityType = .middleware, logMessageEntity: String = "SWIFT_RUNTIME") {
+    static func log(_ level: Claidservice_LogMessageSeverityLevel, _ message: String, logMessageEntityType: Claidservice_LogMessageEntityType = .middleware, logMessageEntity: String = "SWIFT_RUNTIME") {
         let logLevel: String = "\(level)"
         
         let output = "[\(getTimeString()) | \(logLevel.uppercased()) | CLAID Swift] \(message)\n"
@@ -29,24 +29,25 @@ public class Logger {
 
     }
     
-    static func logDebug(_ message: Any) {
+    static func logDebug(_ message: String) {
         log(.debugVerbose, message)
     }
     
-    static func logInfo(_ message: Any) {
+    static func logInfo(_ message: String) {
         log(.info, message)
     }
     
-    static func logWarning(_ message: Any) {
+    static func logWarning(_ message: String) {
         log(.warning, message)
     }
     
-    static func logError(_ message: Any) {
+    static func logError(_ message: String) {
         log(.error, message)
     }
     
-    static func logFatal(_ message: Any) {
+    static func logFatal(_ message: String) {
         log(.fatal, message)
+        fatalError(message)
     }
     
     static func getTimeString() -> String {
@@ -55,8 +56,8 @@ public class Logger {
         return formatter.string(from: Date())
     }
     
-    static func logThrowFatal(_ message: Any) throws {
+    static func logThrowFatal(_ message: String) throws {
         logFatal(message)
-        throw NSError(domain: "Logger", code: 1, userInfo: [NSLocalizedDescriptionKey: "\(message)"])
+        throw CLAIDError("\(message)")
     }
 }

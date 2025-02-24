@@ -27,7 +27,7 @@ public actor ChannelSubscriberPublisher {
         print("Preparing example package for channel: \(channelName) with data type: \(type(of: dataTypeExample))")
 
         let mutator = TypeMapping.getMutator(type(of: dataTypeExample))
-        mutator.setPackagePayload(packet: dataPackage, value: dataTypeExample)
+        dataPackage = mutator.setPackagePayload(packet: dataPackage, value: dataTypeExample)
 
         return dataPackage
     }
@@ -40,8 +40,6 @@ public actor ChannelSubscriberPublisher {
         print("Inserting package for Module \(moduleId)")
         examplePackagesForEachModule[moduleId, default: []].append(examplePackage)
 
-
-            
         let publisher = Publisher(
             dataTypeExample: dataTypeExample,
             moduleId: moduleId,
@@ -78,7 +76,7 @@ public actor ChannelSubscriberPublisher {
     }
 
     /// Checks if a `DataPackage` is compatible with a channel for a given receiver module
-    func isDataPackageCompatibleWithChannel(dataPackage: Claidservice_DataPackage, receiverModule: String) -> Bool {
+    func isDataPackageCompatibleWithChannel(dataPackage: Claidservice_DataPackage, receiverModule: String) async -> Bool {
         guard let examplePackages = examplePackagesForEachModule[receiverModule] else { return false }
 
         for templatePackage in examplePackages where templatePackage.channel == dataPackage.channel {

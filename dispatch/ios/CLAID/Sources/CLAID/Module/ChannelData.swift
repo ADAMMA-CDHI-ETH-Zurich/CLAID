@@ -20,6 +20,10 @@ public actor ChannelData<T: Sendable> : Sendable{
         self.userToken = userToken
         self.valid = true
     }
+    
+    func getData() async -> T {
+        return data
+    }
 
     /// Returns whether the data is valid
     func isValid() async -> Bool {

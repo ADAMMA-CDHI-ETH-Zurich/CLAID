@@ -8,7 +8,10 @@
                     "type": "TestModule",
                     "id": "TestMod",
                     "output_channels": {
-                        "OutputChannel": "OutputChannel"
+                        "OutputChannel": "Channel"
+                    },
+                    "input_channels": {
+                        "InputChannel": "Channel"
                     }
                 }
 			]

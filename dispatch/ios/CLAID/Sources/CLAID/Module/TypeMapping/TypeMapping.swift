@@ -24,7 +24,9 @@ class TypeMapping {
         builder.unixTimestampMs = p.unixTimestampMs
         builder.deviceID = p.deviceID
         
-        builder.controlVal = p.controlVal
+        if p.hasControlVal {
+            builder.controlVal = p.controlVal
+        }
         
         
         builder.tracePoints = p.tracePoints // Preserve trace points

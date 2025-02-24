@@ -52,7 +52,7 @@ message DataPackage {
   // Blob stores a payload in binary representation alongside a corresponding header.
   
   Blob payload = 12;
-  ControlPackage control_val = 13;
+  optional ControlPackage control_val = 13;
 }
 
 enum CtrlType {

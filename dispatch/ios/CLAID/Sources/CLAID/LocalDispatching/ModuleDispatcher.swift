@@ -128,7 +128,6 @@ actor ModuleDispatcher {
             var moduleChannels = Claidservice_InitRuntimeRequest.ModuleChannels()
             moduleChannels.moduleID = moduleId
             moduleChannels.channelPackets.append(contentsOf: dataPackages)
-            print("Adding \(dataPackages)")
             initRuntimeRequest.modules.append(moduleChannels)
         }
 
@@ -136,7 +135,7 @@ actor ModuleDispatcher {
 
         var resultReceived = false
 
-        Logger.logInfo("Swift Runtime: Calling initRuntime(...)")
+        Logger.logInfo("Swift Runtime: Calling initRuntime(...) \(initRuntimeRequest)")
         let response = try await stub.initRuntime(request: .init(message: initRuntimeRequest))
 
 
@@ -173,18 +172,26 @@ actor ModuleDispatcher {
         let result = try await stub.sendReceivePackages(request: request) { inStream in
             do {
                 for try await msg in inStream.messages {
+                    Logger.logInfo("awaiting pong")
                     if await pingPongWaiter.isWaiting() {
+                        Logger.logInfo("got pong 0")
+
                         if msg.hasControlVal && msg.controlVal.ctrlType == .ctrlRuntimePing {
+                            Logger.logInfo("got pong 1")
                             await pingPongWaiter.gotPong()
+                            Logger.logInfo("got pong 2")
+
                         } else {
                             throw CLAIDError("Received invalid package from middleware while waiting for ping response. Got \(msg) but awaited Control message with CTRL_RUNTIME_PING.")
                         }
                     } else {
+                        Logger.logInfo("On package received")
                         await self.onPackageReceivedFromMiddleware(msg)
                     }
                 }
             } catch {
                 // Optionally throw an error into the continuation
+                Logger.logFatal("Error in server stream: \(error)")
                 await self.fromMiddlewareContinuation.finish()
             }
             
@@ -197,6 +204,8 @@ actor ModuleDispatcher {
     
     func onPackageReceivedFromMiddleware(_ package: Claidservice_DataPackage) async {
         // Optional here we could handle further control package.
+        Logger.logInfo("Yielding!")
+
         await self.fromMiddlewareContinuation.yield(package)
     }
     

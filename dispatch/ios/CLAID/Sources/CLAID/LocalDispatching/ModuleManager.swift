@@ -27,12 +27,11 @@ actor ModuleManager {
         }
 
         print("Loaded Module with id \"\(moduleId)\" (class: \"\(moduleClass)\").")
-       /* guard let module = await moduleFactory.getInstance(className: moduleClass, moduleId: moduleId) else {
+        guard let module = await moduleFactory.getInstance(className: moduleClass, moduleId: moduleId) else {
             print("Failed to instantiate Module with id \"\(moduleId)\" (class: \"\(moduleClass)\").")
             return false
-        }*/
-        let module = TestModule()
-        await module.setId("Test")
+        }
+        
 
         runningModules[moduleId] = module
         return true
@@ -67,10 +66,15 @@ actor ModuleManager {
         return true
     }
 
-    func getTemplatePackagesOfModules() async -> [String: [Claidservice_DataPackage]] {
+    func getTemplatePackagesOfModules() async throws -> [String: [Claidservice_DataPackage]] {
         var moduleChannels: [String: [Claidservice_DataPackage]] = [:]
         for moduleId in runningModules.keys {
-            let templatePackagesForModule = await subscriberPublisher?.getChannelTemplatePackagesForModule(moduleId: moduleId) ?? []
+            
+            guard let subPub = subscriberPublisher else {
+                throw CLAIDError("Cannot get template packages of Channel, subscriberPublisher is null.")
+            }
+            
+            let templatePackagesForModule = await subPub.getChannelTemplatePackagesForModule(moduleId: moduleId) 
             moduleChannels[moduleId] = templatePackagesForModule
         }
         return moduleChannels
@@ -98,16 +102,18 @@ actor ModuleManager {
             return false
         }
 
-        let examplePackagesOfModules = await getTemplatePackagesOfModules()
+        let examplePackagesOfModules = try await getTemplatePackagesOfModules()
         try await dispatcher.initRuntime(channelExamplePackages: examplePackagesOfModules)
         
-        // This should block indefinitely?
-        try await dispatcher.sendReceivePackages()
         running = true
 
         Task {
             await self.readFromMiddleware()
         }
+        
+        // This should block indefinitely?
+        try await dispatcher.sendReceivePackages()
+        
 
         return true
     }
@@ -133,8 +139,96 @@ actor ModuleManager {
         }
     }
 
+   
     func onDataPackageReceivedFromMiddleware(dataPackage: Claidservice_DataPackage) async {
-       
+        if dataPackage.hasControlVal {
+            Logger.logInfo("ModuleManager received DataPackage with controlVal \(dataPackage.controlVal.ctrlType) (\(dataPackage.controlVal.ctrlType))")
+            await handlePackageWithControlVal(package: dataPackage)
+            return
+        }
+        
+        let channelName = dataPackage.channel
+        let moduleId = dataPackage.targetModule
+                
+        guard let subPub = subscriberPublisher else {
+            Logger.logFatal("Failed to process received data package. ChannelSubscriberPublisher is null.")
+            return
+        }
+        
+        if await !subPub.isDataPackageCompatibleWithChannel(dataPackage: dataPackage, receiverModule: moduleId) {
+            let payloadCaseName = dataPackage.payload.messageType
+            let expectedPayloadCaseName = await subPub.getPayloadCaseOfChannel(channelName: channelName, receiverModule: moduleId)
+            Logger.logFatal("ModuleManager received package with target for Module \(moduleId) on Channel \(channelName), " +
+                            "however the data type of payload of the package did not match the data type of the Channel. " +
+                            "Expected payload type \(expectedPayloadCaseName) but got \(payloadCaseName).")
+            return
+        }
+        
+        let subscriberList = await subPub.getSubscriberInstancesOfModule(channelName: channelName, moduleId: moduleId)
+        
+        for subscriber in subscriberList {
+            Logger.logInfo("Invoking subscriber \(subscriber)")
+            await subscriber.onNewData(dataPackage: dataPackage)
+        }
+    }
+
+    func handlePackageWithControlVal(package: Claidservice_DataPackage) async {
+        switch package.controlVal.ctrlType {
+        case .ctrlConnectedToRemoteServer:
+            for (_, module) in runningModules {
+                await module.notifyConnectedToRemoteServer()
+            }
+        case .ctrlDisconnectedFromRemoteServer:
+            for (_, module) in runningModules {
+                await module.notifyDisconnectedFromRemoteServer()
+            }
+        case .ctrlUnloadModules:
+            Logger.logFatal("Control message CTR_UNLOAD_MODULES not yet implemented.")
+            /*Logger.logInfo("ModuleManager received ControlPackage with code CTRL_UNLOAD_MODULES")
+            Logger.logInfo("Unloading modules!")
+            shutdownModules()
+            let response = DataPackage()
+            response.controlVal.ctrlType = .ctrlUnloadModulesDone
+            response.controlVal.runtime = .runtimeCpp
+            response.sourceHost = package.targetHost
+            response.targetHost = package.sourceHost
+            toModuleDispatcherQueue.append(response)
+            Logger.logInfo("Unloading modules done and acknowledgement will be sent out")*/
+        case .ctrlRestartRuntime:
+            Logger.logFatal("Control message CTRL_RESTART_RUNTIME not yet implemented.")
+
+            /*if let restartThread = restartThread {
+                restartThread.join()
+            }
+            restartThread = Thread {
+                self.restart()
+            }
+            restartThread?.start()
+            restartControlPackage = package*/
+        case .ctrlPauseModule:
+            Logger.logFatal("Control message CTRL_PAUSE_MODULE not yet implemented.")
+            /*if let module = runningModules[package.targetModule] {
+                module.pauseModule()
+            }*/
+        case .ctrlUnpauseModule:
+            Logger.logFatal("Control message CTRL_UNPAUSE_MODULE not yet implemented.")
+
+            /*if let module = runningModules[package.targetModule] {
+                module.resumeModule()
+            }*/
+        case .ctrlAdjustPowerProfile:
+            Logger.logFatal("Control message CTR_UNLOAD_MODULES not yet implemented.")
+
+            /*if let module = runningModules[package.targetModule] {
+                module.adjustPowerProfile(powerProfile: package.controlVal.powerProfile)
+            }*/
+        /*case .ctrlRemoteFunctionRequest:
+            handleRemoteFunctionRequest(package: package)
+        case .ctrlRemoteFunctionResponse:
+            handleRemoteFunctionResponse(package: package)*/
+        default:
+            break
+        }
     }
 
     /*func restart() async {
