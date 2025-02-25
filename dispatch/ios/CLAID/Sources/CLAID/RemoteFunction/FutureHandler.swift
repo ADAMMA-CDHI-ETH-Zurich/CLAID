@@ -38,7 +38,6 @@ public actor FutureHandler {
         return future
     }
     
-    // MARK: - Lookup
     
     /// Look up a stored future by its unique identifier.
     ///

@@ -29,23 +29,23 @@ public class Logger {
 
     }
     
-    static func logDebug(_ message: String) {
+    public static func logDebug(_ message: String) {
         log(.debugVerbose, message)
     }
     
-    static func logInfo(_ message: String) {
+    public static func logInfo(_ message: String) {
         log(.info, message)
     }
     
-    static func logWarning(_ message: String) {
+    public static func logWarning(_ message: String) {
         log(.warning, message)
     }
     
-    static func logError(_ message: String) {
+    public static func logError(_ message: String) {
         log(.error, message)
     }
     
-    static func logFatal(_ message: String) {
+    public static func logFatal(_ message: String) {
         log(.fatal, message)
         fatalError(message)
     }
@@ -56,7 +56,7 @@ public class Logger {
         return formatter.string(from: Date())
     }
     
-    static func logThrowFatal(_ message: String) throws {
+    public static func logThrowFatal(_ message: String) throws {
         logFatal(message)
         throw CLAIDError("\(message)")
     }

@@ -3,20 +3,17 @@
 import CLAIDNative
 import Foundation
 
-public class CLAID {
-    private var handle: UnsafeMutableRawPointer? = nil
-    private var c_runtime_handle: UnsafeMutableRawPointer? = nil
-    private var moduleDispatcher: ModuleDispatcher? = nil
-    private var moduleManager: ModuleManager? = nil
+public actor CLAID {
+    private static var handle: UnsafeMutableRawPointer? = nil
+    private static var c_runtime_handle: UnsafeMutableRawPointer? = nil
+    private static var moduleDispatcher: ModuleDispatcher? = nil
+    private static var moduleManager: ModuleManager? = nil
         
     public init() {
-        self.handle = nil
-        self.c_runtime_handle = nil
-        self.moduleDispatcher = nil
-        self.moduleManager = nil
+
     }
 
-    public func start(configFile: String, hostID: String, userID: String, deviceID: String, moduleFactory: ModuleFactory) async throws {
+    public static func start(configFile: String, hostID: String, userID: String, deviceID: String, moduleFactory: ModuleFactory) async throws {
         
         Logger.logInfo("Starting CLAID")
         let socketPath = "localhost:1337"
@@ -48,7 +45,7 @@ public class CLAID {
        try await attach_swift_runtime(socketPath: socketPath, moduleFactory: moduleFactory)
     }
     
-    func attach_swift_runtime(socketPath: String, moduleFactory: ModuleFactory) async throws {
+    static func attach_swift_runtime(socketPath: String, moduleFactory: ModuleFactory) async throws {
         
         try await self.moduleDispatcher = ModuleDispatcher(socketPath: socketPath)
         
@@ -67,5 +64,9 @@ public class CLAID {
         
         try await moduleManager.start()
         Logger.logInfo("CLAID has started")
+    }
+    
+    public static func getRemoteFunctionHandler() async -> RemoteFunctionHandler? {
+        return await self.moduleManager?.getRemoteFunctionHandler()
     }
 }

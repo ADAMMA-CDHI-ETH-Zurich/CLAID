@@ -82,7 +82,56 @@ extension Module {
                 channelName: channelName,
                 subscriber: subscriber
             )
+    }
+    
+    func mapRemoteFunctionOfModule<Return: Sendable, each Parameters>(
+        moduleId: String,
+        functionName: String,
+        returnTypeExample: Return,
+        _ parameterTypeExamples: repeat each Parameters
+    ) async throws
+        -> RemoteFunction<Return, repeat each Parameters>  {
+            
+        let id = await self.moduleHandle.getId()
+        if moduleId == id {
+            await moduleFatal("Cannot map remote function. Module tried to map function \"\(functionName)\" of itself, which is not allowed.")
+            //return RemoteFunction<Return, repeat each Parameters>.invalidRemoteFunction()
+            fatalError("Bla")
         }
+        guard let remoteFunctionHandler = await self.moduleHandle.remoteFunctionHandler else {
+            throw CLAIDError("Cannot map remote function of module, remoteFunctionHandler is null.")
+        }
+            
+            let remoteFunction = RemoteFunction(returnTypeExample: returnTypeExample, repeat each parameterTypeExamples)
+            
+        /*return await try remoteFunctionHandler.mapModuleFunction(
+            targetModule: moduleId,
+            functionName: functionName,
+            returnDataTypeExample: returnTypeExample,
+            parameterTypeExamples: repeat each parameterTypeExamples
+        )*/
+            return remoteFunction
+    }
+
+    /*func mapRemoteFunctionOfRuntime<Return, each Parameters>(
+        runtime: Claidservice_Runtime,
+        functionName: String,
+        returnTypeExample: Return,
+        parameterTypeExamples: repeat each Parameters
+    ) async throws -> RemoteFunction<Return, repeat each Parameters> {
+        guard let remoteFunctionHandler = await self.moduleHandle.remoteFunctionHandler else {
+            throw CLAIDError("Cannot map remote function of runtime, remoteFunctionHandler is null.")
+        }
+        let d = await remoteFunctionHandler.mapRuntimeFunction(
+            runtime: runtime,
+            functionName: functionName,
+            returnDataTypeExample: returnTypeExample,
+            parameterTypeExamples: repeat each parameterTypeExamples
+        )
+        return d
+    }*/
+
+    
 
     /// Cancels all tasks and clears the dictionary
     func cancelAllTasks() async {

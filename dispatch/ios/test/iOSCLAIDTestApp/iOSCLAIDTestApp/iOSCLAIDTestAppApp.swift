@@ -11,7 +11,7 @@ struct iOSCLAIDTestAppApp: App {
 }
 
 struct ContentView: View {
-    let claid = CLAID()
+  
 
     var body: some View {
         Text("Hello, world!")
@@ -40,7 +40,7 @@ struct ContentView: View {
                 let moduleFactory = ModuleFactory()
                 try await moduleFactory.registerModule(TestModule.self)
                 
-                try await claid.start(
+                try await CLAID.start(
                     configFile: testConfigPath,
                     hostID: "test_host",
                     userID: "test_user",

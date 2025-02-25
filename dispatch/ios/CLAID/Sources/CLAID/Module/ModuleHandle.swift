@@ -16,6 +16,10 @@ public actor ModuleHandle {
     public var properties: Properties?
     public var initialized: Bool = false
     
+    public init() {
+        
+    }
+
     public func addTask(_ name: String, _ task: Task<Void, Never>) {
         tasks[name] = task
     }

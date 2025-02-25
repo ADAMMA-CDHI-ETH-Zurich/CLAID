@@ -5,70 +5,84 @@
 //  Created by Patrick Langer on 23.02.2025.
 //
 
-
-class RemoteFunction<T> {
-    private var futuresHandler: FutureHandler?
-    private var toMiddlewareQueue: AsyncStream<Claidservice_DataPackage>.Continuation!
-    private var remoteFunctionIdentifier: Claidservice_RemoteFunctionIdentifier
-    private var mutatorHelpers: [AbstractMutator]
+actor RemoteFunction<Return: Sendable, each Parameters: Sendable> {
+    //private var futuresHandler: FutureHandler?
+    //private var toMiddlewareQueue: AsyncStream<Claidservice_DataPackage>.Continuation!
+    //private var remoteFunctionIdentifier: Claidservice_RemoteFunctionIdentifier
+    //private var mutatorHelpers: [AbstractMutator]
     private var valid: Bool
+        
+    private let returnTypeExample: Return?
+    private let parameterTypeExamples: (repeat each Parameters)
     
-    private let dataTypeExample: T?
-    
-    init() {
+   /* init() {
         self.valid = false
         self.futuresHandler = nil
         self.toMiddlewareQueue = nil
         self.remoteFunctionIdentifier = Claidservice_RemoteFunctionIdentifier()
         self.mutatorHelpers = []
-        self.dataTypeExample = nil
-    }
+        self.returnTypeExample = nil
+        self.parameterTypeExamples = nil
+    }*/
     
-    init(futuresHandler: FutureHandler, 
-         toMiddlewareQueue: AsyncStream<Claidservice_DataPackage>.Continuation,
-         remoteFunctionIdentifier: Claidservice_RemoteFunctionIdentifier,
-         mutatorHelpers: [AbstractMutator],
-         dataTypeExample: T
-    ) {
-        
-        self.futuresHandler = futuresHandler
-        self.toMiddlewareQueue = toMiddlewareQueue
-        self.remoteFunctionIdentifier = remoteFunctionIdentifier
-        self.mutatorHelpers = mutatorHelpers
-        self.dataTypeExample = dataTypeExample
+    init(//futuresHandler: FutureHandler,
+         //toMiddlewareQueue: AsyncStream<Claidservice_DataPackage>.Continuation,
+         //remoteFunctionIdentifier: Claidservice_RemoteFunctionIdentifier,
+        // mutatorHelpers: [AbstractMutator],
+         returnTypeExample: Return,
+         _ parameterTypeExamples: repeat each Parameters) {
+        //self.futuresHandler = futuresHandler
+        //self.toMiddlewareQueue = toMiddlewareQueue
+        //self.remoteFunctionIdentifier = remoteFunctionIdentifier
+        //self.mutatorHelpers = mutatorHelpers
+        self.returnTypeExample = returnTypeExample
+        self.parameterTypeExamples = (repeat each parameterTypeExamples)
         self.valid = true
     }
     
-    static func invalidRemoteFunction() -> RemoteFunction {
-        return RemoteFunction()
+    /*
+    static func invalidRemoteFunction() -> RemoteFunction<Return, repeat each Parameters> {
+        return RemoteFunction<Return, repeat each Parameters>()
+    }*/
+    
+    
+    func getNumParams() throws -> Int {
+        var count = 0
+        
+        
+           /* for _ in repeat each parameterTypeExamples{
+                count += 1
+            }
+            
+            return count */
+        return 0
     }
     
-    func execute<Params>(_ params: Params...) async throws -> Future<T>? {
+    /*func execute(_ params: repeat each Parameters) async throws -> Future<Return>? {
         guard valid else {
             throw CLAIDError("Failed to execute RemoteFunction. Function is not valid.")
-            return nil
         }
         
-        guard params.count == mutatorHelpers.count else {
-            throw CLAIDError("Number of parameters do not match. Expected \(mutatorHelpers.count), but got \(params.count)")
-            return nil
+        let paramCount = try getNumParams()
+        guard paramCount == mutatorHelpers.count else {
+            throw CLAIDError("Number of parameters do not match. Expected \(mutatorHelpers.count), but got \(paramCount)")
         }
         
         guard let futuresHandler = self.futuresHandler else {
             throw CLAIDError("Cannot execute RemoteFunction. FuturesHandler is null.")
         }
         
-        guard let dataTypeExample = self.dataTypeExample else {
+        guard let returnTypeExample = self.returnTypeExample else {
             throw CLAIDError("Cannot execute RemoteFunction. The dataTypeExample is null.")
         }
         
-        let future = await futuresHandler.registerNewFuture(dataTypeExample: dataTypeExample)
+        let future = await futuresHandler.registerNewFuture(dataTypeExample: returnTypeExample)
         var dataPackage = Claidservice_DataPackage()
         var controlPackage = Claidservice_ControlPackage()
         controlPackage.ctrlType = .ctrlRemoteFunctionRequest
         controlPackage.runtime = .swift
         
-        let remoteFunctionRequest = await makeRemoteFunctionRequest(future.getUniqueIdentifier().toString(), params)
+        await makeRemoteFunctionRequest(future.getUniqueIdentifier().toString(), params: repeat each params)
         
         switch remoteFunctionIdentifier.functionType {
             case .moduleID(let moduleID):
@@ -76,7 +90,7 @@ class RemoteFunction<T> {
             default:
                 break // Do nothing for other cases
         }
-
+        
         guard let toMiddlewareQueue = self.toMiddlewareQueue else {
             throw CLAIDError("Cannot execute RemoteFunction. Queue toMiddlewareQueue is null.")
         }
@@ -84,20 +98,24 @@ class RemoteFunction<T> {
         return future
     }
     
-    func callAsFunction<Params>(_ params: Params...) async throws -> Future<T>? {
-        return try await self.execute(params)
+    func callAsFunction(_ params: repeat each Parameters) async throws -> Future<Return>? {
+        return try await self.execute(repeat each params)
     }
     
-    private func makeRemoteFunctionRequest<Params>(_ futureIdentifier: String, _ params: [Params]) {
-        var request = Claidservice_RemoteFunctionRequest()
 
+    private func makeRemoteFunctionRequest(_ futureIdentifier: String, params: repeat each Parameters) {
+        var request = Claidservice_RemoteFunctionRequest()
+        
         request.remoteFunctionIdentifier = remoteFunctionIdentifier
         request.remoteFutureIdentifier = futureIdentifier
         
-        for (index, param) in params.enumerated() {
+        var index = 0
+        
+        for param in repeat each params {
             var stubPackage = Claidservice_DataPackage()
             stubPackage = mutatorHelpers[index].setPackagePayloadFromObject(stubPackage, object: param)
             request.parameterPayloads.append(stubPackage.payload)
+            index += 1
         }
-    }
+    }*/
 }

@@ -3,10 +3,9 @@ import Foundation
 actor ModuleManager {
     private let dispatcher: ModuleDispatcher
     private let moduleFactory: ModuleFactory
-    private let remoteFunctionHandler = RemoteFunctionHandler()
-    private let remoteFunctionRunnableHandler = RemoteFunctionRunnableHandler()
     
-
+    private var remoteFunctionHandler: RemoteFunctionHandler?
+    private var remoteFunctionRunnableHandler: RemoteFunctionRunnableHandler?
     private var runningModules: [String: Module] = [:]
     private var subscriberPublisher: ChannelSubscriberPublisher?
     private var running = false
@@ -15,9 +14,6 @@ actor ModuleManager {
     init(dispatcher: ModuleDispatcher, moduleFactory: ModuleFactory) {
         self.dispatcher = dispatcher
         self.moduleFactory = moduleFactory
-     // self.remoteFunctionHandler = RemoteFunctionHandler(fromModulesChannel: dispatcher.getFromModulesChannel())
-     // self.remoteFunctionRunnableHandler = RemoteFunctionRunnableHandler(runtime: "RUNTIME_SWIFT", fromModulesChannel: dispatcher.getFromModulesChannel())
-        
     }
 
     func instantiateModule(moduleId: String, moduleClass: String) async -> Bool {
@@ -48,6 +44,11 @@ actor ModuleManager {
     }
 
     func initializeModules(moduleList: Claidservice_ModuleListResponse, subscriberPublisher: ChannelSubscriberPublisher) async throws -> Bool {
+        
+        guard let remoteFunctionHandler = self.remoteFunctionHandler else {
+            throw CLAIDError("Cannot initialize modules, RemoteFunctionHandler is null.")
+        }
+        
         for descriptor in moduleList.descriptors {
             guard let module = runningModules[descriptor.moduleID] else {
                 print("Failed to initialize Module \"\(descriptor.moduleID)\" (class: \"\(descriptor.moduleClass)\").\nThe Module was not loaded.")
@@ -78,44 +79,6 @@ actor ModuleManager {
             moduleChannels[moduleId] = templatePackagesForModule
         }
         return moduleChannels
-    }
-
-    func start() async throws -> Bool {
-        let registeredModuleClasses = await moduleFactory.getRegisteredModuleClasses()
-
-
-
-        let moduleList = try await dispatcher.getModuleList(registeredModuleClasses: registeredModuleClasses)
-        print("Received ModuleListResponse: \(moduleList)")
-
-        if !(await instantiateModules(moduleList: moduleList)) {
-            print("ModuleDispatcher: Failed to instantiate Modules.")
-            return false
-        }
-
-        if subscriberPublisher == nil {
-            subscriberPublisher = await ChannelSubscriberPublisher(toModuleManagerQueue: dispatcher.getToMiddlewareContinuation())
-        }
-
-        if !(try await initializeModules(moduleList: moduleList, subscriberPublisher: subscriberPublisher!)) {
-            print("Failed to initialize Modules.")
-            return false
-        }
-
-        let examplePackagesOfModules = try await getTemplatePackagesOfModules()
-        try await dispatcher.initRuntime(channelExamplePackages: examplePackagesOfModules)
-        
-        running = true
-
-        Task {
-            await self.readFromMiddleware()
-        }
-        
-        // This should block indefinitely?
-        try await dispatcher.sendReceivePackages()
-        
-
-        return true
     }
 
     func shutdownModules() async {
@@ -265,7 +228,51 @@ actor ModuleManager {
         return runningModules[moduleId]
     }
 
-    func getRemoteFunctionHandler() -> RemoteFunctionHandler {
+    func getRemoteFunctionHandler() -> RemoteFunctionHandler? {
         return remoteFunctionHandler
     }
+    
+    func start() async throws -> Bool {
+        
+        self.remoteFunctionHandler = RemoteFunctionHandler(toMiddlewareQueue: await dispatcher.getToMiddlewareContinuation())
+        self.remoteFunctionRunnableHandler = RemoteFunctionRunnableHandler(
+            entityName: "RUNTIME_SWIFT",
+            toMiddlewareQueue: await dispatcher.getToMiddlewareContinuation()
+        )
+        
+        let registeredModuleClasses = await moduleFactory.getRegisteredModuleClasses()
+
+        let moduleList = try await dispatcher.getModuleList(registeredModuleClasses: registeredModuleClasses)
+        print("Received ModuleListResponse: \(moduleList)")
+
+        if !(await instantiateModules(moduleList: moduleList)) {
+            print("ModuleDispatcher: Failed to instantiate Modules.")
+            return false
+        }
+
+        if subscriberPublisher == nil {
+            subscriberPublisher = await ChannelSubscriberPublisher(toModuleManagerQueue: dispatcher.getToMiddlewareContinuation())
+        }
+
+        if !(try await initializeModules(moduleList: moduleList, subscriberPublisher: subscriberPublisher!)) {
+            print("Failed to initialize Modules.")
+            return false
+        }
+
+        let examplePackagesOfModules = try await getTemplatePackagesOfModules()
+        try await dispatcher.initRuntime(channelExamplePackages: examplePackagesOfModules)
+        
+        running = true
+
+        Task {
+            await self.readFromMiddleware()
+        }
+        
+        // This should block indefinitely?
+        try await dispatcher.sendReceivePackages()
+        
+
+        return true
+    }
+    
 }

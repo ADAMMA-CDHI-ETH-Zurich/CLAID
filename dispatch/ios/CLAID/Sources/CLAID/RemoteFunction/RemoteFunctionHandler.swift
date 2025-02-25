@@ -34,34 +34,41 @@ public actor RemoteFunctionHandler {
         remoteFunctionIdentifier.moduleID = moduleId
         return remoteFunctionIdentifier
     }
-    
-    func mapRuntimeFunction<Return>(
+    /*
+    func mapRuntimeFunction<Return, each Parameter>(
         runtime: Claidservice_Runtime,
         functionName: String,
-        returnDataTypeExample: Return
-    ) -> RemoteFunction<Return> {
+        returnDataTypeExample: Return,
+        parameterTypeExamples: repeat each Parameter
+    ) -> RemoteFunction<Return, repeat each Parameter> {
+        
+        
         return RemoteFunction(
             futuresHandler: futuresHandler,
             toMiddlewareQueue: toMiddlewareQueue,
             remoteFunctionIdentifier: makeRemoteFunctionIdentifier(runtime: runtime, functionName: functionName),
             mutatorHelpers: [],
-            dataTypeExample: returnDataTypeExample
+            returnTypeExample: returnDataTypeExample,
+            parameterTypeExamples: repeat each parameterTypeExamples
         )
     }
     
-    func mapModuleFunction<Return>(
+    func mapModuleFunction<Return, each Parameter>(
         targetModule: String,
         functionName: String,
-        returnDataTypeExample: Return
-    ) -> RemoteFunction<Return> {
+        returnDataTypeExample: Return,
+        parameterTypeExamples: repeat each Parameter
+    ) -> RemoteFunction<Return, repeat each Parameter> {
+
         return RemoteFunction(
             futuresHandler: futuresHandler,
             toMiddlewareQueue: toMiddlewareQueue,
             remoteFunctionIdentifier: makeRemoteFunctionIdentifier(moduleId: targetModule, functionName: functionName),
             mutatorHelpers: [],
-            dataTypeExample: returnDataTypeExample
+            returnTypeExample: returnDataTypeExample,
+            parameterTypeExamples: repeat each parameterTypeExamples
         )
-    }
+    }*/
     
     func handleResponse(_ remoteFunctionResponse: Claidservice_DataPackage) async {
         guard remoteFunctionResponse.controlVal.hasRemoteFunctionReturn else {
