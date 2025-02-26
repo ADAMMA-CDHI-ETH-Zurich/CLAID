@@ -186,10 +186,10 @@ actor ModuleManager {
             /*if let module = runningModules[package.targetModule] {
                 module.adjustPowerProfile(powerProfile: package.controlVal.powerProfile)
             }*/
-        /*case .ctrlRemoteFunctionRequest:
-            handleRemoteFunctionRequest(package: package)
+        case .ctrlRemoteFunctionRequest:
+            await handleRemoteFunctionRequest(package)
         case .ctrlRemoteFunctionResponse:
-            handleRemoteFunctionResponse(package: package)*/
+            await handleRemoteFunctionResponse(package)
         default:
             break
         }

@@ -34,10 +34,15 @@ public actor TestModule : Module {
         
         let function = try await self.mapRemoteFunctionOfRuntime(
             runtime: .middlewareCore,
-            functionName: "is_connected_to_remote_server",
-            returnTypeExample: Bool()
+            functionName: "get_all_running_modules_of_all_runtimes",
+            returnTypeExample: Dictionary<String, String>()
         )
-        try await function()
+        
+        Task {
+            let result = try await function()
+            Logger.logInfo("Got result \(result)")
+        }
+        
     }
     
     private func count() async {

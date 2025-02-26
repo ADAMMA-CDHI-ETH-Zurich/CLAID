@@ -97,8 +97,12 @@ public final class RemoteFunction<Return: Sendable, each Parameters: Sendable> :
         return future
     }
     
-    func callAsFunction(_ params: repeat each Parameters) async throws -> Future<Return>? {
-        return try await self.execute(repeat each params)
+    func callAsFunction(_ params: repeat each Parameters) async throws -> Return? {
+        guard let future = try await self.execute(repeat each params) else {
+            return nil
+        }
+        
+        return try await future()
     }
     
 

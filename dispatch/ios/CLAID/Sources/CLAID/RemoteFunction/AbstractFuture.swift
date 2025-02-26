@@ -23,19 +23,24 @@ public protocol AbstractFuture : Actor {
 extension AbstractFuture {
    
     public func awaitResponse() async -> Claidservice_DataPackage? {
-        return await awaitResponse(timeoutDuration: Duration.seconds(Int.max))
+
+        let res =  await awaitResponse(timeoutDuration: Duration.seconds(Int.max))
+        return res
+
     }
     
     public func awaitResponse(timeoutDuration: Duration) async -> Claidservice_DataPackage?  {
         
         let timeoutTime = Date.now.advanced(by: timeoutDuration.timeInterval)
-                
+
         while await !futureInfoStore.finished {
+
             if Date.now > timeoutTime {
                 await futureInfoStore.setSuccessful(false)
             }
+
         }
-        
+
         return await futureInfoStore.successful ? await futureInfoStore.responsePackage : nil
     }
     
@@ -44,10 +49,11 @@ extension AbstractFuture {
     }
     
     public func setResponse(_ response: Claidservice_DataPackage) async {
+
         await futureInfoStore.setSuccessful(true)
         await futureInfoStore.setResponsePackage(response)
         await futureInfoStore.callCallbackIfSet()
-        await futureInfoStore.setSuccessful(true)
+        await futureInfoStore.setFinished(true)
     }
     
     public func setFailed() async {

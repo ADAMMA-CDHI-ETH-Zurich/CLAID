@@ -72,21 +72,27 @@ public actor RemoteFunctionHandler {
             print("Failed to handle remote function response. Did not find RemoteFunctionReturn data")
             return
         }
-        
+        Logger.logInfo("RemoteFunctionHandler handling response 1")
+
         let remoteFunctionReturn = remoteFunctionResponse.controlVal.remoteFunctionReturn
         let futureIdentifier = remoteFunctionReturn.remoteFutureIdentifier
         let uniqueIdentifier = FutureUniqueIdentifier.fromString(futureIdentifier)
-        
+        Logger.logInfo("RemoteFunctionHandler handling response 2")
+
         guard let future = await futuresHandler.lookupFuture(identifier: uniqueIdentifier) else {
             return
         }
-        
+        Logger.logInfo("RemoteFunctionHandler handling response 3")
+
         if remoteFunctionReturn.executionStatus != .statusOk {
             Logger.logWarning("Remote function failed. Future with identifier \(futureIdentifier) failed with status \(remoteFunctionReturn.executionStatus)")
             await future.setFailed()
             return
         }
-        
+        Logger.logInfo("RemoteFunctionHandler handling response 4")
+
         await future.setResponse(remoteFunctionResponse)
+        Logger.logInfo("RemoteFunctionHandler handling response 5")
+
     }
 }

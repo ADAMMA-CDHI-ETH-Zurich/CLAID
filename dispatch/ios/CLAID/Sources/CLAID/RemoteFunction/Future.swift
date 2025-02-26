@@ -21,12 +21,9 @@ public actor Future<T: Sendable>: AbstractFuture {
     private let dataTypeExample: T
     private let mutator: Mutator<T>
 
-    // You may have (or need) a way to convert from Claidservice_DataPackage -> T.
-    // In C++ code, this was done via Mutator<T>. 
-    // Here, you might define a protocol or static function that does the same. 
-    // For simplicity, below is a placeholder function:
     private func decodePayload(_ dataPackage: Claidservice_DataPackage) -> T {
-        return self.mutator.getPackagePayload(dataPackage)
+        let data = self.mutator.getPackagePayload(dataPackage)
+        return data
     }
     
     
@@ -41,11 +38,11 @@ public actor Future<T: Sendable>: AbstractFuture {
     public func callAsFunction() async -> T? {
         // calls out to your existing `awaitResponse()`
         let responsePackage = await self.awaitResponse()
-        
+
         guard let package = responsePackage, await self.wasExecutedSuccessfully() else {
             return nil
         }
-        
+
         return decodePayload(package)
     }
     
