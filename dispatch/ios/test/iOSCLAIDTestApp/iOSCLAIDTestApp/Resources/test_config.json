@@ -13,6 +13,10 @@
                     "input_channels": {
                         "InputChannel": "Channel"
                     }
+                },
+                {
+                    "type": "TestModule2",
+                    "id": "TestMod2"
                 }
 			]
 		}

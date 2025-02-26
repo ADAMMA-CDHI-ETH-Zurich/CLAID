@@ -5,22 +5,25 @@
 //  Created by Patrick Langer on 23.02.2025.
 //
 
-class RemoteFunctionRunnable<ReturnType, each Parameter> : AbstractRemoteFunctionRunnable {
+public final class RemoteFunctionRunnable<ReturnType: Sendable, each Parameter: Sendable> : AbstractRemoteFunctionRunnable {
     private let functionName: String
-    private let function: (repeat each Parameter) -> ReturnType
-    private var mutatorHelpers: [AbstractMutator]
-    private var params: (repeat each Parameter)
+    private let function: @Sendable (repeat each Parameter) -> ReturnType
+    private let mutatorHelpers: [AbstractMutator]
+    private let params: (repeat each Parameter)
     
     init(functionName: String,
-         paramExamples: (repeat each Parameter),
-         function: @escaping (repeat each Parameter) -> ReturnType) {
+         returnTypeExample: ReturnType,
+         paramExamples: repeat each Parameter,
+         function: @escaping @Sendable (repeat each Parameter) -> ReturnType) {
         
         self.functionName = functionName
         self.function = function
-        self.mutatorHelpers = []
+         
+        var helpers: [AbstractMutator] = []
+        repeat helpers.append(TypeMapping.getMutator(type(of: each paramExamples)))
+        self.mutatorHelpers = helpers
         
-        repeat self.mutatorHelpers.append(TypeMapping.getMutator(type(of: each paramExamples)))
-        self.params = paramExamples
+        self.params = (repeat each paramExamples)
     }
     
     func executeRemoteFunctionRequest(_ rpcRequest: Claidservice_DataPackage) -> Claidservice_DataPackage? {
@@ -34,7 +37,7 @@ class RemoteFunctionRunnable<ReturnType, each Parameter> : AbstractRemoteFunctio
         }
      
         var count = 0
-        let xx =  (repeat unpack(each params, &count))
+        let xx =  (repeat unpack(each params, &count, parameterPayloads))
 
         // We'll use a helper function to unpack and cast parameters
         /*guard let parameters = unpackParameters(payloads: parameterPayloads, repeat each self.params) else {
@@ -42,7 +45,7 @@ class RemoteFunctionRunnable<ReturnType, each Parameter> : AbstractRemoteFunctio
             return nil
         }*/
         
-        let result: ReturnType = function(repeat each self.params)
+        let result: ReturnType = function(repeat each xx)
         let remoteFunctionResult = RemoteFunctionRunnableResult.makeSuccessfulResult(result)
         return makeRPCResponsePackage(result: remoteFunctionResult, rpcRequest: rpcRequest)
     }
@@ -68,8 +71,13 @@ class RemoteFunctionRunnable<ReturnType, each Parameter> : AbstractRemoteFunctio
         return params
     }
     
-    func unpack<T>(_ val: T, _ idx: inout Int) -> T {
-        idx += 1
+    func unpack<T>(_ paramExample: T, _ index: inout Int, _ payloads: [Claidservice_Blob]) -> T {
+        var stubPackage = Claidservice_DataPackage()
+        
+        stubPackage.payload = payloads[index]
+        let helper = mutatorHelpers[index]
+        let val = helper.getPackagePayloadAsObject(stubPackage) as! T
+        index += 1
         return val
     }
     
@@ -88,7 +96,7 @@ class RemoteFunctionRunnable<ReturnType, each Parameter> : AbstractRemoteFunctio
             
             let executionRequest = rpcRequest.controlVal.remoteFunctionRequest
             ctrlPackage.remoteFunctionReturn = makeRemoteFunctionReturn(result: result, executionRequest: executionRequest)
-            
+            responsePackage.controlVal = ctrlPackage
             setReturnPackagePayload(package: &responsePackage, result: result)
             
             return responsePackage

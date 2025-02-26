@@ -82,13 +82,13 @@ class TypeMapping {
                 setter: { packet, value in
                     var builder = dataPackageBuilderCopy(packet)
                     var val = Claidservice_IntVal()
-                    val.val = value as! Int64
+                    val.val = Int64(value as! Int)
                     return setProtoPayload(builder, val)
                 },
                 getter: { packet in
                     
                     let val = getProtoPayload(packet, Claidservice_IntVal())!
-                    return val.val as! T
+                    return Int(truncatingIfNeeded: val.val) as! T
                 }
             )
         }

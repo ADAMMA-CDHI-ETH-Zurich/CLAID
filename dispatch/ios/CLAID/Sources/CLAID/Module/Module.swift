@@ -164,6 +164,28 @@ extension Module {
         }
     }
 
+    func registerRemoteFunction<ReturnType: Sendable, each Parameter: Sendable>(
+        functionName: String,
+        returnTypeExample: ReturnType,
+        _ paramExamples: repeat each Parameter,
+        function: @escaping @Sendable (repeat each Parameter) -> ReturnType
+    ) async throws {
+    
+        
+        guard let remoteFunctionRunnableHandler = await self.moduleHandle.remoteFunctionRunnableHandler else {
+            throw CLAIDError("Failed to register remote function \"\(functionName)\". The remoteFunctionRunnableHandler of the Module is null.")
+        }
+        
+        let runnable = RemoteFunctionRunnable<ReturnType, repeat each Parameter>(
+            functionName: functionName,
+            returnTypeExample: returnTypeExample,
+            paramExamples: repeat each paramExamples,
+            function: function
+        )
+        
+        await remoteFunctionRunnableHandler.registerRunnable(functionName: functionName, runnable: runnable)
+    }
+    
     /// Cancels all tasks and clears the dictionary
     func cancelAllTasks() async {
         for (name, task) in await moduleHandle.tasks {
@@ -226,7 +248,8 @@ extension Module {
         await moduleHandle.setProperties(properties)
         
         let queue = subscriberPublisher.toModuleManagerQueue
-        let remoteFunctionHandler = RemoteFunctionHandler(toMiddlewareQueue: queue)
+        let remoteFunctionRunnableHandler = RemoteFunctionRunnableHandler(entityName: await getId(), toMiddlewareQueue: queue)
+        await moduleHandle.setRemoteFunctionRunnableHandler(remoteFunctionRunnableHandler)
         
         await moduleHandle.setInitialized(true)
         try await initialize(properties: properties)

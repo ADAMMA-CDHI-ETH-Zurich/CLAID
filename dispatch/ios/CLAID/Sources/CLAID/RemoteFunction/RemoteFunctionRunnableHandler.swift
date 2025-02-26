@@ -26,8 +26,7 @@ public actor RemoteFunctionRunnableHandler : Sendable {
     /// - Returns: True if registration succeeds, false if the function is already registered.
     func registerRunnable<ReturnType, each Parameter>(
         functionName: String,
-        paramExamples: repeat each Parameter,
-        function: @escaping (repeat each Parameter) -> ReturnType
+        runnable: RemoteFunctionRunnable<ReturnType, repeat each Parameter>
     ) -> Bool {
         if registeredRunnables[functionName] != nil {
             print("Failed to register function \"\(functionName)\" in entity \"\(entityName)\". Function already registered before.")
@@ -44,7 +43,7 @@ public actor RemoteFunctionRunnableHandler : Sendable {
             function: function
         )*/
         
-       // registeredRunnables[functionName] = runnable
+        registeredRunnables[functionName] = runnable
         return true
     }
 

@@ -8,9 +8,9 @@
 public actor TestModule : Module {
   
     public var moduleHandle: ModuleHandle = ModuleHandle()
-    private var ctr: Int64 = 0
-    private var inputChannel: Channel<Int64>?
-    private var outputChannel: Channel<Int64>?
+    private var ctr: Int = 0
+    private var inputChannel: Channel<Int>?
+    private var outputChannel: Channel<Int>?
     
     public init() {
     
@@ -19,8 +19,8 @@ public actor TestModule : Module {
     public func initialize(properties: Properties) async throws {
         
         //chan = try await self.subscribe("Test", dataTypeExample: Claidservice_NumberMap(), callback: self.onData)
-        inputChannel = try await self.subscribe("InputChannel", dataTypeExample: Int64(), callback: self.onData)
-        outputChannel = try await self.publish("OutputChannel", dataTypeExample: Int64())
+        inputChannel = try await self.subscribe("InputChannel", dataTypeExample: Int(), callback: self.onData)
+        outputChannel = try await self.publish("OutputChannel", dataTypeExample: Int())
         
         // await registerPeriodicFunction(name: "TestFunc", interval: .seconds(1), function: self.count)
         
@@ -32,7 +32,7 @@ public actor TestModule : Module {
         
         //try await function(42, 15)
         
-        let function = try await self.mapRemoteFunctionOfRuntime(
+        /*let function = try await self.mapRemoteFunctionOfRuntime(
             runtime: .middlewareCore,
             functionName: "get_all_running_modules_of_all_runtimes",
             returnTypeExample: Dictionary<String, String>()
@@ -40,6 +40,15 @@ public actor TestModule : Module {
         
         Task {
             let result = try await function()
+            Logger.logInfo("Got result \(result)")
+        }*/
+        
+        let function = try await self.mapRemoteFunctionOfModule(
+            moduleId: "TestMod2", functionName: "test_function",
+            returnTypeExample: String(), Int(), String());
+        
+        Task {
+            let result = try await function(42, "Hello")
             Logger.logInfo("Got result \(result)")
         }
         
@@ -50,7 +59,7 @@ public actor TestModule : Module {
         await self.outputChannel?.post(self.ctr)
     }
     
-    private func onData(data: ChannelData<Int64>) async {
+    private func onData(data: ChannelData<Int>) async {
         await moduleInfo("Received value \(await data.getData())")
     }
     

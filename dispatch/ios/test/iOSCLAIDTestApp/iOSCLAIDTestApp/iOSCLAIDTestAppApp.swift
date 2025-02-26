@@ -39,6 +39,7 @@ struct ContentView: View {
                 
                 let moduleFactory = ModuleFactory()
                 try await moduleFactory.registerModule(TestModule.self)
+                try await moduleFactory.registerModule(TestModule2.self)
                 
                 try await CLAID.start(
                     configFile: testConfigPath,
