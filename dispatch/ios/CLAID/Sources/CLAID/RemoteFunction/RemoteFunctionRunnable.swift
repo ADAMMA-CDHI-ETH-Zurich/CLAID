@@ -37,15 +37,10 @@ public final class RemoteFunctionRunnable<ReturnType: Sendable, each Parameter: 
         }
      
         var count = 0
-        let xx =  (repeat unpack(each params, &count, parameterPayloads))
+        let parameter = (repeat unpack(each params, &count, parameterPayloads))
 
-        // We'll use a helper function to unpack and cast parameters
-        /*guard let parameters = unpackParameters(payloads: parameterPayloads, repeat each self.params) else {
-            print("Failed to unpack parameters for \(functionName)")
-            return nil
-        }*/
         
-        let result: ReturnType = function(repeat each xx)
+        let result: ReturnType = function(repeat each parameter)
         let remoteFunctionResult = RemoteFunctionRunnableResult.makeSuccessfulResult(result)
         return makeRPCResponsePackage(result: remoteFunctionResult, rpcRequest: rpcRequest)
     }
