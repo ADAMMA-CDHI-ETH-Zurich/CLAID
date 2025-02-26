@@ -5,17 +5,17 @@
 //  Created by Patrick Langer on 23.02.2025.
 //
 
-actor RemoteFunction<Return: Sendable, each Parameters: Sendable> {
-    //private var futuresHandler: FutureHandler?
-    //private var toMiddlewareQueue: AsyncStream<Claidservice_DataPackage>.Continuation!
-    //private var remoteFunctionIdentifier: Claidservice_RemoteFunctionIdentifier
-    //private var mutatorHelpers: [AbstractMutator]
-    private var valid: Bool
+public final class RemoteFunction<Return: Sendable, each Parameters: Sendable> : Sendable {
+    private let futuresHandler: FutureHandler?
+    private let toMiddlewareQueue: AsyncStream<Claidservice_DataPackage>.Continuation!
+    private let remoteFunctionIdentifier: Claidservice_RemoteFunctionIdentifier
+    private let mutatorHelpers: [AbstractMutator]
+    private let valid: Bool
         
     private let returnTypeExample: Return?
-    private let parameterTypeExamples: (repeat each Parameters)
+    private let parameterTypeExamples: (repeat each Parameters)?
     
-   /* init() {
+    init() {
         self.valid = false
         self.futuresHandler = nil
         self.toMiddlewareQueue = nil
@@ -23,42 +23,39 @@ actor RemoteFunction<Return: Sendable, each Parameters: Sendable> {
         self.mutatorHelpers = []
         self.returnTypeExample = nil
         self.parameterTypeExamples = nil
-    }*/
+    }
     
-    init(//futuresHandler: FutureHandler,
-         //toMiddlewareQueue: AsyncStream<Claidservice_DataPackage>.Continuation,
-         //remoteFunctionIdentifier: Claidservice_RemoteFunctionIdentifier,
-        // mutatorHelpers: [AbstractMutator],
+    init(futuresHandler: FutureHandler,
+         toMiddlewareQueue: AsyncStream<Claidservice_DataPackage>.Continuation,
+         remoteFunctionIdentifier: Claidservice_RemoteFunctionIdentifier,
          returnTypeExample: Return,
-         _ parameterTypeExamples: repeat each Parameters) {
-        //self.futuresHandler = futuresHandler
-        //self.toMiddlewareQueue = toMiddlewareQueue
-        //self.remoteFunctionIdentifier = remoteFunctionIdentifier
-        //self.mutatorHelpers = mutatorHelpers
+         parameterTypeExamples: repeat each Parameters) {
+        self.futuresHandler = futuresHandler
+        self.toMiddlewareQueue = toMiddlewareQueue
+        self.remoteFunctionIdentifier = remoteFunctionIdentifier
         self.returnTypeExample = returnTypeExample
         self.parameterTypeExamples = (repeat each parameterTypeExamples)
         self.valid = true
+        
+        var mutators: [AbstractMutator] = []
+        for param in repeat each parameterTypeExamples {
+            let mutator = TypeMapping.getMutator(type(of: param))
+            mutators.append(mutator)
+        }
+        self.mutatorHelpers = mutators
     }
     
-    /*
+    
     static func invalidRemoteFunction() -> RemoteFunction<Return, repeat each Parameters> {
         return RemoteFunction<Return, repeat each Parameters>()
-    }*/
+    }
     
     
     func getNumParams() throws -> Int {
-        var count = 0
-        
-        
-           /* for _ in repeat each parameterTypeExamples{
-                count += 1
-            }
-            
-            return count */
-        return 0
+        return self.mutatorHelpers.count
     }
     
-    /*func execute(_ params: repeat each Parameters) async throws -> Future<Return>? {
+    func execute(_ params: repeat each Parameters) async throws -> Future<Return>? {
         guard valid else {
             throw CLAIDError("Failed to execute RemoteFunction. Function is not valid.")
         }
@@ -81,9 +78,11 @@ actor RemoteFunction<Return: Sendable, each Parameters: Sendable> {
         var controlPackage = Claidservice_ControlPackage()
         controlPackage.ctrlType = .ctrlRemoteFunctionRequest
         controlPackage.runtime = .swift
+        dataPackage.controlVal = controlPackage
         
-        await makeRemoteFunctionRequest(future.getUniqueIdentifier().toString(), params: repeat each params)
-        
+        let request = await makeRemoteFunctionRequest(future.getUniqueIdentifier().toString(), params: repeat each params)
+        dataPackage.controlVal.remoteFunctionRequest = request
+
         switch remoteFunctionIdentifier.functionType {
             case .moduleID(let moduleID):
                 dataPackage.targetModule = remoteFunctionIdentifier.moduleID
@@ -103,7 +102,7 @@ actor RemoteFunction<Return: Sendable, each Parameters: Sendable> {
     }
     
 
-    private func makeRemoteFunctionRequest(_ futureIdentifier: String, params: repeat each Parameters) {
+    private func makeRemoteFunctionRequest(_ futureIdentifier: String, params: repeat each Parameters) -> Claidservice_RemoteFunctionRequest {
         var request = Claidservice_RemoteFunctionRequest()
         
         request.remoteFunctionIdentifier = remoteFunctionIdentifier
@@ -117,5 +116,6 @@ actor RemoteFunction<Return: Sendable, each Parameters: Sendable> {
             request.parameterPayloads.append(stubPackage.payload)
             index += 1
         }
-    }*/
+        return request
+    }
 }

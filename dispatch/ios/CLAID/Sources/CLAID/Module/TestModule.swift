@@ -22,7 +22,22 @@ public actor TestModule : Module {
         inputChannel = try await self.subscribe("InputChannel", dataTypeExample: Int64(), callback: self.onData)
         outputChannel = try await self.publish("OutputChannel", dataTypeExample: Int64())
         
-        await registerPeriodicFunction(name: "TestFunc", interval: .seconds(1), function: self.count)
+        // await registerPeriodicFunction(name: "TestFunc", interval: .seconds(1), function: self.count)
+        
+        /*let function = try await self.mapRemoteFunctionOfModule(
+         moduleId: "TestMod23",
+         functionName: "func_1_",
+         returnTypeExample: String(),
+         Int64(), Int64())*/
+        
+        //try await function(42, 15)
+        
+        let function = try await self.mapRemoteFunctionOfRuntime(
+            runtime: .middlewareCore,
+            functionName: "is_connected_to_remote_server",
+            returnTypeExample: Bool()
+        )
+        try await function()
     }
     
     private func count() async {

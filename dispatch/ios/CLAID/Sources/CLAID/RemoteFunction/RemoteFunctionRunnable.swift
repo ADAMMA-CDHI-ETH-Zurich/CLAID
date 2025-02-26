@@ -7,18 +7,20 @@
 
 class RemoteFunctionRunnable<ReturnType, each Parameter> : AbstractRemoteFunctionRunnable {
     private let functionName: String
-    private let function: ([(repeat each Parameter)]) -> ReturnType
+    private let function: (repeat each Parameter) -> ReturnType
     private var mutatorHelpers: [AbstractMutator]
+    private var params: (repeat each Parameter)
     
     init(functionName: String,
-         paramExamples: repeat each Parameter,
-         function: @escaping ([(repeat each Parameter)]) -> ReturnType) {
+         paramExamples: (repeat each Parameter),
+         function: @escaping (repeat each Parameter) -> ReturnType) {
         
         self.functionName = functionName
         self.function = function
         self.mutatorHelpers = []
         
         repeat self.mutatorHelpers.append(TypeMapping.getMutator(type(of: each paramExamples)))
+        self.params = paramExamples
     }
     
     func executeRemoteFunctionRequest(_ rpcRequest: Claidservice_DataPackage) -> Claidservice_DataPackage? {
@@ -30,32 +32,45 @@ class RemoteFunctionRunnable<ReturnType, each Parameter> : AbstractRemoteFunctio
             print("Failed to execute RemoteFunctionRunnable \(functionName). Number of parameters do not match.")
             return nil
         }
-        
+     
+        var count = 0
+        let xx =  (repeat unpack(each params, &count))
+
         // We'll use a helper function to unpack and cast parameters
-        guard let parameters = unpackParameters(payloads: parameterPayloads) else {
+        /*guard let parameters = unpackParameters(payloads: parameterPayloads, repeat each self.params) else {
             print("Failed to unpack parameters for \(functionName)")
             return nil
-        }
+        }*/
         
-        let result: ReturnType = function(parameters)
+        let result: ReturnType = function(repeat each self.params)
         let remoteFunctionResult = RemoteFunctionRunnableResult.makeSuccessfulResult(result)
         return makeRPCResponsePackage(result: remoteFunctionResult, rpcRequest: rpcRequest)
     }
     
     // Helper function to bridge runtime data to static types
-    private func unpackParameters(payloads: [Claidservice_Blob]) -> [(repeat each Parameter)]? {
+    private func unpackParameters(payloads: [Claidservice_Blob], _ par: (repeat each Parameter)) -> (repeat each Parameter) {
         // This is the tricky part - we need to map runtime data to the compile-time Parameter pack
-        var parameters: [Any] = []
         
-        for (index, helper) in mutatorHelpers.enumerated() {
+       // let xx =  (repeat unpack(each params))
+        
+        /*var index = 0
+        for var param in repeat each self.params {
             var stubPackage = Claidservice_DataPackage()
             stubPackage.payload = payloads[index]
-            let param = helper.getPackagePayloadAsObject(stubPackage)
-            parameters.append(param)
+            let helper = mutatorHelpers[index]
+            param = repeat helper.getPackagePayloadAsObject(stubPackage) as! each Parameter
+            index += 1
         }
         
+        return ()
+        */
         // This is a conceptual placeholder - actual casting to [(repeat each Parameter)] is complex
-        return parameters as? [(repeat each Parameter)]
+        return params
+    }
+    
+    func unpack<T>(_ val: T, _ idx: inout Int) -> T {
+        idx += 1
+        return val
     }
     
     private func makeRPCResponsePackage(

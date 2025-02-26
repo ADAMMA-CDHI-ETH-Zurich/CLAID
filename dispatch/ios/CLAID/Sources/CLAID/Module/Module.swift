@@ -84,13 +84,13 @@ extension Module {
             )
     }
     
-    func mapRemoteFunctionOfModule<Return: Sendable, each Parameters>(
+    func mapRemoteFunctionOfModule<Return: Sendable, each Parameters: Sendable>(
         moduleId: String,
         functionName: String,
         returnTypeExample: Return,
         _ parameterTypeExamples: repeat each Parameters
-    ) async throws
-        -> RemoteFunction<Return, repeat each Parameters>  {
+    ) async throws -> RemoteFunction<Return, repeat each Parameters>  {
+            
             
         let id = await self.moduleHandle.getId()
         if moduleId == id {
@@ -101,19 +101,23 @@ extension Module {
         guard let remoteFunctionHandler = await self.moduleHandle.remoteFunctionHandler else {
             throw CLAIDError("Cannot map remote function of module, remoteFunctionHandler is null.")
         }
-            
-            let remoteFunction = RemoteFunction(returnTypeExample: returnTypeExample, repeat each parameterTypeExamples)
-            
-        /*return await try remoteFunctionHandler.mapModuleFunction(
-            targetModule: moduleId,
-            functionName: functionName,
-            returnDataTypeExample: returnTypeExample,
-            parameterTypeExamples: repeat each parameterTypeExamples
-        )*/
-            return remoteFunction
+                
+        let futuresHandler = await remoteFunctionHandler.futuresHandler
+        let toMiddlewareQueue = await remoteFunctionHandler.toMiddlewareQueue
+        let identifier = await remoteFunctionHandler.makeRemoteFunctionIdentifier(moduleId: moduleId, functionName: functionName)
+        
+        let remoteFunction = RemoteFunction(
+            futuresHandler: futuresHandler,
+            toMiddlewareQueue: toMiddlewareQueue!,
+            remoteFunctionIdentifier: identifier,
+            returnTypeExample: returnTypeExample,
+            parameterTypeExamples: repeat each parameterTypeExamples)
+        
+        
+        return remoteFunction
     }
 
-    /*func mapRemoteFunctionOfRuntime<Return, each Parameters>(
+    func mapRemoteFunctionOfRuntime<Return, each Parameters>(
         runtime: Claidservice_Runtime,
         functionName: String,
         returnTypeExample: Return,
@@ -122,16 +126,43 @@ extension Module {
         guard let remoteFunctionHandler = await self.moduleHandle.remoteFunctionHandler else {
             throw CLAIDError("Cannot map remote function of runtime, remoteFunctionHandler is null.")
         }
-        let d = await remoteFunctionHandler.mapRuntimeFunction(
+    
+        let futuresHandler = await remoteFunctionHandler.futuresHandler
+        let toMiddlewareQueue = await remoteFunctionHandler.toMiddlewareQueue
+        let identifier = await remoteFunctionHandler.makeRemoteFunctionIdentifier(
             runtime: runtime,
-            functionName: functionName,
-            returnDataTypeExample: returnTypeExample,
+            functionName: functionName
+        )
+        
+        let remoteFunction = RemoteFunction(
+            futuresHandler: futuresHandler,
+            toMiddlewareQueue: toMiddlewareQueue!,
+            remoteFunctionIdentifier: identifier,
+            returnTypeExample: returnTypeExample,
             parameterTypeExamples: repeat each parameterTypeExamples
         )
-        return d
-    }*/
+        
+        return remoteFunction
+    }
 
-    
+    func executeRPCRequest(_ rpcRequest: Claidservice_DataPackage) async {
+        let id = await self.moduleHandle.id
+        if rpcRequest.targetModule != id {
+            await moduleError("Failed to execute RPC request. RPC is targeted for Module \"\(rpcRequest.sourceModule)\", but we are Module \"\(id)\".")
+            return
+        }
+        
+        guard let remoteFunctionRunnableHandler = await self.moduleHandle.remoteFunctionRunnableHandler else {
+            await moduleError("Failed to execute rpcRequest. The remoteFunctionRunnableHandler of the Module is null.")
+            return
+        }
+        
+        let result = await remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(rpcRequest)
+        if !result {
+            await moduleError("Failed to execute rpcRequest")
+            return
+        }
+    }
 
     /// Cancels all tasks and clears the dictionary
     func cancelAllTasks() async {
@@ -193,6 +224,9 @@ extension Module {
         await moduleHandle.setSubscribePublisher(subscriberPublisher)
         await moduleHandle.setRemoteFunctionHandler(remoteFunctionHandler)
         await moduleHandle.setProperties(properties)
+        
+        let queue = subscriberPublisher.toModuleManagerQueue
+        let remoteFunctionHandler = RemoteFunctionHandler(toMiddlewareQueue: queue)
         
         await moduleHandle.setInitialized(true)
         try await initialize(properties: properties)

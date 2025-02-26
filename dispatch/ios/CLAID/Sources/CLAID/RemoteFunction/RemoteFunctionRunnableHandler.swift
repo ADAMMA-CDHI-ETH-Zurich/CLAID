@@ -5,7 +5,7 @@
 //  Created by Patrick Langer on 21.02.2025.
 //
 
-class RemoteFunctionRunnableHandler {
+public actor RemoteFunctionRunnableHandler : Sendable {
     let entityName: String
     private var toMiddlewareQueue: AsyncStream<Claidservice_DataPackage>.Continuation!
     private var registeredRunnables: [String: AbstractRemoteFunctionRunnable] = [:]
@@ -27,7 +27,7 @@ class RemoteFunctionRunnableHandler {
     func registerRunnable<ReturnType, each Parameter>(
         functionName: String,
         paramExamples: repeat each Parameter,
-        function: @escaping ([(repeat each Parameter)]) -> ReturnType
+        function: @escaping (repeat each Parameter) -> ReturnType
     ) -> Bool {
         if registeredRunnables[functionName] != nil {
             print("Failed to register function \"\(functionName)\" in entity \"\(entityName)\". Function already registered before.")
@@ -38,13 +38,13 @@ class RemoteFunctionRunnableHandler {
         // Assuming TypeMapping.getMutator handles this in Swift (it likely throws or fails if unsupported),
         // we skip an explicit check here. In a production environment, add validation if needed.
 
-        let runnable = RemoteFunctionRunnable<ReturnType, repeat each Parameter>(
+        /*let runnable = RemoteFunctionRunnable<ReturnType, repeat each Parameter>(
             functionName: functionName,
             paramExamples: repeat each paramExamples,
             function: function
-        )
+        )*/
         
-        registeredRunnables[functionName] = runnable
+       // registeredRunnables[functionName] = runnable
         return true
     }
 

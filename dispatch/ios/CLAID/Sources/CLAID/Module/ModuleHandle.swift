@@ -1,9 +1,4 @@
-//
-//  ModuleBackend.swift
-//  CLAID
-//
-//  Created by Patrick Langer on 21.02.2025.
-//
+
 
 public actor ModuleHandle {
     public let dispatcher = RunnableDispatcher()
@@ -13,11 +8,12 @@ public actor ModuleHandle {
     public var type: String = ""
     public var subscriberPublisher: ChannelSubscriberPublisher?
     public var remoteFunctionHandler: RemoteFunctionHandler?
+    public var remoteFunctionRunnableHandler: RemoteFunctionRunnableHandler?
     public var properties: Properties?
     public var initialized: Bool = false
     
     public init() {
-        
+
     }
 
     public func addTask(_ name: String, _ task: Task<Void, Never>) {
@@ -56,13 +52,16 @@ public actor ModuleHandle {
         return type
     }
     
-    
     public func setSubscribePublisher(_ subscriberPublisher: ChannelSubscriberPublisher) {
         self.subscriberPublisher = subscriberPublisher
     }
     
     public func setRemoteFunctionHandler(_ remoteFunctionHandler: RemoteFunctionHandler) {
         self.remoteFunctionHandler = remoteFunctionHandler
+    }
+    
+    public func setRemoteFunctionRunnableHandler(_ remoteFunctionRunnableHandler: RemoteFunctionRunnableHandler) {
+        self.remoteFunctionRunnableHandler = remoteFunctionRunnableHandler
     }
     
     public func setProperties(_ properties: Properties) {

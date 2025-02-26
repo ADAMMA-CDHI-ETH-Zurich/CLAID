@@ -104,6 +104,7 @@ actor ModuleManager {
 
    
     func onDataPackageReceivedFromMiddleware(dataPackage: Claidservice_DataPackage) async {
+        Logger.logInfo("Received package")
         if dataPackage.hasControlVal {
             Logger.logInfo("ModuleManager received DataPackage with controlVal \(dataPackage.controlVal.ctrlType) (\(dataPackage.controlVal.ctrlType))")
             await handlePackageWithControlVal(package: dataPackage)
@@ -227,6 +228,57 @@ actor ModuleManager {
     func getModuleById(moduleId: String) async -> Module? {
         return runningModules[moduleId]
     }
+    
+    func handleRemoteFunctionRequest(_ remoteFunctionRequest: Claidservice_DataPackage) async {
+        let request = remoteFunctionRequest.controlVal.remoteFunctionRequest
+        
+        switch request.remoteFunctionIdentifier.functionType {
+        case .runtime:
+            await handleRuntimeRemoteFunctionExecution(remoteFunctionRequest)
+        case .moduleID:
+            await handleModuleRemoteFunctionExecution(remoteFunctionRequest)
+        case .none:
+            Logger.logError("Received invalid remoteFunctionRequest \(remoteFunctionRequest). RemoteFunctionType is None.")
+        }
+        
+    }
+    
+    func handleRuntimeRemoteFunctionExecution(_ request: Claidservice_DataPackage) async {
+        
+        guard let remoteFunctionRunnableHandler = remoteFunctionRunnableHandler else {
+            Logger.logError("Cannot handle remot function request! RemoteFunctionRunnableHandler is null.")
+            return 
+        }
+        
+        let result = await remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(request)
+        
+        if !result {
+            Logger.logError("Swift runtime failed to execute RPC request")
+            return
+        }
+    }
+    
+    func handleModuleRemoteFunctionExecution(_ request: Claidservice_DataPackage) async {
+        let remoteFunctionRequest = request.controlVal.remoteFunctionRequest
+        let moduleId = remoteFunctionRequest.remoteFunctionIdentifier.moduleID
+        
+        guard let module = runningModules[moduleId] else {
+            Logger.logError("Failed to execute remote function request. Could not find Module \"\(moduleId)\"")
+            return
+        }
+        
+        await module.executeRPCRequest(request)
+    }
+    
+    func handleRemoteFunctionResponse(_ remoteFunctionResponse: Claidservice_DataPackage) async {
+        guard let remoteFunctionHandler = self.remoteFunctionHandler else {
+            Logger.logError("Cannot handle remoteFunctionRespose, remoteFunctionHandler of Module is null.")
+            return
+        }
+        
+        await remoteFunctionHandler.handleResponse(remoteFunctionResponse)
+    }
+    
 
     func getRemoteFunctionHandler() -> RemoteFunctionHandler? {
         return remoteFunctionHandler

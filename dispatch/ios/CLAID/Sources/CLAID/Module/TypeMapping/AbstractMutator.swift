@@ -6,7 +6,7 @@
 //
 
 
-protocol AbstractMutator {
+protocol AbstractMutator : Sendable {
     /// Sets the package payload from an `Any` object.
     func setPackagePayloadFromObject(_ packet: Claidservice_DataPackage, object: Any) -> Claidservice_DataPackage
 

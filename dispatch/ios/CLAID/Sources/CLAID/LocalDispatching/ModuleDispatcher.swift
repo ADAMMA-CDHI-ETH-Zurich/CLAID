@@ -164,6 +164,7 @@ actor ModuleDispatcher {
             await pingPongWaiter.waitForPong()
             
             for try await package in self.toMiddlewareStream {
+                Logger.logInfo("Writing package \(package)")
                 try await writer.write(package)
             }
         })

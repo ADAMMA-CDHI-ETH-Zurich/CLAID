@@ -8,12 +8,12 @@
 
 import Foundation
 
-class Mutator<T>: AbstractMutator {
-    private let setter: (Claidservice_DataPackage, T) -> Claidservice_DataPackage
-    private let getter: (Claidservice_DataPackage) -> T
+final class Mutator<T>: AbstractMutator {
+    private let setter: @Sendable (Claidservice_DataPackage, T) -> Claidservice_DataPackage
+    private let getter: @Sendable (Claidservice_DataPackage) -> T
 
-    init(setter: @escaping (Claidservice_DataPackage, T) -> Claidservice_DataPackage,
-         getter: @escaping (Claidservice_DataPackage) -> T) {
+    init(setter: @Sendable @escaping (Claidservice_DataPackage, T) -> Claidservice_DataPackage,
+         getter: @Sendable @escaping (Claidservice_DataPackage) -> T) {
         self.setter = setter
         self.getter = getter
     }
