@@ -23,9 +23,9 @@
 #include "dispatch/core/proto_util.hh"
 #include "dispatch/core/Logger/Logger.hh"
 #include <stdexcept>
+#include "absl/status/status.h"
 // #include <google/protobuf/text_format.h>
 
-using grpc::Status;
 
 using namespace std;
 using namespace claid;
@@ -138,10 +138,10 @@ void ModuleTable::setExpectedChannel(const string& channelId, const string& sour
     chanMap[channelId].targets[target] = false;
 }
 
-Status ModuleTable::setChannelTypes(const string& moduleId,
+absl::Status ModuleTable::setChannelTypes(const string& moduleId,
             const google::protobuf::RepeatedPtrField<DataPackage>& channels) {
     if (moduleId.empty()) {
-        return Status(grpc::INVALID_ARGUMENT, "Module id must not be empty");
+        return absl::InvalidArgumentError("Module id must not be empty.");
     }
 
     // Broadly lock until the entire input is processed. This makes this
@@ -151,9 +151,10 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
     for(auto& chanPkt : channels) {
         // Validate the input packets, which guarantees that all required fields are set.
         if (!validPacketType(chanPkt)) {
-            return Status(grpc::INVALID_ARGUMENT,
-                "Invalid packet type for channel '" +
-                chanPkt.channel() + "' : " + messageToString(chanPkt));
+            return absl::InvalidArgumentError(absl::StrCat(
+                "Invalid packet type for channel '",
+                chanPkt.channel() + "' : ", messageToString(chanPkt)
+            ));
         }
 
         string channelId = chanPkt.channel();
@@ -164,7 +165,7 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         // At least source or target has to be the module in question, i.e., moduleId is either
         // subscriber or publisher for this channel.
         if ((moduleId != src) && (moduleId != tgt)) {
-            return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
+            return absl::InvalidArgumentError(absl::StrCat(
                 "Invalid source/target Module for Channel \"", channelId, "\".\n",
                 "Module \"", moduleId, "\" has to be either publisher or subscriber of the Channel, but neither was set."));
         }
@@ -213,7 +214,7 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
             // If subscribed channel is of type claid.CLAIDANY, we make an exception.s
             if(entry->getPayloadType() != "claidservice.CLAIDANY")
             {
-                return Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid packet type for channel '",chanPkt.channel(), "': ",
+                return absl::InvalidArgumentError(absl::StrCat("Invalid packet type for channel '",chanPkt.channel(), "': ",
                 "Payload type is ", entry->getPayloadType(), " but expected ", chanPkt.payload().message_type()));
             }
         }
@@ -222,7 +223,7 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
         bool isSource = (moduleId == src);
         const string& val = isSource ? src : tgt;
         if (!entry->addSet(val, isSource)) {
-            return Status(grpc::INVALID_ARGUMENT, absl::StrCat(
+            return absl::InvalidArgumentError(absl::StrCat(
                 "Module \"", val, "\" ", isSource ? "published" : "subscribed", " channel \"", channelId, "\", ",
                 "but the channel was not specified in the configuration file. Make sure to add the channel as ", 
                 isSource ? "output channel" : "input channel", " of Module \"", val,  "\" in the configuration file."
@@ -239,7 +240,7 @@ Status ModuleTable::setChannelTypes(const string& moduleId,
 
         entry->setPayloadType(chanPkt.payload().message_type());
     }
-    return Status::OK;
+    return absl::OkStatus();
 }
 
 bool ModuleTable::ready() const {

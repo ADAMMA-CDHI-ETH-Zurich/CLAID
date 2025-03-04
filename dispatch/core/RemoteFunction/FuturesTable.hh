@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "FutureUniqueIdentifier.hh"
 #include <map>
 #include <mutex>

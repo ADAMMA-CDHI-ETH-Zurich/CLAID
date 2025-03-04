@@ -21,7 +21,7 @@
 
 #ifndef CAPI_H_
 #define CAPI_H_
-
+#include <stdbool.h>  // for 'bool'
 
 #ifdef __cplusplus
 extern "C"

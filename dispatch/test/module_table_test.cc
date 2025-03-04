@@ -74,7 +74,7 @@ TEST(ModuleTableTestSuite, BasicModuleTableTest) {
     google::protobuf::RepeatedPtrField<claidservice::DataPackage> chanTypes;
     *chanTypes.Add() = *chan14Pkt;
     auto status = modTable.setChannelTypes(mod1, chanTypes);
-    cout << status.error_message() << endl;
+    cout << status.ToString() << endl;
     ASSERT_FALSE(status.ok());
 
     cout << "Module Table:\n" << modTable.toString() << "\n" << endl;

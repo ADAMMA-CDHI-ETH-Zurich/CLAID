@@ -22,8 +22,7 @@
 #include "dispatch/core/Configuration/Configuration.hh"
 #include "dispatch/core/Logger/Logger.hh"
 
-#include "google/protobuf/util/json_util.h"
-
+#include "google/protobuf/json/json.h"
 
 #include <fstream>
 
@@ -44,7 +43,7 @@ namespace claid
 
     absl::Status Configuration::fromJSONString(const std::string& json)
     {
-        google::protobuf::util::JsonParseOptions options2;
+        google::protobuf::json::ParseOptions options2;
         absl::Status status = JsonStringToMessage(json, &this->config, options2);
         Logger::logInfo("status %s", status.ToString().c_str());
         return status;
@@ -53,9 +52,9 @@ namespace claid
     absl::Status Configuration::toJSONString(std::string& jsonOutput) const
     {
         jsonOutput = "";
-        google::protobuf::util::JsonPrintOptions options;
+        google::protobuf::json::PrintOptions options;
         options.add_whitespace = true;
-        options.always_print_primitive_fields = true;
+        options.always_print_fields_with_no_presence = true;
         options.preserve_proto_field_names = true;
         absl::Status status = MessageToJsonString(this->config, &jsonOutput, options);
         return status;

@@ -1,0 +1,30 @@
+name: TestAndBuildApple
+
+on:
+  push:
+    branches:
+      - main 
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-and-build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bazel
+        uses: bazelbuild/setup-bazelisk@v2
+
+      - name: Build XCFramework
+        run: |
+          bazel build //dispatch/ios/CLAIDNativeFramework:claid_native_xcframework
+
+      - name: Upload XCFramework as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: claid_native_xcframework
+          path: bazel-bin/dispatch/ios/CLAIDNativeFramework/claid_native_xcframework.xcframework.zip 

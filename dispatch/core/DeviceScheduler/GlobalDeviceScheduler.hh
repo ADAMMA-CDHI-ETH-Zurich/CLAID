@@ -20,7 +20,7 @@
 ***************************************************************************/
 #pragma once
 #include <map>
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/Utilities/Time.hh"
 #include "dispatch/core/module_table.hh"
 #include "dispatch/core/RemoteFunction/RemoteFunctionRunnableHandler.hh"
@@ -99,6 +99,7 @@ class GlobalDeviceScheduler
 
     public:
         GlobalDeviceScheduler(RemoteFunctionRunnableHandler& remoteFunctionRunnableHandler, const ModuleTable& moduleTable);
+        virtual ~GlobalDeviceScheduler() {}
 
         void scheduleDeviceWakeupAt(RuntimeType runtime, int64_t unixTimestampMs);
         void acquireWakeLockForRuntime(RuntimeType runtime);

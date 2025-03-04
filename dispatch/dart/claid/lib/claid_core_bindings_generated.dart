@@ -124,7 +124,7 @@ class ClaidCoreBindings {
   late final _attach_cpp_runtime = _attach_cpp_runtimePtr
       .asFunction<ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Void>)>();
 
-  int load_new_config(
+  bool load_new_config(
     ffi.Pointer<ffi.Void> handle,
     ffi.Pointer<ffi.Char> config_file,
   ) {
@@ -136,10 +136,10 @@ class ClaidCoreBindings {
 
   late final _load_new_configPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Int Function(ffi.Pointer<ffi.Void>,
+          ffi.Bool Function(ffi.Pointer<ffi.Void>,
               ffi.Pointer<ffi.Char>)>>('load_new_config');
-  late final _load_new_config = _load_new_configPtr
-      .asFunction<int Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Char>)>();
+  late final _load_new_config = _load_new_configPtr.asFunction<
+      bool Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Char>)>();
 
   void set_payload_data_path(
     ffi.Pointer<ffi.Void> handle,

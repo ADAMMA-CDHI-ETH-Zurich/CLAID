@@ -29,9 +29,8 @@
 #include <shared_mutex>
 #include <string>
 
-#include <grpc/grpc.h>
 
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/shared_queue.hh"
 #include "dispatch/core/RemoteDispatching/RemoteClientKey.hh"
 

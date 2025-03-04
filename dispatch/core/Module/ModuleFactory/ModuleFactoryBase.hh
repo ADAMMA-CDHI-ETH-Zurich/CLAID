@@ -34,5 +34,6 @@ namespace claid
 		public:
 			virtual Module* getInstanceUntyped() = 0;
 			virtual bool getModuleAnnotation(ModuleAnnotator& annotator) = 0;
+			virtual ~ModuleFactoryBase() {}
 	};
 }

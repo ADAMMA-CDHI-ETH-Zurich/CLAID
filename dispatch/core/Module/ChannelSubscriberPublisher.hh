@@ -27,7 +27,7 @@
 #include <vector>
 #include <memory>
 
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/shared_queue.hh"
 #include "dispatch/core/module_table.hh"
 #include "dispatch/core/Module/AbstractSubscriber.hh"

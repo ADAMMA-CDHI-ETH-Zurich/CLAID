@@ -153,7 +153,7 @@ void RuntimeDispatcher::processPacket(DataPackage& pkt, Status& status) {
         std::string connectionName;
         if(!moduleTable.lookupOutputConnectionForChannelOfModule(pkt.source_module(), pkt.channel(), connectionName))
         {
-            status = Status(grpc::NOT_FOUND, absl::StrCat("Could not find channel of Module\"", pkt.source_module(), "\" which connects to connection \"", 
+            status = Status(grpc::NOT_FOUND, absl::StrCat("Could not find channel of Module \"", pkt.source_module(), "\" which connects to connection \"", 
                             pkt.channel(), "\"."));
             Logger::logError("%s", status.error_message().c_str());
             return;
@@ -205,10 +205,13 @@ ServiceImpl::ServiceImpl(ModuleTable& modTable, std::shared_ptr<GlobalDeviceSche
 
 Status ServiceImpl::GetModuleList(ServerContext* context,
         const ModuleListRequest* req, ModuleListResponse* resp) {
+
     if (req->runtime() == Runtime::RUNTIME_UNSPECIFIED) {
         return Status(grpc::INVALID_ARGUMENT, "Invalid runtime value provided");
     }
+
     moduleTable.setRuntimeIsInitializing(req->runtime(), true);
+
     // {
     //     std::string jsonOutput = "";
     //     google::protobuf::util::JsonPrintOptions options;
@@ -289,7 +292,12 @@ Status ServiceImpl::InitRuntime(ServerContext* context, const InitRuntimeRequest
         Logger::logInfo("InitRuntime num channel pakets for module %s: %d", moduleId.c_str(), modChanIt.channel_packets().size());
 
         // Add the channels for this module
-        Status status = moduleTable.setChannelTypes(moduleId, modChanIt.channel_packets());
+        absl::Status abslStatus = moduleTable.setChannelTypes(moduleId, modChanIt.channel_packets());
+
+        grpc::Status status = grpc::Status(
+            static_cast<grpc::StatusCode>(static_cast<int>(abslStatus.code())), 
+            std::string(abslStatus.message())
+        );
         if (!status.ok()) {
             moduleTable.setRuntimeIsInitializing(rt, false);
             Logger::logError("Error in setChannelTyes: %s", status.error_message().c_str());

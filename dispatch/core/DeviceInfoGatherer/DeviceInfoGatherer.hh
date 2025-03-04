@@ -21,7 +21,7 @@
 
 #pragma once
 #include <map>
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/Utilities/Time.hh"
 #include "dispatch/core/module_table.hh"
 #include "dispatch/core/RemoteFunction/RemoteFunctionHandler.hh"
@@ -40,6 +40,8 @@ class DeviceInfoGatherer
         {
 
         }
+
+        virtual ~DeviceInfoGatherer() {}
 
         virtual bool isAvailable()
         {

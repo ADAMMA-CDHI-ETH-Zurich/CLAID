@@ -22,7 +22,7 @@
 #pragma once
 
 #include "dispatch/core/shared_queue.hh"
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/local_dispatching.hh"
 #include "dispatch/core/Module/Module.hh"
 #include "dispatch/core/Module/ModuleFactory/ModuleFactory.hh"

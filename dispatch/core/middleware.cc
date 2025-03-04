@@ -585,14 +585,14 @@ void MiddleWare::readControlPackages()
 {
     while(this->running)
     {
-        Logger::logInfo("MiddleWare got control package");
-        std::shared_ptr<DataPackage> controlPackage = this->moduleTable.controlPackagesQueue().interruptable_pop_front();
+        std::shared_ptr<DataPackage> controlPackage = 
+            this->moduleTable.controlPackagesQueue().interruptable_pop_front();
 
         if(controlPackage == nullptr)
         {
+
             continue;
         }
-
 
         this->handleControlPackage(controlPackage);
     }
@@ -734,6 +734,7 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
             const ControlPackage& ctrlPackage = controlPackage->control_val();
             const RemoteFunctionRequest& rpcRequest = ctrlPackage.remote_function_request();
             const RemoteFunctionIdentifier& remoteFunctionIdentifier = rpcRequest.remote_function_identifier();
+
 
             if(remoteFunctionIdentifier.function_type_case() == RemoteFunctionIdentifier::FunctionTypeCase::kRuntime)
             {

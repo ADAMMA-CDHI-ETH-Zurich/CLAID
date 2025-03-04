@@ -10,9 +10,11 @@ WORKSPACE_PATH = ../../../
 # Make sure to use CC=gcc, not clang! Otherwise build fails
 .PHONY: build_android
 build_android: 
+	CC=gcc bazel build //dispatch/core:claid_capi
+	sh patch_ares.sh
 	mkdir -p blobs
 	cd $(WORKSPACE_PATH); rm -rf $(TARGET_LIBS_ANDROID)
-	CC=gcc bazel build //dispatch/android:$(OUTPUT_APK_ANDROID_NAME) --fat_apk_cpu=arm64-v8a,armeabi-v7a,x86,x86_64
+	CC=gcc bazel build //dispatch/android:$(OUTPUT_APK_ANDROID_NAME) --android_platforms=//:arm64-v8a,//:armeabi-v7a,//:x86,//:x86_64
 	cd $(WORKSPACE_PATH); rm -fr $(OUTPUT_APK_TMP_PATH_ANDROID)
 	cd $(WORKSPACE_PATH); mkdir $(OUTPUT_APK_TMP_PATH_ANDROID)
 	cd $(WORKSPACE_PATH); cp $(OUTPUT_APK_ANDROID_PATH)/$(OUTPUT_APK_ANDROID_NAME).apk $(OUTPUT_APK_TMP_PATH_ANDROID)/

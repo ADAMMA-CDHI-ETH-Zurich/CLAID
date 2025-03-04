@@ -42,7 +42,7 @@ TEST(PropertiesTestSuite, PropertiesTest)
 
     google::protobuf::Struct val;
 
-    google::protobuf::util::JsonParseOptions options2;
+    google::protobuf::json::ParseOptions options2;
     absl::Status status = JsonStringToMessage(json, &val, options2);
     ASSERT_TRUE(status.ok()) << status;
 
@@ -93,9 +93,9 @@ TEST(PropertiesTestSuite, PropertiesTest)
     ASSERT_EQ(profile.frequency(), 5);
 
     std::string jsonOutput;
-    google::protobuf::util::JsonPrintOptions options;
+    google::protobuf::json::PrintOptions options;
     options.add_whitespace = true;
-    options.always_print_primitive_fields = true;
+    options.always_print_fields_with_no_presence = true;
     options.preserve_proto_field_names = true;
     status = MessageToJsonString(val, &jsonOutput, options);
     ASSERT_TRUE(status.ok()) << status;

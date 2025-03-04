@@ -26,9 +26,10 @@
 #include <string>
 #include <regex>
 
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/Logger/Logger.hh"
 #include "dispatch/core/proto_util.hh"
+#include "google/protobuf/json/json.h"
 
 namespace claid {
 
@@ -210,9 +211,9 @@ class Properties
                 {
                     // Serialize property to json, and then deserialize into the target proto message object.
                     std::string jsonOutput;
-                    google::protobuf::util::JsonPrintOptions options;
+                    google::protobuf::json::PrintOptions options;
                     options.add_whitespace = true;
-                    options.always_print_primitive_fields = true;
+                    options.always_print_fields_with_no_presence = true;
                     options.preserve_proto_field_names = true;
                     absl::Status status = MessageToJsonString(property, &jsonOutput, options);
                     if(!status.ok())
@@ -221,7 +222,7 @@ class Properties
                         return;
                     }
 
-                    google::protobuf::util::JsonParseOptions options2;
+                    google::protobuf::json::ParseOptions options2;
                     status = JsonStringToMessage(jsonOutput, &value, options2);
 
                     if(!status.ok())

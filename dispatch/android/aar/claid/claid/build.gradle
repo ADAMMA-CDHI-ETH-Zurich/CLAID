@@ -21,7 +21,7 @@ afterEvaluate {
             maven(MavenPublication) {
                 groupId = 'ch.claid'
                 artifactId = 'claid'
-                version = '0.6.4'
+                version = '0.6.5'
 
                 from components.release
 
@@ -68,12 +68,13 @@ apply plugin: 'com.google.protobuf'
 android {
     namespace 'adamma.c4dhi.claid'
     compileSdk 33
+    ndkVersion "25.2.9519653"
 
     defaultConfig {
         minSdk 26
         targetSdk 33
         versionCode 1
-        versionName "0.6.4"
+        versionName "0.6.5"
 
         aarMetadata {
             minCompileSdk = 26
@@ -86,6 +87,7 @@ android {
 
 
     buildTypes {
+        debug {}
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -112,7 +114,6 @@ android {
             withSourcesJar()
         }
     }
-
 }
 
 protobuf {
@@ -153,5 +154,4 @@ dependencies {
     api 'io.grpc:grpc-android:1.59.0' // CURRENT_GRPC_VERSION
     api 'io.grpc:grpc-okhttp:1.59.0' // CURRENT_GRPC_VERSION
     api 'javax.annotation:javax.annotation-api:1.3.2'
-
 }

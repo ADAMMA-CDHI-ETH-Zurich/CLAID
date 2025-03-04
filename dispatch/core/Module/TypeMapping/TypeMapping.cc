@@ -23,5 +23,5 @@
 
 namespace claid
 {
-    std::map<std::string, ProtoCodec> TypeMapping::protoCodecMap;
+    std::map<std::string, std::shared_ptr<ProtoCodec>> TypeMapping::protoCodecMap;
 }

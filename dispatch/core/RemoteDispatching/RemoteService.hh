@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/RemoteDispatching/RemoteClientHandler.hh"
 #include "dispatch/core/RemoteDispatching/RemoteClientKey.hh"
 #include "dispatch/core/RemoteDispatching/HostUserTable.hh"

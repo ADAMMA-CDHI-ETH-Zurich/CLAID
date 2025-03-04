@@ -190,8 +190,8 @@ absl::Status ModuleManager::start()
     {
         return absl::AbortedError("Failed to receive ModuleListResponse from middleware.");
     }
-        Logger::logInfo("CLAID C++ ModuleManager start called 3");
-        Logger::logInfo("%s", messageToString(*moduleList).c_str());
+    Logger::logInfo("CLAID C++ ModuleManager start called 3");
+    Logger::logInfo("%s", messageToString(*moduleList).c_str());
 
     absl::Status status;
     Logger::logInfo("CLAID C++ ModuleManager start called 4");
@@ -440,7 +440,9 @@ void ModuleManager::handlePackageWithControlVal(std::shared_ptr<DataPackage> pac
         }
         default:
         {
-            Logger::logWarning("ModuleManager received package with unsupported control val %d", package->control_val().ctrl_type());
+            // Not necessarily a warning, because in some languages the ctrl_type is simply set to the default value,
+            // based on the individual protobuf implementation.
+            //Logger::logWarning("ModuleManager received package with unsupported control val %d", package->control_val().ctrl_type());
         }
         break;
     }

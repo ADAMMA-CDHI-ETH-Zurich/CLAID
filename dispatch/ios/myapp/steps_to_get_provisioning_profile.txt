@@ -1,6 +1,0 @@
-1. Copy a provisioning profile from ~/Library/MobileDevice/Provisioning\ Profiles/ and put inside dispatch/ios/myapp/provisioning.mobileprovision
-2. Make sure to set bundle identifier in Info.plist: 
-    <key>CFBundleName</key>
-	<string>com.domain.appBundleID</string>
-3. Generate xcodeproj using bazel run :xcodeproj
-4. Load up project in xcode and build.

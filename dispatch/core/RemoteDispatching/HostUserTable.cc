@@ -21,7 +21,7 @@
 
 #include "dispatch/core/RemoteDispatching/HostUserTable.hh"
 #include "dispatch/core/Logger/Logger.hh"
-
+#include "absl/status/status.h"
 namespace claid
 {
 

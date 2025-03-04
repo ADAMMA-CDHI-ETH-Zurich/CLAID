@@ -1,13 +1,12 @@
 package(default_visibility = ["//visibility:public"])
-
-
+load("@rules_android//rules:rules.bzl", "android_binary", "android_library")
 cc_library(
     name = "android_claid_cc",
     srcs = ["java_capi.cpp"],
-    deps = ["//dispatch/core:capi"],
+    deps = ["//dispatch/core:capi", "@rules_jni//jni:jni"],
     alwayslink = True,   # include everything in dependents
     linkstatic = True,
-    linkopts =["-landroid", "-llog", "-lm", "-ldl"]
+    linkopts =["-landroid", "-llog", "-lm", "-ldl"],
 )
 
 cc_library(
@@ -19,6 +18,7 @@ cc_library(
     linkstatic = True,
     linkopts =["-landroid", "-llog", "-lm", "-ldl"]
 )
+
 
 # android_library(
 #     name = "android_claid_sources",
@@ -52,11 +52,10 @@ android_binary(
 )
 
 
-android_binary(
-    name = "android_demo",
-    deps = [":android_claid_cc"],
-    manifest = "aar/claid/app/src/main/AndroidManifest.xml",
-    resource_files = glob(["aar/claid/app/src/main/res/**/*.xml"])
-)
-
+# android_binary(
+#     name = "android_demo",
+#     deps = [":android_claid_cc"],
+#     manifest = "aar/claid/app/src/main/AndroidManifest.xml",
+#     resource_files = glob(["aar/claid/app/src/main/res/**/*.xml"])
+# )
 

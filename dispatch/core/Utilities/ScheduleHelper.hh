@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/Utilities/Time.hh"
 using claidservice::Schedule;
 using claidservice::SchedulePeriodic;

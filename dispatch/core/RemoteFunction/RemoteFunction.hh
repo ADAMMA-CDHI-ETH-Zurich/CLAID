@@ -23,7 +23,7 @@
 
 #include <string>
 
-#include "dispatch/proto/claidservice.grpc.pb.h"
+#include "dispatch/proto/claidservice.pb.h"
 #include "dispatch/core/Logger/Logger.hh"
 #include "AbstractMutatorHelper.hh"
 #include "TypedMutatorHelper.hh"
