@@ -106,7 +106,7 @@ apple_xcframework(
         "device": ["arm64"],
     },
     deps = [":objc_library"],   # Link against your cc_library
-    public_hdrs = ["Sources/include/capi_wrapper.h"]
+    public_hdrs = ["Sources/include/capi_wrapper.h", "//dispatch/core:capi"]
     
     # ios = ["arm64"]
     

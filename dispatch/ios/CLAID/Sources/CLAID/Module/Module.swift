@@ -87,8 +87,8 @@ extension Module {
     func mapRemoteFunctionOfModule<Return: Sendable, each Parameters: Sendable>(
         moduleId: String,
         functionName: String,
-        returnTypeExample: Return,
-        _ parameterTypeExamples: repeat each Parameters
+        returnType: Return,
+        parameterTypes: repeat each Parameters
     ) async throws -> RemoteFunction<Return, repeat each Parameters>  {
             
             
@@ -110,8 +110,8 @@ extension Module {
             futuresHandler: futuresHandler,
             toMiddlewareQueue: toMiddlewareQueue!,
             remoteFunctionIdentifier: identifier,
-            returnTypeExample: returnTypeExample,
-            parameterTypeExamples: repeat each parameterTypeExamples)
+            returnTypeExample: returnType,
+            parameterTypeExamples: repeat each parameterTypes)
         
         
         return remoteFunction

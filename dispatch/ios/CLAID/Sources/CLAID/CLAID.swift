@@ -8,12 +8,13 @@ public actor CLAID {
     private static var c_runtime_handle: UnsafeMutableRawPointer? = nil
     private static var moduleDispatcher: ModuleDispatcher? = nil
     private static var moduleManager: ModuleManager? = nil
+    private static var moduleFactory = ModuleFactory()
         
     public init() {
 
     }
 
-    public static func start(configFile: String, hostID: String, userID: String, deviceID: String, moduleFactory: ModuleFactory) async throws {
+    public static func start(configFile: String, hostID: String, userID: String, deviceID: String) async throws {
         
         Logger.logInfo("Starting CLAID")
         let socketPath = "localhost:1337"
@@ -68,5 +69,9 @@ public actor CLAID {
     
     public static func getRemoteFunctionHandler() async -> RemoteFunctionHandler? {
         return await self.moduleManager?.getRemoteFunctionHandler()
+    }
+
+    public static func registerModule(_ moduleType: Module.Type) async throws {
+        try await moduleFactory.registerModule(moduleType)
     }
 }

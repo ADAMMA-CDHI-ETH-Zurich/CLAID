@@ -21,7 +21,7 @@ afterEvaluate {
             maven(MavenPublication) {
                 groupId = 'ch.claid'
                 artifactId = 'claid'
-                version = '0.6.4'
+                version = '0.6.5'
 
                 from components.release
 
@@ -74,7 +74,7 @@ android {
         minSdk 26
         targetSdk 33
         versionCode 1
-        versionName "0.6.4"
+        versionName "0.6.5"
 
         aarMetadata {
             minCompileSdk = 26

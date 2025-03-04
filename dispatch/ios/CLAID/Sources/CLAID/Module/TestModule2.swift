@@ -8,12 +8,6 @@
 
 public actor TestModule2 : Module {
     
-    public init() {
-        
-    }
-    
-    public var moduleHandle = ModuleHandle()
-    
     public func initialize(properties: Properties) async throws {
         try await registerRemoteFunction(
             functionName: "test_function",
@@ -21,13 +15,17 @@ public actor TestModule2 : Module {
             Int(), String() , function: self.testFunction)
     }
     
-    public func terminate() async {
+    public init() {
         
     }
+    
+    public var moduleHandle = ModuleHandle()
     
     public func testFunction(intVal: Int, stringVal: String) -> String {
         return "TestModule2 says: \(intVal), \(stringVal)"
     }
     
-    
+    public func terminate() async {
+        
+    }
 }
