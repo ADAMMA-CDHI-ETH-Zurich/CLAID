@@ -20,22 +20,25 @@
 ##########################################################################
 
 from typing import Type, Dict, List, Union
-from google.protobuf.message import Message
-from google.protobuf.descriptor import Descriptor
-from google.protobuf.message_factory import MessageFactory
+
+from betterproto import Message
 from module.type_mapping.mutator import Mutator
 from module.type_mapping.proto_codec import ProtoCodec
-from dispatch.proto.claidservice_pb2 import DataPackage, IntVal, DoubleVal, BoolVal, StringVal, NumberMap, StringMap, NumberArray, StringArray, Blob
+from dispatch.proto.claidservice import DataPackage, IntVal, DoubleVal, BoolVal, StringVal, NumberMap, StringMap, NumberArray, StringArray, Blob
 import numpy as np
 
+from logger.logger import Logger
+from copy import deepcopy, copy
+import sys
 class TypeMapping:
     protoCodecMap: Dict[str, ProtoCodec] = {}
 
     @staticmethod
-    def get_proto_codec(instance: Message) -> ProtoCodec:
-        full_name = instance.DESCRIPTOR.full_name
+    def get_proto_codec(instance) -> ProtoCodec:
+        full_name = instance.__class__.__name__
+
         if full_name not in TypeMapping.protoCodecMap:
-            msg = instance.__class__()
+            msg = type(instance)()
             codec = ProtoCodec(msg)
             TypeMapping.protoCodecMap[full_name] = codec
         return TypeMapping.protoCodecMap[full_name]
@@ -46,7 +49,7 @@ class TypeMapping:
         proto_codec = TypeMapping.get_proto_codec(value)
 
         blob = proto_codec.encode(value)
-        packet.payload.CopyFrom(blob)
+        packet.payload = deepcopy(blob)
 
         print("Test package", packet)
         print("Value", value)
@@ -64,14 +67,13 @@ class TypeMapping:
     @staticmethod
     def get_mutator(example_instance) -> Mutator:
         cls = type(example_instance)
-        print("Clz ", cls)
         if cls == int:
             
             return Mutator(
                 setter = lambda packet, value: TypeMapping.setProtoPayload(packet, IntVal(val=value)),
                 getter = lambda packet: TypeMapping.getProtoPayload(packet, IntVal()).val
             )
-        
+
         # Actually corresponds to double in C++ -> 64 bit floating point, no separate double type.
         if cls == float:
             
@@ -91,7 +93,7 @@ class TypeMapping:
                 getter = lambda packet: TypeMapping.getProtoPayload(packet, StringVal()).val
             )
         elif issubclass(cls, np.ndarray):
-            
+
             if example_instance.dtype in [np.float32, np.float64, \
             np.int8, np.int16, np.int32, np.int64, \
             np.uint8, np.uint16, np.uint32, np.uint64]:
@@ -141,7 +143,9 @@ class TypeMapping:
                             print(value),
                             TypeMapping.setProtoPayload(packet, StringMap(val=value))
                         ),
-                        lambda packet: dict(TypeMapping.getProtoPayload(packet, StringMap).val)
+                        lambda packet: (
+                            dict(TypeMapping.getProtoPayload(packet, StringMap()).val)
+                        )
                     )
                 else:
                     raise Exception("Value type {} is not supported for type mapping in CLAID".format(value_type))
@@ -149,15 +153,20 @@ class TypeMapping:
             else:
                 raise Exception("Unsupported key type for dictionary: {}. Only strings are allowed as keys in type mapping in CLAID".format(key_type))
 
- 
+
         elif issubclass(cls, Message):
             instance = cls()
             return Mutator(
-
-                lambda packet, value: packet.payload.CopyFrom(TypeMapping.get_proto_codec(value).encode(value)),
-                lambda packet: TypeMapping.get_proto_codec(instance).decode(packet.payload)
+                lambda packet, value: setattr(
+                    packet, "payload", TypeMapping.get_proto_codec(value).encode(value)
+                ),
+                lambda packet: TypeMapping.get_proto_codec(instance).decode(packet.payload),
             )
+
         else:
+            print("Mutator 5")
+            msg = "Unsupported type in TypeMapping. Cannot use type \"{}\" to set or get payload of DataPackage.".format(str(cls))
+            Logger.log_fatal(msg)
             raise Exception("Unsupported type in TypeMapping. Cannot use type \"{}\" to set or get payload of DataPackage.".format(str(cls)))
 
     

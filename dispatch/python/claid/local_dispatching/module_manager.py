@@ -24,16 +24,16 @@ from logger.logger import Logger
 from module.channel_subscriber_publisher import ChannelSubscriberPublisher
 from module.module_annotator import ModuleAnnotator
 from module.thread_safe_channel import ThreadSafeChannel
-from dispatch.proto.claidservice_pb2 import *
+from dispatch.proto.claidservice import *
 import traceback
 from threading import Thread
 import time
-
+import asyncio
 import sys
 
 class ModuleManager():
 
-    def __init__(self, module_dispatcher, module_factory, main_thread_runnables_queue):
+    def __init__(self, module_dispatcher, module_factory, main_thread_runnables_queue, asyncio_loop):
         self.__module_dispatcher = module_dispatcher
         self.__module_factory = module_factory
         # In Python, it is possible to add Modules at runtime.
@@ -45,7 +45,7 @@ class ModuleManager():
         # self.__from_module_dispatcher_queue = ThreadSafeChannel()
         self.__to_module_dispatcher_queue = module_dispatcher.get_to_dispatcher_queue()
         
-        self.__channel_subscriber_publisher = ChannelSubscriberPublisher(self.__to_module_dispatcher_queue)
+        self.__channel_subscriber_publisher = ChannelSubscriberPublisher(self.__to_module_dispatcher_queue, asyncio_loop)
 
         self.__running = False
         self.__from_module_dispatcher_queue_closed = False
@@ -110,7 +110,7 @@ class ModuleManager():
             module_channels[module_id] = template_packages_for_module
         return module_channels
 
-    def start(self):
+    async def start(self):
         Logger.log_info(str(self.__module_factory.get_registered_module_classes()))
 
         registered_module_classes = self.__module_factory.get_registered_module_classes()
@@ -125,7 +125,7 @@ class ModuleManager():
             if(has_annotate_module_function):
                 module_annotations[registered_module_class] = module_annotator.get_annotations()
 
-        module_list =  self.__module_dispatcher.get_module_list(registered_module_classes, module_annotations)
+        module_list = await self.__module_dispatcher.get_module_list(registered_module_classes, module_annotations)
         Logger.log_info("Setting log severity level " + str(module_list.log_severity_level_for_host))
         Logger.log_severity_level_to_print = module_list.log_severity_level_for_host
         Logger.log_info(f"Received ModuleListResponse: {module_list}")
@@ -137,22 +137,27 @@ class ModuleManager():
         if not self.initialize_modules(module_list, self.__channel_subscriber_publisher):
             Logger.log_fatal("Failed to initialize Modules.")
             return False
-
+        
+        Logger.log_info("Making example packages1")
         example_packages_of_modules = self.get_template_packages_of_modules()
-        if not  self.__module_dispatcher.init_runtime(example_packages_of_modules):
+        Logger.log_info("Making example packages2")
+        if not await self.__module_dispatcher.init_runtime(example_packages_of_modules):
             Logger.log_fatal("Failed to initialize runtime.")
             return False
+        Logger.log_info("Making example packages3")
 
         self.__from_module_dispatcher_queue_closed = False
-        if not self.__module_dispatcher.send_receive_packages():
+        if not await self.__module_dispatcher.send_receive_packages():
             Logger.log_fatal("Failed to set up input and output streams with middleware.")
             return False
+        Logger.log_info("Making example packages4")
 
         self.__from_module_dispatcher_queue = self.__module_dispatcher.get_from_dispatcher_queue()
 
         self.running = True
-        self.read_from_module_dispatcher_thread = Thread(target=self.read_from_module_dispatcher)
-        self.read_from_module_dispatcher_thread.start()
+
+        await self.read_from_module_dispatcher()
+       
 
         return True
     
@@ -168,7 +173,7 @@ class ModuleManager():
          
         self.running = False
         self.__from_module_dispatcher_queue.cancel()
-        self.read_from_module_dispatcher_thread.join()
+        
         
         self.__channel_subscriber_publisher.reset()
     
@@ -192,7 +197,7 @@ class ModuleManager():
         return host_and_module
 
     def on_data_package_received_from_module_dispatcher(self, data_package):
-        if data_package.HasField('control_val') and data_package.control_val.ctrl_type != CtrlType.CTRL_UNSPECIFIED:
+        if data_package.control_val is not None and data_package.control_val.ctrl_type != CtrlType.CTRL_UNSPECIFIED:
             self.handle_package_with_control_val(data_package)
             return
 
@@ -272,11 +277,11 @@ class ModuleManager():
         else:
             Logger.log_warning(f"ModuleManager received package with unsupported control val {packet.control_val.ctrl_type}")
 
-    def read_from_module_dispatcher(self):
+    async def read_from_module_dispatcher(self):
         while self.running:
             Logger.log_info("on read from module dispatcher")
             try:
-                for data_package in self.__from_module_dispatcher_queue:
+                async for data_package in self.__from_module_dispatcher_queue:
                     if data_package is not None:
                         self.on_data_package_received_from_module_dispatcher(data_package)
                     else:
@@ -388,12 +393,12 @@ class ModuleManager():
         for callback in self.__on_disconnected_from_remote_server_callbacks:
             callback()
 
-    def upload_config_to_host(self, host_name: str, config: CLAIDConfig):
+    def upload_config_to_host(self, host_name: str, config: ClaidConfig):
         
         self.upload_config_to_host_with_payload(host_name, config, ConfigUploadPayload())
 
 
-    def upload_config_to_host_with_payload(self, host_name: str, config: CLAIDConfig, config_payload: ConfigUploadPayload):
+    def upload_config_to_host_with_payload(self, host_name: str, config: ClaidConfig, config_payload: ConfigUploadPayload):
         package = DataPackage()
         package.target_host = host_name
         # package.source_host = ... will be set by middleware

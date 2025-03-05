@@ -385,40 +385,47 @@ RuntimeDispatcher* ServiceImpl::addRuntimeDispatcher(DataPackage& pkt, Status& s
     auto runTime = pkt.control_val().runtime();
 
     Logger::logInfo("Got message %s", messageToString(pkt).c_str());
-
+    Logger::logInfo("Pkg 1");
     // Make sure we got a control package with a CTRL_RUNTIME_PING message.
     if (!validCtrlRuntimePingPkt(pkt)) {
         status = Status(grpc::INVALID_ARGUMENT, absl::StrCat("Invalid control type or unspecified runtime ", Runtime_Name(pkt.control_val().runtime()).c_str(), " ", CtrlType_Name(pkt.control_val().ctrl_type())).c_str());
         return nullptr;
     }
+    Logger::logInfo("Pkg 2");
 
     if(runTime == RUNTIME_UNSPECIFIED)
     {
         status = Status(grpc::INVALID_ARGUMENT, "Invalid runtime type RUNTIME_UNSPECIFIED.");
         return nullptr;
     }
+    Logger::logInfo("Pkg 3");
 
     // check if the RuntimeDispatcher exits
     lock_guard<mutex> lock(adMutex);
+    Logger::logInfo("Pkg 4");
     auto it = activeDispatchers.find(runTime);
     if (it != activeDispatchers.end()) {
         return it->second.get();
     }
+    Logger::logInfo("Pkg 5");
 
     // Allocate a runtime Disptacher
     // TODO: avoid implict addition to map through [] operator.
 
+    Logger::logInfo("Pkg 6");
 
     moduleTable.addRuntimeIfNotExists(runTime);
     moduleTable.setRuntimeConnected(runTime, true);
 
     shared_ptr<SharedQueue<DataPackage>> rtq = moduleTable.getOutputQueueOfRuntime(runTime);
+    Logger::logInfo("Pkg 7");
 
     if(rtq == nullptr)
     {
         status = Status(grpc::NOT_FOUND, absl::StrCat("Unable to find Runtime \"", Runtime_Name(runTime), "\" in ModuleTable."));
         return nullptr;
     }
+    Logger::logInfo("Pkg 8");
 
     Logger::logInfo("Rtq ptr: %lu", rtq.get());
     auto ret = new RuntimeDispatcher(moduleTable.inputQueue(), *rtq.get(), moduleTable);

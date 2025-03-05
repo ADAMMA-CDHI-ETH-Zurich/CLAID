@@ -19,9 +19,9 @@
 # limitations under the License.
 ##########################################################################
 
-from dispatch.proto.claidservice_pb2 import ModuleAnnotation, DataPackage, PropertyHint, PropertyType
+from dispatch.proto.claidservice import ModuleAnnotation, DataPackage, PropertyHint, PropertyType
 from module.type_mapping.type_mapping import TypeMapping
-
+from copy import copy
 class ModuleAnnotator:
     def __init__(self, module_type: str):
         self.annotation = ModuleAnnotation()
@@ -35,11 +35,10 @@ class ModuleAnnotator:
         else:
             data_package.target_module = module_id
 
-        print(type(channel_name))
         data_package.channel = channel_name
 
         mutator = TypeMapping.get_mutator(example_instance=data_type_example)
-        mutator.set_package_payload(data_package, data_type_example.__class__())
+        mutator.set_package_payload(data_package, type(data_type_example)())
 
         return data_package
 
@@ -51,19 +50,19 @@ class ModuleAnnotator:
     
     def make_default_property(self):
         property_hint = PropertyHint()
-        property_hint.property_type = PropertyType.PROPERTY_TYPE_DEFAULT
+        property_hint.property_type = PropertyType.DEFAULT
         return property_hint
 
     def make_enum_property(self, enum_values : list):
         property_hint = PropertyHint
-        property_hint.property_type = PropertyType.PROPERTY_TYPE_ENUM
+        property_hint.property_type = PropertyType.ENUM
         property_hint.enum_values = enum_values
         return property_hint
     
 
     def make_integer_property(self, min, max):
         property_hint = PropertyHint
-        property_hint.property_type = PropertyType.PROPERTY_TYPE_INT
+        property_hint.property_type = PropertyType.INT
         property_hint.property_type_int_min = min
         property_hint.property_type_int_max = max
         
@@ -72,7 +71,7 @@ class ModuleAnnotator:
 
     def make_path_property(self):
         property_hint = PropertyHint
-        property_hint.property_type = PropertyType.PROPERTY_TYPE_PATH
+        property_hint.property_type = PropertyType.PATH
         
         return property_hint
 

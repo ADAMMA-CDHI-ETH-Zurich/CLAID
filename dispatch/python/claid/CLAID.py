@@ -19,7 +19,8 @@
 # limitations under the License.
 ##########################################################################
 
-import dispatch.proto.sensor_data_types_pb2
+import dispatch.proto.claidservice
+import dispatch.proto.claid
 from helpers.c_binding_helpers import strings_to_c_strings, string_to_c_string
 import ctypes
 import pathlib
@@ -37,13 +38,14 @@ from module.scheduling.schedule_once import ScheduleOnce
 from module.scheduling.schedule_immediately_indefinitely import ScheduleImmediatelyIndefinitely
 from module.scheduling.external_scheduled_runnable import ExternalScheduledRunnable
 
-from dispatch.proto.claidservice_pb2 import LogMessage, LogMessageSeverityLevel
+from dispatch.proto.claidservice import LogMessage, LogMessageSeverityLevel
 
 import platform
 import os
 import time
 import threading
-
+import asyncio
+import traceback
 class CLAID():
 
     
@@ -164,7 +166,7 @@ class CLAID():
 
 
 
-    def startCustomSocket(self, socket_path, config_file_path, host_id, user_id, device_id, module_factory):
+    async def startCustomSocket(self, socket_path, config_file_path, host_id, user_id, device_id, module_factory):
         CLAID.__load_claid_library()
 
         Logger.log_info("Starting CLAID")
@@ -191,31 +193,66 @@ class CLAID():
         
         Logger.claid_instance = self
         Logger.log_info("Successfully started CLAID")
-        self.attach_python_runtime(socket_path, module_factory)
+        await self.attach_python_runtime(socket_path, module_factory)
            
 
 
         # This will block indefinitely and wakes up when there are runnables to execute
 
-    def start(self, config_file_path, host_id, user_id, device_id, module_factory):
-        return self.startCustomSocket("unix:///tmp/claid_socket.grpc", config_file_path, host_id, user_id, device_id, module_factory)
+    def run_asyncio_loop(self, loop):
+        """Runs an asyncio event loop in a separate thread."""
+        asyncio.set_event_loop(loop)
+        print("Loop run 1")
+        loop.run_forever()
+        print("Loop run 2")
 
-    def attach_python_runtime(self, socket_path, module_factory):
+    def watch_future(self, future):
+        """Waits for the future result in a separate thread and logs errors."""
+        try:
+            result = future.result()  # This blocks but runs in its own thread
+            print("Future completed successfully:", result)
+        except Exception as e:
+            print(f"Exception in async task: {e}")
+            traceback.print_exc()
+
+    async def start(self, config_file_path, host_id, user_id, device_id, module_factory):
+        print("Asyncio run 1")
+        try:
+            loop = asyncio.new_event_loop()  # Create a new loop for the thread
+            threading.Thread(target=self.run_asyncio_loop, args=(loop,), daemon=True).start()
+
+            # Schedule startCustomSocket on the new loop
+            future = asyncio.run_coroutine_threadsafe(
+                self.startCustomSocket("unix:///tmp/claid_socket.grpc", config_file_path, host_id, user_id, device_id, module_factory),
+                loop
+            )
+
+            # Start a separate thread to watch the future result
+            threading.Thread(target=self.watch_future, args=(future,), daemon=True).start()
+
+        except Exception as e:
+            print(f"Exception in thread running startCustomSocket: {e}")
+
+        print("Asyncio run 2")
+
+        # This will block, but the background task is already running
+        self.process_runnables_blocking()
+
+    async def attach_python_runtime(self, socket_path, module_factory):
 
         self.__module_dispatcher = ModuleDispatcher(socket_path)
 
-        self.__module_manager = ModuleManager(self.__module_dispatcher, module_factory, self.__main_thread_queue)
+        self.__module_manager = ModuleManager(self.__module_dispatcher, module_factory, self.__main_thread_queue,  asyncio.get_running_loop())
         print("starting Python runtime")
 
         # In Python, we have to launch the ModuleManager in a separate thread, because each Module will
         # forward all of it's runnables to the main thread. If the ModuleManager would also be called from the main thread,
         # then it would block during module.start(), as the Modules inject a runnable with their initialize function to the main thread queue -> deadlock.
-        self.__module_manager_thread = threading.Thread(target=self.__module_manager.start)
-        self.__module_manager_thread.start()
+        await self.__module_manager.start()
+
         Logger.log_info("Started ModuleManager thread")
         self.__module_factory = module_factory
         self.__started = True
-        self.process_runnables_blocking()
 
     def load_new_config_test(self, config_path):
         Logger.log_info("Load new config 1 ", config_path)
@@ -306,7 +343,7 @@ class CLAID():
     def process_runnables_blocking(self):
 
         print("Processing runnables ", self.__started)
-        while self.__started:
+        while True:
 
             scheduled_runnable = self.__main_thread_queue.get()
 
@@ -389,7 +426,8 @@ class CLAID():
     
     def get_log_sink_severity_level(self) -> LogMessageSeverityLevel:
         value = CLAID.claid_c_lib.get_log_sink_severity_level(self.__handle)
-        return LogMessageSeverityLevel.Value(LogMessageSeverityLevel.keys()[value])
+        print(value)
+        return LogMessageSeverityLevel.try_value(value)
     
     def post_log_message(self, log_message: LogMessage):
         self.__module_manager.post_log_message(log_message)

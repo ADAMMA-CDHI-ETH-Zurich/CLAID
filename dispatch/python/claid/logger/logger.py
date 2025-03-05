@@ -19,7 +19,7 @@
 # limitations under the License.
 ##########################################################################
 
-from dispatch.proto.claidservice_pb2 import LogMessageSeverityLevel, LogMessage, LogMessageEntityType, Runtime
+from dispatch.proto.claidservice import LogMessageSeverityLevel, LogMessage, LogMessageEntityType, Runtime
 
 from datetime import datetime
 import sys
@@ -36,7 +36,7 @@ class Logger:
 
     @staticmethod
     def log(level, message, log_message_entity_type = LogMessageEntityType.MIDDLEWARE, log_message_entity = "PYTHON_RUNTIME"):
-        output = f"[{Logger.get_time_string()} | CLAID Python {LogMessageSeverityLevel.Name(level)}] {message}\n"
+        output = f"[{Logger.get_time_string()} | CLAID Python {level.name}] {message}\n"
 
         if not isinstance(message, str):
             try:
@@ -65,7 +65,7 @@ class Logger:
                 log_message.unix_timestamp_in_ms = int(datetime.now().timestamp() * 1000)
                 log_message.entity_type = log_message_entity_type
                 log_message.entity_name = log_message_entity
-                log_message.runtime = Runtime.RUNTIME_PYTHON
+                log_message.runtime = Runtime.PYTHON
 
 
                 # Forward the LogMessage to your log sink function

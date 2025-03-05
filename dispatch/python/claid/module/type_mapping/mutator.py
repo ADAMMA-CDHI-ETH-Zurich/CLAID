@@ -20,8 +20,7 @@
 ##########################################################################
 
 from typing import Type
-from google.protobuf.message import Message
-from dispatch.proto.claidservice_pb2 import DataPackage
+from dispatch.proto.claidservice import DataPackage
 from logger.logger import Logger
 
 class Mutator:

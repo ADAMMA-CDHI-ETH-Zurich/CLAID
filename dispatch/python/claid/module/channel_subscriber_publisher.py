@@ -27,9 +27,8 @@ from module.type_mapping.mutator import Mutator
 from module.channel import Channel
 from module.publisher import Publisher
 
-from dispatch.proto.claidservice_pb2 import DataPackage
 
-from dispatch.proto.claidservice_pb2 import * 
+from dispatch.proto.claidservice import * 
 
 # Assuming you have a Python protobuf equivalent for claidservice::DataPackage
 # from your_protobuf_module import DataPackage
@@ -37,10 +36,11 @@ from dispatch.proto.claidservice_pb2 import *
 
 
 class ChannelSubscriberPublisher:
-    def __init__(self, to_module_manager_queue):
+    def __init__(self, to_module_manager_queue, asyncio_loop):
         self.__example_packages_for_each_module: Dict[str, List[DataPackage]] = {}
         self.__module_channels_subscriber_map: Dict[tuple, List[AbstractSubscriber]] = {}
         self.__to_module_manager_queue = to_module_manager_queue
+        self.__asyncio_loop = asyncio_loop
 
     def prepare_example_package(self, data_type_example, module_id: str, channel_name: str, is_publisher: bool) -> DataPackage:
         data_package = DataPackage()
@@ -50,10 +50,7 @@ class ChannelSubscriberPublisher:
         else:
             data_package.target_module = module_id
 
-        print(type(channel_name))
         data_package.channel = channel_name
-
-        print("Preparing example package for channel ", channel_name, type(data_type_example))
 
         mutator = TypeMapping.get_mutator(example_instance=data_type_example)
 
@@ -63,11 +60,9 @@ class ChannelSubscriberPublisher:
     def publish(self, data_type_example, module, channel_name: str) -> Channel:
         module_id = module.get_id()
         example_package = self.prepare_example_package(data_type_example, module_id, channel_name, True)
-
-        print(f"Inserting package for Module {module_id}")
         self.__example_packages_for_each_module.setdefault(module_id, []).append(example_package)
 
-        publisher = Publisher(data_type_example, module_id, channel_name, self.__to_module_manager_queue)
+        publisher = Publisher(data_type_example, module_id, channel_name, self.__to_module_manager_queue, self.__asyncio_loop)
         return Channel(module, channel_name, publisher)
 
     def subscribe(self, data_type_example, module, channel_name: str, subscriber: AbstractSubscriber) -> Channel:
@@ -109,7 +104,6 @@ class ChannelSubscriberPublisher:
 
     def get_payload_case_of_channel(self, channel_name: str, receiver_module: str) -> str:
         if receiver_module in self.__example_packages_for_each_module:
-            print(self.__example_packages_for_each_module)
             for template_package in self.__example_packages_for_each_module[receiver_module]:
                 if template_package.channel == channel_name:
                     return template_package.payload.message_type

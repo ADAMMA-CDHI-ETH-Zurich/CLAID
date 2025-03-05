@@ -24,14 +24,21 @@ from module.type_mapping.type_mapping import TypeMapping
 from module.type_mapping.mutator import Mutator
 from claid.logger.logger import Logger
 
-from dispatch.proto.claidservice_pb2 import DataPackage
+from dispatch.proto.claidservice import DataPackage
+import asyncio
+
+async def post_helper(queue, package):
+    print("post helper")
+    await queue.put(package)  # Await to ensure non-blocking behavior
+        
 
 class Publisher:
-    def __init__(self, channel_data_type_example_package, module_id: str, channel_name: str, to_module_manager_queue):
+    def __init__(self, channel_data_type_example_package, module_id: str, channel_name: str, to_module_manager_queue, asyncio_loop):
         self.module_id = module_id
         self.channel_name = channel_name
         self.to_module_manager_queue = to_module_manager_queue
         self.mutator = TypeMapping.get_mutator(channel_data_type_example_package)
+        self.asyncio_loop = asyncio_loop
 
     def post(self, data):
         package = DataPackage()
@@ -42,4 +49,5 @@ class Publisher:
 
         self.mutator.set_package_payload(package, data)
         Logger.log_info(package)
-        self.to_module_manager_queue.put(package)
+        print("Post package", package)
+        future = asyncio.run_coroutine_threadsafe(post_helper(self.to_module_manager_queue, package), self.asyncio_loop)  # ✅ Now passes a coroutine

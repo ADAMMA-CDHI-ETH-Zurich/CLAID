@@ -21,7 +21,7 @@
 
 from abc import ABC, abstractmethod
 
-from dispatch.proto.claidservice_pb2 import DataPackage
+from dispatch.proto.claidservice import DataPackage
 
 
 class AbstractSubscriber(ABC):

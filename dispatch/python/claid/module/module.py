@@ -34,7 +34,7 @@ from datetime import datetime
 from module.scheduling.function_runnable_with_params import FunctionRunnableWithParams
 from module.scheduling.scheduled_runnable import ScheduledRunnable
 from module.scheduling.schedule_once import ScheduleOnce
-from dispatch.proto.claidservice_pb2 import LogMessageSeverityLevel, LogMessage, LogMessageEntityType, Runtime
+from dispatch.proto.claidservice import LogMessageSeverityLevel, LogMessage, LogMessageEntityType, Runtime
 
 import time
 

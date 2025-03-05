@@ -19,15 +19,13 @@
 # limitations under the License.
 ##########################################################################
 
-import ctypes
-import sys
-import dispatch.proto.sensor_data_types_pb2
+import sys,os
+sys.path.append(os.getcwd() + "/dispatch/python")
 import ctypes
 import pathlib
 from claid.module.module_factory import ModuleFactory
 from claid.logger.logger import Logger
-import sys,os
-sys.path.append(os.getcwd() + "/dispatch/python")
+
 from local_dispatching.module_dispatcher import ModuleDispatcher
 from module.module_factory import ModuleFactory
 
@@ -43,17 +41,19 @@ from claid.module.module import Module
 # from module.type_mapping.mutator import Mutator
 
 
+import sys
+import traceback
 
 
 # value = {str:int}
 
 # dispatcher = ModuleDispatcher("unix:///tmp/test.grpc")
 
-import google.protobuf as protobuf
 from datetime import datetime, timedelta
 
-from dispatch.proto.claidservice_pb2 import RemoteClientInfo
+from dispatch.proto.claidservice import RemoteClientInfo
 import numpy as np
+import asyncio
 class TestModule(Module):
     def __init__(self):
         super().__init__()
@@ -69,13 +69,17 @@ class TestModule(Module):
 
     def initialize(self, properties):
         Logger.log_info("TestModule Initialize")
+       
+        print("TestModule init 1")
         self.output_channel = self.publish("TestChannel", RemoteClientInfo())
+        print("TestModule init 2")
         self.int_channel = self.publish("IntChannel", int(42))
-        self.number_array_channel = self.publish("NumberArrayChannel", np.array([42]))
+        #self.number_array_channel = self.publish("NumberArrayChannel", np.array([42]))
         self.string_map_channel = self.publish("StringMapChannel", dict({"": ""}))
 
-        self.ctr = 0
+        self.ctr = 1
         self.register_periodic_function("Test", self.periodic_function, timedelta(milliseconds=1000))
+        print("TestModule init 4")
 
     def periodic_function(self):
         Logger.log_info("PeriodicFunction")
@@ -83,7 +87,7 @@ class TestModule(Module):
         remote_client_info.host = "42 " + str(self.ctr)
         self.output_channel.post(remote_client_info)
         self.int_channel.post(self.ctr)
-        self.number_array_channel.post([self.ctr, self.ctr*2, self.ctr*3])
+        #self.number_array_channel.post([self.ctr, self.ctr*2, self.ctr*3])
         self.string_map_channel.post(dict({"data": f"Counter is currently: {self.ctr}"}))
         self.ctr+=1
 
@@ -95,9 +99,10 @@ class TestModule2(Module):
 
     def initialize(self, properties):
         Logger.log_info("TestModule Initialize")
+
         self.input_channel = self.subscribe("TestChannel", RemoteClientInfo(), self.on_data)
         self.int_channel = self.subscribe("IntChannel", int(42), self.on_int_data)
-        self.number_array_channel = self.subscribe("NumberArrayChannel", np.array([42]), self.on_array_data)
+        #self.number_array_channel = self.subscribe("NumberArrayChannel", np.array([42]), self.on_array_data)
         self.string_map_channel = self.subscribe("StringMapChannel", dict({"":""}), self.on_map_data)
         self.ctr = 0
 
@@ -119,13 +124,15 @@ module_factory.register_module(TestModule)
 module_factory.register_module(TestModule2)
 claid = CLAID()
 claid.hello_world()
-claid.start("{}/dispatch/python/claid/test_config.json".format(os.getcwd()), "test_client", "user", "device", module_factory)
 
 
-print("Getting available modules")
-print(claid.get_available_modules())
-print(claid.get_current_host_id())
-print("done")
+asyncio.run(claid.start("{}/claid/test_config.json".format(os.getcwd()), "test_client", "user", "device", module_factory))
+
+
+# print("Getting available modules")
+# print(claid.get_available_modules())
+# print(claid.get_current_host_id())
+# print("done")
 
 
 # socket = "unix:///tmp/claid_socket.grpc".encode('utf-8')

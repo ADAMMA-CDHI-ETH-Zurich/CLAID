@@ -134,12 +134,12 @@ class RunnableDispatcher:
             due_runnables = self.get_and_remove_due_runnables()
 
             while due_runnables:
+
                 self.process_runnables(due_runnables)
                 due_runnables = self.get_and_remove_due_runnables()
 
             with self.mutex:
                 self.reschedule_required = False
-
             self.wait_until_runnable_is_due_or_reschedule_is_required()
 
         Logger.log_info("RunnableDispatcher shutdown.")
@@ -168,9 +168,7 @@ class RunnableDispatcher:
         return True
 
     def add_runnable(self, scheduled_runnable):
-        Logger.log_info("Adding runnable 1")
         with self.mutex:
-            Logger.log_info("Adding runnable 2")
             self.scheduled_runnables.append(scheduled_runnable)
             self.scheduled_runnables.sort(
                 key=lambda x: x.schedule.get_execution_time()

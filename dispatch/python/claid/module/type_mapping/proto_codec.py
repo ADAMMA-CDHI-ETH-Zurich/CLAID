@@ -21,29 +21,29 @@
 
 import logging
 from typing import Optional
-from google.protobuf.message import Message
-from google.protobuf.any_pb2 import Any
-from dispatch.proto.claidservice_pb2 import Blob, Codec
+
+from betterproto import Message
+from dispatch.proto.claidservice import Blob, Codec
 
 from logger.logger import Logger
 
 
 class ProtoCodec:
     def __init__(self, message):
-        self.full_name = message.DESCRIPTOR.full_name 
+        self.full_name = message.__class__.__name__
         self.msg = message
 
     def encode(self, proto_message: Message) -> Blob:
 
         return_blob = Blob()
 
-        name = proto_message.DESCRIPTOR.full_name
+        name = proto_message.__class__.__name__
         if name != self.full_name:
             return None
-
         serialized_data = proto_message.SerializeToString()
+        print(proto_message, serialized_data)
 
-        return_blob.codec = Codec.CODEC_PROTO
+        return_blob.codec = Codec.PROTO
         return_blob.payload = serialized_data
         return_blob.message_type = self.full_name
 
@@ -64,8 +64,8 @@ class ProtoCodec:
                 return return_value
 
             else:
-                if not return_value.ParseFromString(blob.payload):
-                    Logger.log_error("Failed to parse protobuf message of type {}. ParseFromString failed.").format(self.full_name)
+                if not return_value.parse(blob.payload):
+                    Logger.LOG_THROW_FATAL("Failed to parse protobuf message of type {}. ParseFromString failed.").format(self.full_name)
                 
                     return None
 

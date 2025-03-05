@@ -4,7 +4,7 @@ pip_package:
 	rm -fr pip_package
 	mkdir -p pip_package
 	bazel build :py_claid
-	cp -L -r ../../../bazel-bin/dispatch/python/claid/py_claid.runfiles/claid-core/ pip_package/claid
+	cp -L -r ../../../bazel-bin/dispatch/python/claid/py_claid.runfiles/_main/ pip_package/claid
 	mv pip_package/claid/dispatch/python/claid/** pip_package/claid/
 	rm -fr pip_package/claid/dispatch/python
 	rm -fr pip_package/claid/external
@@ -14,6 +14,8 @@ pip_package:
 	mkdir -p pip_package/claid/dispatch/core/Linux/x86_64
 	mkdir -p pip_package/claid/dispatch/core/Linux/x86
 	mkdir -p pip_package/claid/dispatch/core/Linux/arm64
+
+	protoc -I ../../../dispatch/proto --python_betterproto_out=pip_package/claid/dispatch/proto/ ../../../dispatch/proto/*.proto
 
 	cp MANIFEST.in pip_package/MANIFEST.in
 	cp README.md pip_package/README.md
