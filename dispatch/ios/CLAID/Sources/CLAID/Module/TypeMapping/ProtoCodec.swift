@@ -15,7 +15,7 @@ class ProtoCodec {
 
     init(msg: SwiftProtobuf.Message.Type) {
         self.msg = msg
-        self.fullName = String(describing: msg)
+        self.fullName = String(describing: msg).replacingOccurrences(of: "Claidservice_", with: "")
     }
 
     func encode(_ protoMessage: SwiftProtobuf.Message) -> Claidservice_Blob {

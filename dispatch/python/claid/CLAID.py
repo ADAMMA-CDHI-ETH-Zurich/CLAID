@@ -216,6 +216,9 @@ class CLAID():
             traceback.print_exc()
 
     async def start(self, config_file_path, host_id, user_id, device_id, module_factory):
+        await self.start("unix:///tmp/claid_socket.grpc", config_file_path, host_id, user_id, device_id, module_factory)
+
+    async def start(self, socket_path, config_file_path, host_id, user_id, device_id, module_factory):
         print("Asyncio run 1")
         try:
             loop = asyncio.new_event_loop()  # Create a new loop for the thread
@@ -223,7 +226,33 @@ class CLAID():
 
             # Schedule startCustomSocket on the new loop
             future = asyncio.run_coroutine_threadsafe(
-                self.startCustomSocket("unix:///tmp/claid_socket.grpc", config_file_path, host_id, user_id, device_id, module_factory),
+                self.startCustomSocket(socket_path, config_file_path, host_id, user_id, device_id, module_factory),
+                loop
+            )
+
+            # Start a separate thread to watch the future result
+            threading.Thread(target=self.watch_future, args=(future,), daemon=True).start()
+
+        except Exception as e:
+            print(f"Exception in thread running startCustomSocket: {e}")
+
+        print("Asyncio run 2")
+
+        # This will block, but the background task is already running
+        self.process_runnables_blocking()
+
+    async def start_python_only(self, module_factory):
+        await self.start_python_only(self, "unix:///tmp/claid_socket.grpc", module_factory)
+
+    async def start_python_only(self, socket_path, module_factory):
+        print("Asyncio run 1")
+        try:
+            loop = asyncio.new_event_loop()  # Create a new loop for the thread
+            threading.Thread(target=self.run_asyncio_loop, args=(loop,), daemon=True).start()
+
+            # Schedule startCustomSocket on the new loop
+            future = asyncio.run_coroutine_threadsafe(
+                self.attach_python_runtime(socket_path, module_factory),
                 loop
             )
 
@@ -261,7 +290,6 @@ class CLAID():
         res = CLAID.claid_c_lib.load_new_config(self.__handle, config_path_c)
         print("Load new config 4")
         return True
-    
 
     def update_module_annotations_of_host(self, host_name):
         self.__module_manager.update_module_annotations_of_host(host_name)
@@ -296,8 +324,6 @@ class CLAID():
             if(current_time - start_time > 3000):
                 return None
             
-
-
         return self.get_module_annotations_of_host(host_name)
     
     def hello_world(self):
@@ -377,7 +403,6 @@ class CLAID():
     def register_external_function_on_claid_thread_run_once(self, function):
         function_runnable = FunctionRunnable(function)
 
-        
         runnable =  ExternalScheduledRunnable(
                 function_runnable,
                 schedule=ScheduleOnce.now()
@@ -388,15 +413,12 @@ class CLAID():
     def register_external_function_on_claid_thread_repeat_indefinitely(self, function):
         function_runnable = FunctionRunnable(function)
 
-        
         runnable = ExternalScheduledRunnable(
                 function_runnable,
                 schedule=ScheduleImmediatelyIndefinitely.startNow()
             )
         
         self.__main_thread_queue.put(runnable)
-
-
     
 
     def register_on_connected_to_server_callback(self, callback):

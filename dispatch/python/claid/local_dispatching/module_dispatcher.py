@@ -34,7 +34,13 @@ class ModuleDispatcher:
         self.socket_path = socket_path
   
         print(socket_path)
-        self.grpc_channel = Channel(path="/tmp/claid_socket.grpc")
+
+        if socket_path.startswith("unix://"):
+            adjusted_path = socket_path[len("unix://"):]  
+            self.grpc_channel = Channel(path=adjusted_path)
+        else:
+            host, socket = socket_path.split(":", 1)  # Split into host and port
+            self.grpc_channel = Channel(host, socket)
 
         self.stub = ClaidServiceStub(self.grpc_channel)
 
@@ -72,8 +78,8 @@ class ModuleDispatcher:
                 Logger.log_error(f"Error occurred in getModuleList() of PYTHON_RUNTIME: {response_observer.get_error_message()}")
                 exit(0)
         except Exception as e:
-            print(e)
-            return False
+            Logger.log_error(e)
+            exit(0)
 
         print(f"Response: {response}")
         return response

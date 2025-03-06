@@ -30,7 +30,7 @@ from logger.logger import Logger
 
 class ProtoCodec:
     def __init__(self, message):
-        self.full_name = message.__class__.__name__
+        self.full_name = message.__class__.__name__.replace("Claidservice_", "")
         self.msg = message
 
     def encode(self, proto_message: Message) -> Blob:

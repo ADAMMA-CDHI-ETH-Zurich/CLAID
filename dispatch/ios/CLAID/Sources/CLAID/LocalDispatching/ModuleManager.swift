@@ -321,8 +321,9 @@ actor ModuleManager {
         }
         
         // This should block indefinitely?
-        try await dispatcher.sendReceivePackages()
-        
+        Task {
+            try await dispatcher.sendReceivePackages()
+        }
 
         return true
     }

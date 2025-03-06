@@ -53,7 +53,7 @@ public actor Channel<T: Sendable> {
     }
 
     /// Posts data to the channel with the current timestamp
-    func post(_ data: T) async {
+    public func post(_ data: T) async {
         guard canWrite() else {
             let msg = "Tried to post data to channel \"\(self.channelId)\", but it was not published before."
 
@@ -64,7 +64,7 @@ public actor Channel<T: Sendable> {
     }
 
     /// Posts data to the channel with a custom timestamp
-    func post(_ data: T, date: Date) async {
+    public func post(_ data: T, date: Date) async {
         guard canWrite() else {
             let msg = "Tried to post data to channel \"\(self.channelId)\", but it was not published before."
 

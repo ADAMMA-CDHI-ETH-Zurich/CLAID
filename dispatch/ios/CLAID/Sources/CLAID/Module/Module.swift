@@ -11,23 +11,28 @@ public protocol Module : Actor {
     func terminate() async
     func notifyConnectedToRemoteServer() async
     func notifyDisconnectedFromRemoteServer() async
+    func publish<T: Sendable>(_ channelName: String, dataTypeExample: T) async throws -> Channel<T>
+    func subscribe<T: Sendable>(_ channelName: String, dataTypeExample: T, callback: @escaping @Sendable (ChannelData<T>) async -> Void) async throws -> Channel<T>
+    func registerPeriodicFunction(name: String, interval: Duration, function: @escaping @Sendable () async -> Void) async
+    func registerScheduledFunction(name: String, after delay: Duration, function: @escaping @Sendable () async -> Void) async
+    func unregisterFunction(name: String) async
 }
 
 extension Module {
     /// Registers a periodic function and stores it in the dictionary
-    func registerPeriodicFunction(name: String, interval: Duration, function: @escaping @Sendable () async -> Void) async {
+    public func registerPeriodicFunction(name: String, interval: Duration, function: @escaping @Sendable () async -> Void) async {
         let task = await moduleHandle.dispatcher.addPeriodicTask(interval: interval.timeInterval, function: function)
         await moduleHandle.addTask(name, task)
     }
 
     /// Registers a scheduled function and stores it in the dictionary
-    func registerScheduledFunction(name: String, after delay: Duration, function: @escaping @Sendable () async -> Void) async {
+    public func registerScheduledFunction(name: String, after delay: Duration, function: @escaping @Sendable () async -> Void) async {
         let task = await moduleHandle.dispatcher.addScheduledTask(delay: delay.timeInterval, function: function)
         await moduleHandle.addTask(name, task)
     }
 
     /// Cancels and removes a task using its name
-    func unregisterFunction(name: String) async {
+    public func unregisterFunction(name: String) async {
         if let task = await moduleHandle.tasks[name] {
             task.cancel()
             await moduleHandle.removeTask(name)
@@ -43,7 +48,7 @@ extension Module {
         }
     }
         
-    func publish<T: Sendable>(_ channelName: String, dataTypeExample: T) async throws -> Channel<T> {
+    public func publish<T: Sendable>(_ channelName: String, dataTypeExample: T) async throws -> Channel<T> {
         
         try await assertCanPublish(channelName)
         
@@ -64,7 +69,7 @@ extension Module {
         }
     }
         
-    func subscribe<T: Sendable>(_ channelName: String, dataTypeExample: T, callback: @escaping @Sendable (ChannelData<T>) async -> Void) async throws -> Channel<T> {
+    public func subscribe<T: Sendable>(_ channelName: String, dataTypeExample: T, callback: @escaping @Sendable (ChannelData<T>) async -> Void) async throws -> Channel<T> {
             try await assertCanSubscribe(channelName)
             
             guard let subscriberPublisher = await moduleHandle.subscriberPublisher else {
@@ -84,7 +89,7 @@ extension Module {
             )
     }
     
-    func mapRemoteFunctionOfModule<Return: Sendable, each Parameters: Sendable>(
+    public func mapRemoteFunctionOfModule<Return: Sendable, each Parameters: Sendable>(
         moduleId: String,
         functionName: String,
         returnType: Return,
@@ -117,7 +122,7 @@ extension Module {
         return remoteFunction
     }
 
-    func mapRemoteFunctionOfRuntime<Return, each Parameters>(
+    public func mapRemoteFunctionOfRuntime<Return, each Parameters>(
         runtime: Claidservice_Runtime,
         functionName: String,
         returnTypeExample: Return,
