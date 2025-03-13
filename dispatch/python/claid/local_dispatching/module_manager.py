@@ -198,6 +198,7 @@ class ModuleManager():
         return host_and_module
 
     def on_data_package_received_from_module_dispatcher(self, data_package):
+        Logger.log_info(f"Received package from Middleware {data_package}")
         if data_package.control_val is not None and data_package.control_val.ctrl_type != CtrlType.CTRL_UNSPECIFIED:
             self.handle_package_with_control_val(data_package)
             return
@@ -287,7 +288,8 @@ class ModuleManager():
     def handle_remote_function_request(self, remote_function_request: DataPackage):
         request = remote_function_request.control_val.remote_function_request
 
-        if request.remote_function_identifier.has_runtime():
+        print("Request: ", request)
+        if hasattr(request.remote_function_identifier, "runtime"):
             self.handle_runtime_remote_function_execution(remote_function_request)
         else:
             self.handle_module_remote_function_execution(remote_function_request)
@@ -300,17 +302,17 @@ class ModuleManager():
             return
 
     def handle_module_remote_function_execution(self, request: DataPackage):
-        remote_function_request = request.control_val.get_remote_function_request()
+        remote_function_request = request.control_val.remote_function_request
         module_id = remote_function_request.remote_function_identifier.module_id
 
-        if module_id not in self.running_modules:
+        if module_id not in self.__running_modules:
             Logger.log_error(f"Failed to execute remote function request. Could not find Module \"{module_id}\"")
             return
 
-        self.running_modules[module_id].enqueue_rpc(request)
+        self.__running_modules[module_id].enqueue_rpc(request)
 
     def handle_remote_function_response(self, remote_function_response: 'DataPackage'):
-        self.remote_function_handler.handle_response(remote_function_response)
+        self.__remote_function_handler.handle_response(remote_function_response)
 
     async def read_from_module_dispatcher(self):
         while self.running:

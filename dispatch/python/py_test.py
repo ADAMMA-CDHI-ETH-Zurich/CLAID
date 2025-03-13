@@ -21,17 +21,19 @@
 
 import sys,os
 sys.path.append(os.getcwd() + "/dispatch/python")
+sys.path.append(os.getcwd() + "/claid")
+
 import ctypes
 import pathlib
-from claid.module.module_factory import ModuleFactory
-from claid.logger.logger import Logger
+from module.module_factory import ModuleFactory
+from logger.logger import Logger
 
 from local_dispatching.module_dispatcher import ModuleDispatcher
 from module.module_factory import ModuleFactory
 
 import platform
 from CLAID import CLAID
-from claid.module.module import Module
+from module.module import Module
 
 # from module.module_factory import ModuleFactory
 # from module.module import Module

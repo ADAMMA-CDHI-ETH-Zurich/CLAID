@@ -731,37 +731,56 @@ void MiddleWare::handleControlPackage(std::shared_ptr<DataPackage> controlPackag
         // case CtrlType::CTRL_ADJUST_POWER_PROFILE:
         case CtrlType::CTRL_REMOTE_FUNCTION_REQUEST:
         {
+            Logger::logInfo("Ctrl remote function request 1");
             const ControlPackage& ctrlPackage = controlPackage->control_val();
             const RemoteFunctionRequest& rpcRequest = ctrlPackage.remote_function_request();
             const RemoteFunctionIdentifier& remoteFunctionIdentifier = rpcRequest.remote_function_identifier();
 
+            Logger::logInfo("Ctrl remote function request 2");
 
             if(remoteFunctionIdentifier.function_type_case() == RemoteFunctionIdentifier::FunctionTypeCase::kRuntime)
             {
                 if(remoteFunctionIdentifier.runtime() == Runtime::MIDDLEWARE_CORE)
                 {
+                    Logger::logInfo("Ctrl remote function request 3");
+
                     this->remoteFunctionRunnableHandler.executeRemoteFunctionRunnable(controlPackage);
                 }
                 else
                 {
+                    Logger::logInfo("Ctrl remote function request 5");
+
                     forwardControlPackageToSpecificRuntime(controlPackage, remoteFunctionIdentifier.runtime());
                 }
             }
             else if(remoteFunctionIdentifier.function_type_case() == RemoteFunctionIdentifier::FunctionTypeCase::kModuleId)
             {
+                Logger::logInfo("Ctrl remote function request 5");
+
                 const std::string& targetModule = remoteFunctionIdentifier.module_id();
 
                 SharedQueue<DataPackage>* queue = this->moduleTable.lookupOutputQueue(targetModule);
+                Logger::logInfo("Ctrl remote function request 6");
 
                 // Route package to target runtime.
                 if(queue == nullptr)
                 {
+                    Logger::logInfo("Ctrl remote function request 7");
+
                     Logger::logError("Unable to forward RPC request. Unable to find Module %s", targetModule.c_str());
                     handleRPCModuleNotFoundError(controlPackage);
                     return;
                 }
+                Logger::logInfo("Ctrl remote function request 8");
+
                 queue->push_back(controlPackage);
 
+            }
+            else if(remoteFunctionIdentifier.function_type_case() == RemoteFunctionIdentifier::FunctionTypeCase::FUNCTION_TYPE_NOT_SET) {
+                Logger::throwLogFatalIfNotCaught("Invalid control function type case: \"FUNCTION_TYPE_NOT_SET\".");
+            }
+            else {
+                Logger::throwLogFatalIfNotCaught("Invalid control function type case: %d", remoteFunctionIdentifier.function_type_case());
             }
             // if(rpcRequest.)
             break;

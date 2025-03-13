@@ -130,19 +130,25 @@ class ModuleDispatcher:
   
     async def to_middleware_queue_get(self):
         while self.__running:
-            if self.__ping_package_acknowledged or not self.__ping_package_ready:
-                print("Wait 1")
-                data = await self.__to_middleware_queue.get()  # Await the async queue
-                print("Wait 2")
-                if data is not None:
-                    print("Yield package", data)
-                    yield data
-                elif not self.__running:
-                    return
-            else:
+            print("pre await")
+            data = await self.__to_middleware_queue.get()  # Await the async queue
+            print("post await")
+            if not self.__ping_package_acknowledged:
                 if self.__ping_package_ready:
                     yield self.__ping_package
                     self.__ping_package_ready = False
+                
+                # Requeue the data for later, once the package is acknowledged..
+                await self.__to_middleware_queue.put(data)
+                await asyncio.sleep(1)
+                print("bla", data)
+            else:
+                print("yielding ", data)
+                
+                yield data
+                print("post yield")
+                    
+            
 
                     
 

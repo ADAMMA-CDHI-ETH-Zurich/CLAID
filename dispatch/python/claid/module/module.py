@@ -42,7 +42,8 @@ from remote_function.remote_function_handler import RemoteFunctionHandler
 from remote_function.remote_function_runnable_handler import RemoteFunctionRunnableHandler
 from module.channel_subscriber_publisher import ChannelSubscriberPublisher
 import time
-from typing import Any
+from typing import Any, Callable
+from dispatch.proto.claidservice import *
 
 class Module(ABC):
     def __init__(self):
@@ -92,7 +93,8 @@ class Module(ABC):
         self.__remote_function_runnable_handler = \
             RemoteFunctionRunnableHandler(
                 "Module " + self.__id, 
-                subscriber_publisher.get_to_module_manager_queue()
+                subscriber_publisher.get_to_module_manager_queue(),
+                subscriber_publisher.get_asyncio_loop()
             )
 
         self.__runnable_dispatcher = RunnableDispatcher(main_thread_runnables_queue)
@@ -185,7 +187,7 @@ class Module(ABC):
     def register_scheduled_function(self, name, function, start_time):
         if start_time < datetime.now():
             self.module_warning(f"Failed to schedule function \"{name}\" at time {start_time.strftime('%d.%m.%y - %H:%M:%S')}. "
-                               f"The time is in the past. It is now: {datetime.now().strftime('%d.%m.%y - %H:%M:%S')}")
+                               f"The time is in the past. It is now: {datetime.now().strftime('%d.%m.%y - %H:%M:%S')}. Rescheduling for now.")
 
         function_runnable = FunctionRunnable(function)
         runnable = ScheduledRunnable(
@@ -211,11 +213,11 @@ class Module(ABC):
             entry.runnable.invalidate()
         self.__timers.clear()
 
-    def register_remote_function(self, function_name: str, return_type: Any, *parameters: Any) -> bool:
-        return self.__remote_function_runnable_handler.register_runnable(self, function_name, return_type, *parameters)
+    def register_remote_function(self, function_name: str, function: Callable, return_type: Any, *parameters: Any) -> bool:
+        return self.__remote_function_runnable_handler.register_runnable(function_name, function, return_type, *parameters)
 
     def map_remote_function_of_module(self, module_id: str, function_name: str, return_type: Any, *parameters: Any) -> RemoteFunction:
-        if module_id == self.id:
+        if module_id == self.__id:
             self.module_fatal(f"Cannot map remote function. Module tried to map function \"{function_name}\" of itself, which is not allowed.")
             return None
         return self.__remote_function_handler.map_module_function(module_id, function_name, return_type, *parameters)
@@ -223,6 +225,30 @@ class Module(ABC):
     def map_remote_function_of_runtime(self, runtime: Runtime, function_name: str, return_type: Any, *parameters: Any) -> RemoteFunction:
         return self.__remote_function_handler.map_runtime_function(runtime, function_name, return_type, *parameters)
 
+    def enqueue_rpc(self, rpc_request: DataPackage):
+        # Some entity requested us to execute a remote function.
+        # Create a ConsumerRunnable and enqueue it to execute the remote function on the Module's thread.
+        function_runnable = FunctionRunnableWithParams(self.execute_rpc_request)
+        function_runnable.set_params(rpc_request)
+
+        self.__runnable_dispatcher.add_runnable(
+            ScheduledRunnable(
+                function_runnable,
+                ScheduleOnce(datetime.now())
+            )
+        )       
+    
+    def execute_rpc_request(self, rpc_request: DataPackage):
+        if rpc_request.target_module != self.__id:
+            self.module_error(
+                f"Failed to execute RPC request. RPC is targeted for Module \"{rpc_request.target_module}\", but we are Module \"{self.__id}\"."
+            )
+            return
+        
+        result = self.__remote_function_runnable_handler.execute_remote_function_runnable(rpc_request)
+        if not result:
+            self.module_error("Failed to execute rpcRequest")
+            return
 
     def shutdown(self):
         self.__is_terminating = True

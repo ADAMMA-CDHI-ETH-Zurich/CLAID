@@ -116,3 +116,6 @@ class ChannelSubscriberPublisher:
 
     def get_to_module_manager_queue(self):
         return self.__to_module_manager_queue
+    
+    def get_asyncio_loop(self):
+        return self.__asyncio_loop
