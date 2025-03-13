@@ -23,6 +23,8 @@
 
 #include "dispatch/core/middleware.hh"
 #include "dispatch/core/Logger/Logger.hh"
+#include "dispatch/core/Module/Module.hh"
+
 #include "dispatch/core/capi.h"
 
 #include "dispatch/core/CLAID.hh"
@@ -252,13 +254,22 @@ void disable_designer_mode(void* handle)
 {
     if(!handle)
     {
-        claid::Logger::logError("Cannot enable designer model, handle is null.");
+        claid::Logger::logError("Cannot enable designer mode, handle is null.");
         return;
     }
 
     auto middleWare = reinterpret_cast<claid::MiddleWare*>(handle);
     middleWare->disableDesignerMode();
 }
+
+__attribute__((visibility("default"))) __attribute__((used))
+void add_all_modules_to_central_module_factory(void* centralModuleFactoryPtr)
+{
+    claid::Logger::logInfo("registering factory Adding all Modules to factory");
+    claid::ModuleFactory* centralFactory = reinterpret_cast<claid::ModuleFactory*>(centralModuleFactoryPtr);
+    centralFactory->registerAllFromOtherFactory(claid::ModuleFactory::getInstance());
+}
+
 
 int get_log_sink_severity_level(void* handle)
 {

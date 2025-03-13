@@ -91,6 +91,7 @@ class Logger:
     @staticmethod
     def log_fatal(message):
         Logger.log(LogMessageSeverityLevel.FATAL, message)
+        raise RuntimeError(message)
 
     @staticmethod
     def get_time_string():

@@ -361,7 +361,6 @@ message CLAIDConfig {
   //bool designer_mode = 5;                         // If true, other hosts can upload a new config (alongside additional data like model files or python code) to the host.
   int32 milliseconds_deadline_to_load_modules = 7;  // Deadline in milliseconds for when all Modules specified in the config need to be finished loading.
                                             // If not all Modules are loaded after the deadline, an exception is thrown.
-
 }
 
 message HostConfig {
@@ -625,5 +624,4 @@ message ScheduleExactTime
   ScheduleTimeOfDay time_of_day = 1;
   double repeat_every_n_days = 2;
 }
-
 

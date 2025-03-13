@@ -22,7 +22,7 @@
 from datetime import datetime
 from module.type_mapping.type_mapping import TypeMapping
 from module.type_mapping.mutator import Mutator
-from claid.logger.logger import Logger
+from logger.logger import Logger
 
 from dispatch.proto.claidservice import DataPackage
 import asyncio

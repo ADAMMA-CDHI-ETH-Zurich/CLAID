@@ -19,7 +19,7 @@
 # limitations under the License.
 ##########################################################################
 
-from claid.module.module import Module
+from module.module import Module
 from logger.logger import Logger 
 
 from local_dispatching.module_injector import ModuleInjector
@@ -30,8 +30,6 @@ class ModuleFactory:
 
         # Concatenation of registered and injected modules
         self.all_available_module_classes = {} 
-
-        
 
         self.__module_injector = ModuleInjector()
 
@@ -59,13 +57,15 @@ class ModuleFactory:
 
         
     def inject_claid_modules_from_python_file(self, base_path: str, python_module_name: str, claid_module_names : list):
-        self.__module_injector.inject_claid_modules_from_python_file(base_path, python_module_name, claid_module_names)
+        if not  self.__module_injector.inject_claid_modules_from_python_file(base_path, python_module_name, claid_module_names):
+            return False
 
         self.all_available_module_classes.clear()
         self.all_available_module_classes.update(self.registered_module_classes)
         self.all_available_module_classes.update(self.__module_injector.get_injected_module_classes())
         Logger.log_info("Available instances from file " + str(self.all_available_module_classes))
 
+        return True
 
     def get_instance(self, class_name, module_id):
         Logger.log_info("Available instances " + str(self.all_available_module_classes))

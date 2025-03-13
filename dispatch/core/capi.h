@@ -52,6 +52,12 @@ extern "C"
     void enable_designer_mode(void* handle);
     void disable_designer_mode(void* handle);
 
+    // Registers all Modules registered to the ModuleFactory of a library
+    // to the factory provided as parameter.
+    // An annoying workaround we need e.g., on Android where we don't easily have
+    // global symbol resolution when loading shared libraries.
+    void add_all_modules_to_central_module_factory(void* centralModuleFactoryPtr);
+
 #ifdef __cplusplus
 }
 #endif

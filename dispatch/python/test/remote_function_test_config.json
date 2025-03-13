@@ -1,0 +1,5 @@
+{
+    "hosts": [{
+			"hostname": "test_client"
+    }]
+}

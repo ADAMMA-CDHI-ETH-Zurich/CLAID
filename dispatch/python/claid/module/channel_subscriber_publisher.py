@@ -114,3 +114,5 @@ class ChannelSubscriberPublisher:
         self.__example_packages_for_each_module = {}
         self.__module_channels_subscriber_map = {}
 
+    def get_to_module_manager_queue(self):
+        return self.__to_module_manager_queue

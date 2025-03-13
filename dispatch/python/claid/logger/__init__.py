@@ -19,4 +19,4 @@
 # limitations under the License.
 ##########################################################################
 
-from claid.logger.logger import Logger
+from logger.logger import Logger

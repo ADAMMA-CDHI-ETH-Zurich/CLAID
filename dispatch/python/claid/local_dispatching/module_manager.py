@@ -24,6 +24,7 @@ from logger.logger import Logger
 from module.channel_subscriber_publisher import ChannelSubscriberPublisher
 from module.module_annotator import ModuleAnnotator
 from module.thread_safe_channel import ThreadSafeChannel
+from remote_function.remote_function_handler import RemoteFunctionHandler
 from dispatch.proto.claidservice import *
 import traceback
 from threading import Thread
@@ -39,13 +40,13 @@ class ModuleManager():
         # In Python, it is possible to add Modules at runtime.
         self.main_thread_runnables_queue = main_thread_runnables_queue
 
-       
+
         self.__running_modules = dict()    
 
         # self.__from_module_dispatcher_queue = ThreadSafeChannel()
         self.__to_module_dispatcher_queue = module_dispatcher.get_to_dispatcher_queue()
-        
         self.__channel_subscriber_publisher = ChannelSubscriberPublisher(self.__to_module_dispatcher_queue, asyncio_loop)
+        self.__remote_function_handler = RemoteFunctionHandler(self.__to_module_dispatcher_queue)#
 
         self.__running = False
         self.__from_module_dispatcher_queue_closed = False
@@ -98,7 +99,7 @@ class ModuleManager():
             module = self.__running_modules[key]
 
             Logger.log_info(f"Calling module.start() for Module \"{module.get_id()}\".")
-            module.start(subscriber_publisher, descriptor.properties, self.main_thread_runnables_queue)
+            module.start(subscriber_publisher, self.__remote_function_handler, descriptor.properties, self.main_thread_runnables_queue)
             Logger.log_info(f"Module \"{module.get_id()}\" has started.")
 
         return True
@@ -274,8 +275,42 @@ class ModuleManager():
             if self.__log_sink_log_message_callback != None:
                 self.__log_sink_log_message_callback(packet)
 
+        elif packet.control_val.ctrl_type == CtrlType.CTRL_REMOTE_FUNCTION_REQUEST:
+               self.handle_remote_function_request(packet)
+
+        elif packet.control_val.ctrl_type == CtrlType.CTRL_REMOTE_FUNCTION_RESPONSE:
+               self.handle_remote_function_response(packet)
+
         else:
             Logger.log_warning(f"ModuleManager received package with unsupported control val {packet.control_val.ctrl_type}")
+
+    def handle_remote_function_request(self, remote_function_request: DataPackage):
+        request = remote_function_request.control_val.remote_function_request
+
+        if request.remote_function_identifier.has_runtime():
+            self.handle_runtime_remote_function_execution(remote_function_request)
+        else:
+            self.handle_module_remote_function_execution(remote_function_request)
+
+    def handle_runtime_remote_function_execution(self, request: DataPackage):
+        result = self.remote_function_runnable_handler.execute_remote_function_runnable(request)
+
+        if not result:
+            Logger.log_error("Python runtime failed to execute RPC request")
+            return
+
+    def handle_module_remote_function_execution(self, request: DataPackage):
+        remote_function_request = request.control_val.get_remote_function_request()
+        module_id = remote_function_request.remote_function_identifier.module_id
+
+        if module_id not in self.running_modules:
+            Logger.log_error(f"Failed to execute remote function request. Could not find Module \"{module_id}\"")
+            return
+
+        self.running_modules[module_id].enqueue_rpc(request)
+
+    def handle_remote_function_response(self, remote_function_response: 'DataPackage'):
+        self.remote_function_handler.handle_response(remote_function_response)
 
     async def read_from_module_dispatcher(self):
         while self.running:
@@ -291,10 +326,7 @@ class ModuleManager():
                 traceback.print_exc() 
                 break
         
-        self.__from_module_dispatcher_queue_closed = True
-
-
-    
+        self.__from_module_dispatcher_queue_closed = True    
 
     def restart(self):
         Logger.log_info("Stopping ModuleManager")
@@ -342,9 +374,6 @@ class ModuleManager():
     # dict[str, List]
     # dict(code, module_names)
     def inject_new_modules(self, module_descrption: dict):
-
-        
-
         for code_name in module_descrption:
             code, module_names = module_descrption[code_name]
             if not self.__module_factory.inject_claid_modules_from_python_file(code_name, code, module_names):

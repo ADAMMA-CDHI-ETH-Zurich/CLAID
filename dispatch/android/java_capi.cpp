@@ -22,8 +22,10 @@
 #include <jni.h>
 #include "dispatch/core/capi.h"
 #include "dispatch/core/Logger/Logger.hh"
+#include "dispatch/core/Module/Module.hh"
 #include <string>
 #include <iostream>
+#include "dlfcn.h"
 static std::string jniStringToStdString(JNIEnv *env, jstring jStr)
 {
     if (!jStr)
@@ -197,5 +199,37 @@ extern "C"
     {
         void* nativeHandle = reinterpret_cast<void*>(handle);
         return get_log_sink_severity_level(nativeHandle);
+    }
+
+    JNIEXPORT jlong JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeLoadSharedLibGlobal
+    (JNIEnv *env, jobject CLAIDOBJ, jstring path) 
+    {
+        std::string stdPath = jniStringToStdString(env, path);
+        claid::Logger::logInfo("Registering factory dlopen %u", claid::ModuleFactory::getInstance());
+        void* handle = dlopen(stdPath.c_str(), RTLD_NOW | RTLD_GLOBAL);
+
+        if(handle == nullptr)
+        {
+            claid::Logger::logInfo("Registering factory handle is 0 returning");
+            return 0;
+        }
+        typedef void (*FunctionType)(void*);
+
+        dlerror();
+        FunctionType add_all_modules_to_central_module_factory = (FunctionType)dlsym(handle, "add_all_modules_to_central_module_factory");
+        claid::Logger::logInfo("Registering factory Looked up function");
+
+        const char* dlsym_error = dlerror();
+        if (dlsym_error) {
+            claid::Logger::throwLogFatalIfNotCaught("Failed to retrieve function to register Module factories from plugin: %s", dlsym_error);
+            return 0;
+        }
+        claid::Logger::logInfo("Registering factory called function");
+        // Pass our ModuleFactory instance to the plugin (shared library);
+        add_all_modules_to_central_module_factory(reinterpret_cast<void*>(claid::ModuleFactory::getInstance()));
+        claid::Logger::logInfo("Registering factory called function");
+
+
+        return reinterpret_cast<jlong>(handle);
     }
 }

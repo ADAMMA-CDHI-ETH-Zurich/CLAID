@@ -23,6 +23,8 @@
 #include "dispatch/core/capi.h"
 #include <string>
 #include <iostream>
+#include "dlfcn.h"
+
 static std::string jniStringToStdString(JNIEnv *env, jstring jStr)
 {
     if (!jStr)
@@ -194,5 +196,13 @@ extern "C"
     {
         void* nativeHandle = reinterpret_cast<void*>(handle);
         return get_log_sink_severity_level(nativeHandle);
+    }
+
+    JNIEXPORT jlong JNICALL Java_adamma_c4dhi_claid_JavaCLAIDBase_nativeLoadSharedLibGlobal
+    (JNIEnv *env, jobject CLAIDOBJ, jstring path) 
+    {
+        std::string stdPath = jniStringToStdString(env, path);
+        void* handle = dlopen(stdPath.c_str(), RTLD_NOW | RTLD_GLOBAL);
+        return reinterpret_cast<jlong>(handle);
     }
 }

@@ -1,0 +1,22 @@
+load("@my_deps//:requirements.bzl", "requirement")
+
+
+
+filegroup(
+    name = "test_configs",
+    srcs = [
+        "remote_function_test_config.json",
+    ],
+)
+
+
+py_test(
+    name = "remote_function_test",
+    srcs = ["remote_function_test.py"],
+    deps = [
+        "//dispatch/python/claid:py_claid",
+        requirement("betterproto"),
+        requirement("numpy"),
+        ],
+    data = [":test_configs"]
+)

@@ -19,4 +19,4 @@
 # limitations under the License.
 ##########################################################################
 
-from claid.module.module import Module
+from module.module import Module

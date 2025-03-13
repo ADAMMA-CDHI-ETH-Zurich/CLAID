@@ -15,10 +15,7 @@ py_binary(
 
     ],
     data = [
-        "//dispatch/core:claid_capi",
-        ":test_configs",
-        "//dispatch/proto:claidservice_py_proto",
-        "//dispatch/proto:claidservice_py_grpc"
+        "//dispatch/core:claid_capi"
     ],
 )
 

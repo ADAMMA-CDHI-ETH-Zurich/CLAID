@@ -68,6 +68,8 @@ public abstract class JavaCLAIDBase
     private static native void nativeDisableDesignerMode(long handle); 
 
     private static native int nativeGetLogSinkSeverityLevel(long handle);
+
+    public static native long nativeLoadSharedLibGlobal(String path);
     
     private static ModuleDispatcher moduleDispatcher;
     private static ModuleManager moduleManager;

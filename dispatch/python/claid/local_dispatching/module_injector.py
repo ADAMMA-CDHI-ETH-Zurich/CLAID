@@ -29,7 +29,7 @@ import inspect
 
 import sys
 
-from claid.module import Module
+from module import Module
 
 # Helper class for the module_manager
 # Allows to inject new Modules at runtime by importing or updating (new) Python files.
@@ -47,14 +47,11 @@ class ModuleInjector():
     # It is currently NOT possible to unload modules.
     def inject_claid_modules_from_python_file(self, base_path: str, python_module_name: str, claid_module_names : list):
         
-        
         python_handle = None
         try:
 
             python_module_name = python_module_name.replace(".py", "")
-
             python_handle = self.__load_get_python_module(base_path, python_module_name)
-
             self.injected_modules[python_module_name] = (python_handle, claid_module_names)
             
             return True

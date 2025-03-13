@@ -306,4 +306,23 @@ class ClaidCoreBindings {
           'disable_designer_mode');
   late final _disable_designer_mode = _disable_designer_modePtr
       .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  /// Registers all Modules registered to the ModuleFactory of a library
+  /// to the factory provided as parameter.
+  /// An annoying workaround we need e.g., on Android where we don't easily have
+  /// global symbol resolution when loading shared libraries.
+  void add_all_modules_to_central_module_factory(
+    ffi.Pointer<ffi.Void> centralModuleFactoryPtr,
+  ) {
+    return _add_all_modules_to_central_module_factory(
+      centralModuleFactoryPtr,
+    );
+  }
+
+  late final _add_all_modules_to_central_module_factoryPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+          'add_all_modules_to_central_module_factory');
+  late final _add_all_modules_to_central_module_factory =
+      _add_all_modules_to_central_module_factoryPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 }

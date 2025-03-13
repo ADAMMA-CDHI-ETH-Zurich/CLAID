@@ -50,7 +50,7 @@ namespace claid
 
 			void registerFactory(const std::string& className, ModuleFactoryBase* moduleFactory)
 			{
-				Logger::logInfo("Registering factory %s", className.c_str());
+				Logger::logInfo("Registering factory %s %u", className.c_str(), this);
 				auto it = moduleFactories.find(className);
 
 				if (it != moduleFactories.end())
@@ -125,6 +125,25 @@ namespace claid
 				}
 
 				return it->second->getModuleAnnotation(annotator);
+			}
+
+			const std::map<std::string, ModuleFactoryBase*>& getFactories()
+			{
+				return this->moduleFactories;
+			}
+
+
+			void registerAllFromOtherFactory(ModuleFactory* other)
+			{
+				const std::map<std::string, ModuleFactoryBase*>& otherModuleFactories = other->getFactories();
+
+				for(const std::pair<std::string, ModuleFactoryBase*> factories : otherModuleFactories)
+				{
+					Logger::logInfo("Swapping ModuleFactory %s from Factory %u to Factory %u",
+					factories.first.c_str(), other, this);
+					this->registerFactory(factories.first, factories.second);
+				}
+
 			}
 	};
 

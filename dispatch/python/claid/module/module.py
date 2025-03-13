@@ -36,7 +36,13 @@ from module.scheduling.scheduled_runnable import ScheduledRunnable
 from module.scheduling.schedule_once import ScheduleOnce
 from dispatch.proto.claidservice import LogMessageSeverityLevel, LogMessage, LogMessageEntityType, Runtime
 
+from remote_function.remote_function import RemoteFunction
+from remote_function.remote_function_runnable import RemoteFunctionRunnable
+from remote_function.remote_function_handler import RemoteFunctionHandler
+from remote_function.remote_function_runnable_handler import RemoteFunctionRunnableHandler
+from module.channel_subscriber_publisher import ChannelSubscriberPublisher
 import time
+from typing import Any
 
 class Module(ABC):
     def __init__(self):
@@ -69,13 +75,25 @@ class Module(ABC):
         dbgMessage = f"Module \"{self.__id}\": {dbg}"
         Logger.log(LogMessageSeverityLevel.DEBUG_VERBOSE, dbgMessage, LogMessageEntityType.MODULE, self.__id)
 
-    def start(self, subscriber_publisher, properties, main_thread_runnables_queue):
+    def start(
+            self, 
+            subscriber_publisher: ChannelSubscriberPublisher, 
+            remote_function_handler: RemoteFunctionHandler,
+            properties,
+            main_thread_runnables_queue
+        ):
         if self.__is_initialized:
             self.module_error("Initialize called twice!")
             return False
 
         Logger.log_info("Module start called")
         self.__subscriber_publisher = subscriber_publisher
+        self.__remote_function_handler = remote_function_handler
+        self.__remote_function_runnable_handler = \
+            RemoteFunctionRunnableHandler(
+                "Module " + self.__id, 
+                subscriber_publisher.get_to_module_manager_queue()
+            )
 
         self.__runnable_dispatcher = RunnableDispatcher(main_thread_runnables_queue)
 
@@ -172,7 +190,8 @@ class Module(ABC):
         function_runnable = FunctionRunnable(function)
         runnable = ScheduledRunnable(
             runnable=function_runnable,
-            schedule=ScheduleOnce(start_time))
+            schedule=ScheduleOnce(start_time)
+        )
 
         if name in self.__timers:
             self.__timers[name].runnable.invalidate()
@@ -191,6 +210,19 @@ class Module(ABC):
         for entry in self.__timers.values():
             entry.runnable.invalidate()
         self.__timers.clear()
+
+    def register_remote_function(self, function_name: str, return_type: Any, *parameters: Any) -> bool:
+        return self.__remote_function_runnable_handler.register_runnable(self, function_name, return_type, *parameters)
+
+    def map_remote_function_of_module(self, module_id: str, function_name: str, return_type: Any, *parameters: Any) -> RemoteFunction:
+        if module_id == self.id:
+            self.module_fatal(f"Cannot map remote function. Module tried to map function \"{function_name}\" of itself, which is not allowed.")
+            return None
+        return self.__remote_function_handler.map_module_function(module_id, function_name, return_type, *parameters)
+
+    def map_remote_function_of_runtime(self, runtime: Runtime, function_name: str, return_type: Any, *parameters: Any) -> RemoteFunction:
+        return self.__remote_function_handler.map_runtime_function(runtime, function_name, return_type, *parameters)
+
 
     def shutdown(self):
         self.__is_terminating = True

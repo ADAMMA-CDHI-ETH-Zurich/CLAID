@@ -46,6 +46,9 @@ import time
 import threading
 import asyncio
 import traceback
+
+
+
 class CLAID():
 
     
@@ -216,9 +219,9 @@ class CLAID():
             traceback.print_exc()
 
     async def start(self, config_file_path, host_id, user_id, device_id, module_factory):
-        await self.start("unix:///tmp/claid_socket.grpc", config_file_path, host_id, user_id, device_id, module_factory)
+        await self.start_async_with_custom_socket("unix:///tmp/claid_socket.grpc", config_file_path, host_id, user_id, device_id, module_factory)
 
-    async def start(self, socket_path, config_file_path, host_id, user_id, device_id, module_factory):
+    async def start_async_with_custom_socket(self, socket_path, config_file_path, host_id, user_id, device_id, module_factory):
         print("Asyncio run 1")
         try:
             loop = asyncio.new_event_loop()  # Create a new loop for the thread

@@ -29,18 +29,18 @@ from timeit import time
 from module.thread_safe_channel import ThreadSafeChannel
 import asyncio
 from grpclib.client import Channel
+import sys
 class ModuleDispatcher:
     def __init__(self, socket_path):
+        socket_path = socket_path.decode("utf-8")
         self.socket_path = socket_path
   
-        print(socket_path)
-
         if socket_path.startswith("unix://"):
             adjusted_path = socket_path[len("unix://"):]  
             self.grpc_channel = Channel(path=adjusted_path)
         else:
-            host, socket = socket_path.split(":", 1)  # Split into host and port
-            self.grpc_channel = Channel(host, socket)
+            host, port = socket_path.split(":", 1)  # Split into host and port
+            self.grpc_channel = Channel(host, port)
 
         self.stub = ClaidServiceStub(self.grpc_channel)
 
@@ -75,10 +75,10 @@ class ModuleDispatcher:
             response = await self.stub.get_module_list(request)
 
             if response is None:
-                Logger.log_error(f"Error occurred in getModuleList() of PYTHON_RUNTIME: {response_observer.get_error_message()}")
+                Logger.log_fatal(f"Error occurred in getModuleList() of PYTHON_RUNTIME: {response_observer.get_error_message()}")
                 exit(0)
         except Exception as e:
-            Logger.log_error(e)
+            Logger.log_fatal(e)
             exit(0)
 
         print(f"Response: {response}")

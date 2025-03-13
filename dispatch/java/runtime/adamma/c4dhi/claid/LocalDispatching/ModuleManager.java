@@ -596,8 +596,6 @@ public class ModuleManager
         this.runningModules.get(moduleId).enqueueRPC(request);
     }
 
-
-
     private void handleRemoteFunctionResponse(DataPackage remoteFunctionResponse)
     {
         this.remoteFunctionHandler.handleResponse(remoteFunctionResponse);
