@@ -29,13 +29,16 @@ import threading
 current_folder_path = os.path.dirname(os.path.abspath(__file__))
 print(current_folder_path)
 
+claid_path = os.path.join(current_folder_path, "..")
+sys.path.insert(0, claid_path)
+
 claid_path = os.path.join(current_folder_path, "..", "claid")
 sys.path.insert(0, claid_path)
 
 print("PATH IS ", claid_path)
-from CLAID import CLAID
-from module.module import Module
-from module.module_factory import ModuleFactory
+from claid.CLAID import CLAID
+from claid.module.module import Module
+from claid.module.module_factory import ModuleFactory
 from datetime import datetime
 
 # Global variables to track module initialization
@@ -44,7 +47,7 @@ module2_started = False
 module1_function_sent = False
 module2_function_called = False
 module1_function_returned = False
-test_completed = False  # Flag to indicate test completion
+module1_function_return_correct = False
 
 class TestModule(Module):
     def __init__(self):
@@ -56,14 +59,23 @@ class TestModule(Module):
         module1_started = True
         print("TestModule1 initialized.")
         self.register_scheduled_function("CallFunction", self.call_function, datetime.now())
+
     def call_function(self):
         print("Calling function")
+        global module1_function_sent
+        module1_function_sent = True
         future = self.function.execute("Test")
         print("Called function awaiting future")
         future.then(self.on_result)
 
+
     def on_result(self,data):
         print("Got result: ", data)
+        global module1_function_returned
+        global module1_function_return_correct
+        module1_function_returned = True
+        if data == 42:
+            module1_function_return_correct = True
 
 class TestModule2(Module):
     def __init__(self):
@@ -76,6 +88,8 @@ class TestModule2(Module):
         print("TestModule2 initialized.")
 
     def test_function(self, value: str):
+        global module2_function_called 
+        module2_function_called = True
         print("TestModule2 says: ", value)
         return 42
 
@@ -87,45 +101,49 @@ module_factory.register_module(TestModule2)
 claid = CLAID()
 
 path = "localhost:1337"
-asyncio.run(claid.start_async_with_custom_socket(
-        path, "{}/remote_function_test_config.json".format(os.getcwd()), 
+
+
+# Function to start CLAID asynchronously
+async def start_claid():
+    await claid.start_async_with_custom_socket(
+        path, "{}/dispatch/python/test/remote_function_test_config.json".format(os.getcwd()), 
         "test_client", "user", "device", module_factory
-    ))
+    )
+
+# Run CLAID in a separate thread to avoid blocking
+def run_claid_in_background():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(start_claid())
+
+threading.Thread(target=run_claid_in_background, daemon=True).start()
+
+class ModuleInitializationTest(unittest.TestCase):
+    def test_modules_started(self):
+        """ Waits 10 seconds and checks if modules have started, then exits. """
+        global module1_started, module2_started, test_completed
+
+        # Wait for 10 seconds
+        for i in range(10):
+            if module1_started and module2_started:
+                break
+            time.sleep(1)  # Wait 1 second before checking again
+
+        # Assert both modules have started
+        self.assertTrue(module1_started, "TestModule1 did not start within 10 seconds.")
+        self.assertTrue(module2_started, "TestModule2 did not start within 10 seconds.")
+        time.sleep(10)
+
+        self.assertTrue(module1_function_sent, "TestModule1 did not call remote function.")
+        self.assertTrue(module2_function_called, "TestModule1 did not receive remote function call.")
+        self.assertTrue(module1_function_returned, "TestModule1 did not receive response of remote function.")
+        self.assertTrue(module1_function_return_correct, "TestModule1 did receive response from remote function but return value was incorrect.")
 
 
-# # Function to start CLAID asynchronously
-# async def start_claid():
-#     await claid.start_async_with_custom_socket(
-#         path, "{}/dispatch/python/test/remote_function_test_config.json".format(os.getcwd()), 
-#         "test_client", "user", "device", module_factory
-#     )
 
-# # Run CLAID in a separate thread to avoid blocking
-# def run_claid_in_background():
-#     loop = asyncio.new_event_loop()
-#     asyncio.set_event_loop(loop)
-#     loop.run_until_complete(start_claid())
+        # Mark test as completed
+        test_completed = True
+        print("Test completed successfully.")
 
-# threading.Thread(target=run_claid_in_background, daemon=True).start()
-
-# class ModuleInitializationTest(unittest.TestCase):
-#     def test_modules_started(self):
-#         """ Waits 10 seconds and checks if modules have started, then exits. """
-#         global module1_started, module2_started, test_completed
-
-#         # Wait for 10 seconds
-#         for i in range(10):
-#             if module1_started and module2_started:
-#                 break
-#             time.sleep(1)  # Wait 1 second before checking again
-
-#         # Assert both modules have started
-#         self.assertTrue(module1_started, "TestModule1 did not start within 10 seconds.")
-#         self.assertTrue(module2_started, "TestModule2 did not start within 10 seconds.")
-#         time.sleep(2)
-#         # Mark test as completed
-#         test_completed = True
-#         print("Test completed successfully.")
-
-# if __name__ == "__main__":
-#     unittest.main()
+if __name__ == "__main__":
+    unittest.main()

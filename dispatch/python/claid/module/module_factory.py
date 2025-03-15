@@ -19,7 +19,7 @@
 # limitations under the License.
 ##########################################################################
 
-from module.module import Module
+from claid.module.module import Module
 from logger.logger import Logger 
 
 from local_dispatching.module_injector import ModuleInjector
