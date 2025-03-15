@@ -319,6 +319,7 @@ class ModuleManager():
             Logger.log_info("on read from module dispatcher")
             try:
                 async for data_package in self.__from_module_dispatcher_queue:
+                    Logger.log_info("Got package")
                     if data_package is not None:
                         self.on_data_package_received_from_module_dispatcher(data_package)
                     else:

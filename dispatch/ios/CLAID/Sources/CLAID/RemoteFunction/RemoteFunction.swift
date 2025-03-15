@@ -15,7 +15,7 @@ public final class RemoteFunction<Return: Sendable, each Parameters: Sendable> :
     private let returnTypeExample: Return?
     private let parameterTypeExamples: (repeat each Parameters)?
     
-    init() {
+    public init() {
         self.valid = false
         self.futuresHandler = nil
         self.toMiddlewareQueue = nil
@@ -55,7 +55,7 @@ public final class RemoteFunction<Return: Sendable, each Parameters: Sendable> :
         return self.mutatorHelpers.count
     }
     
-    func execute(_ params: repeat each Parameters) async throws -> Future<Return>? {
+    public func execute(_ params: repeat each Parameters) async throws -> Future<Return>? {
         guard valid else {
             throw CLAIDError("Failed to execute RemoteFunction. Function is not valid.")
         }
@@ -97,7 +97,7 @@ public final class RemoteFunction<Return: Sendable, each Parameters: Sendable> :
         return future
     }
     
-    func callAsFunction(_ params: repeat each Parameters) async throws -> Return? {
+    public func callAsFunction(_ params: repeat each Parameters) async throws -> Return? {
         guard let future = try await self.execute(repeat each params) else {
             return nil
         }

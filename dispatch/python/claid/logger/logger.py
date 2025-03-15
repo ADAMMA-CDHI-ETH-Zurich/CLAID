@@ -107,6 +107,6 @@ class Logger:
     
     @staticmethod
     def LOG_THROW_FATAL(message):
-        Logger.logFatal(message)
+        Logger.log_fatal(message)
         raise Exception(message)
 

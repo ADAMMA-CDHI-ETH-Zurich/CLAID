@@ -32,7 +32,9 @@ from grpclib.client import Channel
 import sys
 class ModuleDispatcher:
     def __init__(self, socket_path):
-        socket_path = socket_path.decode("utf-8")
+
+        if not isinstance(socket_path, str):
+            socket_path = socket_path.decode("utf-8")
         self.socket_path = socket_path
   
         if socket_path.startswith("unix://"):
@@ -135,6 +137,7 @@ class ModuleDispatcher:
             print("post await")
             if not self.__ping_package_acknowledged:
                 if self.__ping_package_ready:
+                    print("yielded ping package")
                     yield self.__ping_package
                     self.__ping_package_ready = False
                 
@@ -143,6 +146,8 @@ class ModuleDispatcher:
                 await asyncio.sleep(1)
                 print("bla", data)
             else:
+                if data is None:
+                    continue
                 print("yielding ", data)
                 
                 yield data
@@ -177,7 +182,8 @@ class ModuleDispatcher:
         ping_resp = None
         print("waiting")
 
-    
+        # Put a None package so that the queue wakes up.
+        await self.__to_middleware_queue.put(None)
         ping_resp = await self.await_ping_package()
         print("Got ping")
 
