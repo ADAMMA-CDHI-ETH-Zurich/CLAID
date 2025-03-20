@@ -6,6 +6,10 @@
 //
  
 public actor TestModule : Module {
+ 
+    public init(moduleId: String, moduleType: String) async {
+        await self.moduleHandle.setId(moduleId)
+    }
   
     public func initialize(properties: Properties) async throws {
         

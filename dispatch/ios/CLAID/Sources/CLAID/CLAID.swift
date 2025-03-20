@@ -9,6 +9,7 @@ public actor CLAID {
     private static var moduleDispatcher: ModuleDispatcher? = nil
     private static var moduleManager: ModuleManager? = nil
     private static var moduleFactory = ModuleFactory()
+    private static var preloadedModules: [String:Module] = [:]
         
     public init() {
 
@@ -63,6 +64,10 @@ public actor CLAID {
             throw CLAIDError("Failed to create CLAID ModuleManager in swift runtime.")
         }
         
+        for (moduleId, module) in self.preloadedModules {
+            await moduleManager.addPreloadedModule(moduleId: moduleId, module: module)
+        }
+        
         try await moduleManager.start()
         Logger.logInfo("CLAID has started")
     }
@@ -74,4 +79,9 @@ public actor CLAID {
     public static func registerModule(_ moduleType: Module.Type) async throws {
         try await moduleFactory.registerModule(moduleType)
     }
+    
+    public static func addPreloadedModule(moduleId: String, module: Module) async {
+        self.preloadedModules[moduleId] = module
+    }
+    
 }

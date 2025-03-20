@@ -8,6 +8,10 @@
 
 public actor TestModule2 : Module {
     
+    public init(moduleId: String, moduleType: String) async {
+        await self.moduleHandle.setId(moduleId)
+    }
+    
     public func initialize(properties: Properties) async throws {
         try await registerRemoteFunction(
             functionName: "test_function",

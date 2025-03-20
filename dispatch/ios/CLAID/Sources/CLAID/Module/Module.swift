@@ -3,9 +3,9 @@ import Foundation
 
 
 public protocol Module : Actor {
-    var moduleHandle: ModuleHandle { get }
-    
+
     init()
+    var moduleHandle: ModuleHandle { get }
     
     func initialize(properties: Properties) async throws
     func terminate() async
@@ -19,6 +19,8 @@ public protocol Module : Actor {
 }
 
 extension Module {
+    
+ 
     /// Registers a periodic function and stores it in the dictionary
     public func registerPeriodicFunction(name: String, interval: Duration, function: @escaping @Sendable () async -> Void) async {
         let task = await moduleHandle.dispatcher.addPeriodicTask(interval: interval.timeInterval, function: function)
@@ -201,31 +203,31 @@ extension Module {
         print("All tasks cancelled.")
     }
     
-    func moduleFatal(_ error: String) async {
+    public func moduleFatal(_ error: String) async {
         let moduleId = await moduleHandle.getId()
         let errorMsg = "Module \(moduleId): \(error)"
         Logger.log(.fatal, errorMsg, logMessageEntityType:.module, logMessageEntity:moduleId)
     }
         
-    func moduleError(_ error: String) async {
+    public func moduleError(_ error: String) async {
         let moduleId = await moduleHandle.getId()
         let errorMsg = "Module \(moduleId): \(error)"
         Logger.log(.error, errorMsg, logMessageEntityType:.module, logMessageEntity:moduleId)
     }
     
-    func moduleWarning(_ warning: String) async {
+    public func moduleWarning(_ warning: String) async {
         let moduleId = await moduleHandle.getId()
         let warningMsg = "Module \(moduleId): \(warning)"
         Logger.log(.warning, warningMsg, logMessageEntityType:.module, logMessageEntity:moduleId)
     }
     
-    func moduleInfo(_ info: String) async {
+    public func moduleInfo(_ info: String) async {
         let moduleId = await moduleHandle.getId()
         let infoMsg = "Module \(moduleId): \(info)"
         Logger.log(.info, infoMsg, logMessageEntityType:.module, logMessageEntity:moduleId)
     }
     
-    func moduleDebug(_ debug: String) async {
+    public func moduleDebug(_ debug: String) async {
         let moduleId = await moduleHandle.getId()
         let dbgMsg = "Module \(moduleId): \(debug)"
         Logger.log(.debugVerbose, dbgMsg, logMessageEntityType:.module, logMessageEntity:moduleId)

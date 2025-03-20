@@ -30,7 +30,7 @@ public actor ModuleFactory {
             return nil
         }
         do {
-            let module = moduleType.init() // Assumes `Module` has a required initializer
+            let module = await moduleType.init() // Assumes `Module` has a required initializer
             await module.setId(moduleId)
             await module.setType(className)
             return module

@@ -9,6 +9,7 @@ actor ModuleManager {
     private var runningModules: [String: Module] = [:]
     private var subscriberPublisher: ChannelSubscriberPublisher?
     private var running = false
+
   //  private var restartControlPackage: DataPackage?
 
     init(dispatcher: ModuleDispatcher, moduleFactory: ModuleFactory) {
@@ -35,6 +36,12 @@ actor ModuleManager {
 
     func instantiateModules(moduleList: Claidservice_ModuleListResponse) async -> Bool {
         for descriptor in moduleList.descriptors {
+            
+            if self.runningModules.contains(where: {descriptor.moduleID == $0.key}){
+                print("Skipping Module as it is already loaded \(descriptor.moduleID)")
+                continue
+            }
+            
             if !(await instantiateModule(moduleId: descriptor.moduleID, moduleClass: descriptor.moduleClass)) {
                 print("Failed to instantiate Module \"\(descriptor.moduleID)\" (class: \"\(descriptor.moduleClass)\").\nThe Module class was not registered to the ModuleFactory.")
                 return false
@@ -328,4 +335,8 @@ actor ModuleManager {
         return true
     }
     
+    public func addPreloadedModule(moduleId: String, module: Module) async {
+        print("Adding preloaded module \(moduleId)")
+        self.runningModules[moduleId] = module
+    }
 }
