@@ -27,12 +27,12 @@ class AbstractFuture:
     def then_untyped(self, untyped_callback: Callable[[DataPackage], None]):
         self.untyped_callback = untyped_callback
     
-    def set_response(self, response_package):
+    async def set_response(self, response_package):
         with self.condition:
             self.response_package = response_package
             self.successful = True
             if self.untyped_callback:
-                self.untyped_callback(response_package)
+                await self.untyped_callback(response_package)
             self.finished = True
             self.condition.notify_all()
     

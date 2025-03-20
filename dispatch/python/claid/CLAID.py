@@ -36,7 +36,6 @@ from module.scheduling.function_runnable import FunctionRunnable
 
 from module.scheduling.schedule_once import ScheduleOnce
 from module.scheduling.schedule_immediately_indefinitely import ScheduleImmediatelyIndefinitely
-from module.scheduling.external_scheduled_runnable import ExternalScheduledRunnable
 
 from dispatch.proto.claidservice import LogMessage, LogMessageSeverityLevel
 
@@ -79,7 +78,7 @@ class CLAID():
                 if os.path.isfile(alternative_default_path):
                     claid_clib_path = alternative_default_path
                 else:
-                    raise ValueError("Failed to load CLAID library from {}".format(claid_clib_path))
+                    raise ValueError("Failed to load CLAID library, it does not exist under path {}".format(claid_clib_path))
                 
             CLAID.claid_c_lib = ctypes.CDLL(claid_clib_path)
 
@@ -168,7 +167,6 @@ class CLAID():
         self.__module_manager_thread = None
 
 
-
     async def startCustomSocket(self, socket_path, config_file_path, host_id, user_id, device_id, module_factory):
         CLAID.__load_claid_library()
 
@@ -241,8 +239,7 @@ class CLAID():
 
         print("Asyncio run 2")
 
-        # This will block, but the background task is already running
-        self.process_runnables_blocking()
+
 
     async def start_python_only(self, module_factory):
         await self.start_python_only(self, "unix:///tmp/claid_socket.grpc", module_factory)
@@ -274,7 +271,7 @@ class CLAID():
 
         self.__module_dispatcher = ModuleDispatcher(socket_path)
 
-        self.__module_manager = ModuleManager(self.__module_dispatcher, module_factory, self.__main_thread_queue,  asyncio.get_running_loop())
+        self.__module_manager = ModuleManager(self.__module_dispatcher, module_factory, asyncio.get_running_loop())
         print("starting Python runtime")
 
         # In Python, we have to launch the ModuleManager in a separate thread, because each Module will
@@ -368,61 +365,7 @@ class CLAID():
                 channel_types[channel.channel] = channel
 
         return channel_types
-    
-    def process_runnables_blocking(self):
-
-        print("Processing runnables ", self.__started)
-        while True:
-
-            scheduled_runnable = self.__main_thread_queue.get()
-
-            if scheduled_runnable is None:
-                continue
-
-            if scheduled_runnable.runnable.catch_exceptions:
-                try:
-                    Logger.log_info(
-                    f"Running runnable! Remaining runnables: {len(self.scheduled_runnables)}"
-                    )
-                    scheduled_runnable.runnable.run()
-                except Exception as e:
-                    scheduled_runnable.runnable.set_exception(str(e))
-            else:
-                scheduled_runnable.runnable.run()
-
-            scheduled_runnable.runnable.was_executed = True
-
-            if isinstance(scheduled_runnable, ExternalScheduledRunnable):
-                # Reschedule the runnable is only done here for ExternalScheduledRunnables (i.e., 
-                # Runnables outside of the CLAID framework). All other runnables are scheduled inside
-                # each Modules individual RunnableDispatcher.
-
-                if scheduled_runnable.schedule.does_runnable_have_to_be_repeated():
-                    self.__main_thread_queue.put(scheduled_runnable)
-
-    # Allows to inject internal functions as runnables in the __main_thread_queue.
-    # This can be required for certain frameworks to run on the same (main) thread as CLAID,
-    # e.g. for GUI frameworks like Qt.
-    def register_external_function_on_claid_thread_run_once(self, function):
-        function_runnable = FunctionRunnable(function)
-
-        runnable =  ExternalScheduledRunnable(
-                function_runnable,
-                schedule=ScheduleOnce.now()
-            )
-
-        self.__main_thread_queue.put(runnable)
-
-    def register_external_function_on_claid_thread_repeat_indefinitely(self, function):
-        function_runnable = FunctionRunnable(function)
-
-        runnable = ExternalScheduledRunnable(
-                function_runnable,
-                schedule=ScheduleImmediatelyIndefinitely.startNow()
-            )
         
-        self.__main_thread_queue.put(runnable)
-    
 
     def register_on_connected_to_server_callback(self, callback):
         self.__module_manager.register_on_connected_to_server_callback(callback)

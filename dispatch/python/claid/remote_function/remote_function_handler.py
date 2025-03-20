@@ -42,7 +42,7 @@ class RemoteFunctionHandler:
             parameter_type_examples
         )
 
-    def handle_response(self, remote_function_response: DataPackage):
+    async def handle_response(self, remote_function_response: DataPackage):
         print("response ", remote_function_response)
         if not hasattr(remote_function_response.control_val, 'remote_function_return'):
             Logger.log_fatal("Failed to handle remote function response. Did not find RemoteFunctionReturn data")
@@ -67,5 +67,5 @@ class RemoteFunctionHandler:
             return
         Logger.log_info("RemoteFunctionHandler handling response 4")
 
-        future.set_response(remote_function_response)
+        await future.set_response(remote_function_response)
         Logger.log_info("RemoteFunctionHandler handling response 5")

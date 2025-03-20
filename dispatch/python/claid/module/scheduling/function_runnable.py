@@ -20,11 +20,15 @@
 ##########################################################################
 
 from module.scheduling.runnable import Runnable
+import asyncio
+from logger.logger import Logger
 
 class FunctionRunnable(Runnable):
     def __init__(self, function):
         super().__init__()
         self.function = function
 
-    def run(self):
-        self.function()
+    async def run(self):
+        Logger.log_info("Function runnable 1")
+        await self.function()
+        Logger.log_info("Function runnable 2")

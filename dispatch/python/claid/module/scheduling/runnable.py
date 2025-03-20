@@ -20,7 +20,7 @@
 ##########################################################################
 
 from abc import ABC, abstractmethod
-
+import asyncio
 class Runnable(ABC):
     def __init__(self):
         super().__init__()
@@ -32,7 +32,7 @@ class Runnable(ABC):
         self.stop_dispatcher_after_this_runnable = False
 
     @abstractmethod
-    def run(self):
+    async def run(self):
         pass
 
     def invalidate(self):

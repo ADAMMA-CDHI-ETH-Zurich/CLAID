@@ -53,14 +53,14 @@ class TestModule(Module):
     def __init__(self):
         super().__init__()
 
-    def initialize(self, properties):
+    async def initialize(self, properties):
         global module1_started
         self.function = self.map_remote_function_of_module("Module2", "test_function", int(0), str(""))
         module1_started = True
         print("TestModule1 initialized.")
-        self.register_scheduled_function("CallFunction", self.call_function, datetime.now())
+        await self.register_scheduled_function("CallFunction", self.call_function, datetime.now())
 
-    def call_function(self):
+    async def call_function(self):
         print("Calling function")
         global module1_function_sent
         module1_function_sent = True
@@ -69,7 +69,7 @@ class TestModule(Module):
         future.then(self.on_result)
 
 
-    def on_result(self,data):
+    async def on_result(self,data):
         print("Got result: ", data)
         global module1_function_returned
         global module1_function_return_correct
@@ -81,13 +81,13 @@ class TestModule2(Module):
     def __init__(self):
         super().__init__()
 
-    def initialize(self, properties):
+    async def initialize(self, properties):
         global module2_started
         module2_started = True
         self.register_remote_function("test_function", self.test_function, int(0), str(""))
         print("TestModule2 initialized.")
 
-    def test_function(self, value: str):
+    async def test_function(self, value: str):
         global module2_function_called 
         module2_function_called = True
         print("TestModule2 says: ", value)
@@ -101,12 +101,14 @@ module_factory.register_module(TestModule2)
 claid = CLAID()
 
 path = "localhost:1337"
+#config_path = "{}/dispatch/python/test/remote_function_test_config.json".format(os.getcwd())
+config_path = "{}/remote_function_test_config.json".format(os.getcwd())
 
 
 # Function to start CLAID asynchronously
 async def start_claid():
     await claid.start_async_with_custom_socket(
-        path, "{}/dispatch/python/test/remote_function_test_config.json".format(os.getcwd()), 
+        path, config_path, 
         "test_client", "user", "device", module_factory
     )
 

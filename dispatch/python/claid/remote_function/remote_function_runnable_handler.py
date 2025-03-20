@@ -51,7 +51,7 @@ class RemoteFunctionRunnableHandler:
         runnable = RemoteFunctionRunnable(function_name, function, return_type, *parameter_list)
         return self.add_runnable(function_name, runnable)
 
-    def execute_remote_function_runnable(self, rpc_request: DataPackage) -> bool:
+    async def execute_remote_function_runnable(self, rpc_request: DataPackage) -> bool:
         """ Executes a registered remote function if it exists. """
         if not hasattr(rpc_request.control_val, "remote_function_request"):
             Logger.log_error("Failed to execute RPC request data package. Could not find definition of RemoteFunctionRequest.")
@@ -79,7 +79,7 @@ class RemoteFunctionRunnableHandler:
         else:
             runnable = self.registered_runnables[function_name]
             print("Response")
-            response = runnable.execute_remote_function_request(rpc_request)
+            response = await runnable.execute_remote_function_request(rpc_request)
             print("Response ", response)
             if response:
                 print("sent")

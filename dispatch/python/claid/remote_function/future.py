@@ -28,10 +28,10 @@ class Future(AbstractFuture):
     
     def then(self, callback_consumer: Callable[[T], None]):
         self.callback_consumer = callback_consumer
-        self.then_untyped(lambda data: self.callback(data))
+        self.then_untyped(self.callback)
     
-    def callback(self, data):
+    async def callback(self, data):
         if self.callback_consumer is None:
             return
         result = self.get_return_data(data)
-        self.callback_consumer(result)
+        await self.callback_consumer(result)

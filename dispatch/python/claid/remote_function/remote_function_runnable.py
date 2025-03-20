@@ -25,7 +25,7 @@ class RemoteFunctionRunnable:
         print("Param examples: ", param_examples)
         self.mutator_helpers = [TypeMapping.get_mutator(param) for param in param_examples]
 
-    def execute_remote_function_request(self, rpc_request: DataPackage) -> DataPackage:
+    async def execute_remote_function_request(self, rpc_request: DataPackage) -> DataPackage:
         execution_request = rpc_request.control_val.remote_function_request
         remote_function_identifier = execution_request.remote_function_identifier
 
@@ -40,7 +40,7 @@ class RemoteFunctionRunnable:
 
         # Execute function
         print("Executing function")
-        result: ReturnType = self.function(*parameters)
+        result: ReturnType = await self.function(*parameters)
         print("Executed function: ", result)
         # Create a successful function result
         remote_function_result = RemoteFunctionRunnableResult.make_successful_result(result)

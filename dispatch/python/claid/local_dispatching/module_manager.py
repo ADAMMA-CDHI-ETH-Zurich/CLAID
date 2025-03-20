@@ -34,12 +34,10 @@ import sys
 
 class ModuleManager():
 
-    def __init__(self, module_dispatcher, module_factory, main_thread_runnables_queue, asyncio_loop):
+    def __init__(self, module_dispatcher, module_factory, asyncio_loop):
         self.__module_dispatcher = module_dispatcher
         self.__module_factory = module_factory
         # In Python, it is possible to add Modules at runtime.
-        self.main_thread_runnables_queue = main_thread_runnables_queue
-
 
         self.__running_modules = dict()    
 
@@ -85,7 +83,7 @@ class ModuleManager():
                 return False
         return True
 
-    def initialize_modules(self, module_list, subscriber_publisher):
+    async def initialize_modules(self, module_list, subscriber_publisher):
         for descriptor in module_list.descriptors:
             module_id = descriptor.module_id
             module_class = descriptor.module_class
@@ -99,7 +97,7 @@ class ModuleManager():
             module = self.__running_modules[key]
 
             Logger.log_info(f"Calling module.start() for Module \"{module.get_id()}\".")
-            module.start(subscriber_publisher, self.__remote_function_handler, descriptor.properties, self.main_thread_runnables_queue)
+            await module.start(subscriber_publisher, self.__remote_function_handler, descriptor.properties)
             Logger.log_info(f"Module \"{module.get_id()}\" has started.")
 
         return True
@@ -135,7 +133,7 @@ class ModuleManager():
             return False
 
 
-        if not self.initialize_modules(module_list, self.__channel_subscriber_publisher):
+        if not await self.initialize_modules(module_list, self.__channel_subscriber_publisher):
             Logger.log_fatal("Failed to initialize Modules.")
             return False
         
@@ -162,10 +160,10 @@ class ModuleManager():
 
         return True
     
-    def shutdown_modules(self):
+    async def shutdown_modules(self):
         for module_name, module in self.__running_modules.items():
             Logger.log_info("Shutting down " + module_name)
-            module.shutdown()
+            await module.shutdown()
             Logger.log_info("Module has shutdown")
         
         self.__running_modules.clear()
@@ -197,10 +195,10 @@ class ModuleManager():
 
         return host_and_module
 
-    def on_data_package_received_from_module_dispatcher(self, data_package):
+    async def on_data_package_received_from_module_dispatcher(self, data_package):
         Logger.log_info(f"Received package from Middleware {data_package}")
         if data_package.control_val is not None and data_package.control_val.ctrl_type != CtrlType.CTRL_UNSPECIFIED:
-            self.handle_package_with_control_val(data_package)
+            await self.handle_package_with_control_val(data_package)
             return
 
         channel_name = data_package.channel
@@ -227,7 +225,7 @@ class ModuleManager():
         for subscriber in subscriber_list:
             subscriber.on_new_data(data_package)
 
-    def handle_package_with_control_val(self, packet):
+    async def handle_package_with_control_val(self, packet):
         if packet.control_val.ctrl_type == CtrlType.CTRL_CONNECTED_TO_REMOTE_SERVER:
             for module_id, module in self.__running_modules.items():
                 module.notify_connected_to_remote_server()
@@ -240,7 +238,7 @@ class ModuleManager():
             self.__on_disconnected_from_remote_server()
         elif packet.control_val.ctrl_type == CtrlType.CTRL_UNLOAD_MODULES:
             Logger.log_info("Python ModuleManager received CTRL_UNLOAD_MODULES")
-            self.shutdown_modules()
+            await self.shutdown_modules()
 
 
             response = DataPackage()
@@ -277,31 +275,31 @@ class ModuleManager():
                 self.__log_sink_log_message_callback(packet)
 
         elif packet.control_val.ctrl_type == CtrlType.CTRL_REMOTE_FUNCTION_REQUEST:
-               self.handle_remote_function_request(packet)
+               await self.handle_remote_function_request(packet)
 
         elif packet.control_val.ctrl_type == CtrlType.CTRL_REMOTE_FUNCTION_RESPONSE:
-               self.handle_remote_function_response(packet)
+               await self.handle_remote_function_response(packet)
 
         else:
             Logger.log_warning(f"ModuleManager received package with unsupported control val {packet.control_val.ctrl_type}")
 
-    def handle_remote_function_request(self, remote_function_request: DataPackage):
+    async def handle_remote_function_request(self, remote_function_request: DataPackage):
         request = remote_function_request.control_val.remote_function_request
 
         print("Request: ", request)
         if hasattr(request.remote_function_identifier, "runtime"):
-            self.handle_runtime_remote_function_execution(remote_function_request)
+            await self.handle_runtime_remote_function_execution(remote_function_request)
         else:
-            self.handle_module_remote_function_execution(remote_function_request)
-
-    def handle_runtime_remote_function_execution(self, request: DataPackage):
-        result = self.remote_function_runnable_handler.execute_remote_function_runnable(request)
+            await self.handle_module_remote_function_execution(remote_function_request)
+        Logger.log_info("Post handle remote function request")
+    async def handle_runtime_remote_function_execution(self, request: DataPackage):
+        result = await self.remote_function_runnable_handler.execute_remote_function_runnable(request)
 
         if not result:
             Logger.log_error("Python runtime failed to execute RPC request")
             return
 
-    def handle_module_remote_function_execution(self, request: DataPackage):
+    async def handle_module_remote_function_execution(self, request: DataPackage):
         remote_function_request = request.control_val.remote_function_request
         module_id = remote_function_request.remote_function_identifier.module_id
 
@@ -309,26 +307,28 @@ class ModuleManager():
             Logger.log_error(f"Failed to execute remote function request. Could not find Module \"{module_id}\"")
             return
 
-        self.__running_modules[module_id].enqueue_rpc(request)
+        await self.__running_modules[module_id].enqueue_rpc(request)
+        Logger.log_info("Post handle module remote ")
 
-    def handle_remote_function_response(self, remote_function_response: 'DataPackage'):
-        self.__remote_function_handler.handle_response(remote_function_response)
+    async def handle_remote_function_response(self, remote_function_response: 'DataPackage'):
+        await self.__remote_function_handler.handle_response(remote_function_response)
 
     async def read_from_module_dispatcher(self):
         while self.running:
             Logger.log_info("on read from module dispatcher")
             try:
+                Logger.log_info("on read from module dispatcher 2")
                 async for data_package in self.__from_module_dispatcher_queue:
                     Logger.log_info("Got package")
                     if data_package is not None:
-                        self.on_data_package_received_from_module_dispatcher(data_package)
+                        await self.on_data_package_received_from_module_dispatcher(data_package)
                     else:
                         pass
+                    Logger.log_info("Read done")
             except Exception as e:
                 Logger.log_error("RUNTIME_PYTHON got error during read from module_dispatcher. Terminating:" + str(e) + str(e.__traceback__))
                 traceback.print_exc() 
                 break
-        
         self.__from_module_dispatcher_queue_closed = True    
 
     def restart(self):

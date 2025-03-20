@@ -22,6 +22,7 @@
 import types
 
 from module.scheduling.runnable import Runnable
+import asyncio
 
 class FunctionRunnableWithParams(Runnable):
     def __init__(self, function=None):
@@ -29,9 +30,8 @@ class FunctionRunnableWithParams(Runnable):
         self.function = function
         self.stack = tuple()
 
-    def run(self):
-
-        self.function(*self.stack)
+    async def run(self):
+        await self.function(*self.stack)
 
     def set_params(self, *params):
         self.stack = params
@@ -40,7 +40,7 @@ class FunctionRunnableWithParams(Runnable):
         if not callable(func):
             raise ValueError("The second argument must be a callable function/method.")
     
-        if not hasattr(obj, func.__name__):
+        if not hasattr(object, func.__name__):
             raise AttributeError(f"The object does not have a method named {func.__name__}.")
 
         self.function = types.MethodType(func, object)

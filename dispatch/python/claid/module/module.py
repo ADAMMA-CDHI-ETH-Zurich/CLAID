@@ -76,12 +76,11 @@ class Module(ABC):
         dbgMessage = f"Module \"{self.__id}\": {dbg}"
         Logger.log(LogMessageSeverityLevel.DEBUG_VERBOSE, dbgMessage, LogMessageEntityType.MODULE, self.__id)
 
-    def start(
+    async def start(
             self, 
             subscriber_publisher: ChannelSubscriberPublisher, 
             remote_function_handler: RemoteFunctionHandler,
-            properties,
-            main_thread_runnables_queue
+            properties
         ):
         if self.__is_initialized:
             self.module_error("Initialize called twice!")
@@ -97,40 +96,28 @@ class Module(ABC):
                 subscriber_publisher.get_asyncio_loop()
             )
 
-        self.__runnable_dispatcher = RunnableDispatcher(main_thread_runnables_queue)
+        self.__runnable_dispatcher = RunnableDispatcher()
 
-        if not self.__runnable_dispatcher.start():
+        if not await self.__runnable_dispatcher.start():
             self.module_error("Failed to start RunnableDispatcher.")
             return False
 
         self.__is_initializing = True
         self.__is_initialized = False
 
-        function_runnable = FunctionRunnableWithParams(self.__initialize_internal)
-        function_runnable.set_params(properties)
-
-        self.__runnable_dispatcher.add_runnable(
-            ScheduledRunnable(
-                function_runnable,
-                ScheduleOnce(datetime.now())
-            )
-        )       
-
-        while not self.__is_initialized:
-            time.sleep(1)
-
-
+        await self.__initialize_internal(properties)
+        
         self.__is_initializing = False
         self.__subscriber_publisher = None
         return True
 
-    def __initialize_internal(self, properties):
-        Logger.log_info("Initialize internal called")
-        self.initialize(properties)
+    async def __initialize_internal(self, properties):
+        Logger.log_info("Initialize internal called ")
+        await self.initialize(properties)
         self.__is_initialized = True
 
     @abstractmethod
-    def initialize(self, properties):
+    async def initialize(self, properties):
         pass
 
     def set_id(self, module_id):
@@ -168,7 +155,7 @@ class Module(ABC):
     def register_periodic_function(self, name, callback, interval_timedelta):
         self.register_periodic_function_with_start_time(name, callback, interval_timedelta, datetime.now() + interval_timedelta)
 
-    def register_periodic_function_with_start_time(self, name, callback, interval_timedelta, start_time):
+    async def register_periodic_function_with_start_time(self, name, callback, interval_timedelta, start_time):
         if interval_timedelta.total_seconds()*1000 == 0:
             self.module_error(f"Error in registerPeriodicFunction: Cannot register periodic function \"{name}\" with a period of 0 milliseconds.")
 
@@ -181,10 +168,10 @@ class Module(ABC):
             schedule=ScheduleRepeatedIntervall(start_time, interval_timedelta))
 
         self.__timers[name] = runnable
-        self.__runnable_dispatcher.add_runnable(runnable)
+        await self.__runnable_dispatcher.add_runnable(runnable)
         Logger.log_info(f"Registered periodic runnable {name}")
 
-    def register_scheduled_function(self, name, function, start_time):
+    async def register_scheduled_function(self, name, function, start_time):
         if start_time < datetime.now():
             self.module_warning(f"Failed to schedule function \"{name}\" at time {start_time.strftime('%d.%m.%y - %H:%M:%S')}. "
                                f"The time is in the past. It is now: {datetime.now().strftime('%d.%m.%y - %H:%M:%S')}. Rescheduling for now.")
@@ -199,7 +186,9 @@ class Module(ABC):
             self.__timers[name].runnable.invalidate()
 
         self.__timers[name] = runnable
-        self.__runnable_dispatcher.add_runnable(runnable)
+        Logger.log_info("Adding runnable " + name)
+        Logger.log_info(f"Registering scheduled function: {name} {runnable} {function_runnable}")
+        await self.__runnable_dispatcher.add_runnable(runnable)
 
     def unregister_periodic_function(self, name):
         if name not in self.__timers:
@@ -225,45 +214,40 @@ class Module(ABC):
     def map_remote_function_of_runtime(self, runtime: Runtime, function_name: str, return_type: Any, *parameters: Any) -> RemoteFunction:
         return self.__remote_function_handler.map_runtime_function(runtime, function_name, return_type, *parameters)
 
-    def enqueue_rpc(self, rpc_request: DataPackage):
+    async def enqueue_rpc(self, rpc_request: DataPackage):
         # Some entity requested us to execute a remote function.
         # Create a ConsumerRunnable and enqueue it to execute the remote function on the Module's thread.
         function_runnable = FunctionRunnableWithParams(self.execute_rpc_request)
         function_runnable.set_params(rpc_request)
-
-        self.__runnable_dispatcher.add_runnable(
+        Logger.log_info("Enqueing RPC")
+        await self.__runnable_dispatcher.add_runnable(
             ScheduledRunnable(
                 function_runnable,
                 ScheduleOnce(datetime.now())
             )
         )       
+        Logger.log_info("Enqueing RPC done")
     
-    def execute_rpc_request(self, rpc_request: DataPackage):
+    async def execute_rpc_request(self, rpc_request: DataPackage):
+        Logger.log_info("Execute rpc request")
         if rpc_request.target_module != self.__id:
             self.module_error(
                 f"Failed to execute RPC request. RPC is targeted for Module \"{rpc_request.target_module}\", but we are Module \"{self.__id}\"."
             )
             return
         
-        result = self.__remote_function_runnable_handler.execute_remote_function_runnable(rpc_request)
+        result = await self.__remote_function_runnable_handler.execute_remote_function_runnable(rpc_request)
         if not result:
             self.module_error("Failed to execute rpcRequest")
             return
 
-    def shutdown(self):
+    async def shutdown(self):
         self.__is_terminating = True
 
-        function_runnable = FunctionRunnable(self.terminate_internal)
+        await self.__terminate_internal()    
 
-        self.__runnable_dispatcher.add_runnable(
-            ScheduledRunnable(
-                function_runnable,
-                ScheduleOnce(datetime.now())
-            )
-        )       
         while self.__is_terminating:
             time.sleep(1)
-
 
         Logger.log_info("Runnable dispatcher stop 1")
         self.__runnable_dispatcher.stop()
@@ -271,7 +255,7 @@ class Module(ABC):
         self.__is_initialized = False
         Logger.log_info("Runnable dispatcher stop 3")
 
-    def terminate_internal(self):
+    async def __terminate_internal(self):
         Logger.log_info("Unregistering all periodic functions")
         self.unregister_all_periodic_functions()
         Logger.log_info("Calling terminate")
@@ -279,7 +263,7 @@ class Module(ABC):
         Logger.log_info("Terminated")
         self.__is_terminating = False
 
-    def terminate(self):
+    async def terminate(self):
         pass
 
     def on_connected_to_remote_server(self):
