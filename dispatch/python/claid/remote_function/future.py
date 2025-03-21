@@ -2,6 +2,7 @@ from typing import Generic, TypeVar, Callable, Optional, Any
 from dispatch.proto.claidservice import *
 from remote_function.abstract_future import AbstractFuture
 from module.type_mapping.type_mapping import TypeMapping
+from claid.logger.logger import Logger
 
 T = TypeVar('T')
 class Future(AbstractFuture):
@@ -10,8 +11,8 @@ class Future(AbstractFuture):
         self.return_type = return_type
         self.callback_consumer = None
     
-    def await_result(self) -> T:
-        response_package = self.await_response()
+    async def await_result(self, timeout: Optional[float] = None) -> T:
+        response_package = await self.await_response(timeout)
         if response_package is None or not self.was_executed_successfully():
             return None
         return self.get_return_data(response_package)
@@ -35,3 +36,7 @@ class Future(AbstractFuture):
             return
         result = self.get_return_data(data)
         await self.callback_consumer(result)
+
+
+    async def __call__(self, timeout: Optional[float] = None):
+        return await self.await_result(timeout)

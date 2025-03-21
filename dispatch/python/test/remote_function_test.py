@@ -66,10 +66,10 @@ class TestModule(Module):
         module1_function_sent = True
         future = self.function.execute("Test")
         print("Called function awaiting future")
-        future.then(self.on_result)
+        
+        self.on_result(await future())
 
-
-    async def on_result(self,data):
+    def on_result(self,data):
         print("Got result: ", data)
         global module1_function_returned
         global module1_function_return_correct
