@@ -64,10 +64,8 @@ class TestModule(Module):
         print("Calling function")
         global module1_function_sent
         module1_function_sent = True
-        future = self.function.execute("Test")
-        print("Called function awaiting future")
-        
-        self.on_result(await future())
+
+        self.on_result(await self.function("Test"))
 
     def on_result(self,data):
         print("Got result: ", data)
@@ -101,8 +99,11 @@ module_factory.register_module(TestModule2)
 claid = CLAID()
 
 path = "localhost:1337"
-#config_path = "{}/dispatch/python/test/remote_function_test_config.json".format(os.getcwd())
+
 config_path = "{}/remote_function_test_config.json".format(os.getcwd())
+
+if not os.path.isfile(config_path):
+    config_path = "{}/dispatch/python/test/remote_function_test_config.json".format(os.getcwd())
 
 
 # Function to start CLAID asynchronously
