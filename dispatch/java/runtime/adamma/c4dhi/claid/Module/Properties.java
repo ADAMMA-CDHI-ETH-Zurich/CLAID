@@ -26,11 +26,14 @@ import java.util.Map;
 import java.util.Vector;
 
 import adamma.c4dhi.claid.Logger.Logger;
+import adamma.c4dhi.claid_sensor_data.AudioEncoding;
 
 import java.util.List;
 import java.util.StringTokenizer;
 import java.lang.reflect.Method;
 
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import com.google.protobuf.Message;
@@ -48,8 +51,6 @@ public class Properties
         this.properties = properties;
         this.unknownProperties = new Vector<>();
     }
-
-  
 
     public <T> T getNumberProperty(String key, Class<T> dataType) 
     {
@@ -274,6 +275,55 @@ public class Properties
         }
         
         return (T) builder.build();
+    }
+
+    private <T extends ProtocolMessageEnum> T deserializeEnumProperty(String key, Value property, Class<T> dataType)
+    {
+        String jsonString;
+        try
+        {
+            jsonString = JsonFormat.printer().print(property);
+        }
+        catch(Exception e)
+        {
+            Logger.logError("Properties getObjectProperty() failed, unable to serialize property object to json " + e.getMessage() + " " + e.getCause());
+            unknownProperties.add(key);
+            return null;
+        }
+
+        try {
+            // Get the Enum Descriptor dynamically
+            Descriptors.EnumDescriptor enumDescriptor =
+                    (Descriptors.EnumDescriptor) dataType.getMethod("getDescriptor").invoke(null);
+
+            // Get Enum Value Descriptor
+            Descriptors.EnumValueDescriptor valueDescriptor = enumDescriptor.findValueByName(jsonString.replace("\"", ""));
+            if (valueDescriptor == null) {
+                Logger.logError("Properties getObjectProperty() failed, invalid value " + jsonString + " for enum type \"" + dataType.getName() + "\"");
+                unknownProperties.add(key);
+                return null;
+            }
+
+            // Call valueOf() method dynamically
+            return (T) dataType.getMethod("valueOf", Descriptors.EnumValueDescriptor.class).invoke(null, valueDescriptor);
+        } catch (Exception e) {
+            Logger.logError("Properties getObjectProperty() failed: \"" + e.getMessage() + "\".");
+            unknownProperties.add(key);
+            return null;
+        }
+    }
+
+    public <T extends ProtocolMessageEnum> T getEnumProperty(String key, Class<T> dataType)
+    {
+        Value property;
+        property = lookupProperty(key);
+        if(property == null)
+        {
+            unknownProperties.add(key);
+            return null;
+        }
+
+        return deserializeEnumProperty(key, property, dataType);
     }
 
     private static <T> GeneratedMessageV3.Builder getProtoMessageBuilder(Class<T> dataType)

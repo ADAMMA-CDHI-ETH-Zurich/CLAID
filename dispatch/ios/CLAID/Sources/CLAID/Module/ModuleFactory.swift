@@ -25,7 +25,10 @@ public actor ModuleFactory {
 
     /// Creates an instance of the requested module, sets its ID and type
     public func getInstance(className: String, moduleId: String) async -> Module?  {
-        guard let moduleType = registeredModuleClasses[className] else {
+        
+        print("Instantiation of Modules from config not currently supported. Modules need to be precreated.")
+        return nil;
+        /*guard let moduleType = registeredModuleClasses[className] else {
             print("Module class \(className) not found.")
             return nil
         }
@@ -37,7 +40,7 @@ public actor ModuleFactory {
         } catch {
             print("Error creating instance of \(className): \(error)")
             return nil
-        }
+        }*/
     }
 
     /// Checks if a module class is registered

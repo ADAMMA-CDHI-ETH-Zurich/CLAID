@@ -141,7 +141,6 @@ public class AccelerometerCollector extends Module implements SensorEventListene
 
     public synchronized void onNewAccelerationSample(AccelerationSample sample)
     {
-        moduleInfo("On New sample");
         if(this.outputMode.toUpperCase().equals("STREAM"))
         {
             this.collectedSamples.addSamples(sample);

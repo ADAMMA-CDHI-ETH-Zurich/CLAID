@@ -22,6 +22,7 @@ import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import adamma.c4dhi.claid_android.CLAIDServices.ServiceAnnotation;
 
 public class CLAIDFlutterActivity extends FlutterActivity
 {
@@ -138,7 +139,7 @@ public class CLAIDFlutterActivity extends FlutterActivity
 
         boolean startResult = CLAID.startInBackground(getApplicationContext(), socketPath,
                 configFilePath, hostId, userId, deviceId, 
-                specialPermissionsConfig, persistanceConfig);
+                specialPermissionsConfig, persistanceConfig, ServiceAnnotation.defaultAnnotation());
 
         if(!startResult)
         {

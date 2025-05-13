@@ -33,8 +33,7 @@ public actor ChannelSubscriberPublisher {
     }
 
     /// Publishes a new channel for a module
-    func publish<T: Sendable>(dataTypeExample: T, module: Module, channelName: String) async -> Channel<T> {
-        let moduleId = await module.getId()
+    func publish<T: Sendable>(dataTypeExample: T, moduleId: String, channelName: String) async -> Channel<T> {
         let examplePackage = prepareExamplePackage(dataTypeExample: dataTypeExample, moduleId: moduleId, channelName: channelName, isPublisher: true)
 
         print("Inserting package for Module \(moduleId)")
@@ -50,8 +49,7 @@ public actor ChannelSubscriberPublisher {
     }
 
     /// Subscribes a module to a channel
-    func subscribe<T>(dataTypeExample: T, module: Module, channelName: String, subscriber: Subscriber<T>) async -> Channel<T> {
-        let moduleId = await module.getId()
+    func subscribe<T>(dataTypeExample: T, moduleId: String, channelName: String, subscriber: Subscriber<T>) async -> Channel<T> {
         let examplePackage = prepareExamplePackage(dataTypeExample: dataTypeExample, moduleId: moduleId, channelName: channelName, isPublisher: false)
 
         examplePackagesForEachModule[moduleId, default: []].append(examplePackage)

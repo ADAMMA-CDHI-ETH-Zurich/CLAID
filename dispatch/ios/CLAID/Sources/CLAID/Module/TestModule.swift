@@ -5,14 +5,17 @@
 //  Created by Patrick Langer on 21.02.2025.
 //
  
+
 public actor TestModule : Module {
- 
-    public init(moduleId: String, moduleType: String) async {
-        await self.moduleHandle.setId(moduleId)
+     
+   
+    public var moduleHandle = ModuleHandle()
+    public init(id: String? = nil) async {
+        moduleHandle = defaultHandle(id: id)
     }
-  
-    public func initialize(properties: Properties) async throws {
-        
+
+    public func run() async throws {
+            
         inputChannel = try await self.subscribe("InputChannel", dataTypeExample: Int(), callback: self.onData)
         outputChannel = try await self.publish("OutputChannel", dataTypeExample: Int())
                         
@@ -26,14 +29,11 @@ public actor TestModule : Module {
     //         let result: String = try await function(42, "Hello")
 
     
-    public var moduleHandle: ModuleHandle = ModuleHandle()
+    
     private var ctr: Int = 0
     private var inputChannel: Channel<Int>?
     private var outputChannel: Channel<Int>?
-    
-    public init() {
-    
-    }
+  
     
     private func count() async {
         self.ctr += 1

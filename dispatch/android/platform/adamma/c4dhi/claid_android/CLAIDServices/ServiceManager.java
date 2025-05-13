@@ -43,9 +43,19 @@ public class ServiceManager
 {
     private static String UNIQUE_WORK_NAME = "CLAIDServiceWatchdog";
 
+    public static void startMaximumPermissionsPerpetualService(Context context,
+       final String socketPath, final String configFilePath, final String hostId,
+       final String userId, final String deviceId, CLAIDPersistanceConfig persistanceConfig) {
+
+        startMaximumPermissionsPerpetualService(context, socketPath, configFilePath, hostId,
+                userId, deviceId, persistanceConfig, ServiceAnnotation.defaultAnnotation());
+    }
+
+
     public static void startMaximumPermissionsPerpetualService(Context context, 
         final String socketPath, final String configFilePath, final String hostId, 
-        final String userId, final String deviceId, CLAIDPersistanceConfig persistanceConfig)
+        final String userId, final String deviceId, CLAIDPersistanceConfig persistanceConfig,
+       ServiceAnnotation serviceAnnotation)
     {   
         Permission.setContext(context);
         // Request all permissions.
@@ -66,6 +76,9 @@ public class ServiceManager
         description.put("deviceId", deviceId);
         description.put("startOnBoot", persistanceConfig.RESTART_ON_BOOT ? "true" : "false");
         description.put("restartOnCrashOrTermination", persistanceConfig.MONITOR_TRY_RESTART_IF_CRASHED_OR_EXITED ? "true" : "false");
+        description.put("serviceTitle", serviceAnnotation.getServiceTitle());
+        description.put("serviceText", serviceAnnotation.getServiceText());
+        description.put("serviceIconResource", String.valueOf(serviceAnnotation.getIconResource()));
 
         if(!description.serializeToFile(restartDescriptionPath))
         {

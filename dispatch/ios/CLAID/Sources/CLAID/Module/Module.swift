@@ -1,13 +1,12 @@
 import Foundation
+import protocol Spezi.Module
 
+public protocol Module : Actor, Spezi.Module {
 
-
-public protocol Module : Actor {
-
-    init()
     var moduleHandle: ModuleHandle { get }
     
-    func initialize(properties: Properties) async throws
+    func loadPropertiesFromConfig(properties: Properties) async
+    func run() async throws
     func terminate() async
     func notifyConnectedToRemoteServer() async
     func notifyDisconnectedFromRemoteServer() async
@@ -21,6 +20,21 @@ public protocol Module : Actor {
 extension Module {
     
  
+    public func defaultHandle(id: String?) -> ModuleHandle {
+        
+        let className = String(describing: Self.self)
+        return ModuleHandle(id ?? className, className)
+    }
+    
+    @MainActor
+    public func configure() {
+        @Dependency
+        var claid = CLAID()
+        
+        let className = String(describing: Self.self)
+        print("\(className) configure")
+    }
+    
     /// Registers a periodic function and stores it in the dictionary
     public func registerPeriodicFunction(name: String, interval: Duration, function: @escaping @Sendable () async -> Void) async {
         let task = await moduleHandle.dispatcher.addPeriodicTask(interval: interval.timeInterval, function: function)
@@ -60,7 +74,7 @@ extension Module {
         
         return await subscriberPublisher.publish(
             dataTypeExample: dataTypeExample,
-            module: self,
+            moduleId: await self.moduleHandle.getId(),
             channelName: channelName
         )
     }
@@ -85,7 +99,7 @@ extension Module {
             )
             return await subscriberPublisher.subscribe(
                 dataTypeExample: dataTypeExample,
-                module: self,
+                moduleId:  await self.moduleHandle.getId(),
                 channelName: channelName,
                 subscriber: subscriber
             )
@@ -250,6 +264,7 @@ extension Module {
         remoteFunctionHandler: RemoteFunctionHandler,
         properties: Properties
     ) async throws {
+        print("CLAID START!!")
         await moduleHandle.setSubscribePublisher(subscriberPublisher)
         await moduleHandle.setRemoteFunctionHandler(remoteFunctionHandler)
         await moduleHandle.setProperties(properties)
@@ -259,7 +274,8 @@ extension Module {
         await moduleHandle.setRemoteFunctionRunnableHandler(remoteFunctionRunnableHandler)
         
         await moduleHandle.setInitialized(true)
-        try await initialize(properties: properties)
+        await loadPropertiesFromConfig(properties: properties)
+        try await run()//initialize(properties: properties)
     }
     
     public func shutdown() async {
@@ -271,6 +287,10 @@ extension Module {
     }
     
     public func notifyDisconnectedFromRemoteServer() async {
+        
+    }
+    
+    public func loadPropertiesFromConfig(properties: Properties) async {
         
     }
 }

@@ -150,10 +150,14 @@ public class ModuleManager
             String moduleId = descriptor.getModuleId();
             String moduleClass = descriptor.getModuleClass();
 
+            if(this.runningModules.containsKey(moduleId)) {
+                continue;
+            }
+
             if(!this.instantiateModule(moduleId, moduleClass))
             {
                 Logger.logError("Failed to instantiate Module \"" + moduleId + "\" (class: \"" + moduleClass + "\").\n" +
-                "The Module class was not registered to the ModuleFactory.");
+                "The Module class was not registered to the ModuleFactory, or an instance of the Module could not be created (e.g., non-standard constructor).");
                 return false;
             }
         }
@@ -375,8 +379,9 @@ public class ModuleManager
 
         if(subscriberList == null)
         {
-            Logger.logInfo("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n" + 
+            Logger.logWarning("ModuleManager received package with target for Module \"" + moduleId + "\" on Channel \"" + channelName + "\",\n" + 
             "however a Subscriber of the Module for this Channel was not found. The Module has no Subscriber for this Channel.");
+            return;
         }
         
 
@@ -609,6 +614,10 @@ public class ModuleManager
         }
 
         return runningModules.get(moduleId);
+    }
+
+    public void addPreloadedModule(String moduleId, Module module) {
+        this.runningModules.put(moduleId, module);
     }
 
     public RemoteFunctionHandler getRemoteFunctionHandler()

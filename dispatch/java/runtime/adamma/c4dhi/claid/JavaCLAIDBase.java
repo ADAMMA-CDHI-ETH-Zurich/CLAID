@@ -21,6 +21,11 @@
 
 package adamma.c4dhi.claid;
 
+import com.google.protobuf.MapEntry;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import adamma.c4dhi.claid.LocalDispatching.ModuleDispatcher;
 import adamma.c4dhi.claid.LocalDispatching.ModuleManager;
 import adamma.c4dhi.claid.Logger.Logger;
@@ -79,7 +84,7 @@ public abstract class JavaCLAIDBase
     private static long cppRuntimeHandle = 0;
 
     private static Thread moduleManagerThread = null;
-    
+    private static Map<String, Module> preloadedModules = new HashMap<String, Module>();
 
     // Starts the middleware and attaches to it.
     protected static boolean startInternal(final String socketPath, final String configFilePath, 
@@ -151,6 +156,10 @@ public abstract class JavaCLAIDBase
         {
             Logger.logInfo("ModuleManagerThread 1");
             moduleManagerThread = new Thread(() -> {
+                for (Map.Entry<String, Module> entry : JavaCLAIDBase.preloadedModules.entrySet()) {
+                    moduleManager.addPreloadedModule(entry.getKey(), entry.getValue());
+                }
+
                 moduleManager.start();
             });
             moduleManagerThread.start();
@@ -255,6 +264,10 @@ public abstract class JavaCLAIDBase
     public Module getModuleById(String moduleId)
     {
         return JavaCLAIDBase.moduleManager.getModuleById(moduleId);
+    }
+
+    public static void addPreloadedModule(String moduleId, Module module) {
+        JavaCLAIDBase.preloadedModules.put(moduleId, module);
     }
 
     public static RemoteFunctionHandler getRemoteFunctionHandler()

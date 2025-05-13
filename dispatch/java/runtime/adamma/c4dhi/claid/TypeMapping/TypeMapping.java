@@ -31,6 +31,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 
+import adamma.c4dhi.claid.CLAIDANY;
 import adamma.c4dhi.claid.TypeMapping.Mutator;
 
 import adamma.c4dhi.claid.DataPackage;
@@ -47,7 +48,9 @@ import adamma.c4dhi.claid.StringVal;
 import adamma.c4dhi.claid.StringMap;
 import adamma.c4dhi.claid.Logger.Logger;
 
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.Message;
 
 
 public class TypeMapping {
@@ -181,7 +184,8 @@ public class TypeMapping {
             else if (typeName.equals("ArrayList<Short>")) 
             {
                 return (T) new ArrayList<Short>();
-            } else if (typeName.equals("ArrayList<Integer>")) 
+            } 
+            else if (typeName.equals("ArrayList<Integer>")) 
             {
                 return (T) new ArrayList<Integer>();
             } 
@@ -234,7 +238,7 @@ public class TypeMapping {
 
     private static HashMap<String, ProtoCodec> protoCodecMap = new HashMap<>();
 
-    private static ProtoCodec getProtoCodec(GeneratedMessageV3 msg) 
+    public static ProtoCodec getProtoCodec(GeneratedMessageV3 msg)
     {
       final String fullName =  msg.getDescriptorForType().getFullName();
       
@@ -738,39 +742,27 @@ public class TypeMapping {
                         return (T) map;
                     }
                 );
-            } 
-
-               
-
-            /*if (genericName.equals("Map<String, Double>")) 
-            {
-                return new Mutator<T>(
-                    (p, v) -> {
-                        Map<String, Double> data = (Map<String, Double>) v;
-                        DataPackage.Builder builder = dataPackageBuilderCopy(p);
-
-                        NumberMap.Builder numberMapBuilder = NumberMap.newBuilder();
-                        for (Map.Entry<String, Double> entry : data.entrySet()) {
-                            numberMapBuilder.putVal(entry.getKey(), entry.getValue());
-                        }
-
-                        builder.setNumberMap(numberMapBuilder.build());
+            }
+        }
+        if(dataTypeClass == AnyProtoType.class) {
+            return new Mutator<T>(
+                    (packet, value) -> {
+                        AnyProtoType anyValue = (AnyProtoType) value;
+                        DataPackage.Builder builder = dataPackageBuilderCopy(packet);
+                        builder.setPayload(anyValue.getBlob());
                         return builder.build();
                     },
-                    p -> {
-                        Map<String, Double> map = new HashMap<>();
-                        NumberMap numberMap = p.getNumberMap();
-
-                        for (String key : numberMap.getValMap().keySet()) {
-                            double value = numberMap.getValMap().get(key);
-                            map.put(key, value);
+                    packet -> {
+                        if (packet.getPayload().getMessageType().isEmpty()) {
+                            Logger.logFatal("Invalid package, unknown payload! Expected payload type to be specified in message_type of Blob, but got \"\"");
                         }
 
-                        return (T) map;
+                        Blob blob = packet.getPayload();
+                        AnyProtoType returnValue = new AnyProtoType();
+                        returnValue.setBlob(blob);
+                        return (T) returnValue;
                     }
-                );
-            } */
-
+            );
         }
 
 
@@ -811,84 +803,7 @@ public class TypeMapping {
                 }
             );
         }
-        // Have to use NumberArray, StringArray, ..., since we cannot safely distinguish List<Double> and List<String>?
-        // Java generics... best generics... not. Type erasure, great invention.
-       /* if (dataType == ArrayList<Double>.class) {
-            return new Mutator<T>(
-                (p, v) -> dataPackageBuilderCopy(p)
-                    .setNumberArrayVal((NumberArray) v)
-                    .build(),
-                p -> (T) p.getNumberArrayVal()
-            );
-        }
-
-
-        if (inst instanceof StringArray) {
-            return new Mutator<T>(
-                (p, v) -> dataPackageBuilderCopy(p)
-                    .setStringArrayVal((StringArray) v)
-                    .build(),
-                p -> (T) p.getStringArrayVal()
-            );
-        }
-
-        if (inst instanceof NumberMap) {
-            return new Mutator<T>(
-                (p, v) -> dataPackageBuilderCopy(p)
-                    .setNumberMap((NumberMap) v)
-                    .build(),
-                p -> (T) p.getNumberMap()
-            );
-        }
-
-        if (inst instanceof NumberMap) {
-            return new Mutator<T>(
-                (p, v) -> dataPackageBuilderCopy(p)
-                    .setNumberMap((NumberMap) v)
-                    .build(),
-                p -> (T) p.getNumberMap()
-            );
-        } */
-
-        
-/* 
-        // List of Double
-        if (inst instanceof List<?>) 
-        {
-            List<?> list = (List<?>) inst;
-            if (!list.isEmpty() && list.get(0) instanceof Double) {
-                return new Mutator<>(
-                    (p, v) -> p.setNumberArrayVal(new NumberArray((List<Double>) v)),
-                    p -> (T) p.getNumberArrayVal().getVal()
-                );
-            }
-
-            if (!list.isEmpty() && list.get(0) instanceof String) {
-                return new Mutator<>(
-                    (p, v) -> p.setStringArrayVal(new StringArray((List<String>) v)),
-                    p -> (T) p.getStringArrayVal().getVal()
-                );
-            }
-        }
-
-        // Map of Double
-        if (inst instanceof Map<?, ?>) {
-            Map<?, ?> map = (Map<?, ?>) inst;
-            if (!map.isEmpty() && map.values().iterator().next() instanceof Double) {
-                return new Mutator<>(
-                    (p, v) -> p.setNumberMap(new NumberMap((Map<String, Double>) v)),
-                    p -> (T) p.getNumberMap().getVal()
-                );
-            }
-
-            if (!map.isEmpty() && map.values().iterator().next() instanceof String) {
-                return new Mutator<>(
-                    (p, v) -> p.setStringMap(new StringMap((Map<String, String>) v)),
-                    p -> (T) p.getStringMap().getVal()
-                );
-            }
-        }
-*/
+      
         throw new IllegalArgumentException("Type \"" + dataType.getSimpleName() + "\" is not supported by CLAID channels.");
     }
 }

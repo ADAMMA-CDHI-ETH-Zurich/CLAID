@@ -24,13 +24,13 @@ actor ModuleManager {
         }
 
         print("Loaded Module with id \"\(moduleId)\" (class: \"\(moduleClass)\").")
-        guard let module = await moduleFactory.getInstance(className: moduleClass, moduleId: moduleId) else {
+       /* guard let module = await moduleFactory.getInstance(className: moduleClass, moduleId: moduleId) else {
             print("Failed to instantiate Module with id \"\(moduleId)\" (class: \"\(moduleClass)\").")
             return false
-        }
+        }*/
         
 
-        runningModules[moduleId] = module
+        //runningModules[moduleId] = module
         return true
     }
 

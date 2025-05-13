@@ -2,31 +2,59 @@
 // https://docs.swift.org/swift-book
 import CLAIDNative
 import Foundation
+import protocol Spezi.Module
 
-public actor CLAID {
-    private static var handle: UnsafeMutableRawPointer? = nil
-    private static var c_runtime_handle: UnsafeMutableRawPointer? = nil
-    private static var moduleDispatcher: ModuleDispatcher? = nil
-    private static var moduleManager: ModuleManager? = nil
-    private static var moduleFactory = ModuleFactory()
-    private static var preloadedModules: [String:Module] = [:]
+public class CLAID: Spezi.Module {
+    
+    private var handle: UnsafeMutableRawPointer? = nil
+    private var c_runtime_handle: UnsafeMutableRawPointer? = nil
+    private var moduleDispatcher: ModuleDispatcher? = nil
+    private var moduleManager: ModuleManager? = nil
+    private var moduleFactory = ModuleFactory()
+    private var preloadedModules: [String: Module] = [:]
+    
+    private let lock = NSLock()
+
+    public init() {}
+
+    public func configure() {
+        // Lock here if needed to protect shared state
         
-    public init() {
-
+        func getTestConfigPath() -> String? {
+            // Get the path to the resource inside the Swift package
+            if let fileURL = Bundle.main.url(forResource: "test_config", withExtension: "json") {
+                return fileURL.path // Convert URL to a file path string
+            }
+            print("Test config not found!!")
+            
+            return nil
+        }
+        if let testConfigPath = getTestConfigPath() {
+            Task {
+                try await start(
+                    configFile: testConfigPath,
+                    hostID: "test_host",
+                    userID: "test_user",
+                    deviceID: "test_device"
+                )
+            }
+        }
+        
+        
     }
 
-    public static func start(configFile: String, hostID: String, userID: String, deviceID: String) async throws {
+    public func start(configFile: String, hostID: String, userID: String, deviceID: String) async throws {
         
         Logger.logInfo("Starting CLAID")
         let socketPath = "localhost:1337"
-        
+
         guard let documentsPathUri = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             throw CLAIDError("Failed to get documents directory URI.")
         }
-        
+
         let documentsPath = documentsPathUri.path
 
-        handle = startCoreWithEventTracker(
+        let startedHandle = startCoreWithEventTracker(
             socketPath: socketPath,
             configFile: configFile,
             hostID: hostID,
@@ -34,54 +62,57 @@ public actor CLAID {
             deviceID: deviceID,
             commonDataPath: documentsPath
         )
-        
-        if(handle == nil) {
+
+        guard let validHandle = startedHandle else {
             throw CLAIDError("Failed to start CLAID middleware, handle is null.")
         }
-        
-        c_runtime_handle = try attachCppRuntime(handle: handle)
-        if(c_runtime_handle == nil) {
+
+        let runtimeHandle = try attachCppRuntime(handle: validHandle)
+
+        guard let validRuntimeHandle = runtimeHandle else {
             throw CLAIDError("Failed to start CLAID C++ runtime, C++ runtime handle is null.")
         }
-        
-       try await attach_swift_runtime(socketPath: socketPath, moduleFactory: moduleFactory)
-    }
-    
-    static func attach_swift_runtime(socketPath: String, moduleFactory: ModuleFactory) async throws {
-        
-        try await self.moduleDispatcher = ModuleDispatcher(socketPath: socketPath)
-        
-        guard let dispatcher = self.moduleDispatcher else {
-            throw CLAIDError("Failed to create CLAID ModuleDispatcher in Swift runtime.")
-        }
-        
-        self.moduleManager = ModuleManager(
-            dispatcher: dispatcher,
-            moduleFactory: moduleFactory
-        )
-        
-        guard let moduleManager = self.moduleManager else {
-            throw CLAIDError("Failed to create CLAID ModuleManager in swift runtime.")
-        }
-        
-        for (moduleId, module) in self.preloadedModules {
-            await moduleManager.addPreloadedModule(moduleId: moduleId, module: module)
-        }
-        
-        try await moduleManager.start()
-        Logger.logInfo("CLAID has started")
-    }
-    
-    public static func getRemoteFunctionHandler() async -> RemoteFunctionHandler? {
-        return await self.moduleManager?.getRemoteFunctionHandler()
+
+        self.handle = validHandle
+        self.c_runtime_handle = validRuntimeHandle
+
+        try await attach_swift_runtime(socketPath: socketPath)
     }
 
-    public static func registerModule(_ moduleType: Module.Type) async throws {
+    private func attach_swift_runtime(socketPath: String) async throws {
+        let dispatcher = try await ModuleDispatcher(socketPath: socketPath)
+        let manager = ModuleManager(dispatcher: dispatcher, moduleFactory: moduleFactory)
+
+        var modulesToLoad: [String: Module] = [:]
+
+        self.moduleDispatcher = dispatcher
+        self.moduleManager = manager
+        modulesToLoad = self.preloadedModules
+
+        for (moduleId, module) in modulesToLoad {
+            await manager.addPreloadedModule(moduleId: moduleId, module: module)
+        }
+
+        try await manager.start()
+        Logger.logInfo("CLAID has started")
+    }
+
+    public func getRemoteFunctionHandler() async -> RemoteFunctionHandler? {
+        var manager: ModuleManager?
+
+        manager = self.moduleManager
+
+        return await manager?.getRemoteFunctionHandler()
+    }
+
+    public func registerModule(_ moduleType: Module.Type) async throws {
+        // Assuming moduleFactory is thread-safe
         try await moduleFactory.registerModule(moduleType)
     }
-    
-    public static func addPreloadedModule(moduleId: String, module: Module) async {
-        self.preloadedModules[moduleId] = module
+
+    public func addPreloadedModule(moduleId: String, module: Module) {
+        lock.lock()
+        preloadedModules[moduleId] = module
+        lock.unlock()
     }
-    
 }

@@ -625,3 +625,22 @@ message ScheduleExactTime
   double repeat_every_n_days = 2;
 }
 
+message InhalerUsageEvent {
+  string mac_address = 1;
+  int32 type = 2;
+  string event = 3;
+}
+
+message AQI {
+    int32 h = 1;  // Humidity value
+    float no2 = 2;  // NO2 value
+    float o3 = 3;  // Ozone (O3) value
+    int64 p = 4;  // Pressure value
+    float pm10 = 5;  // PM10 value
+    float pm25 = 6;  // PM2.5 value
+    float so2 = 7;  // SO2 value
+    float t = 8;    // Temperature value
+    float w = 9;    // Wind speed value
+    float wg = 10;  // Wind gust value
+    string time = 11; // Time of the measurement
+}

@@ -97,6 +97,10 @@ public abstract class Module
     {
     }
 
+    public Module(String id) {
+        this.id = id;
+    }
+
     public void moduleFatal(final String error)
     {
         String errorMsg = "Module \"" + this.id + "\": " + error;

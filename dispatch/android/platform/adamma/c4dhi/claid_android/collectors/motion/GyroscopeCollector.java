@@ -143,7 +143,6 @@ public class GyroscopeCollector extends Module implements SensorEventListener
 
     public synchronized void onNewGyroscopeSample(GyroscopeSample sample)
     {
-        moduleInfo("On New sample");
         if(this.outputMode.toUpperCase().equals("STREAM"))
         {
             this.collectedSamples.addSamples(sample);

@@ -33,6 +33,7 @@
 
 package adamma.c4dhi.claid_android.CLAIDServices;
 
+import adamma.c4dhi.claid.R;
 import adamma.c4dhi.claid_android.CLAIDServices.ServiceRestartDescription;
 import adamma.c4dhi.claid_android.Configuration.CLAIDPersistanceConfig;
 import adamma.c4dhi.claid_android.Permissions.BluetoothPermission;
@@ -86,7 +87,19 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        Notification notification = buildNotification();
+        ServiceRestartDescription description = new ServiceRestartDescription();
+        final String restartDescriptionPath = CLAID.getAppDataDirectory(this) + "/" + "claid_service_restart_description.dat";
+
+        if(!description.deserializeFromFile(restartDescriptionPath))
+        {
+            final String msg = "Failed to restart MaximumPermissionsPerpetualService. Cannot load ServiceRestartDescription from file \"" + restartDescriptionPath + "\"";
+            // This will throw a RuntimeException
+            CLAID.onUnrecoverableException(msg);
+        }
+        String serviceTitle = description.get("serviceTitle", "CLAID service");
+        String serviceText = description.get("serviceText", "CLAID is running in the background.");
+        int iconResource = Integer.parseInt(description.get("serviceIconResource", String.valueOf(adamma.c4dhi.claid.R.drawable.ic_launcher_foreground)));
+        Notification notification = buildNotification(serviceTitle, serviceText, iconResource);
 
         // TODO: Add support for Android 14:
 /*        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -112,15 +125,7 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
             
             if (intent != null) 
             {                
-                ServiceRestartDescription description = new ServiceRestartDescription();
-                final String restartDescriptionPath = CLAID.getAppDataDirectory(this) + "/" + "claid_service_restart_description.dat";
 
-                if(!description.deserializeFromFile(restartDescriptionPath))
-                {
-                    final String msg = "Failed to restart MaximumPermissionsPerpetualService. Cannot load ServiceRestartDescription from file \"" + restartDescriptionPath + "\"";
-                    // This will throw a RuntimeException
-                    CLAID.onUnrecoverableException(msg);
-                }
 
                 String socketPath = description.get("socketPath");
                 String configFilePath = description.get("configFilePath");
@@ -199,8 +204,6 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
         
      
         CLAID.onServiceStarted(this, socketPath, configFilePath, hostId, userId, deviceId);
- 
-        
     }
 
     @Override
@@ -237,12 +240,12 @@ public class MaximumPermissionsPerpetualService extends CLAIDService
         }
     }
 
-    private Notification buildNotification()
+    private Notification buildNotification(String serviceTitle, String serviceText, int iconResource)
     {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-        .setSmallIcon(adamma.c4dhi.claid.R.drawable.ic_launcher_foreground)
-        .setContentTitle("CLAID Foreground Service")
-        .setContentText("CLAID Foreground Service is running.")
+        .setSmallIcon(iconResource)
+        .setContentTitle(serviceTitle)
+        .setContentText(serviceText)
         .setOngoing(true);
 
         return builder.build();

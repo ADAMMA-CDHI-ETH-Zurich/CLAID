@@ -211,8 +211,8 @@ absl::Status ModuleTable::setChannelTypes(const string& moduleId,
         // If the type doesn't match we return an error.
         if (entry->isPayloadTypeSet() && entry->getPayloadType() != chanPkt.payload().message_type()) 
         {
-            // If subscribed channel is of type claid.CLAIDANY, we make an exception.s
-            if(entry->getPayloadType() != "claidservice.CLAIDANY")
+            // If channel is of type claid.CLAIDANY, we make an exception.
+            if(entry->getPayloadType() != "claidservice.CLAIDANY" && chanPkt.payload().message_type() != "claidservice.CLAIDANY")
             {
                 return absl::InvalidArgumentError(absl::StrCat("Invalid packet type for channel '",chanPkt.channel(), "': ",
                 "Payload type is ", entry->getPayloadType(), " but expected ", chanPkt.payload().message_type()));
@@ -344,7 +344,7 @@ const ChannelEntry* ModuleTable::isValidChannel(const DataPackage& pkt, bool ign
     {
         return entry;
     }
-    if (entry->getPayloadType() != pkt.payload().message_type()) {
+    if (entry->getPayloadType() != pkt.payload().message_type() && entry->getPayloadType() != "claidservice.CLAIDANY") {
         Logger::logError("Invalid package, payload type mismatch! Expected \"%s\" but got \"%s\"", entry->getPayloadType().c_str(), pkt.payload().message_type().c_str());
         return nullptr;
     }

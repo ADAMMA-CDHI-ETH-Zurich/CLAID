@@ -178,6 +178,10 @@ public class ChannelDescription
         {
             return false;
         }
+        
+        if(this.templatePackage.getPayload().getMessageType().equals("claidservice.CLAIDANY")) {
+            return true;
+        }
 
         return dataPackage.getPayload().getMessageType().equals(this.templatePackage.getPayload().getMessageType()); 
     }

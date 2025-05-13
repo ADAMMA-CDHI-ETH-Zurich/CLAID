@@ -26,12 +26,14 @@ import adamma.c4dhi.claid.Module.Module;
 
 import adamma.c4dhi.claid.Module.ModuleFactory;
 import adamma.c4dhi.claid.Logger.Logger;
+import adamma.c4dhi.claid_android.CLAIDServices.ServiceAnnotation;
 import adamma.c4dhi.claid_android.CLAIDServices.ServiceManager;
 import adamma.c4dhi.claid_android.Configuration.CLAIDPersistanceConfig;
 import adamma.c4dhi.claid_android.Configuration.CLAIDSpecialPermissionsConfig;
 import adamma.c4dhi.claid_android.BatteryManagement.BatterySaverModule;
 import adamma.c4dhi.claid_android.CLAIDServices.CLAIDService;
 import adamma.c4dhi.claid_android.Permissions.*;
+import adamma.c4dhi.claid_android.Permissions.AsyncRunnablesHelperThread;
 import adamma.c4dhi.claid_android.Receivers.DeviceOwnerReceiver;
 import adamma.c4dhi.claid_android.UserFeedback.TextToSpeechModule;
 import android.content.Context;
@@ -242,20 +244,31 @@ public class CLAID extends JavaCLAIDBase
         return CLAID.start(context, configFilePath, hostId, userId, deviceId, specialPermissionsConfig);
     }
 
-    public static boolean startInBackground(Context context, final String configFilePath, 
-        final String hostId, final String userId, final String deviceId, 
+    public static boolean startInBackground(Context context, final String configFilePath,
+        final String hostId, final String userId, final String deviceId,
         CLAIDSpecialPermissionsConfig specialPermissionsConfig, CLAIDPersistanceConfig persistanceConfig)
+    {
+        return startInBackground(context, configFilePath, hostId, userId,
+                deviceId, specialPermissionsConfig, persistanceConfig,
+                ServiceAnnotation.defaultAnnotation());
+    }
+    public static boolean startInBackground(Context context, final String configFilePath,
+        final String hostId, final String userId, final String deviceId,
+        CLAIDSpecialPermissionsConfig specialPermissionsConfig, CLAIDPersistanceConfig persistanceConfig,
+        ServiceAnnotation serviceAnnotation)
     {
         String appDataDirPath = getAppDataDirectory(context);
 
         String socketPath = "unix://" + appDataDirPath + "/claid_local.grpc";
 
-        return startInBackground(context, socketPath, configFilePath, hostId, userId, deviceId, specialPermissionsConfig, persistanceConfig);
+        return startInBackground(context, socketPath, configFilePath, hostId, userId,
+                deviceId, specialPermissionsConfig, persistanceConfig, serviceAnnotation);
     }
 
     public static boolean startInBackground(Context context, final String socketPath, 
         final String configFilePath, final String hostId, final String userId, 
-        final String deviceId, CLAIDSpecialPermissionsConfig specialPermissionsConfig, CLAIDPersistanceConfig enduranceConfig)
+        final String deviceId, CLAIDSpecialPermissionsConfig specialPermissionsConfig,
+        CLAIDPersistanceConfig enduranceConfig, ServiceAnnotation serviceAnnotation)
     {
         if(ServiceManager.isServiceRunning())
         {
@@ -286,7 +299,8 @@ public class CLAID extends JavaCLAIDBase
         }
 
         asyncRunnablesHelperThread.insertRunnable(() ->
-            ServiceManager.startMaximumPermissionsPerpetualService(context, socketPath, configFilePath, hostId, userId, deviceId, enduranceConfig));
+            ServiceManager.startMaximumPermissionsPerpetualService(context, socketPath, configFilePath,
+                    hostId, userId, deviceId, enduranceConfig, serviceAnnotation));
         
         return true;
     }

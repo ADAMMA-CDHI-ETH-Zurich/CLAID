@@ -78,5 +78,12 @@ public class ServiceRestartDescription
     {
         return this.properties.get(key);
     }
+    public String get(final String key, String defaultValue)
+    {
+        if(!this.properties.containsKey(key)) {
+            return defaultValue;
+        }
+        return this.properties.get(key);
+    }
 
 }

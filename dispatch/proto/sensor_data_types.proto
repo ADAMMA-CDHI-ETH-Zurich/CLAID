@@ -31,8 +31,9 @@ message AudioData
     bytes data = 1;
     int32 sampling_rate = 2;
     int32 bit_rate = 3;
-    AudioEncoding encoding = 4;
-    AudioChannels channels = 5;
+    int32 recording_duration_milliseconds = 4;
+    AudioEncoding encoding = 5;
+    AudioChannels channels = 6;
 }
 
 message Image

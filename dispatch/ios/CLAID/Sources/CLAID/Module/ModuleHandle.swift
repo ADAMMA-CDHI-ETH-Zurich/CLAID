@@ -1,6 +1,6 @@
 
 
-public actor ModuleHandle {
+public class ModuleHandle : @unchecked Sendable {
     public let dispatcher = RunnableDispatcher()
     public var tasks: [String: Task<Void, Never>] = [:]
     public var counter: Int = 0  // A variable to be modified by tasks
@@ -11,9 +11,15 @@ public actor ModuleHandle {
     public var remoteFunctionRunnableHandler: RemoteFunctionRunnableHandler?
     public var properties: Properties?
     public var initialized: Bool = false
+    public var valid: Bool = false
     
     public init() {
-
+        valid = false
+    }
+    
+    public init(_ id: String, _ type: String) {
+        self.id = id
+        self.type = type
     }
 
     public func addTask(_ name: String, _ task: Task<Void, Never>) {
@@ -66,5 +72,9 @@ public actor ModuleHandle {
     
     public func setProperties(_ properties: Properties) {
         self.properties = properties
+    }
+    
+    public func isValid() -> Bool {
+        return valid
     }
 }
