@@ -11,37 +11,12 @@ public class CLAID: Spezi.Module {
     private var moduleDispatcher: ModuleDispatcher? = nil
     private var moduleManager: ModuleManager? = nil
     private var moduleFactory = ModuleFactory()
-    private var preloadedModules: [String: Module] = [:]
+    private var preloadedModules: [String: CLAIDModule] = [:]
     
     private let lock = NSLock()
 
     public init() {}
 
-    public func configure() {
-        // Lock here if needed to protect shared state
-        
-        func getTestConfigPath() -> String? {
-            // Get the path to the resource inside the Swift package
-            if let fileURL = Bundle.main.url(forResource: "test_config", withExtension: "json") {
-                return fileURL.path // Convert URL to a file path string
-            }
-            print("Test config not found!!")
-            
-            return nil
-        }
-        if let testConfigPath = getTestConfigPath() {
-            Task {
-                try await start(
-                    configFile: testConfigPath,
-                    hostID: "test_host",
-                    userID: "test_user",
-                    deviceID: "test_device"
-                )
-            }
-        }
-        
-        
-    }
 
     public func start(configFile: String, hostID: String, userID: String, deviceID: String) async throws {
         
@@ -81,9 +56,9 @@ public class CLAID: Spezi.Module {
 
     private func attach_swift_runtime(socketPath: String) async throws {
         let dispatcher = try await ModuleDispatcher(socketPath: socketPath)
-        let manager = ModuleManager(dispatcher: dispatcher, moduleFactory: moduleFactory)
+        let manager = await ModuleManager(dispatcher: dispatcher, moduleFactory: moduleFactory)
 
-        var modulesToLoad: [String: Module] = [:]
+        var modulesToLoad: [String: CLAIDModule] = [:]
 
         self.moduleDispatcher = dispatcher
         self.moduleManager = manager
@@ -105,12 +80,12 @@ public class CLAID: Spezi.Module {
         return await manager?.getRemoteFunctionHandler()
     }
 
-    public func registerModule(_ moduleType: Module.Type) async throws {
+    public func registerModule(_ moduleType: CLAIDModule.Type) async throws {
         // Assuming moduleFactory is thread-safe
         try await moduleFactory.registerModule(moduleType)
     }
 
-    public func addPreloadedModule(moduleId: String, module: Module) {
+    public func addPreloadedModule(moduleId: String, module: CLAIDModule) {
         lock.lock()
         preloadedModules[moduleId] = module
         lock.unlock()

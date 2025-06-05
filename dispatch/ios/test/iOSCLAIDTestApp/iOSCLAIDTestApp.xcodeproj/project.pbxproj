@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C40ABB312DE80AC100729FBE /* CLAID in Frameworks */ = {isa = PBXBuildFile; productRef = C40ABB302DE80AC100729FBE /* CLAID */; };
 		C43FC5122D61ABFD00680F68 /* CLAID in Frameworks */ = {isa = PBXBuildFile; productRef = C43FC5112D61ABFD00680F68 /* CLAID */; };
 		C44C64682DB6DCB900186C60 /* CLAID in Frameworks */ = {isa = PBXBuildFile; productRef = C44C64672DB6DCB900186C60 /* CLAID */; };
 		C4A288892D6DA0AF00C81998 /* CLAID in Frameworks */ = {isa = PBXBuildFile; productRef = C4A288882D6DA0AF00C81998 /* CLAID */; };
@@ -74,6 +75,7 @@
 			files = (
 				C4A288AD2D6E523400C81998 /* CLAID in Frameworks */,
 				C4A288892D6DA0AF00C81998 /* CLAID in Frameworks */,
+				C40ABB312DE80AC100729FBE /* CLAID in Frameworks */,
 				C44C64682DB6DCB900186C60 /* CLAID in Frameworks */,
 				C43FC5122D61ABFD00680F68 /* CLAID in Frameworks */,
 			);
@@ -140,6 +142,7 @@
 				C4A288882D6DA0AF00C81998 /* CLAID */,
 				C4A288AC2D6E523400C81998 /* CLAID */,
 				C44C64672DB6DCB900186C60 /* CLAID */,
+				C40ABB302DE80AC100729FBE /* CLAID */,
 			);
 			productName = iOSCLAIDTestApp;
 			productReference = C45A2B6A2D5FD8C500570924 /* iOSCLAIDTestApp.app */;
@@ -225,6 +228,7 @@
 			mainGroup = C45A2B612D5FD8C500570924;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				C40ABB2F2DE80AC100729FBE /* XCLocalSwiftPackageReference "../../../../../CLAID" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C45A2B6B2D5FD8C500570924 /* Products */;
@@ -597,7 +601,18 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		C40ABB2F2DE80AC100729FBE /* XCLocalSwiftPackageReference "../../../../../CLAID" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../../../../CLAID;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
+		C40ABB302DE80AC100729FBE /* CLAID */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CLAID;
+		};
 		C43FC5112D61ABFD00680F68 /* CLAID */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = CLAID;

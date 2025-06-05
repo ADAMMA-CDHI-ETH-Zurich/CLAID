@@ -1,9 +1,10 @@
 import Foundation
 import protocol Spezi.Module
 
-public protocol Module : Actor, Spezi.Module {
-
+public protocol CLAIDModule : Sendable, Spezi.Module {
     var moduleHandle: ModuleHandle { get }
+    
+    init(id: String)
     
     func loadPropertiesFromConfig(properties: Properties) async
     func run() async throws
@@ -15,22 +16,24 @@ public protocol Module : Actor, Spezi.Module {
     func registerPeriodicFunction(name: String, interval: Duration, function: @escaping @Sendable () async -> Void) async
     func registerScheduledFunction(name: String, after delay: Duration, function: @escaping @Sendable () async -> Void) async
     func unregisterFunction(name: String) async
+    func configure()
+    
+    func inputChannels(_ channels: [String:String]) -> CLAIDModule
+    func outputChannels(_ channels: [String:String]) -> CLAIDModule
 }
 
-extension Module {
+extension CLAIDModule {
     
- 
-    public func defaultHandle(id: String?) -> ModuleHandle {
-        
+    public static func makeDefaultHandle(id: String) -> ModuleHandle {
         let className = String(describing: Self.self)
-        return ModuleHandle(id ?? className, className)
+        return ModuleHandle(
+            id ?? className,
+            className
+        )
     }
-    
+
     @MainActor
     public func configure() {
-        @Dependency
-        var claid = CLAID()
-        
         let className = String(describing: Self.self)
         print("\(className) configure")
     }
@@ -117,7 +120,6 @@ extension Module {
         if moduleId == id {
             await moduleFatal("Cannot map remote function. Module tried to map function \"\(functionName)\" of itself, which is not allowed.")
             //return RemoteFunction<Return, repeat each Parameters>.invalidRemoteFunction()
-            fatalError("Bla")
         }
         guard let remoteFunctionHandler = await self.moduleHandle.remoteFunctionHandler else {
             throw CLAIDError("Cannot map remote function of module, remoteFunctionHandler is null.")
@@ -251,12 +253,13 @@ extension Module {
         await self.moduleHandle.setId(id)
     }
     
-    public func getId() async -> String {
-        return await moduleHandle.getId()
+    public func getId() -> String {
+        return moduleHandle.getId()
     }
     
-    public func setType(_ type: String) async {
-        await moduleHandle.setType(type)
+    
+    public func getType() -> String {
+        return moduleHandle.getType()
     }
     
     public func start(
@@ -264,7 +267,11 @@ extension Module {
         remoteFunctionHandler: RemoteFunctionHandler,
         properties: Properties
     ) async throws {
-        print("CLAID START!!")
+        
+        if await !moduleHandle.isValid() {
+            throw CLAIDError.init("ModuleHandle is invalid. This might happen if the same Module type is registered multiple times.")
+        }
+        
         await moduleHandle.setSubscribePublisher(subscriberPublisher)
         await moduleHandle.setRemoteFunctionHandler(remoteFunctionHandler)
         await moduleHandle.setProperties(properties)
@@ -292,5 +299,23 @@ extension Module {
     
     public func loadPropertiesFromConfig(properties: Properties) async {
         
+    }
+    
+    public func getInputChannels() -> [String:String] {
+        return moduleHandle.getInputChannels()
+    }
+
+    public func getOutputChannels() -> [String:String] {
+        return moduleHandle.getOutputChannels()
+    }
+    
+    public func inputChannels(_ channels: [String:String]) -> CLAIDModule {
+        moduleHandle.setInputChannels(channels: channels)
+        return self
+    }
+    
+    public func outputChannels(_ channels: [String:String]) -> CLAIDModule {
+        moduleHandle.setOutputChannels(channels: channels)
+        return self
     }
 }

@@ -1,12 +1,13 @@
 import Foundation
 
-actor ModuleManager {
+@MainActor
+class ModuleManager {
     private let dispatcher: ModuleDispatcher
     private let moduleFactory: ModuleFactory
     
     private var remoteFunctionHandler: RemoteFunctionHandler?
     private var remoteFunctionRunnableHandler: RemoteFunctionRunnableHandler?
-    private var runningModules: [String: Module] = [:]
+    private var runningModules: [String: CLAIDModule] = [:]
     private var subscriberPublisher: ChannelSubscriberPublisher?
     private var running = false
 
@@ -232,7 +233,7 @@ actor ModuleManager {
         responseBuilder.controlVal = ctrlPackageBuilder
     }*/
 
-    func getModuleById(moduleId: String) async -> Module? {
+    func getModuleById(moduleId: String) async -> CLAIDModule? {
         return runningModules[moduleId]
     }
     
@@ -335,7 +336,7 @@ actor ModuleManager {
         return true
     }
     
-    public func addPreloadedModule(moduleId: String, module: Module) async {
+    public func addPreloadedModule(moduleId: String, module: CLAIDModule) async {
         print("Adding preloaded module \(moduleId)")
         self.runningModules[moduleId] = module
     }

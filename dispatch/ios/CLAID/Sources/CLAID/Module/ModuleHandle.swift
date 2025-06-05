@@ -1,6 +1,7 @@
 
 
 public class ModuleHandle : @unchecked Sendable {
+    
     public let dispatcher = RunnableDispatcher()
     public var tasks: [String: Task<Void, Never>] = [:]
     public var counter: Int = 0  // A variable to be modified by tasks
@@ -12,14 +13,21 @@ public class ModuleHandle : @unchecked Sendable {
     public var properties: Properties?
     public var initialized: Bool = false
     public var valid: Bool = false
+    public var inputChannels: [String: String] = [:]
+    public var outputChannels: [String: String] = [:]
     
     public init() {
         valid = false
     }
     
+    public static func InvalidHandle() -> ModuleHandle {
+        return ModuleHandle()
+    }
+    
     public init(_ id: String, _ type: String) {
         self.id = id
         self.type = type
+        self.valid = true
     }
 
     public func addTask(_ name: String, _ task: Task<Void, Never>) {
@@ -50,10 +58,6 @@ public class ModuleHandle : @unchecked Sendable {
         return id
     }
     
-    public func setType(_ type: String) {
-        self.type = type
-    }
-    
     public func getType() -> String {
         return type
     }
@@ -76,5 +80,21 @@ public class ModuleHandle : @unchecked Sendable {
     
     public func isValid() -> Bool {
         return valid
+    }
+    
+    public func setInputChannels(channels: [String: String]) {
+        inputChannels = channels
+    }
+    
+    public func setOutputChannels(channels: [String: String]) {
+        outputChannels = channels
+    }
+    
+    public func getInputChannels() -> [String: String] {
+        return inputChannels
+    }
+    
+    public func getOutputChannels() -> [String: String] {
+        return outputChannels
     }
 }

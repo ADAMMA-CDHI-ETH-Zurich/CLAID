@@ -1,20 +1,23 @@
 import Foundation
 
-public actor ModuleFactory {
-    private var registeredModuleClasses: [String: Module.Type]
+public final class ModuleFactory : @unchecked Sendable{
+    // internal storage
+    private var registeredModuleClasses: [String: CLAIDModule.Type] = [:]
+    private let lock = NSLock()
 
-    public init() {
-        self.registeredModuleClasses = [:]
-    }
+    public init() { }
 
     /// Registers a module class by its type
-    public func registerModule(_ moduleType: Module.Type) throws {
+    public func registerModule(_ moduleType: CLAIDModule.Type) throws {
         let className = String(describing: moduleType)
         try registerModule(moduleName: className, moduleType)
     }
     
-    public func registerModule(moduleName: String, _ moduleType: Module.Type) throws {
-        
+    /// Registers a module class under an explicit name
+    public func registerModule(moduleName: String, _ moduleType: CLAIDModule.Type) throws {
+        lock.lock()
+        defer { lock.unlock() }
+
         if registeredModuleClasses[moduleName] != nil {
             throw CLAIDError("Module class '\(moduleName)' is already registered.")
         }
@@ -24,33 +27,34 @@ public actor ModuleFactory {
     }
 
     /// Creates an instance of the requested module, sets its ID and type
-    public func getInstance(className: String, moduleId: String) async -> Module?  {
+    public func getInstance(className: String, moduleId: String) -> CLAIDModule? {
+        // lock only around dictionary access
+        lock.lock()
+        let moduleType = registeredModuleClasses[className]
+        lock.unlock()
         
-        print("Instantiation of Modules from config not currently supported. Modules need to be precreated.")
-        return nil;
-        /*guard let moduleType = registeredModuleClasses[className] else {
+        guard let type = moduleType else {
             print("Module class \(className) not found.")
             return nil
         }
-        do {
-            let module = await moduleType.init() // Assumes `Module` has a required initializer
-            await module.setId(moduleId)
-            await module.setType(className)
-            return module
-        } catch {
-            print("Error creating instance of \(className): \(error)")
-            return nil
-        }*/
+
+        // instantiate & configure outside the lock
+        let module = type.init(id: moduleId)      // assume synchronous init
+
+        return module
     }
 
     /// Checks if a module class is registered
     public func isModuleClassRegistered(_ moduleClass: String) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
         return registeredModuleClasses.keys.contains(moduleClass)
     }
 
     /// Returns a list of all registered module class names
     public func getRegisteredModuleClasses() -> [String] {
+        lock.lock()
+        defer { lock.unlock() }
         return Array(registeredModuleClasses.keys)
     }
-
 }

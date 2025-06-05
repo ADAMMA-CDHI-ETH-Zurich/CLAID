@@ -5,34 +5,50 @@
 //  Created by Patrick Langer on 10.03.2025.
 //
 
-
-import Spezi
+@testable import Spezi
 import Foundation
-import protocol CLAID.Module
-import class CLAID.ModuleHandle
+import CLAID
+import UIKit
 
+final actor MyModule : CLAIDModule {
+ 
+    @Dependency
+    var claidRuntime = CLAIDRuntime()
+    let moduleHandle: ModuleHandle
+    
+    init(
+        id: String = "MyModule"
+    ) {
+        moduleHandle = Self.makeDefaultHandle(id: id)
+    }
 
-actor MyModule : Module {
-    var moduleHandle = CLAID.ModuleHandle()
+    @Sendable
+    func periodic() async {
+        print("Periodic function")
+    }
     
     func run() async throws {
         print("Run called!")
+        await registerPeriodicFunction(
+            name: "TestFunction",
+            interval: Duration.milliseconds(100),
+            function: self.periodic
+        )
     }
     
     func terminate() async {
         
     }
-    
-    
 }
 
-class TestAppDelegate: SpeziAppDelegate {
-    override var configuration: Configuration {
-        Configuration(standard: ExampleStandard()) {
-            
+
+
+
+class TestAppDelegate : SpeziAppDelegate {
+    override var configuration: Configuration  {
+        Configuration {
             MyModule()
+            
         }
     }
-    
-
 }

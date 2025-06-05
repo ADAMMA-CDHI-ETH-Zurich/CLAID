@@ -19,7 +19,8 @@ let package = Package(
          .package(url: "https://github.com/grpc/grpc-swift.git", from: "2.0.0"),
          .package(url: "https://github.com/grpc/grpc-swift-nio-transport.git", from: "1.0.0"),
          .package(url: "https://github.com/grpc/grpc-swift-protobuf.git", from: "1.0.0"),
-         .package(url: "https://github.com/StanfordSpezi/Spezi", from: "1.8.1"),
+         .package(url: "https://github.com/StanfordSpezi/Spezi", branch: "feature/structured-concurrency"),
+         
 
      ],
     targets: [

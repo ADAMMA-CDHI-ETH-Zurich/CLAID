@@ -5,13 +5,13 @@
 //  Created by Patrick Langer on 21.02.2025.
 //
  
-
-public actor TestModule : Module {
+/*
+public class TestModule : Module {
      
    
     public var moduleHandle = ModuleHandle()
     public init(id: String? = nil) async {
-        moduleHandle = defaultHandle(id: id)
+        moduleHandle = Self.makeDefaultHandle(id: id)
     }
 
     public func run() async throws {
@@ -25,26 +25,19 @@ public actor TestModule : Module {
     private func onData(data: ChannelData<Int>) async {
         await moduleInfo("Received value \(await data.getData())")
     }
-    
-    //         let result: String = try await function(42, "Hello")
-
-    
+       
     
     private var ctr: Int = 0
     private var inputChannel: Channel<Int>?
     private var outputChannel: Channel<Int>?
   
-    
     private func count() async {
         self.ctr += 1
         await self.outputChannel?.post(self.ctr)
     }
-    
-
-    
-
-    
+        
     public func terminate() async {
         
     }
 }
+*/
